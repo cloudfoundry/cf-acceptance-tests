@@ -6,6 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/vito/cmdtest"
 	. "github.com/vito/cmdtest/matchers"
 
 	"github.com/vito/runtime-integration/config"
@@ -27,90 +28,74 @@ func appUri() string {
 	return "http://" + appName + "." + conf.AppsDomain
 }
 
+func Curling(endpoint string) func() *cmdtest.Session {
+	return func() *cmdtest.Session {
+		return Curl(appUri() + endpoint)
+	}
+}
+
 var _ = Describe("Application", func() {
 	BeforeEach(func() {
 		appName = RandomName()
 
-		push := Run("go-cf", "push", appName, "-p", doraPath)
-		Expect(push).To(SayWithTimeout("Started", 2*time.Minute))
-		Expect(push).To(ExitWith(0))
+		Expect(Cf("push", appName, "-p", doraPath)).To(
+			SayWithTimeout("Started", 2*time.Minute),
+		)
 	})
 
 	AfterEach(func() {
-		del := Run("go-cf", "delete", appName, "-f")
-		Expect(del).To(Say("OK"))
-		Expect(del).To(ExitWith(0))
+		Expect(Cf("delete", appName, "-f")).To(Say("OK"))
 	})
 
 	Describe("pushing", func() {
-		It("makes the app reachable via its bound routes", func() {
-			curl := Run("curl", "-s", appUri())
-			Expect(curl).To(Say("Hello, world!"))
-			Expect(curl).To(ExitWith(0))
+		It("makes the app reachable via its bound route", func() {
+			Eventually(Curling("/")).Should(Say("Hi, I'm Dora!"))
 		})
 	})
 
 	Describe("stopping", func() {
 		BeforeEach(func() {
-			del := Run("go-cf", "stop", appName)
-			Expect(del).To(Say("OK"))
-			Expect(del).To(ExitWith(0))
+			Expect(Cf("stop", appName)).To(Say("OK"))
 		})
 
 		It("makes the app unreachable", func() {
-			curl := Run("curl", "-s", appUri())
-			Expect(curl).To(Say("404"))
-			Expect(curl).To(ExitWith(0))
+			Eventually(Curling("/"), 5.0).Should(Say("404"))
 		})
 
 		Describe("and then starting", func() {
 			BeforeEach(func() {
-				del := Run("go-cf", "start", appName)
-				Expect(del).To(Say("OK"))
-				Expect(del).To(ExitWith(0))
+				Expect(Cf("start", appName)).To(Say("OK"))
 			})
 
 			It("makes the app reachable again", func() {
-				curl := Run("curl", "-s", appUri())
-				Expect(curl).To(Say("Hello, world!"))
-				Expect(curl).To(ExitWith(0))
+				Eventually(Curling("/"), 10.0).Should(Say("Hi, I'm Dora!"))
 			})
 		})
 	})
 
 	Describe("updating", func() {
 		It("is reflected through another push", func() {
-			curl := Run("curl", "-s", appUri())
-			Expect(curl).To(Say("Hi, I'm Dora!"))
-			Expect(curl).To(ExitWith(0))
+			Eventually(Curling("/")).Should(Say("Hi, I'm Dora!"))
 
-			push := Run("go-cf", "push", appName, "-p", helloPath)
-			Expect(push).To(SayWithTimeout("Started", 2*time.Minute))
-			Expect(push).To(ExitWith(0))
+			Expect(Cf("push", appName, "-p", helloPath)).To(
+				SayWithTimeout("Started", 2*time.Minute),
+			)
 
-			curl = Run("curl", "-s", appUri())
-			Expect(curl).To(Say("Hello, world!"))
-			Expect(curl).To(ExitWith(0))
+			Eventually(Curling("/")).Should(Say("Hello, world!"))
 		})
 	})
 
 	Describe("deleting", func() {
 		BeforeEach(func() {
-			del := Run("go-cf", "delete", appName, "-f")
-			Expect(del).To(Say("OK"))
-			Expect(del).To(ExitWith(0))
+			Expect(Cf("delete", appName, "-f")).To(Say("OK"))
 		})
 
 		It("removes the application", func() {
-			app := Run("go-cf", "app", appName)
-			Expect(app).To(Say("not found"))
-			Expect(app).To(ExitWith(1))
+			Expect(Cf("app", appName)).To(Say("not found"))
 		})
 
 		It("makes the app unreachable", func() {
-			curl := Run("curl", "-s", appUri())
-			Expect(curl).To(Say("404"))
-			Expect(curl).To(ExitWith(0))
+			Eventually(Curling("/")).Should(Say("404"))
 		})
 	})
 })

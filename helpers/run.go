@@ -12,3 +12,11 @@ func Run(executable string, args ...string) *cmdtest.Session {
 
 	return sess
 }
+
+func Curl(uri string) *cmdtest.Session {
+	return Run("curl", "-s", uri)
+}
+
+func Cf(args ...string) *cmdtest.Session {
+	return Run("go-cf", args...)
+}
