@@ -10,7 +10,7 @@ $stdout.sync = true
 $stderr.sync = true
 
 get '/' do
-  "Hello, world!"
+  "Hi, I'm Dora!"
 end
 
 get '/id' do

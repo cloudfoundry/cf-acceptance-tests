@@ -20,7 +20,8 @@ func TestLifecycle(t *testing.T) {
 var conf = config.Load()
 
 var appName = ""
-var appPath = "../assets/dora"
+var doraPath = "../assets/dora"
+var helloPath = "../assets/hello-world"
 
 func appUri() string {
 	return "http://" + appName + "." + conf.AppsDomain
@@ -30,7 +31,7 @@ var _ = Describe("Application", func() {
 	BeforeEach(func() {
 		appName = RandomName()
 
-		push := Run("go-cf", "push", appName, "-p", appPath)
+		push := Run("go-cf", "push", appName, "-p", doraPath)
 		Expect(push).To(SayWithTimeout("Started", 2*time.Minute))
 		Expect(push).To(ExitWith(0))
 	})
@@ -74,6 +75,22 @@ var _ = Describe("Application", func() {
 				Expect(curl).To(Say("Hello, world!"))
 				Expect(curl).To(ExitWith(0))
 			})
+		})
+	})
+
+	Describe("updating", func() {
+		It("is reflected through another push", func() {
+			curl := Run("curl", "-s", appUri())
+			Expect(curl).To(Say("Hi, I'm Dora!"))
+			Expect(curl).To(ExitWith(0))
+
+			push := Run("go-cf", "push", appName, "-p", helloPath)
+			Expect(push).To(SayWithTimeout("Started", 2*time.Minute))
+			Expect(push).To(ExitWith(0))
+
+			curl = Run("curl", "-s", appUri())
+			Expect(curl).To(Say("Hello, world!"))
+			Expect(curl).To(ExitWith(0))
 		})
 	})
 
