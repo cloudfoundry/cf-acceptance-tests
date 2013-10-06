@@ -1,8 +1,8 @@
 package lifecycle
 
 import (
-	"time"
 	"testing"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -12,61 +12,73 @@ import (
 	. "github.com/vito/runtime-integration/helpers"
 )
 
-func Test(t *testing.T) {
+func TestLifecycle(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Lifecycle")
+	RunSpecs(t, "Application Lifecycle")
 }
 
 var conf = config.Load()
-var appName = RandomName()
+
+var appName = ""
 var appPath = "../assets/dora"
-var appUri = "http://" + appName + "." + conf.AppsDomain
+
+func appUri() string {
+	return "http://" + appName + "." + conf.AppsDomain
+}
 
 var _ = Describe("Application", func() {
-	Describe("pushing", func() {
-		It("works", func() {
-			push := Run("go-cf", "push", appName, "-p", appPath)
-			Expect(push).To(SayWithTimeout("Started", 2 * time.Minute))
-			Expect(push).To(ExitWith(0))
-		})
+	BeforeEach(func() {
+		appName = RandomName()
 
+		push := Run("go-cf", "push", appName, "-p", appPath)
+		Expect(push).To(SayWithTimeout("Started", 2*time.Minute))
+		Expect(push).To(ExitWith(0))
+	})
+
+	AfterEach(func() {
+		del := Run("go-cf", "delete", appName, "-f")
+		Expect(del).To(Say("OK"))
+		Expect(del).To(ExitWith(0))
+	})
+
+	Describe("pushing", func() {
 		It("makes the app reachable via its bound routes", func() {
-			curl := Run("curl", "-s", appUri)
+			curl := Run("curl", "-s", appUri())
 			Expect(curl).To(Say("Hello, world!"))
 			Expect(curl).To(ExitWith(0))
 		})
 	})
 
 	Describe("stopping", func() {
-		It("works", func() {
+		BeforeEach(func() {
 			del := Run("go-cf", "stop", appName)
 			Expect(del).To(Say("OK"))
 			Expect(del).To(ExitWith(0))
 		})
 
 		It("makes the app unreachable", func() {
-			curl := Run("curl", "-s", appUri)
+			curl := Run("curl", "-s", appUri())
 			Expect(curl).To(Say("404"))
 			Expect(curl).To(ExitWith(0))
 		})
-	})
 
-	Describe("starting", func() {
-		It("works", func() {
-			del := Run("go-cf", "start", appName)
-			Expect(del).To(Say("OK"))
-			Expect(del).To(ExitWith(0))
-		})
+		Describe("and then starting", func() {
+			BeforeEach(func() {
+				del := Run("go-cf", "start", appName)
+				Expect(del).To(Say("OK"))
+				Expect(del).To(ExitWith(0))
+			})
 
-		It("makes the app reachable again", func() {
-			curl := Run("curl", "-s", appUri)
-			Expect(curl).To(Say("Hello, world!"))
-			Expect(curl).To(ExitWith(0))
+			It("makes the app reachable again", func() {
+				curl := Run("curl", "-s", appUri())
+				Expect(curl).To(Say("Hello, world!"))
+				Expect(curl).To(ExitWith(0))
+			})
 		})
 	})
 
 	Describe("deleting", func() {
-		It("works", func() {
+		BeforeEach(func() {
 			del := Run("go-cf", "delete", appName, "-f")
 			Expect(del).To(Say("OK"))
 			Expect(del).To(ExitWith(0))
@@ -79,7 +91,7 @@ var _ = Describe("Application", func() {
 		})
 
 		It("makes the app unreachable", func() {
-			curl := Run("curl", "-s", appUri)
+			curl := Run("curl", "-s", appUri())
 			Expect(curl).To(Say("404"))
 			Expect(curl).To(ExitWith(0))
 		})
