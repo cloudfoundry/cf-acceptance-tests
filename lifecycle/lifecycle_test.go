@@ -42,11 +42,13 @@ var _ = Describe("Application", func() {
 
 		Describe("and then starting", func() {
 			BeforeEach(func() {
-				Expect(Cf("start", AppName)).To(Say("OK"))
+				Expect(Cf("start", AppName)).To(
+					SayWithTimeout("Started", 30*time.Second),
+				)
 			})
 
 			It("makes the app reachable again", func() {
-				Eventually(Curling("/"), 10.0).Should(Say("Hi, I'm Dora!"))
+				Eventually(Curling("/")).Should(Say("Hi, I'm Dora!"))
 			})
 		})
 	})

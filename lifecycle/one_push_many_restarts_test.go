@@ -50,8 +50,10 @@ var _ = Describe("An application that's already been pushed", func() {
 
 		Eventually(Curling("/")).Should(Say("404"))
 
-		Expect(Cf("start", AppName)).To(Say("OK"))
+		Expect(Cf("start", AppName)).To(
+			SayWithTimeout("Started", 30*time.Second),
+		)
 
-		Eventually(Curling("/"), 10.0).Should(Say("Hi, I'm Dora!"))
+		Eventually(Curling("/")).Should(Say("Hi, I'm Dora!"))
 	})
 })

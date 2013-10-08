@@ -10,8 +10,6 @@ import (
 	. "github.com/vito/runtime-integration/helpers"
 )
 
-var cfConfig = LoadCfConfig()
-
 var _ = Describe("Changing an app's start command", func() {
 	BeforeEach(func() {
 		AppName = RandomName()
