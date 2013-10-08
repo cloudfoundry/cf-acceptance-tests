@@ -31,7 +31,7 @@ var _ = Describe("Changing an app's start command", func() {
 		)
 	})
 
-	FIt("takes effect after a restart, not requiring a push", func() {
+	It("takes effect after a restart, not requiring a push", func() {
 		Eventually(Curling("/env/FOO")).Should(Say("foo"))
 
 		var response AppQueryResponse
