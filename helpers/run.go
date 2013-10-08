@@ -13,8 +13,9 @@ func Run(executable string, args ...string) *cmdtest.Session {
 	return sess
 }
 
-func Curl(uri string) *cmdtest.Session {
-	return Run("curl", "-s", uri)
+func Curl(args ...string) *cmdtest.Session {
+	args = append([]string{"-s"}, args...)
+	return Run("curl", args...)
 }
 
 func Cf(args ...string) *cmdtest.Session {

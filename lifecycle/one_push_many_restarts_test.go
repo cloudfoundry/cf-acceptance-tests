@@ -2,14 +2,12 @@
 // existing app's bits. This can happen if the scheme of the app's paths in
 // the blobstore changes without being backwards-compatible.
 //
-//
 // If this is not caught before a deploy, all running apps will go down, as
 // during evacuation of the DEAs, the CC will not know to look in their old
 // path format in the blob store.
 //
 // This tests pushes the app once (checking if it already exists), and then
 // just restarts it on later runs.
-//
 
 package lifecycle
 
