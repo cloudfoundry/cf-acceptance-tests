@@ -7,6 +7,7 @@ import (
 
 type IntegrationConfig struct {
 	AppsDomain string `json:"apps_domain"`
+	PersistentAppHost string `json:"persistent_app_host"`
 }
 
 func Load() (config IntegrationConfig) {
@@ -28,6 +29,10 @@ func LoadPath(path string) (config IntegrationConfig) {
 	err = decoder.Decode(&config)
 	if err != nil {
 		panic(err)
+	}
+
+	if config.PersistentAppHost == "" {
+		config.PersistentAppHost = "persistent-app"
 	}
 
 	return

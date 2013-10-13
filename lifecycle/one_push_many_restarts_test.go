@@ -24,7 +24,7 @@ import (
 
 var _ = Describe("An application that's already been pushed", func() {
 	BeforeEach(func() {
-		AppName = "persistent-app"
+		AppName = IntegrationConfig.PersistentAppHost
 
 		Expect(Cf("app", AppName)).To(SayBranches(
 			cmdtest.ExpectBranch{
