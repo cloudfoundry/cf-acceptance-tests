@@ -47,15 +47,13 @@ var _ = Describe("Changing an app's start command", func() {
 			`{"command":"FOO=bar bundle exec rackup config.ru -p $PORT"}`,
 		)
 
-		restart := Cf("restart", AppName)
+		Expect(Cf("stop", AppName)).To(Say("OK"))
 
-		Expect(restart).To(Say("Stopping"))
-		Expect(restart).To(Say("OK"))
+		Eventually(Curling("/env/FOO")).Should(Say("404"))
 
-		Expect(restart).To(Say("Starting"))
-		Expect(restart).To(Say("OK"))
-
-		Expect(restart).To(Say("Started"))
+		Expect(Cf("start", AppName)).To(
+			SayWithTimeout("Started", 30*time.Second),
+		)
 
 		Eventually(Curling("/env/FOO")).Should(Say("bar"))
 	})
