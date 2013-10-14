@@ -1,8 +1,6 @@
 package apps
 
 import (
-	"time"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
@@ -20,13 +18,11 @@ var _ = Describe("Changing an app's start command", func() {
 				"-p", doraPath,
 				"-c", "FOO=foo bundle exec rackup config.ru -p $PORT",
 			),
-		).To(SayWithTimeout("Started", 2*time.Minute))
+		).To(Say("Started"))
 	})
 
 	AfterEach(func() {
-		Expect(Cf("delete", AppName, "-f")).To(
-			SayWithTimeout("OK", 30*time.Second),
-		)
+		Expect(Cf("delete", AppName, "-f")).To(Say("OK"))
 	})
 
 	It("takes effect after a restart, not requiring a push", func() {
@@ -51,9 +47,7 @@ var _ = Describe("Changing an app's start command", func() {
 
 		Eventually(Curling("/env/FOO")).Should(Say("404"))
 
-		Expect(Cf("start", AppName)).To(
-			SayWithTimeout("Started", 30*time.Second),
-		)
+		Expect(Cf("start", AppName)).To(Say("Started"))
 
 		Eventually(Curling("/env/FOO")).Should(Say("bar"))
 	})

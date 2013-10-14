@@ -14,25 +14,18 @@ var _ = Describe("An application printing a bunch of output", func() {
 	BeforeEach(func() {
 		AppName = RandomName()
 
-		Expect(Cf("push", AppName, "-p", doraPath)).To(
-			SayWithTimeout("Started", 2*time.Minute),
-		)
+		Expect(Cf("push", AppName, "-p", doraPath)).To(Say("Started"))
 	})
 
 	AfterEach(func() {
-		Expect(Cf("delete", AppName, "-f")).To(
-			SayWithTimeout("OK", 30*time.Second),
-		)
+		Expect(Cf("delete", AppName, "-f")).To(Say("OK"))
 	})
 
 	It("doesn't die when printing 32MB", func() {
 		beforeId := Curl(AppUri("/id")).FullOutput()
 
 		Expect(Curl(AppUri("/logspew/33554432"))).To(
-			SayWithTimeout(
-				"Just wrote 33554432 random bytes to the log",
-				30 * time.Second,
-			),
+			Say("Just wrote 33554432 random bytes to the log"),
 		)
 
 		// Give time for components (i.e. Warden) to react to the output

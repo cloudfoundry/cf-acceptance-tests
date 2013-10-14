@@ -1,8 +1,6 @@
 package apps
 
 import (
-	"time"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
@@ -14,15 +12,13 @@ var _ = Describe("A running application", func() {
 	BeforeEach(func() {
 		AppName = RandomName()
 
-		Expect(Cf("push", AppName, "-p", doraPath, "-i", "2")).To(
-			SayWithTimeout("Started", 2*time.Minute),
-		)
+		Expect(
+			Cf("push", AppName, "-p", doraPath, "-i", "2"),
+		).To(Say("Started"))
 	})
 
 	AfterEach(func() {
-		Expect(Cf("delete", AppName, "-f")).To(
-			SayWithTimeout("OK", 30*time.Second),
-		)
+		Expect(Cf("delete", AppName, "-f")).To(Say("OK"))
 	})
 
 	It("can be queried for state by instance", func() {

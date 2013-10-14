@@ -12,8 +12,6 @@
 package apps
 
 import (
-	"time"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vito/cmdtest"
@@ -30,9 +28,9 @@ var _ = Describe("An application that's already been pushed", func() {
 			cmdtest.ExpectBranch{
 				"not found",
 				func() {
-					Expect(Cf("push", AppName, "-p", doraPath)).To(
-						SayWithTimeout("Started", 2*time.Minute),
-					)
+					Expect(
+						Cf("push", AppName, "-p", doraPath),
+					).To(Say("Started"))
 				},
 			},
 			cmdtest.ExpectBranch{
@@ -50,9 +48,7 @@ var _ = Describe("An application that's already been pushed", func() {
 
 		Eventually(Curling("/")).Should(Say("404"))
 
-		Expect(Cf("start", AppName)).To(
-			SayWithTimeout("Started", 30*time.Second),
-		)
+		Expect(Cf("start", AppName)).To(Say("Started"))
 
 		Eventually(Curling("/")).Should(Say("Hi, I'm Dora!"))
 	})
