@@ -9,7 +9,7 @@
 // This tests pushes the app once (checking if it already exists), and then
 // just restarts it on later runs.
 
-package lifecycle
+package apps
 
 import (
 	"time"
