@@ -16,6 +16,7 @@ var _ = Describe("Changing an app's start command", func() {
 			Cf(
 				"push", AppName,
 				"-p", doraPath,
+				"-d", IntegrationConfig.AppsDomain,
 				"-c", "FOO=foo bundle exec rackup config.ru -p $PORT",
 			),
 		).To(Say("Started"))
@@ -30,7 +31,7 @@ var _ = Describe("Changing an app's start command", func() {
 
 		var response AppQueryResponse
 
-		ApiRequest("GET", "/v2/apps?q=name:" + AppName, &response)
+		ApiRequest("GET", "/v2/apps?q=name:"+AppName, &response)
 
 		Expect(response.Resources).To(HaveLen(1))
 
@@ -38,7 +39,7 @@ var _ = Describe("Changing an app's start command", func() {
 
 		ApiRequest(
 			"PUT",
-			"/v2/apps/" + appGuid,
+			"/v2/apps/"+appGuid,
 			nil,
 			`{"command":"FOO=bar bundle exec rackup config.ru -p $PORT"}`,
 		)

@@ -7,7 +7,6 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/vito/cmdtest"
 
-
 	"github.com/vito/runtime-integration/config"
 	. "github.com/vito/runtime-integration/helpers"
 )

@@ -23,7 +23,8 @@ func ApiRequest(method, endpoint string, response interface{}, data ...string) {
 	config := LoadCfConfig()
 
 	request := Curl(
-		config.Target + endpoint,
+		"-k",
+		config.Target+endpoint,
 		"-X", method,
 		"-d", strings.Join(data, ""),
 		"-H", fmt.Sprintf("Authorization: %s", config.AccessToken),

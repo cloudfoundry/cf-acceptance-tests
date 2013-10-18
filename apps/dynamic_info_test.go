@@ -13,7 +13,7 @@ var _ = Describe("A running application", func() {
 		AppName = RandomName()
 
 		Expect(
-			Cf("push", AppName, "-p", doraPath, "-i", "2"),
+			Cf("push", AppName, "-p", doraPath, "-i", "2", "-d", IntegrationConfig.AppsDomain),
 		).To(Say("Started"))
 	})
 

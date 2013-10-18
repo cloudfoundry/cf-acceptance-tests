@@ -1,13 +1,13 @@
 package helpers
 
 import (
+	"encoding/json"
 	"os"
 	"path"
-	"encoding/json"
 )
 
 type CfConfig struct {
-	Target string `json:"Target"`
+	Target      string `json:"Target"`
 	AccessToken string `json:"AccessToken"`
 }
 

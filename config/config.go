@@ -6,7 +6,7 @@ import (
 )
 
 type IntegrationConfig struct {
-	AppsDomain string `json:"apps_domain"`
+	AppsDomain        string `json:"apps_domain"`
 	PersistentAppHost string `json:"persistent_app_host"`
 }
 
