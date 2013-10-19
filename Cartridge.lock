@@ -1,3 +1,4 @@
 github.com/onsi/ginkgo	eb0b43d3d93a04245c7c06add96a1006012c1a72
 github.com/onsi/gomega	432ea89afb996a57d70b6b93f55fa810d14006cc
 github.com/vito/cmdtest	f47af44b2ab0551737a58aa0c8504a445c8836fd
+github.com/nu7hatch/gouuid	87bcc4729f2c5a08d2513ad10684c6bbd256380f
