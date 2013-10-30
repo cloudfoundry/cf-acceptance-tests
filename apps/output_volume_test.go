@@ -22,7 +22,7 @@ var _ = Describe("An application printing a bunch of output", func() {
 	})
 
 	It("doesn't die when printing 32MB", func() {
-		beforeId := Curl(AppUri("/id")).FullOutput()
+		beforeId := string(Curl(AppUri("/id")).FullOutput())
 
 		Expect(Curl(AppUri("/logspew/33554432"))).To(
 			Say("Just wrote 33554432 random bytes to the log"),
@@ -32,7 +32,7 @@ var _ = Describe("An application printing a bunch of output", func() {
 		// and potentially make bad decisions (like killing the app)
 		time.Sleep(10 * time.Second)
 
-		afterId := Curl(AppUri("/id")).FullOutput()
+		afterId := string(Curl(AppUri("/id")).FullOutput())
 
 		Expect(beforeId).To(Equal(afterId))
 
