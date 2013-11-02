@@ -25,7 +25,7 @@ func Curl(args ...string) *cmdtest.Session {
 }
 
 func Cf(args ...string) *cmdtest.Session {
-	return Run("go-cf", args...)
+	return Run("gcf", args...)
 }
 
 func teeStdout(out io.Reader) io.Reader {
