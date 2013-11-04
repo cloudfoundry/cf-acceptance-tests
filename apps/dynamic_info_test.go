@@ -1,6 +1,8 @@
 package apps
 
 import (
+	"github.com/vito/cmdtest"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
@@ -33,5 +35,12 @@ var _ = Describe("A running application", func() {
 		Expect(Cf("files", AppName, "app/config.ru")).To(
 			Say("run Sinatra::Application"),
 		)
+	})
+
+	It("can show crash events", func() {
+		Expect(Curl(AppUri("/sigterm/KILL"))).To(ExitWith(0))
+		Eventually(func() *cmdtest.Session {
+			return Cf("events", AppName)
+		}, 10).Should(Say("exited"))
 	})
 })
