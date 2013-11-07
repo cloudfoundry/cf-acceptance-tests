@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+sleep 1
+
+echo "Staging with Simple Buildpack"

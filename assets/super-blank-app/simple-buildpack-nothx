@@ -1,0 +1,4 @@
+# this app is used only with the admin buildpack tests,
+# so that we can have assertions around staging failures
+
+# this app asset is so that no buildpacks can successfully detect

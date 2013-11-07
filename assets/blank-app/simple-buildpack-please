@@ -1,0 +1,4 @@
+# this app is used only with the admin buildpack tests,
+# so that we can have assertions around staging failures
+
+# the presence of this file makes the buildpack successfully detect
