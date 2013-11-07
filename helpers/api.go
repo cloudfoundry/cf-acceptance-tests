@@ -9,14 +9,14 @@ import (
 	. "github.com/vito/cmdtest/matchers"
 )
 
-type AppResource struct {
+type GenericResource struct {
 	Metadata struct {
 		Guid string `json:"guid"`
 	} `json:"metadata"`
 }
 
-type AppQueryResponse struct {
-	Resources []AppResource `struct:"resources"`
+type QueryResponse struct {
+	Resources []GenericResource `struct:"resources"`
 }
 
 func ApiRequest(method, endpoint string, response interface{}, data ...string) {

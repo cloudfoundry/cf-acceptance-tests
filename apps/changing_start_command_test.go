@@ -29,7 +29,7 @@ var _ = Describe("Changing an app's start command", func() {
 	It("takes effect after a restart, not requiring a push", func() {
 		Eventually(Curling("/env/FOO")).Should(Say("foo"))
 
-		var response AppQueryResponse
+		var response QueryResponse
 
 		ApiRequest("GET", "/v2/apps?q=name:"+AppName, &response)
 
