@@ -12,7 +12,7 @@ var _ = Describe("Application", func() {
 	BeforeEach(func() {
 		AppName = RandomName()
 
-		Expect(Cf("push", AppName, "-p", doraPath, "-d", IntegrationConfig.AppsDomain)).To(Say("Started"))
+		Expect(Cf("push", AppName, "-p", doraPath)).To(Say("Started"))
 	})
 
 	AfterEach(func() {

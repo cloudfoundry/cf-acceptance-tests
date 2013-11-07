@@ -18,7 +18,7 @@ var _ = Describe("An application being staged", func() {
 	})
 
 	It("has its staging log streamed during a push", func() {
-		push := Cf("push", AppName, "-p", doraPath, "-d", IntegrationConfig.AppsDomain)
+		push := Cf("push", AppName, "-p", doraPath)
 
 		Expect(push).To(Say("Staging..."))
 		Expect(push).To(Say("Installing dependencies"))
