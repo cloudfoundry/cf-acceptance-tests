@@ -18,4 +18,4 @@ gocart install
 
 go install github.com/onsi/ginkgo/ginkgo
 
-ginkgo -r -v -slowSpecThreshold=300 $*
+ginkgo -r -v -slowSpecThreshold=300 "$@"
