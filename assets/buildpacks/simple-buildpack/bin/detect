@@ -1,8 +1,0 @@
-#!/bin/bash
-
-if [ -f "${1}/simple-buildpack-please" ]; then
-  echo Simple
-else
-  echo no
-  exit 1
-fi

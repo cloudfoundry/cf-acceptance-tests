@@ -1,5 +1,2 @@
 tags
 integration_config.json
-
-# TODO: remove once Makefile is removed
-assets/buildpacks/*.zip

@@ -1,27 +1,62 @@
 package apps
 
 import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
 
+	"github.com/vito/runtime-integration/buildpack_generator"
 	. "github.com/vito/runtime-integration/helpers"
 )
 
-const simpleBuildpackPath = "../assets/buildpacks/simple-buildpack.zip"
-const anotherBuildpackPath = "../assets/buildpacks/another-buildpack.zip"
-
-const blankAppPath = "../assets/blank-app"
-const superBlankAppPath = "../assets/super-blank-app"
-
 var _ = Describe("An application using an admin buildpack", func() {
-	var BuildpackName string
+	var (
+		AppName       string
+		BuildpackName string
+
+		appPath string
+
+		buildpackPath        string
+		buildpackArchivePath string
+	)
+
+	matchingFilename := func(appName string) string {
+		return fmt.Sprintf("simple-buildpack-please-match-%s", appName)
+	}
 
 	BeforeEach(func() {
 		BuildpackName = RandomName()
 		AppName = RandomName()
 
-		createBuildpack := Cf("create-buildpack", BuildpackName, simpleBuildpackPath, "0")
+		tmpdir, err := ioutil.TempDir(os.TempDir(), "matching-app")
+		Expect(err).ToNot(HaveOccured())
+
+		appPath = tmpdir
+
+		tmpdir, err = ioutil.TempDir(os.TempDir(), "matching-buildpack")
+		Expect(err).ToNot(HaveOccured())
+
+		buildpackPath = tmpdir
+		buildpackArchivePath = path.Join(buildpackPath, "buildpack.zip")
+
+		err = buildpack_generator.GenerateBuildpack(buildpackPath, matchingFilename(AppName))
+		Expect(err).ToNot(HaveOccured())
+
+		_, err = os.Create(path.Join(appPath, matchingFilename(AppName)))
+		Expect(err).ToNot(HaveOccured())
+
+		_, err = os.Create(path.Join(appPath, "some-file"))
+		Expect(err).ToNot(HaveOccured())
+
+		zipBuildpack := Run("bash", "-c", fmt.Sprintf("cd %s && zip -r %s bin", buildpackPath, buildpackArchivePath))
+		Expect(zipBuildpack).To(ExitWith(0))
+
+		createBuildpack := Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0")
 		Expect(createBuildpack).To(Say("Creating"))
 		Expect(createBuildpack).To(Say("OK"))
 		Expect(createBuildpack).To(Say("Uploading"))
@@ -34,15 +69,20 @@ var _ = Describe("An application using an admin buildpack", func() {
 
 	Context("when the buildpack is detected", func() {
 		It("is used for the app", func() {
-			push := Cf("push", AppName, "-p", blankAppPath)
+			push := Cf("push", AppName, "-p", appPath)
 			Expect(push).To(Say("Staging with Simple Buildpack"))
 			Expect(push).To(Say("Started"))
 		})
 	})
 
 	Context("when the buildpack fails to detect", func() {
+		BeforeEach(func() {
+			err := os.Remove(path.Join(appPath, matchingFilename(AppName)))
+			Expect(err).ToNot(HaveOccured())
+		})
+
 		It("fails to stage", func() {
-			Expect(Cf("push", AppName, "-p", superBlankAppPath)).To(Say("Staging error"))
+			Expect(Cf("push", AppName, "-p", appPath)).To(Say("Staging error"))
 		})
 	})
 
@@ -52,7 +92,7 @@ var _ = Describe("An application using an admin buildpack", func() {
 		})
 
 		It("fails to stage", func() {
-			Expect(Cf("push", AppName, "-p", blankAppPath)).To(Say("Staging error"))
+			Expect(Cf("push", AppName, "-p", appPath)).To(Say("Staging error"))
 		})
 	})
 
@@ -75,7 +115,7 @@ var _ = Describe("An application using an admin buildpack", func() {
 		})
 
 		It("fails to stage", func() {
-			Expect(Cf("push", AppName, "-p", blankAppPath)).To(Say("Staging error"))
+			Expect(Cf("push", AppName, "-p", appPath)).To(Say("Staging error"))
 		})
 	})
 })
