@@ -28,8 +28,11 @@ instructions on installing `go`.
 
 ### Configuration
 
-Before running the tests, you must set `$CONFIG` to point to a `.json` file
-which contains the configuration for the tests.
+Before running the tests, you must make sure you've logged in to your
+runtime environment and targetted a space using `gcf`.
+
+You must also set `$CONFIG` to point to a `.json` file which contains the 
+configuration for the tests.
 
 There is not much to configure - for now you just need to set the domain that
 the deployment is configured to use for the apps.
