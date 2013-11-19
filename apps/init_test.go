@@ -1,19 +1,22 @@
 package apps
 
 import (
+	"fmt"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
+	ginkgoconfig "github.com/onsi/ginkgo/config"
+	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 	"github.com/vito/cmdtest"
 
-	"github.com/vito/runtime-integration/config"
-	. "github.com/vito/runtime-integration/helpers"
+	"github.com/pivotal-cf-experimental/cf-acceptance-tests/config"
+	. "github.com/pivotal-cf-experimental/cf-acceptance-tests/helpers"
 )
 
 func TestLifecycle(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Application Lifecycle")
+	RunSpecsWithDefaultAndCustomReporters(t, "Application Lifecycle", []Reporter{reporters.NewJUnitReporter(fmt.Sprintf("junit_%d.xml", ginkgoconfig.GinkgoConfig.ParallelNode))})
 }
 
 var IntegrationConfig = config.Load()

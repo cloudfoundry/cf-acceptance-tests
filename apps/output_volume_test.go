@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
 
-	. "github.com/vito/runtime-integration/helpers"
+	. "github.com/pivotal-cf-experimental/cf-acceptance-tests/helpers"
 )
 
 var _ = Describe("An application printing a bunch of output", func() {
