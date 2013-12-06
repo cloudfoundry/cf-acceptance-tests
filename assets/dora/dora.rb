@@ -2,18 +2,15 @@ ENV['RACK_ENV'] ||= 'development'
 
 require 'rubygems'
 require 'sinatra/base'
+require 'json'
 
-ID = SecureRandom.uuid.freeze
+ID = ((ENV["VCAP_APPLICATION"] && JSON.parse(ENV["VCAP_APPLICATION"])["instance_id"]) || SecureRandom.uuid).freeze
 
 require "instances"
 require "stress_testers"
 
 require 'bundler'
 Bundler.require :default, ENV['RACK_ENV'].to_sym
-
-# Unique identifier for the app's lifecycle.
-#
-# Useful for checking that an app doesn't die and come back up.
 
 $stdout.sync = true
 $stderr.sync = true
@@ -24,10 +21,6 @@ class Dora < Sinatra::Base
 
   get '/' do
     "Hi, I'm Dora!"
-  end
-
-  get '/id' do
-    ID
   end
 
   get '/find/:filename' do
