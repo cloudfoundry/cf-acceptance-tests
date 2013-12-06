@@ -51,11 +51,7 @@ describe StressTesters do
       it "should not start a new stress instance" do
         post "/instances/#{instance_id}/stress_testers"
         expect(last_response.status).to eq 409
-      end
-
-      it "should not return anything" do
-        get "/instances/#{instance_id}/stress_testers"
-        expect(last_response.status).to eq 409
+        expect(last_response.body).to match /wrong instance id/i
       end
     end
 

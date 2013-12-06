@@ -5,7 +5,7 @@ class StressTesters < Sinatra::Base
   STANDARD_OPTIONS = %w[instance_id splat captures].freeze
 
   before "/instances/:instance_id/*" do
-    halt 409 if ID != params["instance_id"]
+    halt [409, "Wrong instance id"] if ID != params["instance_id"]
   end
 
   helpers do
