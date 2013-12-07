@@ -1,6 +1,7 @@
-= Dora the Explorer
+# Dora the Explorer
 
-== Endpoints
+## Endpoints
+
 1. `GET /` Hello Dora
 1. `GET /id` The id of the instance
 1. `POST /session` Sets up the cookies for a sticky session
@@ -15,7 +16,7 @@
 1. `GET /echo/:destination/:output` Echos out the output to the destination
 1. `GET /env/:name` Prints out the env variable
 
-== Sticky Sessions
+## Sticky Sessions
 
 1. Get your sticky session by running:
 ```bash
