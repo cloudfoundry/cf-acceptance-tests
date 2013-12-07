@@ -4,10 +4,6 @@ class StressTesters < Sinatra::Base
   ACCEPTED_OPTIONS = %w[timeout cpu io vm vm-bytes vm-stride vm-hang vm-keep hdd hdd-bytes].freeze
   STANDARD_OPTIONS = %w[instance_id splat captures].freeze
 
-  before "/instances/:instance_id/*" do
-    halt [409, "Wrong instance id"] if ID != params["instance_id"]
-  end
-
   helpers do
     def run(command)
       output = []
@@ -23,11 +19,11 @@ class StressTesters < Sinatra::Base
     end
   end
 
-  get "/instances/:instance_id/stress_testers" do
+  get "/stress_testers" do
     run('pgrep stress | xargs -r ps -H')
   end
 
-  post "/instances/:instance_id/stress_testers" do
+  post "/stress_testers" do
     command = ["./stress"]
 
     params.each do |option, value|
@@ -41,7 +37,7 @@ class StressTesters < Sinatra::Base
     [201]
   end
 
-  delete "/instances/:instance_id/stress_testers" do
+  delete "/stress_testers" do
     run('pkill stress')
   end
 end
