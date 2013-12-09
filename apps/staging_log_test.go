@@ -22,6 +22,6 @@ var _ = Describe("An application being staged", func() {
 
 		Expect(push).To(Say("Installing dependencies"))
 		Expect(push).To(Say("Uploading droplet"))
-		Expect(push).To(Say("Started"))
+		Expect(push).To(Say("App started"))
 	})
 })
