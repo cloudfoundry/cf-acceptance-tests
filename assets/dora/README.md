@@ -18,6 +18,17 @@
 
 ## Sticky Sessions
 
+There is a helper script in this directory: `get_instance_cookie_jars.sh`
+
+- specify number of expected instances with `-e #`
+- specify maximum number of tries with `-m #`
+
+The script will create cookie jars in the current directory, using the filename pattern `cookie_jar_<instance_id>.cjar`
+
+To direct a curl request to a particular instance, specify `-b <cookie_jar_file>` on the curl command line.
+
+Or, to set up a sticky session manually:
+
 1. Get your sticky session by running:
 ```bash
 curl -d '' dora.yourdomain.com/session -c instance_1
@@ -30,3 +41,4 @@ curl -d '' dora.yourdomain.com/session -c instance_2
 ```bash
 curl dora.yourdomain.com/stress_tester -b instance_2
 ```
+
