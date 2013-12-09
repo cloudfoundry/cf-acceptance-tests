@@ -26,7 +26,7 @@ var _ = Describe("A running application", func() {
 		Expect(Cf("files", AppName)).To(Say("app/"))
 		Expect(Cf("files", AppName, "app/")).To(Say("config.ru"))
 		Expect(Cf("files", AppName, "app/config.ru")).To(
-			Say("run Sinatra::Application"),
+			Say("run Dora"),
 		)
 	})
 
