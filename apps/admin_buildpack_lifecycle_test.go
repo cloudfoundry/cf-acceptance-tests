@@ -71,7 +71,7 @@ var _ = Describe("An application using an admin buildpack", func() {
 		It("is used for the app", func() {
 			push := Cf("push", AppName, "-p", appPath)
 			Expect(push).To(Say("Staging with Simple Buildpack"))
-			Expect(push).To(Say("App started"))
+			Expect(push).To(Say("Started"))
 		})
 	})
 

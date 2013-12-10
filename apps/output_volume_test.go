@@ -14,7 +14,7 @@ var _ = Describe("An application printing a bunch of output", func() {
 	BeforeEach(func() {
 		AppName = RandomName()
 
-		Expect(Cf("push", AppName, "-p", doraPath)).To(Say("App started"))
+		Expect(Cf("push", AppName, "-p", doraPath)).To(Say("Started"))
 	})
 
 	AfterEach(func() {

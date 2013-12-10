@@ -19,7 +19,7 @@ var _ = Describe("Changing an app's start command", func() {
 				"-d", IntegrationConfig.AppsDomain,
 				"-c", "FOO=foo bundle exec rackup config.ru -p $PORT",
 			),
-		).To(Say("App started"))
+		).To(Say("Started"))
 	})
 
 	AfterEach(func() {
@@ -48,7 +48,7 @@ var _ = Describe("Changing an app's start command", func() {
 
 		Eventually(Curling("/env/FOO")).Should(Say("404"))
 
-		Expect(Cf("start", AppName)).To(Say("App started"))
+		Expect(Cf("start", AppName)).To(Say("Started"))
 
 		Eventually(Curling("/env/FOO")).Should(Say("bar"))
 	})
