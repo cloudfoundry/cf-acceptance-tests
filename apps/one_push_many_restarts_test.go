@@ -30,7 +30,7 @@ var _ = Describe("An application that's already been pushed", func() {
 				func() {
 					Expect(
 						Cf("push", AppName, "-p", doraPath),
-					).To(Say("Started"))
+					).To(Say("App started"))
 				},
 			},
 			cmdtest.ExpectBranch{
@@ -48,7 +48,7 @@ var _ = Describe("An application that's already been pushed", func() {
 
 		Eventually(Curling("/")).Should(Say("404"))
 
-		Expect(Cf("start", AppName)).To(Say("Started"))
+		Expect(Cf("start", AppName)).To(Say("App started"))
 
 		Eventually(Curling("/")).Should(Say("Hi, I'm Dora!"))
 	})
