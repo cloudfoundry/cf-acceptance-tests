@@ -15,14 +15,13 @@ var _ = Describe("gcf logs <app-name>", func() {
 	BeforeEach(func() {
 		AppName = RandomName()
 
-		push := Cf("push", AppName, "-p", doraPath)
-		Expect(push).To(Say("App started"))
+		PushApp(AppName, doraPath)
 
 		Eventually(Curling("/")).Should(Say("Hi, I'm Dora!"))
 	})
 
 	AfterEach(func() {
-		Expect(Cf("delete", AppName, "-f")).To(Say("OK"))
+		DeleteApp(AppName)
 	})
 
 	Context("by default", func() {
