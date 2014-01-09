@@ -27,8 +27,8 @@ var _ = Describe("gcf logs <app-name>", func() {
 
 			Eventually(Curling("/")).Should(Say("Hi, I'm Dora!"))
 
-			Expect(logs).To(SayWithTimeout("\\[DEA\\]\\x1b\\[0m     \\x1b\\[0;38mOUT Registering app instance",
-									time.Second * 10))
+			Expect(logs).To(SayWithTimeout("\\[DEA\\]\\x1b\\[0m     \\x1b\\[0;38mOUT Starting app instance",
+									time.Second * 15))
 		})
 	})
 
@@ -37,7 +37,7 @@ var _ = Describe("gcf logs <app-name>", func() {
 			Eventually(Curling("/")).Should(Say("Hi, I'm Dora!"))
 
 			logs := Cf("logs", AppName, "--recent")
-			Expect(logs).To(Say("\\[DEA\\]\\x1b\\[0m     \\x1b\\[0;38mOUT Registering app instance"))
+			Expect(logs).To(Say("\\[DEA\\]\\x1b\\[0m     \\x1b\\[0;38mOUT Starting app instance"))
 			Expect(logs).To(Say("\\[RTR\\]\\x1b\\[0m     \\x1b\\[0;38mOUT " + AppName + "." + IntegrationConfig.AppsDomain))
 		})
 	})
