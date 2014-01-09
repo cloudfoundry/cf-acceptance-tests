@@ -29,7 +29,10 @@ instructions on installing `go`.
 ### Configuration
 
 Before running the tests, you must make sure you've logged in to your
-runtime environment and targetted a space using `gcf`.
+runtime environment and targetted a space using 
+```
+  gcf target -o [your_org] -s [your_space]
+```
 
 You must also set `$CONFIG` to point to a `.json` file which contains the 
 configuration for the tests.
