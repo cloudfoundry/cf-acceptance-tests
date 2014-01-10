@@ -83,6 +83,44 @@ export CF_VERBOSE_OUTPUT=true
 ./bin/test
 ```
 
+#### Capturing CF cli output
+
+If `CF_TRACE_BASENAME` is set, then `CF_TRACE` will be set to `${CF_TRACE_BASENAME}${Ginko Node Id}.txt`
+for each invocation of `gcf`.
+
+##### Example:
+
+```sh
+export CF_TRACE_BASENAME=cf_trace_
+./bin/test -nodes=10
+```
+The following files may be created:
+
+```sh
+cf_trace_1.txt
+cf_trace_2.txt
+cf_trace_3.txt
+cf_trace_4.txt
+cf_trace_5.txt
+cf_trace_6.txt
+cf_trace_7.txt
+cf_trace_8.txt
+cf_trace_9.txt
+cf_trace_10.txt
+```
+If a test fails, look for the node id is the test output:
+
+```sh
+=== RUN TestLifecycle
+
+Running Suite: Application Lifecycle
+====================================
+Random Seed: 1389376383
+Parallel test node 2/10. Assigned 14 of 137 specs.
+```
+
+The `gcf` trace output for the tests in these specs will be in in `cf_trace_2.txt`
+
 [cf-release]: https://github.com/cloudfoundry/cf-release
 [ginkgo]: https://github.com/onsi/ginkgo
 [bosh-lite]: https://github.com/cloudfoundry/bosh-lite
