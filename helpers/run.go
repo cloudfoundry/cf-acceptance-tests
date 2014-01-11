@@ -6,8 +6,8 @@ import (
 	"os/exec"
 	"strconv"
 
-	"github.com/vito/cmdtest"
 	"github.com/onsi/ginkgo/config"
+	"github.com/vito/cmdtest"
 )
 
 func Run(executable string, args ...string) *cmdtest.Session {
