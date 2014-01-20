@@ -13,6 +13,7 @@
 1. `GET /delay/:seconds` Waits for n seconds
 1. `GET /sigterm/:signal` Sends the specfied signal
 1. `GET /logspew/:bytes` Spews out n bytes to the logs
+1. `GET /loglines/:linecount` Writes n lines to stdout, each line contains a timestamp with nanoseconds
 1. `GET /echo/:destination/:output` Echos out the output to the destination
 1. `GET /env/:name` Prints out the env variable
 

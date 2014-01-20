@@ -8,7 +8,7 @@ ID = ((ENV["VCAP_APPLICATION"] && JSON.parse(ENV["VCAP_APPLICATION"])["instance_
 
 require "instances"
 require "stress_testers"
-
+require "log_utils"
 require 'bundler'
 Bundler.require :default, ENV['RACK_ENV'].to_sym
 
@@ -18,6 +18,7 @@ $stderr.sync = true
 class Dora < Sinatra::Base
   use Instances
   use StressTesters
+  use LogUtils
 
   get '/' do
     "Hi, I'm Dora!"
