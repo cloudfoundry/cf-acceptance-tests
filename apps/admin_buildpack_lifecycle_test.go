@@ -34,24 +34,24 @@ var _ = Describe("An application using an admin buildpack", func() {
 		AppName = RandomName()
 
 		tmpdir, err := ioutil.TempDir(os.TempDir(), "matching-app")
-		Expect(err).ToNot(HaveOccured())
+		Expect(err).ToNot(HaveOccurred())
 
 		appPath = tmpdir
 
 		tmpdir, err = ioutil.TempDir(os.TempDir(), "matching-buildpack")
-		Expect(err).ToNot(HaveOccured())
+		Expect(err).ToNot(HaveOccurred())
 
 		buildpackPath = tmpdir
 		buildpackArchivePath = path.Join(buildpackPath, "buildpack.zip")
 
 		err = buildpack_generator.GenerateBuildpack(buildpackPath, matchingFilename(AppName))
-		Expect(err).ToNot(HaveOccured())
+		Expect(err).ToNot(HaveOccurred())
 
 		_, err = os.Create(path.Join(appPath, matchingFilename(AppName)))
-		Expect(err).ToNot(HaveOccured())
+		Expect(err).ToNot(HaveOccurred())
 
 		_, err = os.Create(path.Join(appPath, "some-file"))
-		Expect(err).ToNot(HaveOccured())
+		Expect(err).ToNot(HaveOccurred())
 
 		zipBuildpack := Run("bash", "-c", fmt.Sprintf("cd %s && zip -r %s bin", buildpackPath, buildpackArchivePath))
 		Expect(zipBuildpack).To(ExitWith(0))
@@ -78,7 +78,7 @@ var _ = Describe("An application using an admin buildpack", func() {
 	Context("when the buildpack fails to detect", func() {
 		BeforeEach(func() {
 			err := os.Remove(path.Join(appPath, matchingFilename(AppName)))
-			Expect(err).ToNot(HaveOccured())
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("fails to stage", func() {

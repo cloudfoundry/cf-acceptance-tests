@@ -34,6 +34,6 @@ func ApiRequest(method, endpoint string, response interface{}, data ...string) {
 
 	if response != nil {
 		err := json.Unmarshal(request.FullOutput(), response)
-		Expect(err).ToNot(HaveOccured())
+		Expect(err).ToNot(HaveOccurred())
 	}
 }

@@ -36,7 +36,7 @@ var _ = Describe("A running application", func() {
 			return Cf("events", AppName)
 		}, 10).Should(Say("exited"))
 	})
-	
+
 	Context("with multiple instances", func() {
 		BeforeEach(func() {
 			Expect(
