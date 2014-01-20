@@ -7,9 +7,9 @@ import (
 )
 
 func PushApp(appName string, appPath string) {
-	Expect(Cf("push", appName, "-p", appPath)).To(SayWithTimeout("App started", time.Minute*1))
+	Expect(Cf("push", appName, "-p", appPath)).To(SayWithTimeout("App started", time.Minute*2))
 }
 
 func DeleteApp(appName string) {
-	Expect(Cf("delete", appName, "-f")).To(SayWithTimeout("OK", time.Minute*1))
+	Expect(Cf("delete", appName, "-f")).To(SayWithTimeout("OK", time.Minute*2))
 }
