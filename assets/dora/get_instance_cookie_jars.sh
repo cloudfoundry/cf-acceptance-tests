@@ -1,20 +1,24 @@
 #!/bin/bash
 
+CJAR_DIR=.
 CJAR_TMP_FILENAME=cookie_jar.tmp
 EXPECTED_INSTANCES=
 MAXIMUM_RETRIES=10
 ACTUAL_INSTANCES=0
 TRIES=0
 
-usage() { echo "Usage: $0 -e <expected number of instances>  [-m <maximum number of tries - default 10>]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 -e <expected number of instances>  [-m <maximum number of tries - default 10>] [-d <cookie jar directory - default .>]" 1>&2; exit 1; }
 
-while getopts ":e:m:" o; do
+while getopts ":e:m:d:" o; do
     case "${o}" in
         e)
             EXPECTED_INSTANCES=${OPTARG}
             ;;
         m)
             MAXIMUM_RETRIES=${OPTARG}
+            ;;
+        d)
+            CJAR_DIR=${OPTARG}
             ;;
         *)
             usage
@@ -34,7 +38,7 @@ do
     curl -s -X POST dora.sunset.cf-app.com/session -c $CJAR_TMP_FILENAME > /dev/null || exit $?
     instance=`grep JSESSIONID cookie_jar.tmp | cut -f7`
     echo "instance >>$instance<<"
-    CJAR=cookie_jar_$instance.cjar
+    CJAR=${CJAR_DIR}/cookie_jar_$instance.cjar
 
 
     if [ -f $CJAR ]; then

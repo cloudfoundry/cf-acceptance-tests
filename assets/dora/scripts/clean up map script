@@ -1,0 +1,47 @@
+clean up map script
+script the actual running of the performance test
+[done] add log endpoint to dora
+
+performance test:
+start drain server on vm
+
+gcf delete-service sc -f
+gcf cups sc -l syslog://10.10.16.15:4567
+
+
+
+gcf push dora
+gcf bind-service dora sc
+
+
+
+gcf start dora
+scripts/scale_dora -i 8
+
+rm cookie_jars/*
+./get_instance_cookie_jars.sh -e 8 -m 40 -d cookie_jars
+scripts/map_cookie_jars_to_instances.sh > capture_map
+cjars=`cat capture_map  | sort -k 9 | head -2 | awk '{print $1}'`
+
+
+
+setup complete====================================================
+
+cjar1=`echo $cjars | awk '{print $1}'`
+cjar2=`echo $cjars | awk '{print $2}'`
+
+
+# run test
+
+curl dora.sunset.cf-app.com/log/sleep/100000 -b $cjar1 > /dev/null 2>&1 &
+sleep 5
+curl dora.sunset.cf-app.com/loglines/1000/TAG1TAG -b $cjar2
+sleep 5 
+curl dora.sunset.cf-app.com/log/stop -b $cjar1
+
+
+# grab logs
+
+cd drain_logs
+bosh logs router_z1
+tar xvfz router_z1*tgz

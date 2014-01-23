@@ -69,5 +69,13 @@ class Dora < Sinatra::Base
     ENV[params[:name]]
   end
 
+  get '/env' do
+    ENV.to_hash.to_s
+  end
+
+  get '/net' do
+    `ifconfig`
+  end
+
   run! if app_file == $0
 end
