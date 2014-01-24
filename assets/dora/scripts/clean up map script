@@ -1,4 +1,4 @@
-clean up map script
+[done] clean up map script
 script the actual running of the performance test
 [done] add log endpoint to dora
 
@@ -27,6 +27,7 @@ cjars=`cat capture_map  | sort -k 9 | head -2 | awk '{print $1}'`
 
 setup complete====================================================
 
+# pick 2 instances on a single dea
 cjar1=`echo $cjars | awk '{print $1}'`
 cjar2=`echo $cjars | awk '{print $2}'`
 

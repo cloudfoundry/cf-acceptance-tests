@@ -2,10 +2,10 @@
 require "json"
 DEFAULT_APPLICATION_NAME = "dora"
 DEFAULT_APPLICATION_URL = "dora.sunset.cf-app.com"
-app_name = ARGV[0] || DEFAULT_APPLICATION_NAME
-app_url = ARGV[1] || DEFAULT_APPLICATION_URL
+app_name = ENV['EXPERIMENT_APP_NAME'] || DEFAULT_APPLICATION_NAME
+app_url = ENV['EXPERIMENT_APP_URL'] || DEFAULT_APPLICATION_URL
 
-puts "Using app '#{app_name}' on #{app_url}."
+STDERR.puts "Using app '#{app_name}' on #{app_url}."
 instances_json = `CF_TRACE=true gcf app #{app_name} | grep fds_quota`
 
 instance_stats = JSON.parse(instances_json)
