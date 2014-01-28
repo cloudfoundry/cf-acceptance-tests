@@ -13,6 +13,28 @@ describe LogUtils do
     end
   end
 
+  describe "GET /log/sleep/running" do
+    it "should start the logging" do
+      get "/log/sleep/running"
+      expect(last_response.body).to eq "false"
+      get "/log/sleep/1/limit/1"
+      get "/log/sleep/running"
+      expect(last_response.body).to eq "false"
+    end
+
+    it "should show the current state if it running" do
+      get "/log/sleep/running"
+      expect(last_response.body).to eq "false"
+      child_pid = fork do
+        get "/log/sleep/1000000"
+        exit
+      end
+      sleep 1
+      get "/log/sleep/running"
+      expect(last_response.body).to eq "true"
+    end
+  end
+
   describe "GET /log/sleep/count" do
     it "should return 0 if no loglines were created" do
       get "/log/sleep/count"

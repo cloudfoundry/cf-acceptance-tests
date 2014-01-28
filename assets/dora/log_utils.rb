@@ -1,9 +1,13 @@
+require "logging_service"
+
 class LogUtils < Sinatra::Base
 
   STDOUT.sync = true
 
   $run = false
   $sequence_number = 0
+  $logging_service = ::LoggingService.new
+
   get "/loglines/:linecount" do
     produce_log_output(params[:linecount])
     "logged #{params[:linecount]} line to stdout"
@@ -15,19 +19,22 @@ class LogUtils < Sinatra::Base
   end
 
   get '/log/sleep/count' do
-    $sequence_number.to_s
+    $logging_service.log_message_count
   end
 
+  get '/log/sleep/running' do
+    $logging_service.running
+  end
 
   get '/log/sleep/:logspeed/limit/:limit' do
     limit = params[:limit].to_i
     logspeed = params[:logspeed]
-    produce_logspeed_output(limit, logspeed)
+    $logging_service.produce_logspeed_output(limit, logspeed, request.host)
   end
 
   get '/log/sleep/:logspeed' do
     logspeed = params[:logspeed]
-    produce_logspeed_output(0, logspeed)
+    $logging_service.produce_logspeed_output(0, logspeed, request.host)
   end
 
   get '/log/bytesize/:bytesize' do
@@ -40,8 +47,7 @@ class LogUtils < Sinatra::Base
   end
 
   get '/log/stop' do
-    $run = false
-    STDOUT.puts("Stopped logs #{Time.now}")
+    $logging_service.stop
   end
 
   private
@@ -49,18 +55,6 @@ class LogUtils < Sinatra::Base
     linecount.to_i.times do |i|
       STDOUT.puts "#{Time.now.strftime("%FT%T.%N%:z")} line #{i} #{tag}"
       $stdout.flush
-    end
-  end
-
-  def produce_logspeed_output(limit, logspeed)
-    $run = true
-    $sequence_number = 1
-    STDOUT.puts("Muahaha... let's go. Waiting #{logspeed.to_f/1000000.to_f} seconds between loglines. Logging 'Muahaha...' every time.")
-    while $run do
-      sleep(logspeed.to_f/1000000.to_f)
-      STDOUT.puts("Log: #{request.host} Muahaha...#{$sequence_number}...#{Time.now}")
-      break if (limit > 0) && ($sequence_number >= limit)
-      $sequence_number += 1
     end
   end
 end

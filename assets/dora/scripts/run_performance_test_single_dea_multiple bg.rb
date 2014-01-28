@@ -46,6 +46,16 @@ pid=[]
 		Process.wait pid[b]
 	end
 	sleep 5
+
+	total_line_count = 0
+
+	background_count.times do |b|
+		line_count=`curl #{app_url}/log/sleep/count -b #{cjars[b]}`
+		puts "#{line_count} lines for background job #{b}"
+		total_line_count = total_line_count + line_count.to_i
+	end	
+
+	puts "total line count is #{total_line_count}"
 end
 
 STDERR.puts "all done"
