@@ -1,7 +1,7 @@
 class LoggingService
 
   def initialize
-    @running = false
+    @run = false
     @sequence_number = 0
     @output = STDOUT
   end
