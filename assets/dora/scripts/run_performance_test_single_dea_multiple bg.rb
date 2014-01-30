@@ -25,21 +25,24 @@ pid=[]
 
 8.times do |background_count|
 	STDERR.puts "starting experiment with #{background_count} log/sleep"
+        STDERR.puts "placing marker line"
+        system("curl -s #{app_url}/loglines/1/MARKER -b #{cjars[7]}")
+        sleep 1
 
 	background_count.times do |b|
-		pid[b] = Process.spawn("curl #{app_url}/log/sleep/10000 -b #{cjars[b]}")
+		pid[b] = Process.spawn("curl -s #{app_url}/log/sleep/1000 -b #{cjars[b]}")
 	end
 	sleep 5
 
 	100.times do |iteration_count|
-		system("curl #{app_url}/loglines/1000/BG#{background_count}ITER#{iteration_count} -b #{cjars[7]}")
+		system("curl -s #{app_url}/loglines/1000/BG#{background_count}ITER#{iteration_count} -b #{cjars[7]}")
 		sleep 2
 	end
 	sleep 5
 
 
 	background_count.times do |b|
-		pid[b] = Process.spawn("curl #{app_url}/log/stop -b #{cjars[b]}")
+		pid[b] = Process.spawn("curl -s #{app_url}/log/stop -b #{cjars[b]}")
 	end
 
 	background_count.times do |b|
@@ -50,7 +53,7 @@ pid=[]
 	total_line_count = 0
 
 	background_count.times do |b|
-		line_count=`curl #{app_url}/log/sleep/count -b #{cjars[b]}`
+		line_count=`curl -s #{app_url}/log/sleep/count -b #{cjars[b]}`
 		puts "#{line_count} lines for background job #{b}"
 		total_line_count = total_line_count + line_count.to_i
 	end	
