@@ -2,3 +2,4 @@ github.com/onsi/ginkgo	54e52cfa3a12cac41c5e9b9e90c8107d6bb0637b
 github.com/onsi/gomega	d7685fbd45fb7bef327b43ca2781368c68bf72b7
 github.com/vito/cmdtest	f47af44b2ab0551737a58aa0c8504a445c8836fd
 github.com/nu7hatch/gouuid	179d4d0c4d8d407a32af483c2354df1d2c91e6c3
+github.com/pivotal-cf-experimental/cf-test-helpers	9d7cc01f16ba16d572be5be3dc5d95902f5bd8ff

@@ -5,7 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
 
-	. "github.com/pivotal-cf-experimental/cf-acceptance-tests/helpers"
+	. "github.com/pivotal-cf-experimental/cf-test-helpers"
 )
 
 var _ = Describe("An application being staged", func() {

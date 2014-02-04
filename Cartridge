@@ -2,3 +2,4 @@ github.com/onsi/ginkgo origin/master
 github.com/onsi/gomega origin/master
 github.com/vito/cmdtest origin/master
 github.com/nu7hatch/gouuid origin/master
+github.com/pivotal-cf-experimental/cf-test-helpers origin/master

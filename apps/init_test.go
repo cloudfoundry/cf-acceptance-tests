@@ -11,7 +11,7 @@ import (
 	"github.com/vito/cmdtest"
 
 	"github.com/pivotal-cf-experimental/cf-acceptance-tests/config"
-	. "github.com/pivotal-cf-experimental/cf-acceptance-tests/helpers"
+	. "github.com/pivotal-cf-experimental/cf-test-helpers"
 )
 
 func TestLifecycle(t *testing.T) {
