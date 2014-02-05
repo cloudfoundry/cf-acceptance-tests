@@ -11,7 +11,9 @@ import (
 	. "github.com/vito/cmdtest/matchers"
 
 	"github.com/pivotal-cf-experimental/cf-acceptance-tests/buildpack_generator"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers"
+	. "github.com/pivotal-cf-experimental/cf-test-helpers/runner"
+	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
+	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 )
 
 var _ = Describe("An application using an admin buildpack", func() {

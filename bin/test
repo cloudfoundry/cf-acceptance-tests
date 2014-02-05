@@ -14,7 +14,7 @@ if [ -z "$GOPATH" ]; then
 fi
 
 go get github.com/vito/gocart
-gocart install
+gocart -r install
 
 go install github.com/onsi/ginkgo/ginkgo
 

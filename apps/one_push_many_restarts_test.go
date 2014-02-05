@@ -17,7 +17,7 @@ import (
 	"github.com/vito/cmdtest"
 	. "github.com/vito/cmdtest/matchers"
 
-	. "github.com/pivotal-cf-experimental/cf-test-helpers"
+	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 )
 
 var _ = Describe("An application that's already been pushed", func() {
