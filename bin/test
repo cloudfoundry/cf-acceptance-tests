@@ -13,7 +13,7 @@ if [ -z "$GOPATH" ]; then
   exit 1
 fi
 
-go get github.com/vito/gocart
+go get -u github.com/vito/gocart
 gocart -r install
 
 go install github.com/onsi/ginkgo/ginkgo
