@@ -23,7 +23,7 @@ var _ = Describe("loggregator", func() {
 	})
 
 	Context("gcf logs", func() {
-		It("blocks and exercises basic loggregator behavior", func() {
+		PIt("blocks and exercises basic loggregator behavior", func() {
 			logs := Cf("logs", AppName)
 
 			Expect(logs).To(SayWithTimeout("Connected, tailing logs for app", time.Second*15))
