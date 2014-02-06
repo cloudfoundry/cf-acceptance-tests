@@ -38,10 +38,10 @@ var _ = Describe("loggregator", func() {
 		It("makes loggregator buffer and dump log messages", func() {
 		   	logs := Cf("logs", AppName, "--recent")
 
-			Expect(logs).To(Say("Connected, dumping recent logs for app"))
+			Expect(logs).To(SayWithTimeout("Connected, dumping recent logs for app", time.Second*15))
 
-			Expect(logs).To(Say("OUT Created app"))
-			Expect(logs).To(Say("OUT Starting app instance"))
+			Expect(logs).To(SayWithTimeout("OUT Created app", time.Second*15))
+			Expect(logs).To(SayWithTimeout("OUT Starting app instance", time.Second*15))
 		})
 	})
 })
