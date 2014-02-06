@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-var _ = Describe("loggregator", func() {
+var _ = PDescribe("loggregator", func() {
 	BeforeEach(func() {
 		AppName = RandomName()
 
