@@ -17,8 +17,8 @@ class ServiceBroker < Sinatra::Base
 
   @@catalog_1 = {
     'services' => [
-      {'name'=>'test',
-       'id'=> '1234',
+      {'name'=>'This is so unique',
+       'id'=> 'COMpleteyUniQue',
        'description'=>'fake service',
        'tags'=>['no-sql', 'relational'],
        'max_db_per_node'=>5,
@@ -35,7 +35,7 @@ class ServiceBroker < Sinatra::Base
        'plans' => [
          {
            'name'=>'5tb',
-           'id'=>'2451fa22-df16-4c10-ba6e-1f682d3dcdc9', #randomize
+           'id'=>'2451fa22-df16-4c10-ba6e-1f682d3ahsjd', #randomize
            'description'=>'Shared fake Server, 5tb persistent disk, 40 max concurrent connections',
            'max_storage_tb'=>5,
            'metadata' => {

@@ -9,56 +9,36 @@ import (
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 )
 
-type Service struct {
-	Meta		metadata
-	Entity 	entity
-}
-
-type Entity struct {
-	Label							string
-	Provider					string
-	Url								string
-	Description				string
-	LongDescription 	string
-	Version						string
-	InfoUrl						string
-	Active						bool
-	Bindable					bool
-	UniqueId					int
-	Extra							extra
-	requires					*Array
-	DocumentationUrl	string
-	ServicesPlanUrl		string
-}
 
 
 var _ = Describe("Application", func() {
-	Before(func() {
+	BeforeEach(func() {
 		AppName = RandomName()
 
 		Expect(Cf("push", AppName, "-p", serviceBrokerPath)).To(Say("App started"))
 	})
 
-	After(func() {
+	AfterEach(func() {
 		Expect(Cf("delete", AppName, "-f")).To(Say("OK"))
+		Expect(Cf("delete-service-broker", AppName, "-f")).To(Say("OK"))
+
 	})
 
 	Describe("adding the broker", func() {
 		It("adds the service broker to CF", func() {
-			var appUri = "http://" + AppName + ".dijon.cf-apps.com"
-			Expect(Cf("create-service-broker", AppName, "username", "password", appUri)).To(Say(
-			 "Creating service broker test-broker as services...\nOK"))
+			var appUri = "http://" + AppName + ".dijon-app.cf-app.com"
+			Expect(Cf("create-service-broker", AppName, "username", "password", appUri)).To(Say("OK"))
 		})
 	})
 
-	Describe("checking the catalog", func() {
-		It("validates the catalog with CF", func() {
-				var curlUri = "/v2/services"
-				var output = Cf("curl", curlUri)
+//	Describe("checking the catalog", func() {
+//		It("validates the catalog with CF", func() {
+//				var curlUri = "/v2/services"
+//				var output = Cf("curl", curlUri)
 
 //				Expect(Cf("create-service-broker", AppName, "username", "password", appUri)).To(Say("OK"))
-			})
-	})
+//		})
+//	})
 })
 
 
