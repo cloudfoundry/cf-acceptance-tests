@@ -51,6 +51,17 @@ EOF
 
 ### Running
 
+To run the CF Acceptance tests, you need to be logged in and targeting an empty space and org (we suggest the `cats-space` inside the `cats-org`).
+
+```sh
+gcf api api.10.244.0.34.xip.io
+gcf auth admin admin
+gcf create-org cats-org
+gcf target -o cats-org
+gcf create-space cats-space
+gcf target -o cats-org -s cats-space
+```
+
 ```sh
 export CONFIG=$PWD/integration_config.json
 ./bin/test [ginkgo arguments ...]
