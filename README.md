@@ -60,9 +60,6 @@ gcf create-org cats-org
 gcf target -o cats-org
 gcf create-space cats-space
 gcf target -o cats-org -s cats-space
-```
-
-```sh
 export CONFIG=$PWD/integration_config.json
 ./bin/test [ginkgo arguments ...]
 ```
