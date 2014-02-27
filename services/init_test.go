@@ -3,6 +3,9 @@ package services
 import (
 	"fmt"
 	"testing"
+	"encoding/json"
+	"path/filepath"
+	"io/ioutil"
 
 	. "github.com/onsi/ginkgo"
 	ginkgoconfig "github.com/onsi/ginkgo/config"
@@ -14,13 +17,28 @@ import (
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/runner"
 )
 
-func TestServices(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecsWithDefaultAndCustomReporters(t, "Services", []Reporter{reporters.NewJUnitReporter(fmt.Sprintf("junit_%d.xml", ginkgoconfig.GinkgoConfig.ParallelNode))})
+type ServiceBrokerConfigData struct {
+	FirstBrokerServiceLabel string `json:"first_broker_service_label"`
+	FirstBrokerPlanName     string `json:"first_broker_plan_name"`
+	SecondBrokerServiceLabel string `json:"second_broker_service_label"`
+	SecondBrokerPlanName     string `json:"second_broker_plan_name"`
 }
 
 var IntegrationConfig = config.Load()
-var serviceBrokerPath = "../assets/service_broker"
+var serviceBrokerPath string
+var ServiceBrokerConfigPath string
+var ServiceBrokerConfig ServiceBrokerConfigData
+
+func TestServices(t *testing.T) {
+	serviceBrokerPath = "../assets/service_broker"
+	ServiceBrokerConfigPath, _ = filepath.Abs("./config.json")
+	ServiceBrokerConfig = ServiceBrokerConfigData{}
+	configJSON, _ := ioutil.ReadFile(ServiceBrokerConfigPath)
+	json.Unmarshal(configJSON, &ServiceBrokerConfig)
+
+	RegisterFailHandler(Fail)
+	RunSpecsWithDefaultAndCustomReporters(t, "Services", []Reporter{reporters.NewJUnitReporter(fmt.Sprintf("junit_%d.xml", ginkgoconfig.GinkgoConfig.ParallelNode))})
+}
 
 func AppUri(appName string, endpoint string) string {
 	return "http://" + appName + "." + IntegrationConfig.AppsDomain + endpoint

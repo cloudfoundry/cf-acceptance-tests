@@ -8,10 +8,7 @@ import (
 type IntegrationConfig struct {
 	AppsDomain         string `json:"apps_domain"`
 	PersistentAppHost  string `json:"persistent_app_host"`
-	FirstBrokerServiceLabel string `json:"first_broker_service_label"`
-	FirstBrokerPlanName     string `json:"first_broker_plan_name"`
-	SecondBrokerServiceLabel string `json:"second_broker_service_label"`
-	SecondBrokerPlanName     string `json:"second_broker_plan_name"`}
+}
 
 func Load() (config IntegrationConfig) {
 	path := os.Getenv("CONFIG")
