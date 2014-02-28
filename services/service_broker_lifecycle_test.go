@@ -2,7 +2,6 @@ package services
 
 import (
 	"os"
-	"io/ioutil"
 	"encoding/json"
 	"time"
 
@@ -36,15 +35,14 @@ type ServicePlanResponse struct {
 	}
 }
 
-var _ = PDescribe("Service Broker Lifecycle", func() {
+var _ = Describe("Service Broker Lifecycle", func() {
 	var appName string
 
 	BeforeEach(func() {
 		appName = RandomName()
-		Cf("login", "-u", os.Getenv("ADMIN_USER"), "-p", os.Getenv("ADMIN_PASSWORD"))
-		Cf("target", "-o", os.Getenv("CF_ORG"), "-s", os.Getenv("CF_SPACE"))
+		Cf("login", "-u", os.Getenv("ADMIN_USER"), "-p", os.Getenv("ADMIN_PASSWORD"), "-o", os.Getenv("CF_ORG"), "-s", os.Getenv("CF_SPACE"))
 		Expect(Cf("push", appName, "-p", serviceBrokerPath)).To(Say("App started"))
-		configJSON, _ := ioutil.ReadFile(ServiceBrokerConfigPath)
+		configJSON, _ := json.Marshal(ServiceBrokerConfig)
 		Expect(Cf("set-env", appName, "CONFIG", string(configJSON))).To(ExitWithTimeout(0, 2*time.Second))
 		Expect(Cf("restart", appName)).To(Say("App started"))
 	})
@@ -52,15 +50,14 @@ var _ = PDescribe("Service Broker Lifecycle", func() {
 	AfterEach(func() {
 		Expect(Cf("delete-service-broker", appName, "-f")).To(ExitWithTimeout(0, 2*time.Second))
 		Expect(Cf("delete", appName, "-f")).To(ExitWithTimeout(0, 2*time.Second))
-		Cf("login", "-u", os.Getenv("CF_USER"), "-p", os.Getenv("CF_USER_PASSWORD"))
-		Cf("target", "-o", os.Getenv("CF_ORG"), "-s", os.Getenv("CF_SPACE"))
+		Cf("login", "-u", os.Getenv("CF_USER"), "-p", os.Getenv("CF_USER_PASSWORD"), "-o", os.Getenv("CF_ORG"), "-s", os.Getenv("CF_SPACE"))
 	})
 
 	It("confirms correct behavior in the lifecycle of a service broker", func() {
 		defer Recover() // Catches panic thrown by Require expectations
 
 		// Adding the service broker
-		Require(Cf("create-service-broker", appName, "username", "password", AppUri(appName, ""))).To(ExitWithTimeout(0, 2*time.Second))
+		Require(Cf("create-service-broker", appName, "username", "password", AppUri(appName, ""))).To(ExitWithTimeout(0, 30*time.Second))
 		Expect(Cf("service-brokers")).To(Say(appName))
 
 		// Confirming the plans are not yet public
@@ -90,7 +87,7 @@ var _ = PDescribe("Service Broker Lifecycle", func() {
 
 		// Changing the catalog on the broker
 		Eventually(Curling(AppUri(appName,"/v2/catalog"), "-X", "POST", "-i")).Should(Say("HTTP/1.1 200 OK"))
-		Require(Cf("update-service-broker", appName, "username", "password", AppUri(appName, ""))).To(ExitWithTimeout(0, 2*time.Second))
+		Require(Cf("update-service-broker", appName, "username", "password", AppUri(appName, ""))).To(ExitWithTimeout(0, 30*time.Second))
 
 		// Confirming the changes to the broker show up in the marketplace
 		session = Cf("marketplace")
