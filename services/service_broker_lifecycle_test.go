@@ -1,7 +1,6 @@
 package services
 
 import (
-	"os"
 	"encoding/json"
 	"time"
 	"fmt"
@@ -41,7 +40,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 
 	BeforeEach(func() {
 		appName = RandomName()
-		Cf("login", "-u", os.Getenv("ADMIN_USER"), "-p", os.Getenv("ADMIN_PASSWORD"), "-o", os.Getenv("CF_ORG"), "-s", os.Getenv("CF_SPACE"))
+		LoginAsAdmin()
 		Expect(Cf("push", appName, "-p", serviceBrokerPath)).To(Say("App started"))
 		configJSON, _ := json.Marshal(ServiceBrokerConfig)
 		Expect(Cf("set-env", appName, "CONFIG", string(configJSON))).To(ExitWithTimeout(0, 2*time.Second))
@@ -51,7 +50,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 	AfterEach(func() {
 		Expect(Cf("delete-service-broker", appName, "-f")).To(ExitWithTimeout(0, 2*time.Second))
 		Expect(Cf("delete", appName, "-f")).To(ExitWithTimeout(0, 2*time.Second))
-		Cf("login", "-u", os.Getenv("CF_USER"), "-p", os.Getenv("CF_USER_PASSWORD"), "-o", os.Getenv("CF_ORG"), "-s", os.Getenv("CF_SPACE"))
+		LoginAsUser()
 	})
 
 	It("confirms correct behavior in the lifecycle of a service broker", func() {
