@@ -35,7 +35,7 @@ type ServicePlanResponse struct {
 	}
 }
 
-var _ = Describe("Service Broker Lifecycle", func() {
+var _ = PDescribe("Service Broker Lifecycle", func() {
 	var appName string
 
 	BeforeEach(func() {
