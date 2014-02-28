@@ -4,6 +4,7 @@ import (
 	"os"
 	"encoding/json"
 	"time"
+	"fmt"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -35,7 +36,7 @@ type ServicePlanResponse struct {
 	}
 }
 
-var _ = PDescribe("Service Broker Lifecycle", func() {
+var _ = Describe("Service Broker Lifecycle", func() {
 	var appName string
 
 	BeforeEach(func() {
@@ -66,7 +67,8 @@ var _ = PDescribe("Service Broker Lifecycle", func() {
 		Expect(session).NotTo(Say(ServiceBrokerConfig.FirstBrokerPlanName))
 
 		// Making the plans public
-		session = Cf("curl", "/v2/services?inline-relations-depth=1")
+		url := fmt.Sprintf("/v2/services?inline-relations-depth=1&q=label:%s", ServiceBrokerConfig.FirstBrokerServiceLabel)
+		session = Cf("curl", url)
 		structure := ServicesResponse{}
 		json.Unmarshal(session.FullOutput(), &structure)
 		for _, service := range structure.Resources {
