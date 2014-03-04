@@ -35,6 +35,7 @@ var _ = Describe("Purging service offerings", func() {
 
 		instanceName := "purge-offering-instance"
 
+		Expect(Cf("marketplace")).To(Say(broker.Plan.Name))
 		Expect(Cf("create-service", broker.Service.Name, broker.Plan.Name, instanceName)).To(ExitWith(0))
 		Expect(Cf("services")).To(Say(instanceName))
 		Expect(Cf("delete", broker.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
