@@ -25,4 +25,12 @@ describe ServiceBroker do
       expect(second_response.body).to_not eq(first_response.body)
     end
   end
+
+  describe "PUT /v2/service_instances/:id" do
+    it 'returns 201 with an empty JSON body' do
+      put '/v2/service_instances/fakeIDThough'
+      expect(last_response.status).to eq(201)
+      expect(JSON.parse(last_response.body)).to be_empty
+    end
+  end
 end

@@ -1,0 +1,113 @@
+package helpers
+
+import (
+	"encoding/json"
+	"fmt"
+	"path/filepath"
+	"time"
+
+	. "github.com/onsi/gomega"
+	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
+	"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
+	. "github.com/vito/cmdtest/matchers"
+)
+
+type ServiceBroker struct {
+	Name    string
+	Path    string
+	Service struct {
+		Name string `json:"name"`
+		ID   string `json:"id"`
+	}
+	Plan struct {
+		Name string `json:"name"`
+		ID   string `json:"id"`
+	}
+}
+
+type ServicesResponse struct {
+	Resources []ServiceResponse
+}
+
+type ServiceResponse struct {
+	Entity struct {
+		Label        string
+		ServicePlans []ServicePlanResponse `json:"service_plans"`
+	}
+}
+
+type ServicePlanResponse struct {
+	Entity struct {
+		Name   string
+		Public bool
+	}
+	Metadata struct {
+		Url string
+	}
+}
+
+func NewServiceBroker(name string) ServiceBroker {
+	b := ServiceBroker{}
+	b.Path, _ = filepath.Abs("../assets/service_broker/")
+	b.Name = name
+	b.Service.Name = generator.RandomName()
+	b.Service.ID = generator.RandomName()
+	b.Plan.Name = generator.RandomName()
+	b.Plan.ID = generator.RandomName()
+	return b
+}
+
+func (b ServiceBroker) Push() {
+	Expect(Cf("push", b.Name, "-p", b.Path)).To(Say("App started"))
+}
+
+func (b ServiceBroker) Configure() {
+	Expect(Cf("set-env", b.Name, "CONFIG", b.ToJSON())).To(ExitWithTimeout(0, 2*time.Second))
+	b.Restart()
+}
+
+func (b ServiceBroker) Restart() {
+	Expect(Cf("restart", b.Name)).To(ExitWithTimeout(0, 60*time.Second))
+}
+
+func (b ServiceBroker) Create() {
+	Require(Cf("create-service-broker", b.Name, "username", "password", AppUri(b.Name, ""))).To(ExitWithTimeout(0, 30*time.Second))
+	Expect(Cf("service-brokers")).To(Say(b.Name))
+}
+
+func (b ServiceBroker) Destroy() {
+	Expect(Cf("delete-service-broker", b.Name, "-f")).To(ExitWithTimeout(0, 2*time.Second))
+	Expect(Cf("delete", b.Name, "-f")).To(ExitWithTimeout(0, 2*time.Second))
+}
+
+func (b ServiceBroker) ToJSON() string {
+	attributes := make(map[string]interface{})
+	attributes["service"] = b.Service
+	attributes["plan"] = b.Plan
+	jsonBytes, _ := json.Marshal(attributes)
+	return string(jsonBytes)
+}
+
+func (b ServiceBroker) PublicizePlans() {
+	url := fmt.Sprintf("/v2/services?inline-relations-depth=1&q=label:%s", b.Service.Name)
+	session := Cf("curl", url)
+	structure := ServicesResponse{}
+	json.Unmarshal(session.FullOutput(), &structure)
+	for _, service := range structure.Resources {
+		if service.Entity.Label == b.Service.Name {
+			for _, plan := range service.Entity.ServicePlans {
+				if plan.Entity.Name == b.Plan.Name {
+					b.PublicizePlan(plan.Metadata.Url)
+					break
+				}
+			}
+		}
+	}
+}
+
+func (b ServiceBroker) PublicizePlan(url string) {
+	jsonMap := make(map[string]bool)
+	jsonMap["public"] = true
+	planJson, _ := json.Marshal(jsonMap)
+	Expect(Cf("curl", url, "-X", "PUT", "-d", string(planJson))).To(ExitWithTimeout(0, 5*time.Second))
+}
