@@ -6,8 +6,8 @@ import (
 )
 
 type IntegrationConfig struct {
-	AppsDomain         string `json:"apps_domain"`
-	PersistentAppHost  string `json:"persistent_app_host"`
+	AppsDomain        string `json:"apps_domain"`
+	PersistentAppHost string `json:"persistent_app_host"`
 }
 
 func Load() (config IntegrationConfig) {

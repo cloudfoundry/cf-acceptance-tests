@@ -2,8 +2,8 @@ package helpers
 
 import (
 	. "github.com/onsi/gomega"
-	. "github.com/vito/cmdtest/matchers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
+	. "github.com/vito/cmdtest/matchers"
 	"time"
 )
 

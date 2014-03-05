@@ -2,9 +2,9 @@ package apps
 
 import (
 	"fmt"
-	"testing"
 	"os"
 	"strconv"
+	"testing"
 
 	. "github.com/onsi/ginkgo"
 	ginkgoconfig "github.com/onsi/ginkgo/config"
@@ -14,8 +14,8 @@ import (
 	. "github.com/vito/cmdtest/matchers"
 
 	"github.com/pivotal-cf-experimental/cf-acceptance-tests/config"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/runner"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
+	. "github.com/pivotal-cf-experimental/cf-test-helpers/runner"
 )
 
 func TestLifecycle(t *testing.T) {

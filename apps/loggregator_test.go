@@ -5,9 +5,9 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
 
-    . "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
-    . "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	. "github.com/pivotal-cf-experimental/cf-acceptance-tests/helpers"
+	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
+	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 	"time"
 )
 
@@ -36,7 +36,7 @@ var _ = PDescribe("loggregator", func() {
 
 	Context("gcf logs --recent", func() {
 		It("makes loggregator buffer and dump log messages", func() {
-		   	logs := Cf("logs", AppName, "--recent")
+			logs := Cf("logs", AppName, "--recent")
 
 			Expect(logs).To(SayWithTimeout("Connected, dumping recent logs for app", time.Second*15))
 
