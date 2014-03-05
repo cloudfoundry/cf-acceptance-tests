@@ -57,8 +57,10 @@ func NewServiceBroker(name string) ServiceBroker {
 	return b
 }
 
+var appStartTimeout = 3*60*time.Second
+
 func (b ServiceBroker) Push() {
-	Expect(Cf("push", b.Name, "-p", b.Path)).To(Say("App started"))
+	Expect(Cf("push", b.Name, "-p", b.Path)).To(ExitWithTimeout(0, appStartTimeout))
 }
 
 func (b ServiceBroker) Configure() {
@@ -67,7 +69,7 @@ func (b ServiceBroker) Configure() {
 }
 
 func (b ServiceBroker) Restart() {
-	Expect(Cf("restart", b.Name)).To(ExitWithTimeout(0, 60*time.Second))
+	Expect(Cf("restart", b.Name)).To(ExitWithTimeout(0, appStartTimeout))
 }
 
 func (b ServiceBroker) Create() {
