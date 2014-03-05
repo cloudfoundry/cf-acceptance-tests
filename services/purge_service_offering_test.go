@@ -36,7 +36,13 @@ var _ = Describe("Purging service offerings", func() {
 		instanceName := "purge-offering-instance"
 
 		Expect(Cf("marketplace")).To(Say(broker.Plan.Name))
-		Expect(Cf("create-service", broker.Service.Name, broker.Plan.Name, instanceName)).To(ExitWith(0))
+		// TODO:  CreateServiceInstance is used as a workaround for the problem in cf 6.0.1 that prevents us from
+		//        creating an instance of a service when there are more than 50 services in the environment.
+		//        Should be replaced by the following line ASAP
+
+		// Expect(Cf("create-service", broker.Service.Name, broker.Plan.Name, instanceName)).To(ExitWith(0))
+		broker.CreateServiceInstance(instanceName)
+
 		Expect(Cf("services")).To(Say(instanceName))
 		Expect(Cf("delete", broker.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
 		Expect(Cf("purge-service-offering", broker.Service.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
