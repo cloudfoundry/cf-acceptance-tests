@@ -23,7 +23,6 @@ var _ = Describe("Service Broker Lifecycle", func() {
 	})
 
 	AfterEach(func() {
-		broker.Destroy()
 		LoginAsUser()
 	})
 
@@ -68,5 +67,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 		Expect(session).NotTo(Say(oldPlanName))
 		Expect(session).NotTo(Say(broker.Service.Name))
 		Expect(session).NotTo(Say(broker.Plan.Name))
+
+		Require(Cf("delete", b.Name, "-f")).To(ExitWithTimeout(0, 2*time.Second))
 	})
 })
