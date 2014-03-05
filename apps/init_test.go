@@ -50,7 +50,14 @@ func CreateHomeConfig() {
 	os.Setenv("CF_HOME", homePath)
 
 	Expect(Cf("api", os.Getenv("API_ENDPOINT"))).To(ExitWith(0))
-	Expect(Cf("login", "-u", os.Getenv("CF_USER"), "-p", os.Getenv("CF_USER_PASSWORD"), "-o", os.Getenv("CF_ORG"), "-s", os.Getenv("CF_SPACE"))).To(ExitWith(0))
+
+	Expect(Cf("login",
+		"-u", os.Getenv("CF_USER"),
+		"-p", os.Getenv("CF_USER_PASSWORD"))).To(ExitWith(0))
+
+	Expect(Cf("target",
+		"-o", os.Getenv("CF_ORG"),
+		"-s", os.Getenv("CF_SPACE"))).To(ExitWith(0))
 }
 
 func RemoveHomeConfig() {
