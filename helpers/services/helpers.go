@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"github.com/pivotal-cf-experimental/cf-acceptance-tests/config"
+	"github.com/cloudfoundry/cf-acceptance-tests/config"
 )
 
 var integrationConfig = config.Load()

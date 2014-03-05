@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
 
-	"github.com/pivotal-cf-experimental/cf-acceptance-tests/buildpack_generator"
+	"github.com/cloudfoundry/cf-acceptance-tests/buildpack_generator"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/runner"

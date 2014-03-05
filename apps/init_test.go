@@ -13,7 +13,7 @@ import (
 	"github.com/vito/cmdtest"
 	. "github.com/vito/cmdtest/matchers"
 
-	"github.com/pivotal-cf-experimental/cf-acceptance-tests/config"
+	"github.com/cloudfoundry/cf-acceptance-tests/config"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/runner"
 )
