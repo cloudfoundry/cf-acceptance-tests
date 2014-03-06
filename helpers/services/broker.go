@@ -3,10 +3,10 @@ package helpers
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"path/filepath"
 	"time"
 
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/onsi/gomega"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
@@ -153,7 +153,7 @@ type SpaceJson struct {
 }
 
 func (b ServiceBroker) GetSpaceGuid() string {
-	url := fmt.Sprintf("/v2/spaces?q=name%%3A%s", os.Getenv("CF_SPACE"))
+	url := fmt.Sprintf("/v2/spaces?q=name%%3A%s", RegularUserContext.Space)
 	session := Cf("curl", url)
 	jsonResults := SpaceJson{}
 	json.Unmarshal(session.FullOutput(), &jsonResults)

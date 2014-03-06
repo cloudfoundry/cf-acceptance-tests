@@ -13,6 +13,7 @@ import (
 	"github.com/vito/cmdtest"
 	. "github.com/vito/cmdtest/matchers"
 
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/config"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/runner"
@@ -49,15 +50,15 @@ func CreateHomeConfig() {
 	os.MkdirAll(homePath, os.ModePerm)
 	os.Setenv("CF_HOME", homePath)
 
-	Expect(Cf("api", os.Getenv("API_ENDPOINT"))).To(ExitWith(0))
+	Expect(Cf("api", RegularUserContext.ApiUrl)).To(ExitWith(0))
 
 	Expect(Cf("login",
-		"-u", os.Getenv("CF_USER"),
-		"-p", os.Getenv("CF_USER_PASSWORD"))).To(ExitWith(0))
+		"-u", RegularUserContext.Username,
+		"-p", RegularUserContext.Password)).To(ExitWith(0))
 
 	Expect(Cf("target",
-		"-o", os.Getenv("CF_ORG"),
-		"-s", os.Getenv("CF_SPACE"))).To(ExitWith(0))
+		"-o", RegularUserContext.Org,
+		"-s", RegularUserContext.Space)).To(ExitWith(0))
 }
 
 func RemoveHomeConfig() {
