@@ -38,15 +38,23 @@ You must also set `$CONFIG` to point to a `.json` file which contains the
 configuration for the tests.
 
 There is not much to configure - for now you just need to set the domain that
-the deployment is configured to use for the apps.
+the deployment is configured to use for the apps, and set several environment variables.
 
 For example, to run these against a local BOSH lite deployment, you'll likely
-only need:
+need:
 
 ```sh
 cat > integration_config.json <<EOF
 { "apps_domain": "10.244.0.34.xip.io" }
 EOF
+
+export ADMIN=admin-username
+export ADMIN_PASSWORD=admin-password
+export CF_USER=cf-user-username
+export CF_USER_PASSWORD=cf-user-password
+export CF_ORG=org-name
+export CF_SPACE=space-name
+export API_ENDPOINT=http://cf.api.endpoint.url.com
 ```
 
 ### Running
