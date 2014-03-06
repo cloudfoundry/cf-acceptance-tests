@@ -3,9 +3,9 @@ package helpers
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"path/filepath"
 	"time"
-	"os"
 
 	. "github.com/onsi/gomega"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
@@ -59,7 +59,7 @@ func NewServiceBroker(name string) ServiceBroker {
 	return b
 }
 
-var appStartTimeout = 3*60*time.Second
+var appStartTimeout = 3 * 60 * time.Second
 
 func (b ServiceBroker) Push() {
 	Expect(Cf("push", b.Name, "-p", b.Path)).To(ExitWithTimeout(0, appStartTimeout))
@@ -145,7 +145,7 @@ func (b ServiceBroker) createInstanceForPlan(planGuid, instanceName string) {
 }
 
 type SpaceJson struct {
-	Resources []struct{
+	Resources []struct {
 		Metadata struct {
 			Guid string
 		}
