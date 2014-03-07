@@ -29,7 +29,6 @@ var AppName = ""
 
 var doraPath = "../assets/dora"
 var helloPath = "../assets/hello-world"
-var serviceBrokerPath = "../assets/service_broker"
 
 func Curling(endpoint string) func() *cmdtest.Session {
 	return func() *cmdtest.Session {
