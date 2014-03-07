@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
 
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/services/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
@@ -18,10 +19,10 @@ var _ = Describe("Purging service offerings", func() {
 	BeforeEach(func() {
 		helpers.LoginAsAdmin()
 
-		broker = helpers.NewServiceBroker(generator.RandomName(), testAssets.ServiceBroker)
+		broker = helpers.NewServiceBroker(generator.RandomName(), NewAssets().ServiceBroker)
 		broker.Push()
 		broker.Configure()
-		broker.Create(config.AppsDomain)
+		broker.Create(LoadConfig().AppsDomain)
 		broker.PublicizePlans()
 	})
 

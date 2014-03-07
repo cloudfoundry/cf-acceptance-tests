@@ -10,30 +10,44 @@ type Config struct {
 	PersistentAppHost string `json:"persistent_app_host"`
 }
 
-func LoadConfig() (config Config) {
-	path := os.Getenv("CONFIG")
-	if path == "" {
-		panic("Must set $CONFIG to point to an integration config .json file.")
+var loadedConfig *Config
+
+func LoadConfig() Config {
+	if loadedConfig == nil {
+		loadedConfig = loadConfigJsonFromPath()
 	}
 
-	return loadConfigJsonFromPath(path)
+	if loadedConfig.PersistentAppHost == "" {
+		loadedConfig.PersistentAppHost = "persistent-app"
+	}
+
+	return *loadedConfig
 }
 
-func loadConfigJsonFromPath(path string) (config Config) {
+func loadConfigJsonFromPath() *Config {
+	var config *Config = &Config{}
+
+	path := loadConfigPathFromEnv()
+
 	configFile, err := os.Open(path)
 	if err != nil {
 		panic(err)
 	}
 
 	decoder := json.NewDecoder(configFile)
-	err = decoder.Decode(&config)
+	err = decoder.Decode(config)
 	if err != nil {
 		panic(err)
 	}
 
-	if config.PersistentAppHost == "" {
-		config.PersistentAppHost = "persistent-app"
+	return config
+}
+
+func loadConfigPathFromEnv() string {
+	path := os.Getenv("CONFIG")
+	if path == "" {
+		panic("Must set $CONFIG to point to an integration config .json file.")
 	}
 
-	return
+	return path
 }

@@ -17,7 +17,7 @@ var _ = PDescribe("loggregator", func() {
 	BeforeEach(func() {
 		appName = RandomName()
 
-		Expect(Cf("push", appName, "-p", testAssets.Dora)).To(SayWithTimeout("App started", time.Minute*2))
+		Expect(Cf("push", appName, "-p", NewAssets().Dora)).To(SayWithTimeout("App started", time.Minute*2))
 	})
 
 	AfterEach(func() {
@@ -30,9 +30,9 @@ var _ = PDescribe("loggregator", func() {
 
 			Expect(logs).To(SayWithTimeout("Connected, tailing logs for app", time.Second*15))
 
-			Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
+			Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("Hi, I'm Dora!"))
 
-			Expect(logs).To(SayWithTimeout("OUT "+appName+"."+config.AppsDomain, time.Second*15))
+			Expect(logs).To(SayWithTimeout("OUT "+appName+"."+LoadConfig().AppsDomain, time.Second*15))
 		})
 	})
 

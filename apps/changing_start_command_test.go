@@ -19,8 +19,8 @@ var _ = Describe("Changing an app's start command", func() {
 		Expect(
 			Cf(
 				"push", appName,
-				"-p", testAssets.Dora,
-				"-d", config.AppsDomain,
+				"-p", NewAssets().Dora,
+				"-d", LoadConfig().AppsDomain,
 				"-c", "FOO=foo bundle exec rackup config.ru -p $PORT",
 			),
 		).To(Say("App started"))
@@ -31,7 +31,7 @@ var _ = Describe("Changing an app's start command", func() {
 	})
 
 	It("takes effect after a restart, not requiring a push", func() {
-		Eventually(Curling(appName, "/env/FOO", config.AppsDomain)).Should(Say("foo"))
+		Eventually(Curling(appName, "/env/FOO", LoadConfig().AppsDomain)).Should(Say("foo"))
 
 		var response QueryResponse
 
@@ -50,10 +50,10 @@ var _ = Describe("Changing an app's start command", func() {
 
 		Expect(Cf("stop", appName)).To(Say("OK"))
 
-		Eventually(Curling(appName, "/env/FOO", config.AppsDomain)).Should(Say("404"))
+		Eventually(Curling(appName, "/env/FOO", LoadConfig().AppsDomain)).Should(Say("404"))
 
 		Expect(Cf("start", appName)).To(Say("App started"))
 
-		Eventually(Curling(appName, "/env/FOO", config.AppsDomain)).Should(Say("bar"))
+		Eventually(Curling(appName, "/env/FOO", LoadConfig().AppsDomain)).Should(Say("bar"))
 	})
 })

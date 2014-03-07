@@ -13,13 +13,13 @@ import (
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 )
 
-var config = LoadConfig()
-var testAssets = NewAssets()
-
 func TestLifecycle(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	AsUser(RegularUserContext, func () {
-		RunSpecsWithDefaultAndCustomReporters(t, "Application Lifecycle", []Reporter{reporters.NewJUnitReporter(fmt.Sprintf("junit_%d.xml", ginkgoconfig.GinkgoConfig.ParallelNode))})
+		suiteName := "Applications"
+		outputFile := fmt.Sprintf("../results/%s-junit_%d.xml", suiteName, ginkgoconfig.GinkgoConfig.ParallelNode)
+
+		RunSpecsWithDefaultAndCustomReporters(t, suiteName, []Reporter{reporters.NewJUnitReporter(outputFile)})
 	})
 }

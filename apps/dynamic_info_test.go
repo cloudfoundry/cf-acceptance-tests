@@ -19,7 +19,7 @@ var _ = Describe("A running application", func() {
 	BeforeEach(func() {
 		appName = RandomName()
 
-		Expect(Cf("push", appName, "-p", testAssets.Dora)).To(Say("App started"))
+		Expect(Cf("push", appName, "-p", NewAssets().Dora)).To(Say("App started"))
 	})
 
 	AfterEach(func() {
@@ -36,7 +36,7 @@ var _ = Describe("A running application", func() {
 	})
 
 	It("can show crash events", func() {
-		Expect(Curl(AppUri(appName, "/sigterm/KILL", config.AppsDomain))).To(ExitWith(0))
+		Expect(Curl(AppUri(appName, "/sigterm/KILL", LoadConfig().AppsDomain))).To(ExitWith(0))
 		Eventually(func() *cmdtest.Session {
 			return Cf("events", appName)
 		}, 10).Should(Say("exited"))

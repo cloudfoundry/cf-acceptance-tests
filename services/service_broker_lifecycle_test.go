@@ -18,7 +18,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 
 	BeforeEach(func() {
 		helpers.LoginAsAdmin()
-		broker = helpers.NewServiceBroker(generator.RandomName(), testAssets.ServiceBroker)
+		broker = helpers.NewServiceBroker(generator.RandomName(), NewAssets().ServiceBroker)
 		broker.Push()
 		broker.Configure()
 	})
@@ -31,7 +31,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 		defer helpers.Recover() // Catches panic thrown by Require expectations
 
 		// Adding the service broker
-		helpers.Require(Cf("create-service-broker", broker.Name, "username", "password", AppUri(broker.Name, "", config.AppsDomain))).To(ExitWithTimeout(0, 10*time.Second))
+		helpers.Require(Cf("create-service-broker", broker.Name, "username", "password", AppUri(broker.Name, "", LoadConfig().AppsDomain))).To(ExitWithTimeout(0, 10*time.Second))
 		Expect(Cf("service-brokers")).To(Say(broker.Name))
 
 		// Confirming the plans are not yet public
@@ -52,7 +52,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 		broker.Service.Name = generator.RandomName()
 		broker.Plan.Name = generator.RandomName()
 		broker.Configure()
-		helpers.Require(Cf("update-service-broker", broker.Name, "username", "password", AppUri(broker.Name, "", config.AppsDomain))).To(ExitWithTimeout(0, 10*time.Second))
+		helpers.Require(Cf("update-service-broker", broker.Name, "username", "password", AppUri(broker.Name, "", LoadConfig().AppsDomain))).To(ExitWithTimeout(0, 10*time.Second))
 
 		// Confirming the changes to the broker show up in the marketplace
 		session = Cf("marketplace")

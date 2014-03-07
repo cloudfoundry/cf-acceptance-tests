@@ -16,7 +16,7 @@ var _ = Describe("Application", func() {
 	BeforeEach(func() {
 		appName = RandomName()
 
-		Expect(Cf("push", appName, "-p", testAssets.Dora)).To(Say("App started"))
+		Expect(Cf("push", appName, "-p", NewAssets().Dora)).To(Say("App started"))
 	})
 
 	AfterEach(func() {
@@ -25,7 +25,7 @@ var _ = Describe("Application", func() {
 
 	Describe("pushing", func() {
 		It("makes the app reachable via its bound route", func() {
-			Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
+			Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("Hi, I'm Dora!"))
 		})
 	})
 
@@ -35,7 +35,7 @@ var _ = Describe("Application", func() {
 		})
 
 		It("makes the app unreachable", func() {
-			Eventually(Curling(appName, "/", config.AppsDomain), 5.0).Should(Say("404"))
+			Eventually(Curling(appName, "/", LoadConfig().AppsDomain), 5.0).Should(Say("404"))
 		})
 
 		Describe("and then starting", func() {
@@ -44,18 +44,18 @@ var _ = Describe("Application", func() {
 			})
 
 			It("makes the app reachable again", func() {
-				Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
+				Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("Hi, I'm Dora!"))
 			})
 		})
 	})
 
 	Describe("updating", func() {
 		It("is reflected through another push", func() {
-			Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
+			Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("Hi, I'm Dora!"))
 
-			Expect(Cf("push", appName, "-p", testAssets.HelloWorld)).To(Say("App started"))
+			Expect(Cf("push", appName, "-p", NewAssets().HelloWorld)).To(Say("App started"))
 
-			Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("Hello, world!"))
+			Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("Hello, world!"))
 		})
 	})
 
@@ -69,7 +69,7 @@ var _ = Describe("Application", func() {
 		})
 
 		It("makes the app unreachable", func() {
-			Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("404"))
+			Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("404"))
 		})
 	})
 })
