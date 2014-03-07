@@ -1,4 +1,4 @@
 github.com/onsi/ginkgo	8004a15e410a927eadcd0d1cb336d390e1eee4f9
 github.com/onsi/gomega	3da99a5a1412b006dac6662a2244f3da7ee3155b
 github.com/vito/cmdtest	5073503e50f68b9c14d073ab261164965bffa872
-github.com/pivotal-cf-experimental/cf-test-helpers	546e0208986e416446d7345d3345ee8b6a0aa669
+github.com/pivotal-cf-experimental/cf-test-helpers	e85216ebc0ce059788429a03361e993390f588a8

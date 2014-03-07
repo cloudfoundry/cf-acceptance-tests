@@ -9,7 +9,6 @@ import (
 	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 	"github.com/vito/cmdtest"
-	. "github.com/vito/cmdtest/matchers"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/config"
@@ -21,10 +20,6 @@ func TestLifecycle(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	AsUser(RegularUserContext, func () {
-		Expect(Cf("target",
-			"-o", RegularUserContext.Org,
-			"-s", RegularUserContext.Space)).To(ExitWith(0))
-
 		RunSpecsWithDefaultAndCustomReporters(t, "Application Lifecycle", []Reporter{reporters.NewJUnitReporter(fmt.Sprintf("junit_%d.xml", ginkgoconfig.GinkgoConfig.ParallelNode))})
 	})
 
