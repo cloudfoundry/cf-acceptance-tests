@@ -5,7 +5,6 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
 
-	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 	"time"
@@ -15,11 +14,11 @@ var _ = PDescribe("loggregator", func() {
 	BeforeEach(func() {
 		AppName = RandomName()
 
-		PushApp(AppName, doraPath)
+		Expect(Cf("push", AppName, "-p", doraPath)).To(SayWithTimeout("App started", time.Minute*2))
 	})
 
 	AfterEach(func() {
-		DeleteApp(AppName)
+		Expect(Cf("delete", AppName, "-f")).To(SayWithTimeout("OK", time.Minute*2))
 	})
 
 	Context("gcf logs", func() {
