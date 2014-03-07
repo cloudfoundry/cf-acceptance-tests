@@ -7,18 +7,18 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
 
-	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
+	"github.com/cloudfoundry/cf-acceptance-tests/services/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 )
 
 var _ = Describe("Purging service offerings", func() {
-	var broker ServiceBroker
+	var broker helpers.ServiceBroker
 
 	BeforeEach(func() {
-		LoginAsAdmin()
+		helpers.LoginAsAdmin()
 
-		broker = NewServiceBroker(generator.RandomName())
+		broker = helpers.NewServiceBroker(generator.RandomName())
 		broker.Push()
 		broker.Configure()
 		broker.Create()
@@ -27,11 +27,11 @@ var _ = Describe("Purging service offerings", func() {
 
 	AfterEach(func() {
 		broker.Destroy()
-		LoginAsUser()
+		helpers.LoginAsUser()
 	})
 
 	It("removes all instances and plans of the service, then removes the service offering", func() {
-		defer Recover() // Catches panic thrown by Require expectations
+		defer helpers.Recover() // Catches panic thrown by Require expectations
 
 		instanceName := "purge-offering-instance"
 

@@ -1,4 +1,4 @@
-package buildpack_generator
+package helpers
 
 import (
 	"fmt"

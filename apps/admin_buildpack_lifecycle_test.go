@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
 
-	"github.com/cloudfoundry/cf-acceptance-tests/buildpack_generator"
+	"github.com/cloudfoundry/cf-acceptance-tests/apps/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/runner"
@@ -46,7 +46,7 @@ var _ = Describe("An application using an admin buildpack", func() {
 		buildpackPath = tmpdir
 		buildpackArchivePath = path.Join(buildpackPath, "buildpack.zip")
 
-		err = buildpack_generator.GenerateBuildpack(buildpackPath, matchingFilename(AppName))
+		err = helpers.GenerateBuildpack(buildpackPath, matchingFilename(AppName))
 		Expect(err).ToNot(HaveOccurred())
 
 		_, err = os.Create(path.Join(appPath, matchingFilename(AppName)))
