@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
 
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/runner"
@@ -24,9 +25,9 @@ var _ = Describe("An application printing a bunch of output", func() {
 	})
 
 	It("doesn't die when printing 32MB", func() {
-		beforeId := string(Curl(AppUri("/id")).FullOutput())
+		beforeId := string(Curl(AppUri(AppName, "/id", config.AppsDomain)).FullOutput())
 
-		Expect(Curl(AppUri("/logspew/33554432"))).To(
+		Expect(Curl(AppUri(AppName, "/logspew/33554432", config.AppsDomain))).To(
 			Say("Just wrote 33554432 random bytes to the log"),
 		)
 
@@ -34,11 +35,11 @@ var _ = Describe("An application printing a bunch of output", func() {
 		// and potentially make bad decisions (like killing the app)
 		time.Sleep(10 * time.Second)
 
-		afterId := string(Curl(AppUri("/id")).FullOutput())
+		afterId := string(Curl(AppUri(AppName, "/id", config.AppsDomain)).FullOutput())
 
 		Expect(beforeId).To(Equal(afterId))
 
-		Expect(Curl(AppUri("/logspew/2"))).To(
+		Expect(Curl(AppUri(AppName, "/logspew/2", config.AppsDomain))).To(
 			Say("Just wrote 2 random bytes to the log"),
 		)
 	})

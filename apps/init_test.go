@@ -31,12 +31,8 @@ var doraPath = "../assets/dora"
 var helloPath = "../assets/hello-world"
 var serviceBrokerPath = "../assets/service_broker"
 
-func AppUri(endpoint string) string {
-	return "http://" + AppName + "." + config.AppsDomain + endpoint
-}
-
 func Curling(endpoint string) func() *cmdtest.Session {
 	return func() *cmdtest.Session {
-		return Curl(AppUri(endpoint))
+		return Curl(AppUri(AppName, endpoint, config.AppsDomain))
 	}
 }

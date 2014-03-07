@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
 
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/services/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
@@ -30,7 +31,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 		defer helpers.Recover() // Catches panic thrown by Require expectations
 
 		// Adding the service broker
-		helpers.Require(Cf("create-service-broker", broker.Name, "username", "password", helpers.AppUri(broker.Name, ""))).To(ExitWithTimeout(0, 10*time.Second))
+		helpers.Require(Cf("create-service-broker", broker.Name, "username", "password", AppUri(broker.Name, "", config.AppsDomain))).To(ExitWithTimeout(0, 10*time.Second))
 		Expect(Cf("service-brokers")).To(Say(broker.Name))
 
 		// Confirming the plans are not yet public
@@ -51,7 +52,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 		broker.Service.Name = generator.RandomName()
 		broker.Plan.Name = generator.RandomName()
 		broker.Configure()
-		helpers.Require(Cf("update-service-broker", broker.Name, "username", "password", helpers.AppUri(broker.Name, ""))).To(ExitWithTimeout(0, 10*time.Second))
+		helpers.Require(Cf("update-service-broker", broker.Name, "username", "password", AppUri(broker.Name, "", config.AppsDomain))).To(ExitWithTimeout(0, 10*time.Second))
 
 		// Confirming the changes to the broker show up in the marketplace
 		session = Cf("marketplace")

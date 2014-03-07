@@ -21,7 +21,7 @@ var _ = Describe("Purging service offerings", func() {
 		broker = helpers.NewServiceBroker(generator.RandomName())
 		broker.Push()
 		broker.Configure()
-		broker.Create()
+		broker.Create(config.AppsDomain)
 		broker.PublicizePlans()
 	})
 

@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
 
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/runner"
@@ -33,7 +34,7 @@ var _ = Describe("A running application", func() {
 	})
 
 	It("can show crash events", func() {
-		Expect(Curl(AppUri("/sigterm/KILL"))).To(ExitWith(0))
+		Expect(Curl(AppUri(AppName, "/sigterm/KILL", config.AppsDomain))).To(ExitWith(0))
 		Eventually(func() *cmdtest.Session {
 			return Cf("events", AppName)
 		}, 10).Should(Say("exited"))

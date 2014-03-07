@@ -74,8 +74,8 @@ func (b ServiceBroker) Restart() {
 	Expect(Cf("restart", b.Name)).To(ExitWithTimeout(0, appStartTimeout))
 }
 
-func (b ServiceBroker) Create() {
-	Require(Cf("create-service-broker", b.Name, "username", "password", AppUri(b.Name, ""))).To(ExitWithTimeout(0, 30*time.Second))
+func (b ServiceBroker) Create(appsDomain string) {
+	Require(Cf("create-service-broker", b.Name, "username", "password", AppUri(b.Name, "", appsDomain))).To(ExitWithTimeout(0, 30*time.Second))
 	Expect(Cf("service-brokers")).To(Say(b.Name))
 }
 
