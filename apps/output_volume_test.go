@@ -14,6 +14,8 @@ import (
 )
 
 var _ = Describe("An application printing a bunch of output", func() {
+	var AppName string
+
 	BeforeEach(func() {
 		AppName = RandomName()
 

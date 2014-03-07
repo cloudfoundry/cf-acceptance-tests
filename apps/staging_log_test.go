@@ -10,6 +10,8 @@ import (
 )
 
 var _ = Describe("An application being staged", func() {
+	var AppName string
+
 	BeforeEach(func() {
 		AppName = RandomName()
 	})

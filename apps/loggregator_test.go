@@ -12,6 +12,8 @@ import (
 )
 
 var _ = PDescribe("loggregator", func() {
+	var AppName string
+
 	BeforeEach(func() {
 		AppName = RandomName()
 

@@ -11,6 +11,8 @@ import (
 )
 
 var _ = Describe("Changing an app's start command", func() {
+	var AppName string
+
 	BeforeEach(func() {
 		AppName = RandomName()
 

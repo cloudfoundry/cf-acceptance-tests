@@ -22,6 +22,8 @@ import (
 )
 
 var _ = Describe("An application that's already been pushed", func() {
+	var AppName string
+
 	BeforeEach(func() {
 		AppName = config.PersistentAppHost
 		Expect(Cf("target", "-s", "persistent-space")).To(ExitWith(0))

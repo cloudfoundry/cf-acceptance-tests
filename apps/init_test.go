@@ -13,7 +13,6 @@ import (
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 )
 
-var AppName = ""
 var config = LoadConfig()
 var TestAssets = NewAssets()
 
