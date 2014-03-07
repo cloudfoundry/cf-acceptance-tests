@@ -2,8 +2,6 @@ package services
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -18,29 +16,15 @@ import (
 )
 
 var IntegrationConfig = config.Load()
-var homePath string
 
 func TestServices(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	CreateHomeConfig()
-	RunSpecsWithDefaultAndCustomReporters(t, "Services", []Reporter{reporters.NewJUnitReporter(fmt.Sprintf("junit_%d.xml", ginkgoconfig.GinkgoConfig.ParallelNode))})
-	RemoveHomeConfig()
-}
+	AsUser(RegularUserContext, func () {
+		Expect(Cf("target",
+			"-o", RegularUserContext.Org,
+			"-s", RegularUserContext.Space)).To(ExitWith(0))
 
-func CreateHomeConfig() {
-	homePath = fmt.Sprintf("%s/cf_config_%s", os.Getenv("HOME"), strconv.Itoa(ginkgoconfig.GinkgoConfig.ParallelNode))
-	os.MkdirAll(homePath, os.ModePerm)
-	os.Setenv("CF_HOME", homePath)
-
-	Expect(Cf("api", RegularUserContext.ApiUrl)).To(ExitWith(0))
-	Expect(Cf("login",
-		"-u", RegularUserContext.Username,
-		"-p", RegularUserContext.Password,
-		"-o", RegularUserContext.Org,
-		"-s", RegularUserContext.Space)).To(ExitWith(0))
-}
-
-func RemoveHomeConfig() {
-	os.RemoveAll(homePath)
+		RunSpecsWithDefaultAndCustomReporters(t, "Services", []Reporter{reporters.NewJUnitReporter(fmt.Sprintf("junit_%d.xml", ginkgoconfig.GinkgoConfig.ParallelNode))})
+	})
 }

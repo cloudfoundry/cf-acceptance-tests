@@ -2,8 +2,6 @@ package apps
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -22,13 +20,17 @@ import (
 func TestLifecycle(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	CreateHomeConfig()
-	RunSpecsWithDefaultAndCustomReporters(t, "Application Lifecycle", []Reporter{reporters.NewJUnitReporter(fmt.Sprintf("junit_%d.xml", ginkgoconfig.GinkgoConfig.ParallelNode))})
-	RemoveHomeConfig()
+	AsUser(RegularUserContext, func () {
+		Expect(Cf("target",
+			"-o", RegularUserContext.Org,
+			"-s", RegularUserContext.Space)).To(ExitWith(0))
+
+		RunSpecsWithDefaultAndCustomReporters(t, "Application Lifecycle", []Reporter{reporters.NewJUnitReporter(fmt.Sprintf("junit_%d.xml", ginkgoconfig.GinkgoConfig.ParallelNode))})
+	})
+
 }
 
 var IntegrationConfig = config.Load()
-var homePath string
 var AppName = ""
 
 var doraPath = "../assets/dora"
@@ -43,24 +45,4 @@ func Curling(endpoint string) func() *cmdtest.Session {
 	return func() *cmdtest.Session {
 		return Curl(AppUri(endpoint))
 	}
-}
-
-func CreateHomeConfig() {
-	homePath = fmt.Sprintf("%s/cf_config_%s", os.Getenv("HOME"), strconv.Itoa(ginkgoconfig.GinkgoConfig.ParallelNode))
-	os.MkdirAll(homePath, os.ModePerm)
-	os.Setenv("CF_HOME", homePath)
-
-	Expect(Cf("api", RegularUserContext.ApiUrl)).To(ExitWith(0))
-
-	Expect(Cf("login",
-		"-u", RegularUserContext.Username,
-		"-p", RegularUserContext.Password)).To(ExitWith(0))
-
-	Expect(Cf("target",
-		"-o", RegularUserContext.Org,
-		"-s", RegularUserContext.Space)).To(ExitWith(0))
-}
-
-func RemoveHomeConfig() {
-	os.RemoveAll(homePath)
 }
