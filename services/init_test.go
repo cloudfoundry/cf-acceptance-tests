@@ -10,11 +10,10 @@ import (
 	. "github.com/onsi/gomega"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/config"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 )
 
-var IntegrationConfig = config.Load()
+var IntegrationConfig = Load()
 
 func TestServices(t *testing.T) {
 	RegisterFailHandler(Fail)

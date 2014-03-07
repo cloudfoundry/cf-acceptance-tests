@@ -11,7 +11,6 @@ import (
 	"github.com/vito/cmdtest"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/config"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/runner"
 )
@@ -25,7 +24,7 @@ func TestLifecycle(t *testing.T) {
 
 }
 
-var IntegrationConfig = config.Load()
+var IntegrationConfig = Load()
 var AppName = ""
 
 var doraPath = "../assets/dora"
