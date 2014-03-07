@@ -24,7 +24,7 @@ func TestLifecycle(t *testing.T) {
 
 }
 
-var IntegrationConfig = LoadConfig()
+var config = LoadConfig()
 var AppName = ""
 
 var doraPath = "../assets/dora"
@@ -32,7 +32,7 @@ var helloPath = "../assets/hello-world"
 var serviceBrokerPath = "../assets/service_broker"
 
 func AppUri(endpoint string) string {
-	return "http://" + AppName + "." + IntegrationConfig.AppsDomain + endpoint
+	return "http://" + AppName + "." + config.AppsDomain + endpoint
 }
 
 func Curling(endpoint string) func() *cmdtest.Session {

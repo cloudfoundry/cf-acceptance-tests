@@ -30,7 +30,7 @@ var _ = PDescribe("loggregator", func() {
 
 			Eventually(Curling("/")).Should(Say("Hi, I'm Dora!"))
 
-			Expect(logs).To(SayWithTimeout("OUT "+AppName+"."+IntegrationConfig.AppsDomain, time.Second*15))
+			Expect(logs).To(SayWithTimeout("OUT "+AppName+"."+config.AppsDomain, time.Second*15))
 		})
 	})
 

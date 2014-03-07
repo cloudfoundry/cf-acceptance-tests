@@ -22,7 +22,7 @@ import (
 
 var _ = Describe("An application that's already been pushed", func() {
 	BeforeEach(func() {
-		AppName = IntegrationConfig.PersistentAppHost
+		AppName = config.PersistentAppHost
 		Expect(Cf("target", "-s", "persistent-space")).To(ExitWith(0))
 
 		Expect(Cf("app", AppName)).To(SayBranches(

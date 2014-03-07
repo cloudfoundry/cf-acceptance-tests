@@ -17,7 +17,7 @@ var _ = Describe("Changing an app's start command", func() {
 			Cf(
 				"push", AppName,
 				"-p", doraPath,
-				"-d", IntegrationConfig.AppsDomain,
+				"-d", config.AppsDomain,
 				"-c", "FOO=foo bundle exec rackup config.ru -p $PORT",
 			),
 		).To(Say("App started"))
