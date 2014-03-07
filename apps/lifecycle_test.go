@@ -13,7 +13,7 @@ var _ = Describe("Application", func() {
 	BeforeEach(func() {
 		AppName = RandomName()
 
-		Expect(Cf("push", AppName, "-p", doraPath)).To(Say("App started"))
+		Expect(Cf("push", AppName, "-p", TestAssets.Dora)).To(Say("App started"))
 	})
 
 	AfterEach(func() {
@@ -50,7 +50,7 @@ var _ = Describe("Application", func() {
 		It("is reflected through another push", func() {
 			Eventually(Curling("/")).Should(Say("Hi, I'm Dora!"))
 
-			Expect(Cf("push", AppName, "-p", helloPath)).To(Say("App started"))
+			Expect(Cf("push", AppName, "-p", TestAssets.HelloWorld)).To(Say("App started"))
 
 			Eventually(Curling("/")).Should(Say("Hello, world!"))
 		})

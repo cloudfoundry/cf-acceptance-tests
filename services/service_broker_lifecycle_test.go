@@ -18,7 +18,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 
 	BeforeEach(func() {
 		helpers.LoginAsAdmin()
-		broker = helpers.NewServiceBroker(generator.RandomName())
+		broker = helpers.NewServiceBroker(generator.RandomName(), TestAssets.ServiceBroker)
 		broker.Push()
 		broker.Configure()
 	})

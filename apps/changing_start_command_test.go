@@ -16,7 +16,7 @@ var _ = Describe("Changing an app's start command", func() {
 		Expect(
 			Cf(
 				"push", AppName,
-				"-p", doraPath,
+				"-p", TestAssets.Dora,
 				"-d", config.AppsDomain,
 				"-c", "FOO=foo bundle exec rackup config.ru -p $PORT",
 			),

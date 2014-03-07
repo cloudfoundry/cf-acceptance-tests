@@ -3,7 +3,6 @@ package helpers
 import (
 	"encoding/json"
 	"fmt"
-	"path/filepath"
 	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
@@ -48,9 +47,9 @@ type ServicePlanResponse struct {
 	}
 }
 
-func NewServiceBroker(name string) ServiceBroker {
+func NewServiceBroker(name string, path string) ServiceBroker {
 	b := ServiceBroker{}
-	b.Path, _ = filepath.Abs("../assets/service_broker/")
+	b.Path = path
 	b.Name = name
 	b.Service.Name = generator.RandomName()
 	b.Service.ID = generator.RandomName()

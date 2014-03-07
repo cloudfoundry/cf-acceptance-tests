@@ -30,7 +30,7 @@ var _ = Describe("An application that's already been pushed", func() {
 				"not found",
 				func() {
 					Expect(
-						Cf("push", AppName, "-p", doraPath),
+						Cf("push", AppName, "-p", TestAssets.Dora),
 					).To(Say("App started"))
 				},
 			},

@@ -18,7 +18,7 @@ var _ = Describe("Purging service offerings", func() {
 	BeforeEach(func() {
 		helpers.LoginAsAdmin()
 
-		broker = helpers.NewServiceBroker(generator.RandomName())
+		broker = helpers.NewServiceBroker(generator.RandomName(), TestAssets.ServiceBroker)
 		broker.Push()
 		broker.Configure()
 		broker.Create(config.AppsDomain)

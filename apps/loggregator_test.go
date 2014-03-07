@@ -14,7 +14,7 @@ var _ = PDescribe("loggregator", func() {
 	BeforeEach(func() {
 		AppName = RandomName()
 
-		Expect(Cf("push", AppName, "-p", doraPath)).To(SayWithTimeout("App started", time.Minute*2))
+		Expect(Cf("push", AppName, "-p", TestAssets.Dora)).To(SayWithTimeout("App started", time.Minute*2))
 	})
 
 	AfterEach(func() {

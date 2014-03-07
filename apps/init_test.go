@@ -26,9 +26,7 @@ func TestLifecycle(t *testing.T) {
 
 var config = LoadConfig()
 var AppName = ""
-
-var doraPath = "../assets/dora"
-var helloPath = "../assets/hello-world"
+var TestAssets = NewAssets()
 
 func Curling(endpoint string) func() *cmdtest.Session {
 	return func() *cmdtest.Session {

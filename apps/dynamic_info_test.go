@@ -17,7 +17,7 @@ var _ = Describe("A running application", func() {
 	BeforeEach(func() {
 		AppName = RandomName()
 
-		Expect(Cf("push", AppName, "-p", doraPath)).To(Say("App started"))
+		Expect(Cf("push", AppName, "-p", TestAssets.Dora)).To(Say("App started"))
 	})
 
 	AfterEach(func() {

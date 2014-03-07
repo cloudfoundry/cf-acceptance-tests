@@ -14,6 +14,7 @@ import (
 )
 
 var config = LoadConfig()
+var TestAssets = NewAssets()
 
 func TestServices(t *testing.T) {
 	RegisterFailHandler(Fail)
