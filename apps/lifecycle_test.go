@@ -5,6 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
 
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 )
@@ -22,7 +23,7 @@ var _ = Describe("Application", func() {
 
 	Describe("pushing", func() {
 		It("makes the app reachable via its bound route", func() {
-			Eventually(Curling("/")).Should(Say("Hi, I'm Dora!"))
+			Eventually(Curling(AppName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
 		})
 	})
 
@@ -32,7 +33,7 @@ var _ = Describe("Application", func() {
 		})
 
 		It("makes the app unreachable", func() {
-			Eventually(Curling("/"), 5.0).Should(Say("404"))
+			Eventually(Curling(AppName, "/", config.AppsDomain), 5.0).Should(Say("404"))
 		})
 
 		Describe("and then starting", func() {
@@ -41,18 +42,18 @@ var _ = Describe("Application", func() {
 			})
 
 			It("makes the app reachable again", func() {
-				Eventually(Curling("/")).Should(Say("Hi, I'm Dora!"))
+				Eventually(Curling(AppName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
 			})
 		})
 	})
 
 	Describe("updating", func() {
 		It("is reflected through another push", func() {
-			Eventually(Curling("/")).Should(Say("Hi, I'm Dora!"))
+			Eventually(Curling(AppName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
 
 			Expect(Cf("push", AppName, "-p", TestAssets.HelloWorld)).To(Say("App started"))
 
-			Eventually(Curling("/")).Should(Say("Hello, world!"))
+			Eventually(Curling(AppName, "/", config.AppsDomain)).Should(Say("Hello, world!"))
 		})
 	})
 
@@ -66,7 +67,7 @@ var _ = Describe("Application", func() {
 		})
 
 		It("makes the app unreachable", func() {
-			Eventually(Curling("/")).Should(Say("404"))
+			Eventually(Curling(AppName, "/", config.AppsDomain)).Should(Say("404"))
 		})
 	})
 })

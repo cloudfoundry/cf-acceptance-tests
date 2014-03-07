@@ -17,6 +17,7 @@ import (
 	"github.com/vito/cmdtest"
 	. "github.com/vito/cmdtest/matchers"
 
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 )
 
@@ -43,14 +44,14 @@ var _ = Describe("An application that's already been pushed", func() {
 	})
 
 	It("can be restarted and still come up", func() {
-		Eventually(Curling("/")).Should(Say("Hi, I'm Dora!"))
+		Eventually(Curling(AppName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
 
 		Expect(Cf("stop", AppName)).To(Say("OK"))
 
-		Eventually(Curling("/")).Should(Say("404"))
+		Eventually(Curling(AppName, "/", config.AppsDomain)).Should(Say("404"))
 
 		Expect(Cf("start", AppName)).To(Say("App started"))
 
-		Eventually(Curling("/")).Should(Say("Hi, I'm Dora!"))
+		Eventually(Curling(AppName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
 	})
 })

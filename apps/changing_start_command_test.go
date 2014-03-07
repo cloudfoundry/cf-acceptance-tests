@@ -5,6 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
 
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 )
@@ -28,7 +29,7 @@ var _ = Describe("Changing an app's start command", func() {
 	})
 
 	It("takes effect after a restart, not requiring a push", func() {
-		Eventually(Curling("/env/FOO")).Should(Say("foo"))
+		Eventually(Curling(AppName, "/env/FOO", config.AppsDomain)).Should(Say("foo"))
 
 		var response QueryResponse
 
@@ -47,10 +48,10 @@ var _ = Describe("Changing an app's start command", func() {
 
 		Expect(Cf("stop", AppName)).To(Say("OK"))
 
-		Eventually(Curling("/env/FOO")).Should(Say("404"))
+		Eventually(Curling(AppName, "/env/FOO", config.AppsDomain)).Should(Say("404"))
 
 		Expect(Cf("start", AppName)).To(Say("App started"))
 
-		Eventually(Curling("/env/FOO")).Should(Say("bar"))
+		Eventually(Curling(AppName, "/env/FOO", config.AppsDomain)).Should(Say("bar"))
 	})
 })

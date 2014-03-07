@@ -5,6 +5,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
 
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 	"time"
@@ -27,7 +28,7 @@ var _ = PDescribe("loggregator", func() {
 
 			Expect(logs).To(SayWithTimeout("Connected, tailing logs for app", time.Second*15))
 
-			Eventually(Curling("/")).Should(Say("Hi, I'm Dora!"))
+			Eventually(Curling(AppName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
 
 			Expect(logs).To(SayWithTimeout("OUT "+AppName+"."+config.AppsDomain, time.Second*15))
 		})
