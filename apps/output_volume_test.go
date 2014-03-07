@@ -14,22 +14,22 @@ import (
 )
 
 var _ = Describe("An application printing a bunch of output", func() {
-	var AppName string
+	var appName string
 
 	BeforeEach(func() {
-		AppName = RandomName()
+		appName = RandomName()
 
-		Expect(Cf("push", AppName, "-p", TestAssets.Dora)).To(Say("App started"))
+		Expect(Cf("push", appName, "-p", testAssets.Dora)).To(Say("App started"))
 	})
 
 	AfterEach(func() {
-		Expect(Cf("delete", AppName, "-f")).To(Say("OK"))
+		Expect(Cf("delete", appName, "-f")).To(Say("OK"))
 	})
 
 	It("doesn't die when printing 32MB", func() {
-		beforeId := string(Curl(AppUri(AppName, "/id", config.AppsDomain)).FullOutput())
+		beforeId := string(Curl(AppUri(appName, "/id", config.AppsDomain)).FullOutput())
 
-		Expect(Curl(AppUri(AppName, "/logspew/33554432", config.AppsDomain))).To(
+		Expect(Curl(AppUri(appName, "/logspew/33554432", config.AppsDomain))).To(
 			Say("Just wrote 33554432 random bytes to the log"),
 		)
 
@@ -37,11 +37,11 @@ var _ = Describe("An application printing a bunch of output", func() {
 		// and potentially make bad decisions (like killing the app)
 		time.Sleep(10 * time.Second)
 
-		afterId := string(Curl(AppUri(AppName, "/id", config.AppsDomain)).FullOutput())
+		afterId := string(Curl(AppUri(appName, "/id", config.AppsDomain)).FullOutput())
 
 		Expect(beforeId).To(Equal(afterId))
 
-		Expect(Curl(AppUri(AppName, "/logspew/2", config.AppsDomain))).To(
+		Expect(Curl(AppUri(appName, "/logspew/2", config.AppsDomain))).To(
 			Say("Just wrote 2 random bytes to the log"),
 		)
 	})

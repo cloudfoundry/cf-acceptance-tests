@@ -14,43 +14,43 @@ import (
 )
 
 var _ = Describe("A running application", func() {
-	var AppName string
+	var appName string
 
 	BeforeEach(func() {
-		AppName = RandomName()
+		appName = RandomName()
 
-		Expect(Cf("push", AppName, "-p", TestAssets.Dora)).To(Say("App started"))
+		Expect(Cf("push", appName, "-p", testAssets.Dora)).To(Say("App started"))
 	})
 
 	AfterEach(func() {
-		Expect(Cf("delete", AppName, "-f")).To(Say("OK"))
+		Expect(Cf("delete", appName, "-f")).To(Say("OK"))
 	})
 
 	It("can have its files inspected", func() {
 		// Currently cannot work with multiple instances since GCF always checks instance 0
-		Expect(Cf("files", AppName)).To(Say("app/"))
-		Expect(Cf("files", AppName, "app/")).To(Say("config.ru"))
-		Expect(Cf("files", AppName, "app/config.ru")).To(
+		Expect(Cf("files", appName)).To(Say("app/"))
+		Expect(Cf("files", appName, "app/")).To(Say("config.ru"))
+		Expect(Cf("files", appName, "app/config.ru")).To(
 			Say("run Dora"),
 		)
 	})
 
 	It("can show crash events", func() {
-		Expect(Curl(AppUri(AppName, "/sigterm/KILL", config.AppsDomain))).To(ExitWith(0))
+		Expect(Curl(AppUri(appName, "/sigterm/KILL", config.AppsDomain))).To(ExitWith(0))
 		Eventually(func() *cmdtest.Session {
-			return Cf("events", AppName)
+			return Cf("events", appName)
 		}, 10).Should(Say("exited"))
 	})
 
 	Context("with multiple instances", func() {
 		BeforeEach(func() {
 			Expect(
-				Cf("scale", AppName, "-i", "2"),
+				Cf("scale", appName, "-i", "2"),
 			).To(Say("OK"))
 		})
 
 		It("can be queried for state by instance", func() {
-			app := Cf("app", AppName)
+			app := Cf("app", appName)
 			Expect(app).To(Say("#0"))
 			Expect(app).To(Say("#1"))
 		})

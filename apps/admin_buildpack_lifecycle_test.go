@@ -18,7 +18,7 @@ import (
 
 var _ = Describe("An application using an admin buildpack", func() {
 	var (
-		AppName       string
+		appName       string
 		BuildpackName string
 
 		appPath string
@@ -33,7 +33,7 @@ var _ = Describe("An application using an admin buildpack", func() {
 
 	BeforeEach(func() {
 		BuildpackName = RandomName()
-		AppName = RandomName()
+		appName = RandomName()
 
 		tmpdir, err := ioutil.TempDir(os.TempDir(), "matching-app")
 		Expect(err).ToNot(HaveOccurred())
@@ -46,10 +46,10 @@ var _ = Describe("An application using an admin buildpack", func() {
 		buildpackPath = tmpdir
 		buildpackArchivePath = path.Join(buildpackPath, "buildpack.zip")
 
-		err = helpers.GenerateBuildpack(buildpackPath, matchingFilename(AppName))
+		err = helpers.GenerateBuildpack(buildpackPath, matchingFilename(appName))
 		Expect(err).ToNot(HaveOccurred())
 
-		_, err = os.Create(path.Join(appPath, matchingFilename(AppName)))
+		_, err = os.Create(path.Join(appPath, matchingFilename(appName)))
 		Expect(err).ToNot(HaveOccurred())
 
 		_, err = os.Create(path.Join(appPath, "some-file"))
@@ -71,7 +71,7 @@ var _ = Describe("An application using an admin buildpack", func() {
 
 	Context("when the buildpack is detected", func() {
 		It("is used for the app", func() {
-			push := Cf("push", AppName, "-p", appPath)
+			push := Cf("push", appName, "-p", appPath)
 			Expect(push).To(Say("Staging with Simple Buildpack"))
 			Expect(push).To(Say("App started"))
 		})
@@ -79,12 +79,12 @@ var _ = Describe("An application using an admin buildpack", func() {
 
 	Context("when the buildpack fails to detect", func() {
 		BeforeEach(func() {
-			err := os.Remove(path.Join(appPath, matchingFilename(AppName)))
+			err := os.Remove(path.Join(appPath, matchingFilename(appName)))
 			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("fails to stage", func() {
-			Expect(Cf("push", AppName, "-p", appPath)).To(Say("Staging error"))
+			Expect(Cf("push", appName, "-p", appPath)).To(Say("Staging error"))
 		})
 	})
 
@@ -94,7 +94,7 @@ var _ = Describe("An application using an admin buildpack", func() {
 		})
 
 		It("fails to stage", func() {
-			Expect(Cf("push", AppName, "-p", appPath)).To(Say("Staging error"))
+			Expect(Cf("push", appName, "-p", appPath)).To(Say("Staging error"))
 		})
 	})
 
@@ -117,7 +117,7 @@ var _ = Describe("An application using an admin buildpack", func() {
 		})
 
 		It("fails to stage", func() {
-			Expect(Cf("push", AppName, "-p", appPath)).To(Say("Staging error"))
+			Expect(Cf("push", appName, "-p", appPath)).To(Say("Staging error"))
 		})
 	})
 })

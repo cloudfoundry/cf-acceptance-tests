@@ -11,65 +11,65 @@ import (
 )
 
 var _ = Describe("Application", func() {
-	var AppName string
+	var appName string
 
 	BeforeEach(func() {
-		AppName = RandomName()
+		appName = RandomName()
 
-		Expect(Cf("push", AppName, "-p", TestAssets.Dora)).To(Say("App started"))
+		Expect(Cf("push", appName, "-p", testAssets.Dora)).To(Say("App started"))
 	})
 
 	AfterEach(func() {
-		Expect(Cf("delete", AppName, "-f")).To(Say("OK"))
+		Expect(Cf("delete", appName, "-f")).To(Say("OK"))
 	})
 
 	Describe("pushing", func() {
 		It("makes the app reachable via its bound route", func() {
-			Eventually(Curling(AppName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
+			Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
 		})
 	})
 
 	Describe("stopping", func() {
 		BeforeEach(func() {
-			Expect(Cf("stop", AppName)).To(Say("OK"))
+			Expect(Cf("stop", appName)).To(Say("OK"))
 		})
 
 		It("makes the app unreachable", func() {
-			Eventually(Curling(AppName, "/", config.AppsDomain), 5.0).Should(Say("404"))
+			Eventually(Curling(appName, "/", config.AppsDomain), 5.0).Should(Say("404"))
 		})
 
 		Describe("and then starting", func() {
 			BeforeEach(func() {
-				Expect(Cf("start", AppName)).To(Say("App started"))
+				Expect(Cf("start", appName)).To(Say("App started"))
 			})
 
 			It("makes the app reachable again", func() {
-				Eventually(Curling(AppName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
+				Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
 			})
 		})
 	})
 
 	Describe("updating", func() {
 		It("is reflected through another push", func() {
-			Eventually(Curling(AppName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
+			Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
 
-			Expect(Cf("push", AppName, "-p", TestAssets.HelloWorld)).To(Say("App started"))
+			Expect(Cf("push", appName, "-p", testAssets.HelloWorld)).To(Say("App started"))
 
-			Eventually(Curling(AppName, "/", config.AppsDomain)).Should(Say("Hello, world!"))
+			Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("Hello, world!"))
 		})
 	})
 
 	Describe("deleting", func() {
 		BeforeEach(func() {
-			Expect(Cf("delete", AppName, "-f")).To(Say("OK"))
+			Expect(Cf("delete", appName, "-f")).To(Say("OK"))
 		})
 
 		It("removes the application", func() {
-			Expect(Cf("app", AppName)).To(Say("not found"))
+			Expect(Cf("app", appName)).To(Say("not found"))
 		})
 
 		It("makes the app unreachable", func() {
-			Eventually(Curling(AppName, "/", config.AppsDomain)).Should(Say("404"))
+			Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("404"))
 		})
 	})
 })

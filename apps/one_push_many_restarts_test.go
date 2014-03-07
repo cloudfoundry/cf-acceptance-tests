@@ -22,18 +22,18 @@ import (
 )
 
 var _ = Describe("An application that's already been pushed", func() {
-	var AppName string
+	var appName string
 
 	BeforeEach(func() {
-		AppName = config.PersistentAppHost
+		appName = config.PersistentAppHost
 		Expect(Cf("target", "-s", "persistent-space")).To(ExitWith(0))
 
-		Expect(Cf("app", AppName)).To(SayBranches(
+		Expect(Cf("app", appName)).To(SayBranches(
 			cmdtest.ExpectBranch{
 				"not found",
 				func() {
 					Expect(
-						Cf("push", AppName, "-p", TestAssets.Dora),
+						Cf("push", appName, "-p", testAssets.Dora),
 					).To(Say("App started"))
 				},
 			},
@@ -46,14 +46,14 @@ var _ = Describe("An application that's already been pushed", func() {
 	})
 
 	It("can be restarted and still come up", func() {
-		Eventually(Curling(AppName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
+		Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
 
-		Expect(Cf("stop", AppName)).To(Say("OK"))
+		Expect(Cf("stop", appName)).To(Say("OK"))
 
-		Eventually(Curling(AppName, "/", config.AppsDomain)).Should(Say("404"))
+		Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("404"))
 
-		Expect(Cf("start", AppName)).To(Say("App started"))
+		Expect(Cf("start", appName)).To(Say("App started"))
 
-		Eventually(Curling(AppName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
+		Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
 	})
 })

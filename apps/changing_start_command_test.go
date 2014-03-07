@@ -11,15 +11,15 @@ import (
 )
 
 var _ = Describe("Changing an app's start command", func() {
-	var AppName string
+	var appName string
 
 	BeforeEach(func() {
-		AppName = RandomName()
+		appName = RandomName()
 
 		Expect(
 			Cf(
-				"push", AppName,
-				"-p", TestAssets.Dora,
+				"push", appName,
+				"-p", testAssets.Dora,
 				"-d", config.AppsDomain,
 				"-c", "FOO=foo bundle exec rackup config.ru -p $PORT",
 			),
@@ -27,15 +27,15 @@ var _ = Describe("Changing an app's start command", func() {
 	})
 
 	AfterEach(func() {
-		Expect(Cf("delete", AppName, "-f")).To(Say("OK"))
+		Expect(Cf("delete", appName, "-f")).To(Say("OK"))
 	})
 
 	It("takes effect after a restart, not requiring a push", func() {
-		Eventually(Curling(AppName, "/env/FOO", config.AppsDomain)).Should(Say("foo"))
+		Eventually(Curling(appName, "/env/FOO", config.AppsDomain)).Should(Say("foo"))
 
 		var response QueryResponse
 
-		ApiRequest("GET", "/v2/apps?q=name:"+AppName, &response)
+		ApiRequest("GET", "/v2/apps?q=name:"+appName, &response)
 
 		Expect(response.Resources).To(HaveLen(1))
 
@@ -48,12 +48,12 @@ var _ = Describe("Changing an app's start command", func() {
 			`{"command":"FOO=bar bundle exec rackup config.ru -p $PORT"}`,
 		)
 
-		Expect(Cf("stop", AppName)).To(Say("OK"))
+		Expect(Cf("stop", appName)).To(Say("OK"))
 
-		Eventually(Curling(AppName, "/env/FOO", config.AppsDomain)).Should(Say("404"))
+		Eventually(Curling(appName, "/env/FOO", config.AppsDomain)).Should(Say("404"))
 
-		Expect(Cf("start", AppName)).To(Say("App started"))
+		Expect(Cf("start", appName)).To(Say("App started"))
 
-		Eventually(Curling(AppName, "/env/FOO", config.AppsDomain)).Should(Say("bar"))
+		Eventually(Curling(appName, "/env/FOO", config.AppsDomain)).Should(Say("bar"))
 	})
 })

@@ -12,33 +12,33 @@ import (
 )
 
 var _ = PDescribe("loggregator", func() {
-	var AppName string
+	var appName string
 
 	BeforeEach(func() {
-		AppName = RandomName()
+		appName = RandomName()
 
-		Expect(Cf("push", AppName, "-p", TestAssets.Dora)).To(SayWithTimeout("App started", time.Minute*2))
+		Expect(Cf("push", appName, "-p", testAssets.Dora)).To(SayWithTimeout("App started", time.Minute*2))
 	})
 
 	AfterEach(func() {
-		Expect(Cf("delete", AppName, "-f")).To(SayWithTimeout("OK", time.Minute*2))
+		Expect(Cf("delete", appName, "-f")).To(SayWithTimeout("OK", time.Minute*2))
 	})
 
 	Context("gcf logs", func() {
 		PIt("blocks and exercises basic loggregator behavior", func() {
-			logs := Cf("logs", AppName)
+			logs := Cf("logs", appName)
 
 			Expect(logs).To(SayWithTimeout("Connected, tailing logs for app", time.Second*15))
 
-			Eventually(Curling(AppName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
+			Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
 
-			Expect(logs).To(SayWithTimeout("OUT "+AppName+"."+config.AppsDomain, time.Second*15))
+			Expect(logs).To(SayWithTimeout("OUT "+appName+"."+config.AppsDomain, time.Second*15))
 		})
 	})
 
 	Context("gcf logs --recent", func() {
 		It("makes loggregator buffer and dump log messages", func() {
-			logs := Cf("logs", AppName, "--recent")
+			logs := Cf("logs", appName, "--recent")
 
 			Expect(logs).To(SayWithTimeout("Connected, dumping recent logs for app", time.Second*15))
 
