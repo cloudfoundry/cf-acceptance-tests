@@ -24,7 +24,7 @@ func TestLifecycle(t *testing.T) {
 
 }
 
-var IntegrationConfig = Load()
+var IntegrationConfig = LoadConfig()
 var AppName = ""
 
 var doraPath = "../assets/dora"

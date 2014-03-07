@@ -10,7 +10,7 @@ type IntegrationConfig struct {
 	PersistentAppHost string `json:"persistent_app_host"`
 }
 
-func Load() (config IntegrationConfig) {
+func LoadConfig() (config IntegrationConfig) {
 	path := os.Getenv("CONFIG")
 	if path == "" {
 		panic("Must set $CONFIG to point to an integration config .json file.")

@@ -13,7 +13,7 @@ import (
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 )
 
-var IntegrationConfig = Load()
+var IntegrationConfig = LoadConfig()
 
 func TestServices(t *testing.T) {
 	RegisterFailHandler(Fail)
