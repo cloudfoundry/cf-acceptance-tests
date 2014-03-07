@@ -16,10 +16,10 @@ func LoadConfig() (config IntegrationConfig) {
 		panic("Must set $CONFIG to point to an integration config .json file.")
 	}
 
-	return LoadPath(path)
+	return loadConfigJsonFromPath(path)
 }
 
-func LoadPath(path string) (config IntegrationConfig) {
+func loadConfigJsonFromPath(path string) (config IntegrationConfig) {
 	configFile, err := os.Open(path)
 	if err != nil {
 		panic(err)
