@@ -29,7 +29,7 @@ instructions on installing `go`.
 ### Configuration
 
 Before running the tests, you must make sure you've logged in to your
-runtime environment and targetted a space using 
+runtime environment and targeted a space using
 ```
   gcf target -o [your_org] -s [your_space]
 ```
@@ -39,6 +39,8 @@ configuration for the tests.
 
 There is not much to configure - for now you just need to set the domain that
 the deployment is configured to use for the apps, and set several environment variables.
+
+The tests must run as a user - you must create a user and specify its credentials in the env vars.
 
 For example, to run these against a local BOSH lite deployment, you'll likely
 need:
@@ -62,6 +64,7 @@ export API_ENDPOINT=http://cf.api.endpoint.url.com
 To run the CF Acceptance tests, you need to be logged in and targeting an empty space and org (we suggest the `cats-space` inside the `cats-org`).
 
 ```sh
+gcf logout
 gcf api api.10.244.0.34.xip.io
 gcf auth admin admin
 gcf create-org cats-org
