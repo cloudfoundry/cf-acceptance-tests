@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+
+echo "Compiling apps"
+go test -v -c ./apps/
+rm apps.test
+echo "Compiling services"
+go test -v -c ./services/
+rm services.test
+echo "Compiling helpers"
+go build -v ./...
