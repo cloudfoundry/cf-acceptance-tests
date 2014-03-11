@@ -18,3 +18,9 @@ var RegularUserContext = cf.NewUserContext(os.Getenv("API_ENDPOINT"),
 	os.Getenv("CF_ORG"),
 	os.Getenv("CF_SPACE"))
 
+var PersistentSpaceUserContext = cf.NewUserContext(os.Getenv("API_ENDPOINT"),
+	os.Getenv("CF_USER"),
+	os.Getenv("CF_USER_PASSWORD"),
+	os.Getenv("CF_ORG"),
+	"persistent-space")
+
