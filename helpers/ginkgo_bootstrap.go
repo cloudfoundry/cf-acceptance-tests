@@ -7,6 +7,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/vito/cmdtest/matchers"
 
 	ginkgoconfig "github.com/onsi/ginkgo/config"
 	"github.com/onsi/ginkgo/reporters"
@@ -16,11 +17,18 @@ import (
 
 func GinkgoBootstrap(t *testing.T, suiteName string) {
 	RegisterFailHandler(ExitFailHandler)
-	CreateEnvironmentForUserContext(AdminUserContext, RegularUserContext)
+	CreateEnvironmentForUserContext(NewAdminUserContext(), NewRegularUserContext())
 	RegisterFailHandler(Fail)
 
 	outputFile := fmt.Sprintf("../results/%s-junit_%d.xml", suiteName, ginkgoconfig.GinkgoConfig.ParallelNode)
 	RunSpecsWithDefaultAndCustomReporters(t, suiteName, []Reporter{reporters.NewJUnitReporter(outputFile)})
+
+	RegisterFailHandler(ExitFailHandler)
+	AsUser(NewAdminUserContext(), func() {
+		Expect(Cf("delete-space", "-f", NewRegularUserContext().Space)).To(ExitWith(0))
+	})
+	RegisterFailHandler(Fail)
+
 }
 
 var originalCfHomeDir, currentCfHomeDir string
@@ -33,14 +41,14 @@ var ExitFailHandler = func(message string, callerSkip ...int) {
 var _ = BeforeEach(func() {
 	RegisterFailHandler(ExitFailHandler)
 
-	originalCfHomeDir, currentCfHomeDir = InitiateUserContext(RegularUserContext)
-	TargetSpace(RegularUserContext)
+	originalCfHomeDir, currentCfHomeDir = InitiateUserContext(NewRegularUserContext())
+	TargetSpace(NewRegularUserContext())
 	RegisterFailHandler(Fail)
 })
 
 var _ = AfterEach(func() {
 	RegisterFailHandler(ExitFailHandler)
-	RestoreUserContext(RegularUserContext, originalCfHomeDir, currentCfHomeDir)
+	RestoreUserContext(NewRegularUserContext(), originalCfHomeDir, currentCfHomeDir)
 	RegisterFailHandler(Fail)
 
 })

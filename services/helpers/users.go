@@ -8,9 +8,11 @@ import (
 )
 
 func LoginAsAdmin() {
-	Expect(Cf("login", "-u", AdminUserContext.Username, "-p", AdminUserContext.Password, "-o", AdminUserContext.Org, "-s", AdminUserContext.Space)).To(ExitWith(0))
+	adminUserContext := NewAdminUserContext()
+	Expect(Cf("login", "-u", adminUserContext.Username, "-p", adminUserContext.Password, "-o", adminUserContext.Org, "-s", adminUserContext.Space)).To(ExitWith(0))
 }
 
 func LoginAsUser() {
-	Expect(Cf("login", "-u", RegularUserContext.Username, "-p", RegularUserContext.Password, "-o", RegularUserContext.Org, "-s", RegularUserContext.Space)).To(ExitWith(0))
+	regularUserContext := NewRegularUserContext()
+	Expect(Cf("login", "-u", regularUserContext.Username, "-p", regularUserContext.Password, "-o", regularUserContext.Org, "-s", regularUserContext.Space)).To(ExitWith(0))
 }
