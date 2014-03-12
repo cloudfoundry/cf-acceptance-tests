@@ -27,7 +27,7 @@ var _ = Describe("An application that's already been pushed", func() {
 	BeforeEach(func() {
 		appName = LoadConfig().PersistentAppHost
 
-		CreateEnvironmentForUserContext(NewAdminUserContext(), PersistentSpaceUserContext)
+		CreateEnvironmentForUserContext(AdminUserContext, PersistentSpaceUserContext)
 
 		Expect(Cf("target", "-s", "persistent-space")).To(ExitWith(0))
 

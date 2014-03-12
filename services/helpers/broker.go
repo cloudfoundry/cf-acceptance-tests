@@ -152,7 +152,7 @@ type SpaceJson struct {
 }
 
 func (b ServiceBroker) GetSpaceGuid() string {
-	url := fmt.Sprintf("/v2/spaces?q=name%%3A%s", NewRegularUserContext().Space)
+	url := fmt.Sprintf("/v2/spaces?q=name%%3A%s", RegularUserContext.Space)
 	session := Cf("curl", url)
 	jsonResults := SpaceJson{}
 	json.Unmarshal(session.FullOutput(), &jsonResults)
