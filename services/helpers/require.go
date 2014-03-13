@@ -15,7 +15,7 @@ func Require(actual interface{}) RequireExpectation {
 }
 
 func (e RequireExpectation) To(matcher OmegaMatcher, optionalDescription ...interface{}) {
-	result := Expect(e.actual).To(matcher, optionalDescription...)
+	result := ExpectWithOffset(1, e.actual).To(matcher, optionalDescription...)
 	if !result {
 		panic("Failed Required Expectation")
 	}
