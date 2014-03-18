@@ -50,7 +50,7 @@ cat > integration_config.json <<EOF
 { "apps_domain": "10.244.0.34.xip.io" }
 EOF
 
-export ADMIN=admin-username
+export ADMIN_USER=admin-username
 export ADMIN_PASSWORD=admin-password
 export CF_USER=cf-user-username
 export CF_USER_PASSWORD=cf-user-password
