@@ -38,7 +38,7 @@ var _ = Describe("An application that's already been pushed", func() {
 				},
 			},
 			cmdtest.ExpectBranch{
-				"Showing health and status",
+				"running",
 				func() {
 				},
 			},
