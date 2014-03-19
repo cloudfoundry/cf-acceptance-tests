@@ -6,6 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/vito/cmdtest/matchers"
 
 	ginkgoconfig "github.com/onsi/ginkgo/config"
 	"github.com/onsi/ginkgo/reporters"
@@ -21,3 +22,7 @@ func GinkgoBootstrap(t *testing.T, suiteName string) {
 		RunSpecsWithDefaultAndCustomReporters(t, suiteName, []Reporter{reporters.NewJUnitReporter(outputFile)})
 	})
 }
+
+var _ = BeforeEach(func() {
+	Expect(cf.Cf("target", "-s", RegularUserContext.Space)).To(ExitWith(0))
+})
