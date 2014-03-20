@@ -37,18 +37,14 @@ var _ = Describe("An application that's already been pushed", func() {
 					).To(Say("App started"))
 				},
 			},
-			cmdtest.ExpectBranch{
-				"running",
-				func() {
-				},
-			},
+			cmdtest.ExpectBranch{"running", func() {}},
 		))
 	})
 
 	It("can be restarted and still come up", func() {
 		Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("Hi, I'm Dora!"))
 
-		Expect(Cf("stop", appName)).To(Say("OK"))
+		Expect(Cf("stop", appName)).To(ExitWith(0))
 
 		Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("404"))
 
