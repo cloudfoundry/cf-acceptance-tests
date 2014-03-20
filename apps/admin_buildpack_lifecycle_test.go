@@ -32,6 +32,7 @@ var _ = Describe("An application using an admin buildpack", func() {
 	}
 
 	BeforeEach(func() {
+                helpers.LoginAsAdmin()
 		BuildpackName = RandomName()
 		appName = RandomName()
 
@@ -63,10 +64,13 @@ var _ = Describe("An application using an admin buildpack", func() {
 		Expect(createBuildpack).To(Say("OK"))
 		Expect(createBuildpack).To(Say("Uploading"))
 		Expect(createBuildpack).To(Say("OK"))
+                helpers.LoginAsUser()
 	})
 
 	AfterEach(func() {
+                helpers.LoginAsAdmin()
 		Expect(Cf("delete-buildpack", BuildpackName, "-f")).To(Say("OK"))
+                helpers.LoginAsUser()
 	})
 
 	Context("when the buildpack is detected", func() {
@@ -90,7 +94,9 @@ var _ = Describe("An application using an admin buildpack", func() {
 
 	Context("when the buildpack is deleted", func() {
 		BeforeEach(func() {
-			Expect(Cf("delete-buildpack", BuildpackName, "-f")).To(Say("OK"))
+                        helpers.LoginAsAdmin()
+		        Expect(Cf("delete-buildpack", BuildpackName, "-f")).To(Say("OK"))
+                        helpers.LoginAsUser()
 		})
 
 		It("fails to stage", func() {
