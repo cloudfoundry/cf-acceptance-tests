@@ -26,6 +26,29 @@ You will need a working Go environment with `$GOPATH` set, and you will need
 See [Go CLI][cli] for instructions on installing `gcf`. See [Go][go] for
 instructions on installing `go`.
 
+### Cloud Foundry set up
+Assuming a fresh instance of cloud foundry, you need to set up a user, space and org
+to run the CATs against. This will look something like the following:
+```
+gcf login -a api.mycf-example.com -u admin -p password
+gcf create-user cats-user cats-password
+gcf create-org cats-org
+gcf create-space cats-space -o cats-org
+gcf target -o cats-org -s cats-space
+gcf set-space-role cats-user cats-space cats-org SpaceManager
+gcf set-space-role cats-user cats-space cats-org SpaceDeveloper
+gcf set-space-role cats-user cats-space cats-org SpaceAuditor
+```
+
+There also needs to be a persistent-space which the CATs user has all roles in.
+
+```
+gcf create-space persistent-space -o cats-org
+gcf set-space-role cats-user persistent-space cats-org SpaceManager
+gcf set-space-role cats-user persistent-space cats-org SpaceDeveloper
+gcf set-space-role cats-user persistent-space cats-org SpaceAuditor
+```
+
 ### Configuration
 
 Before running the tests, you must make sure you've logged in to your
