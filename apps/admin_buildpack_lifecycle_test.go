@@ -5,15 +5,17 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/apps/helpers"
+	catsHelpers "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/runner"
+	. "github.com/pivotal-cf-experimental/cf-test-helpers/zip"
 )
 
 var _ = Describe("An application using an admin buildpack", func() {
@@ -32,41 +34,48 @@ var _ = Describe("An application using an admin buildpack", func() {
 	}
 
 	BeforeEach(func() {
-		BuildpackName = RandomName()
-		appName = RandomName()
+		AsUser(catsHelpers.AdminUserContext, func() {
+			BuildpackName = RandomName()
+			appName = RandomName()
 
-		tmpdir, err := ioutil.TempDir(os.TempDir(), "matching-app")
-		Expect(err).ToNot(HaveOccurred())
+			tmpdir, err := ioutil.TempDir(os.TempDir(), "matching-app")
+			Expect(err).ToNot(HaveOccurred())
 
-		appPath = tmpdir
+			appPath = tmpdir
 
-		tmpdir, err = ioutil.TempDir(os.TempDir(), "matching-buildpack")
-		Expect(err).ToNot(HaveOccurred())
+			tmpdir, err = ioutil.TempDir(os.TempDir(), "matching-buildpack")
+			Expect(err).ToNot(HaveOccurred())
 
-		buildpackPath = tmpdir
-		buildpackArchivePath = path.Join(buildpackPath, "buildpack.zip")
+			buildpackPath = tmpdir
+			buildpackArchivePath = path.Join(buildpackPath, "buildpack.zip")
 
-		err = helpers.GenerateBuildpack(buildpackPath, matchingFilename(appName))
-		Expect(err).ToNot(HaveOccurred())
+			err = helpers.GenerateBuildpack(buildpackPath, matchingFilename(appName))
+			Expect(err).ToNot(HaveOccurred())
 
-		_, err = os.Create(path.Join(appPath, matchingFilename(appName)))
-		Expect(err).ToNot(HaveOccurred())
+			_, err = os.Create(path.Join(appPath, matchingFilename(appName)))
+			Expect(err).ToNot(HaveOccurred())
 
-		_, err = os.Create(path.Join(appPath, "some-file"))
-		Expect(err).ToNot(HaveOccurred())
+			_, err = os.Create(path.Join(appPath, "some-file"))
+			Expect(err).ToNot(HaveOccurred())
 
-		zipBuildpack := Run("bash", "-c", fmt.Sprintf("cd %s && zip -r %s bin", buildpackPath, buildpackArchivePath))
-		Expect(zipBuildpack).To(ExitWith(0))
+			buildpathFile, err := os.Create(buildpackArchivePath)
+			Expect(err).ToNot(HaveOccurred())
 
-		createBuildpack := Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0")
-		Expect(createBuildpack).To(Say("Creating"))
-		Expect(createBuildpack).To(Say("OK"))
-		Expect(createBuildpack).To(Say("Uploading"))
-		Expect(createBuildpack).To(Say("OK"))
+			err = Zip(filepath.Join(buildpackPath, "bin"), buildpathFile)
+			Expect(err).ToNot(HaveOccurred())
+
+			createBuildpack := Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0")
+			Expect(createBuildpack).To(Say("Creating"))
+			Expect(createBuildpack).To(Say("OK"))
+			Expect(createBuildpack).To(Say("Uploading"))
+			Expect(createBuildpack).To(Say("OK"))
+		})
 	})
 
 	AfterEach(func() {
-		Expect(Cf("delete-buildpack", BuildpackName, "-f")).To(Say("OK"))
+		AsUser(catsHelpers.AdminUserContext, func() {
+			Expect(Cf("delete-buildpack", BuildpackName, "-f")).To(Say("OK"))
+		})
 	})
 
 	Context("when the buildpack is detected", func() {
@@ -90,7 +99,9 @@ var _ = Describe("An application using an admin buildpack", func() {
 
 	Context("when the buildpack is deleted", func() {
 		BeforeEach(func() {
-			Expect(Cf("delete-buildpack", BuildpackName, "-f")).To(Say("OK"))
+			AsUser(catsHelpers.AdminUserContext, func() {
+				Expect(Cf("delete-buildpack", BuildpackName, "-f")).To(Say("OK"))
+			})
 		})
 
 		It("fails to stage", func() {
