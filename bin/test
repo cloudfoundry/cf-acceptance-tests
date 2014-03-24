@@ -1,21 +1,19 @@
 #!/bin/sh
-# vim: set ft=sh
 
-set -e
+set -e -x
 
 if ! which go 2>/dev/null; then
   echo "Go is not installed."
   exit 1
 fi
 
-if [ -z "$GOPATH" ]; then
-  echo "\$GOPATH is not set."
-  exit 1
-fi
+local_gopath=$PWD/Godeps/_workspace
 
-go get -u github.com/vito/gocart
-gocart  install
+mkdir -p $local_gopath/bin
+
+export GOPATH=$local_gopath:$GOPATH
+export PATH=$local_gopath/bin:$PATH
 
 go install github.com/onsi/ginkgo/ginkgo
-
+echo "RUNNING LOCAL CODE"
 ginkgo -r -v -slowSpecThreshold=300 "$@"

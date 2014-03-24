@@ -1,0 +1,37 @@
+{
+	"ImportPath": "github.com/cloudfoundry/cf-acceptance-tests",
+	"GoVersion": "go1.2.1",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/nu7hatch/gouuid",
+			"Rev": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
+		},
+		{
+			"ImportPath": "github.com/onsi/ginkgo",
+			"Rev": "3632cbe0b58a9005513942e9d4c4920e375d6778"
+		},
+		{
+			"ImportPath": "github.com/onsi/gomega",
+			"Rev": "bad854a45453ec22d99c8bd982e2302f64d3fc37"
+		},
+		{
+			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/cf",
+			"Rev": "cff6b2e5bbadc4404de1c1394f81394d516692c4"
+		},
+		{
+			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/generator",
+			"Rev": "cff6b2e5bbadc4404de1c1394f81394d516692c4"
+		},
+		{
+			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/runner",
+			"Rev": "cff6b2e5bbadc4404de1c1394f81394d516692c4"
+		},
+		{
+			"ImportPath": "github.com/vito/cmdtest",
+			"Rev": "ccd51cbbf3154a39d1ad8861e7711dfdf4ee5719"
+		}
+	]
+}
