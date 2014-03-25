@@ -19,7 +19,7 @@ var _ = Describe("AsUser", func() {
 		var session, _ = cmdtest.Start(exec.Command("echo", "nothing"))
 		return session
 	}
-	var user = cf.NewUserContext("http://FAKE_API.example.com", "FAKE_USERNAME", "FAKE_PASSWORD", "FAKE_ORG", "FAKE_SPACE")
+	var user = cf.NewUserContext("http://FAKE_API.example.com", "FAKE_USERNAME", "FAKE_PASSWORD", "FAKE_ORG", "FAKE_SPACE", "--skip-ssl-validation")
 
 	BeforeEach(func() {
 		FakeCfCalls = [][]string{}
@@ -30,7 +30,7 @@ var _ = Describe("AsUser", func() {
 	It("calls cf api", func() {
 		cf.AsUser(user, FakeThingsToRunAsUser)
 
-		Expect(FakeCfCalls[0]).To(Equal([]string{"api", "http://FAKE_API.example.com"}))
+		Expect(FakeCfCalls[0]).To(Equal([]string{"api", "http://FAKE_API.example.com", "--skip-ssl-validation"}))
 	})
 
 	It("calls cf auth", func() {

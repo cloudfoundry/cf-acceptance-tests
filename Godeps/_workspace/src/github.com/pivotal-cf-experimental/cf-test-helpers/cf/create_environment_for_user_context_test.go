@@ -17,8 +17,8 @@ var _ = Describe("CreateEnvironmentForUserContext", func() {
 		var session, _ = cmdtest.Start(exec.Command("echo", "nothing"))
 		return session
 	}
-	var user = cf.NewUserContext("http://FAKE_API.example.com", "FAKE_USERNAME", "FAKE_PASSWORD", "FAKE_ORG", "FAKE_SPACE")
-	var admin = cf.NewUserContext("http://FAKE_API.example.com", "FAKE_ADMIN_USERNAME", "FAKE_ADMIN_PASSWORD", "FAKE_ADMIN_ORG", "FAKE_ADMIN_SPACE")
+	var user = cf.NewUserContext("http://FAKE_API.example.com", "FAKE_USERNAME", "FAKE_PASSWORD", "FAKE_ORG", "FAKE_SPACE", "")
+	var admin = cf.NewUserContext("http://FAKE_API.example.com", "FAKE_ADMIN_USERNAME", "FAKE_ADMIN_PASSWORD", "FAKE_ADMIN_ORG", "FAKE_ADMIN_SPACE", "--skip-ssl-validation")
 
 	BeforeEach(func() {
 		FakeCfCalls = [][]string{}
@@ -28,7 +28,7 @@ var _ = Describe("CreateEnvironmentForUserContext", func() {
 	It("calls cf api", func() {
 		cf.CreateEnvironmentForUserContext(admin, user)
 
-		Expect(FakeCfCalls[0]).To(Equal([]string{"api", "http://FAKE_API.example.com"}))
+		Expect(FakeCfCalls[0]).To(Equal([]string{"api", "http://FAKE_API.example.com", "--skip-ssl-validation"}))
 	})
 
 	It("calls cf auth with admin credentials", func() {
