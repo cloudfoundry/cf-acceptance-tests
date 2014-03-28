@@ -10,7 +10,7 @@ ID = ((ENV["VCAP_APPLICATION"] && JSON.parse(ENV["VCAP_APPLICATION"])["instance_
 require 'bundler'
 Bundler.require :default, ENV['RACK_ENV'].to_sym
 
-CONFIG_DATA = ENV['CONFIG'] ? JSON.parse(ENV['CONFIG']) : { 'service' => {}, 'plan' => {} }
+CONFIG_DATA = ENV['CONFIG'] ? JSON.parse(ENV['CONFIG']) : { 'service' => {}, 'plan' => {}, 'dashboard_client' => {} }
 
 $stdout.sync = true
 $stderr.sync = true
@@ -35,6 +35,11 @@ class ServiceBroker < Sinatra::Base
           },
           'displayName' => 'The Fake Broker'
         },
+        'dashboard_client' => {
+          'id'           => 'sso-test',
+          'secret'       => 'sso-secret',
+          'redirect_uri' => 'http://localhost:5551'
+        }.merge(CONFIG_DATA['dashboard_client']),
         'plans' => [
           {
             'name' => 'fake-plan',

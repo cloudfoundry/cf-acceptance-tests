@@ -18,6 +18,10 @@ type ServiceBroker struct {
 	Service struct {
 		Name string `json:"name"`
 		ID   string `json:"id"`
+		DashboardClient struct {
+			ID     string `json:"id"`
+			Secret string `json:"secret"`
+		}
 	}
 	Plan struct {
 		Name string `json:"name"`
@@ -55,6 +59,8 @@ func NewServiceBroker(name string, path string) ServiceBroker {
 	b.Service.ID = generator.RandomName()
 	b.Plan.Name = generator.RandomName()
 	b.Plan.ID = generator.RandomName()
+	b.Service.DashboardClient.ID = generator.RandomName()
+	b.Service.DashboardClient.Secret = generator.RandomName()
 	return b
 }
 
@@ -87,6 +93,7 @@ func (b ServiceBroker) ToJSON() string {
 	attributes := make(map[string]interface{})
 	attributes["service"] = b.Service
 	attributes["plan"] = b.Plan
+	attributes["dashboard_client"] = b.Service.DashboardClient
 	jsonBytes, _ := json.Marshal(attributes)
 	return string(jsonBytes)
 }

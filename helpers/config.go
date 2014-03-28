@@ -8,6 +8,7 @@ import (
 type Config struct {
 	AppsDomain        string `json:"apps_domain"`
 	PersistentAppHost string `json:"persistent_app_host"`
+  ApiEndpoint       string
 }
 
 var loadedConfig *Config
@@ -19,6 +20,10 @@ func LoadConfig() Config {
 
 	if loadedConfig.PersistentAppHost == "" {
 		loadedConfig.PersistentAppHost = "persistent-app"
+	}
+
+	if loadedConfig.ApiEndpoint == "" {
+		loadedConfig.ApiEndpoint = os.Getenv("API_ENDPOINT")
 	}
 
 	return *loadedConfig
