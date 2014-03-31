@@ -23,7 +23,8 @@ var _ = Describe("SSO Lifecycle", func() {
 		password string
 	)
 
-	StartListeningForAuthCallback(config.RedirectUriPort)
+	redirectUriPort := `5551`
+	StartListeningForAuthCallback(redirectUriPort)
 
 	BeforeEach(func() {
 		LoginAsAdmin()
@@ -31,7 +32,7 @@ var _ = Describe("SSO Lifecycle", func() {
 		broker.Push()
 		broker.Configure()
 
-		config.RedirectUriPort = `5551`
+		config.RedirectUriPort = redirectUriPort
 		config.ClientId        = broker.Service.DashboardClient.ID
 		config.ClientSecret    = broker.Service.DashboardClient.Secret
 		config.RedirectUri     = fmt.Sprintf("http://localhost:%v", config.RedirectUriPort)
@@ -43,7 +44,7 @@ var _ = Describe("SSO Lifecycle", func() {
 	})
 
 	AfterEach(func() {
-		Require(Cf("delete", broker.Name, "-f")).To(ExitWithTimeout(0, 20*time.Second))
+		broker.Destroy()
 		LoginAsUser()
 	})
 
@@ -54,17 +55,25 @@ var _ = Describe("SSO Lifecycle", func() {
 			Require(Cf("create-service-broker", broker.Name, "username", "password", AppUri(broker.Name, "", LoadConfig().AppsDomain))).To(ExitWithTimeout(0, 20*time.Second))
 			Expect(Cf("service-brokers")).To(Say(broker.Name))
 
+			//create a service instance
+			broker.PublicizePlans()
+			serviceInstanceGuid := broker.CreateServiceInstance(generator.RandomName())
+
 			// perform the OAuth lifecycle to obtain an access token
 			tokenEndpoint              := GetTokenEndpoint(apiEndpoint)
 			tokenEndpointSessionCookie := LogIntoTokenEndpoint(tokenEndpoint, username, password)
-			authCode, _                := RequestScopes(tokenEndpoint, tokenEndpointSessionCookie, config)
-			accessToken                := GetAccessToken(tokenEndpoint, authCode, config)
+
+			authCode, _ := RequestScopes(tokenEndpoint, tokenEndpointSessionCookie, config)
+			Expect(authCode).ToNot(BeNil(), `Failed to request and authorize scopes.`)
+
+			accessToken := GetAccessToken(tokenEndpoint, authCode, config)
+			Expect(accessToken).ToNot(BeNil(), `Failed to obtain an access token.`)
 
 			// use the access token to perform an operation on the user's behalf
-			canManage := QueryServiceInstancePermissionEndpoint(apiEndpoint, accessToken, `made-up-guid`)
+			canManage, httpCode := QueryServiceInstancePermissionEndpoint(apiEndpoint, accessToken, serviceInstanceGuid)
 
-			// we don't really care about true or false, either result means we were able to communicate with the endpoint
-			Expect(canManage).To(Equal(false))
+			Expect(httpCode).To(Equal(`200`), `The provided access token was not valid.`)
+			Expect(canManage).To(Equal(`true`))
 		})
 	})
 
@@ -76,25 +85,34 @@ var _ = Describe("SSO Lifecycle", func() {
 			Expect(Cf("service-brokers")).To(Say(broker.Name))
 
 			config.ClientId = `new-client-id`
+			broker.Service.DashboardClient.ID = config.ClientId
 			broker.Configure()
 
 			Require(Cf("update-service-broker", broker.Name, "username", "password", AppUri(broker.Name, "", LoadConfig().AppsDomain))).To(ExitWithTimeout(0, 20*time.Second))
 
+			//create a service instance
+			broker.PublicizePlans()
+			serviceInstanceGuid := broker.CreateServiceInstance(generator.RandomName())
+
 			// perform the OAuth lifecycle to obtain an access token
 			tokenEndpoint              := GetTokenEndpoint(apiEndpoint)
 			tokenEndpointSessionCookie := LogIntoTokenEndpoint(tokenEndpoint, username, password)
-			authCode, _                := RequestScopes(tokenEndpoint, tokenEndpointSessionCookie, config)
-			accessToken                := GetAccessToken(tokenEndpoint, authCode, config)
+
+			authCode, _ := RequestScopes(tokenEndpoint, tokenEndpointSessionCookie, config)
+			Expect(authCode).ToNot(BeNil(), `Failed to request and authorize scopes.`)
+
+			accessToken := GetAccessToken(tokenEndpoint, authCode, config)
+			Expect(accessToken).ToNot(BeNil(), `Failed to obtain an access token.`)
 
 			// use the access token to perform an operation on the user's behalf
-			canManage := QueryServiceInstancePermissionEndpoint(apiEndpoint, accessToken, `made-up-guid`)
+			canManage, httpCode := QueryServiceInstancePermissionEndpoint(apiEndpoint, accessToken, serviceInstanceGuid)
 
-			// we don't really care about true or false, either result means we were able to communicate with the endpoint
-			Expect(canManage).To(Equal(false))
+			Expect(httpCode).To(Equal(`200`), `The provided access token was not valid.`)
+			Expect(canManage).To(Equal(`true`))
 		})
 	})
 
-	Context("When a service broker is updated", func() {
+	Context("When a service broker is deleted", func() {
 		It("can no longer perform an operation on a user's behalf using sso", func() {
 			defer Recover() // Catches panic thrown by Require expectations
 
@@ -109,6 +127,7 @@ var _ = Describe("SSO Lifecycle", func() {
 			tokenEndpointSessionCookie := LogIntoTokenEndpoint(tokenEndpoint, username, password)
 			_, httpCode                := RequestScopes(tokenEndpoint, tokenEndpointSessionCookie, config)
 
+			// there should not be a client in uaa anymore, so the request for scopes should return an unauthorized
 			Expect(httpCode).To(Equal(`401`))
 		})
 	})

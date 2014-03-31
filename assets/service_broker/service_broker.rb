@@ -69,6 +69,11 @@ class ServiceBroker < Sinatra::Base
     {}.to_json
   end
 
+  delete '/v2/service_instances/:id' do
+    status 200
+    {}.to_json
+  end
+
   get '/env/:name' do
     ENV[params[:name]]
   end

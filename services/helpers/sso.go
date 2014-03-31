@@ -58,29 +58,35 @@ func LogIntoTokenEndpoint(tokenEndpoint string, username string, password string
 
 func RequestScopes(tokenEndpoint string, cookie string, config OAuthConfig) (authCode string, httpCode string) {
 	requestScopesUri := fmt.Sprintf("%v/authorize?client_id=%v&response_type=code+id_token&redirect_uri=%v&scope=%v",
-		tokenEndpoint,
-		config.ClientId,
-		config.RedirectUri,
-		config.RequestedScopes)
+	tokenEndpoint,
+	config.ClientId,
+	config.RedirectUri,
+	config.RequestedScopes)
 
 	result     := Curl(requestScopesUri, `-L`, `--cookie`, cookie, `--insecure`, `-w`, `:TestReponseCode:%{http_code}`).FullOutput()
-	resultText := string(result)
-	resultMap  := strings.Split(resultText, `:TestReponseCode:`)
+	resultBody := string(result)
+	resultMap  := strings.Split(resultBody, `:TestReponseCode:`)
 
-	authCode = resultMap[0]
-	httpCode = resultMap[1]
+	resultText := resultMap[0]
+	httpCode   = resultMap[1]
 
 	if (httpCode == `200`) {
-		AuthorizeScopes(tokenEndpoint, cookie)
+		if (strings.Contains(resultText, `authorize`)) {
+			authCode = AuthorizeScopes(tokenEndpoint, cookie)
+		} else {
+			authCode = resultText
+		}
 	}
 
 	return
 }
 
-func AuthorizeScopes(tokenEndpoint string, cookie string) {
+func AuthorizeScopes(tokenEndpoint string, cookie string) (authCode string){
 	authorizedScopes   := `scope.0=scope.openid&scope.1=scope.cloud_controller.read&scope.2=scope.cloud_controller.write&user_oauth_approval=true`
 	authorizeScopesUri := fmt.Sprintf("%v/authorize", tokenEndpoint)
-	Curl(authorizeScopesUri, `--data`, authorizedScopes, `--cookie`, cookie, `--insecure`)
+	result := Curl(authorizeScopesUri, `-L`, `--data`, authorizedScopes, `--cookie`, cookie, `--insecure`)
+
+	authCode = string(result.FullOutput())
 	return
 }
 
@@ -98,13 +104,22 @@ func GetAccessToken(tokenEndpoint string, authCode string, config OAuthConfig) (
 	return
 }
 
-func QueryServiceInstancePermissionEndpoint(apiEndpoint string, accessToken string, serviceInstanceGuid string) (canManage bool) {
+func QueryServiceInstancePermissionEndpoint(apiEndpoint string, accessToken string, serviceInstanceGuid string) (canManage string, httpCode string) {
+	canManage      = `not populated`
 	authHeader     := fmt.Sprintf("Authorization: bearer %v", accessToken)
 	permissionsUri := fmt.Sprintf("%v/v2/service_instances/%v/permissions", apiEndpoint, serviceInstanceGuid)
 
-	result     := Curl(permissionsUri, `-H`, authHeader, `--insecure`).FullOutput()
-	jsonResult := ParseJsonResponse(result)
+	result     := Curl(permissionsUri, `-H`, authHeader, `-w`, `:TestReponseCode:%{http_code}`, `--insecure`).FullOutput()
+	resultBody := string(result)
+	resultMap  := strings.Split(resultBody, `:TestReponseCode:`)
 
-	canManage	= jsonResult[`manage`].(bool)
+	resultText := resultMap[0]
+	httpCode   = resultMap[1]
+
+	if (httpCode == `200`) {
+		jsonResult := ParseJsonResponse([]byte(resultText))
+		canManage	= fmt.Sprintf("%v", jsonResult[`manage`])
+	}
+
 	return
 }

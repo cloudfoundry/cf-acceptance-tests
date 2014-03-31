@@ -51,6 +51,12 @@ type ServicePlanResponse struct {
 	}
 }
 
+type ServiceInstanceResponse struct {
+	Metadata struct {
+		Guid string `json:"guid"`
+	}
+}
+
 func NewServiceBroker(name string, path string) ServiceBroker {
 	b := ServiceBroker{}
 	b.Path = path
@@ -85,6 +91,7 @@ func (b ServiceBroker) Create(appsDomain string) {
 }
 
 func (b ServiceBroker) Destroy() {
+	Expect(Cf("purge-service-offering", b.Service.Name, "-f")).To(ExitWithTimeout(0, 2*time.Second))
 	Expect(Cf("delete-service-broker", b.Name, "-f")).To(ExitWithTimeout(0, 2*time.Second))
 	Expect(Cf("delete", b.Name, "-f")).To(ExitWithTimeout(0, 2*time.Second))
 }
@@ -122,7 +129,7 @@ func (b ServiceBroker) PublicizePlan(url string) {
 	Expect(Cf("curl", url, "-X", "PUT", "-d", string(planJson))).To(ExitWithTimeout(0, 5*time.Second))
 }
 
-func (b ServiceBroker) CreateServiceInstance(instanceName string) {
+func (b ServiceBroker) CreateServiceInstance(instanceName string) (guid string) {
 	url := fmt.Sprintf("/v2/services?inline-relations-depth=1&q=label:%s", b.Service.Name)
 	session := Cf("curl", url)
 	structure := ServicesResponse{}
@@ -131,15 +138,16 @@ func (b ServiceBroker) CreateServiceInstance(instanceName string) {
 		if service.Entity.Label == b.Service.Name {
 			for _, plan := range service.Entity.ServicePlans {
 				if plan.Entity.Name == b.Plan.Name {
-					b.createInstanceForPlan(plan.Metadata.Guid, instanceName)
+					guid = b.createInstanceForPlan(plan.Metadata.Guid, instanceName)
 					break
 				}
 			}
 		}
 	}
+	return
 }
 
-func (b ServiceBroker) createInstanceForPlan(planGuid, instanceName string) {
+func (b ServiceBroker) createInstanceForPlan(planGuid, instanceName string) (guid string) {
 	spaceGuid := b.GetSpaceGuid()
 
 	attributes := make(map[string]string)
@@ -147,7 +155,15 @@ func (b ServiceBroker) createInstanceForPlan(planGuid, instanceName string) {
 	attributes["service_plan_guid"] = planGuid
 	attributes["space_guid"] = spaceGuid
 	jsonBytes, _ := json.Marshal(attributes)
-	Expect(Cf("curl", "/v2/service_instances", "-X", "POST", "-d", string(jsonBytes))).To(ExitWith(0))
+
+	result := Cf("curl", "/v2/service_instances", "-X", "POST", "-d", string(jsonBytes))
+	Expect(result).To(ExitWith(0))
+
+	serviceInstance := ServiceInstanceResponse{}
+	json.Unmarshal(result.FullOutput(), &serviceInstance)
+
+	guid = serviceInstance.Metadata.Guid
+	return
 }
 
 type SpaceJson struct {
