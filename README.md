@@ -51,6 +51,16 @@ gcf set-space-role cats-user persistent-space cats-org SpaceAuditor
 
 ### Configuration
 
+The tests infrastructure requires `mercurial` to run:
+```
+sudo apt-get install -y mercurial
+```
+
+If, when running, you come across an issue with `go` trying to download all necessary parts of `cats`, you may find running this will fix it:
+```
+go get -d github.com/pivotal-cf-experimental/cf-acceptance-tests/...
+```
+
 Before running the tests, you must make sure you've logged in to your
 runtime environment and targeted a space using
 ```
