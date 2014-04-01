@@ -93,9 +93,9 @@ func (b ServiceBroker) Create(appsDomain string) {
 }
 
 func (b ServiceBroker) Destroy() {
-	Expect(Cf("purge-service-offering", b.Service.Name, "-f")).To(ExitWithTimeout(0, 2*time.Second))
-	Expect(Cf("delete-service-broker", b.Name, "-f")).To(ExitWithTimeout(0, 2*time.Second))
-	Expect(Cf("delete", b.Name, "-f")).To(ExitWithTimeout(0, 2*time.Second))
+	Expect(Cf("purge-service-offering", b.Service.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
+	Expect(Cf("delete-service-broker", b.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
+	Expect(Cf("delete", b.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
 }
 
 func (b ServiceBroker) ToJSON() string {

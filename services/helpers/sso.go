@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"regexp"
-	"net/http"
 	"net/url"
 	"strings"
 
@@ -13,11 +12,12 @@ import (
 )
 
 type OAuthConfig struct {
-	RedirectUriPort string
-	ClientId 				string
-	ClientSecret 		string
-	RedirectUri 		string
-	RequestedScopes string
+	ClientId 				      string
+	ClientSecret 		      string
+	RedirectUri 		      string
+	RequestedScopes       string
+	AuthorizationEndpoint string
+	TokenEndpoint         string
 }
 
 func ParseJsonResponse(response []byte) (resultMap map[string]interface{}) {
@@ -28,31 +28,22 @@ func ParseJsonResponse(response []byte) (resultMap map[string]interface{}) {
 	return
 }
 
-func RegisterAuthCallbackHandler() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		code := r.FormValue("code")
-		w.Write([]byte(code))
-	})
-}
-
-func StartListeningForAuthCallback(port int) {
-	go http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
-}
-
-func GetTokenEndpoint(apiEndpoint string) (tokenEndpoint string) {
+func SetOauthEndpoints(apiEndpoint string, config *OAuthConfig) {
 	result        := Curl(fmt.Sprintf("%v/info", apiEndpoint)).FullOutput()
 	jsonResult    := ParseJsonResponse(result)
-	tokenEndpoint = fmt.Sprintf("%v", jsonResult[`token_endpoint`])
+
+	config.TokenEndpoint         = fmt.Sprintf("%v", jsonResult[`token_endpoint`])
+	config.AuthorizationEndpoint = fmt.Sprintf("%v", jsonResult[`authorization_endpoint`])
 	return
 }
 
-func LogIntoTokenEndpoint(tokenEndpoint string, username string, password string) (cookie string) {
-	loginUri         := fmt.Sprintf("%v/login.do", tokenEndpoint)
+func AuthenticateUser(authorizationEndpoint string, username string, password string) (cookie string) {
+	loginUri         := fmt.Sprintf("%v/login.do", authorizationEndpoint)
 	usernameEncoded  := url.QueryEscape(username)
 	passwordEncoded  := url.QueryEscape(password)
 	loginCredentials := fmt.Sprintf("username=%v&password=%v", usernameEncoded, passwordEncoded)
 
-	result       := Curl(loginUri, `--data`, loginCredentials, `--insecure`, `-i`).FullOutput()
+	result       := Curl(loginUri, `--data`, loginCredentials, `--insecure`, `-i`, `-v`).FullOutput()
 	stringResult := string(result)
 
 	regEx, _  := regexp.Compile(`JSESSIONID([^;]*)`)
@@ -61,49 +52,51 @@ func LogIntoTokenEndpoint(tokenEndpoint string, username string, password string
 	return
 }
 
-func RequestScopes(tokenEndpoint string, cookie string, config OAuthConfig) (authCode string, httpCode string) {
+func RequestScopes(cookie string, config OAuthConfig) (authCode string, httpCode string) {
+	authCode = `initialized`
+
 	requestScopesUri := fmt.Sprintf("%v/oauth/authorize?client_id=%v&response_type=code+id_token&redirect_uri=%v&scope=%v",
-		tokenEndpoint,
+		config.AuthorizationEndpoint,
 		url.QueryEscape(config.ClientId),
 		config.RedirectUri,
 		config.RequestedScopes)
 
-	result     := Curl(requestScopesUri, `-L`, `--cookie`, cookie, `--insecure`, `-w`, `:TestReponseCode:%{http_code}`).FullOutput()
-	resultBody := string(result)
-	resultMap  := strings.Split(resultBody, `:TestReponseCode:`)
+	result       := Curl(requestScopesUri, `-L`, `--cookie`, cookie, `--insecure`, `-w`, `:TestReponseCode:%{http_code}`, `-v`)
+	resultString := string(result.FullOutput())
+	resultMap    := strings.Split(resultString, `:TestReponseCode:`)
 
-	resultText := resultMap[0]
 	httpCode   = resultMap[1]
 
 	if (httpCode == `200`) {
-		if (strings.Contains(resultText, `authorize`)) {
-			authCode = AuthorizeScopes(tokenEndpoint, cookie)
-		} else {
-			authCode = resultText
-		}
+		authCode = AuthorizeScopes(cookie, config)
 	}
 
 	return
 }
 
-func AuthorizeScopes(tokenEndpoint string, cookie string) (authCode string){
+func AuthorizeScopes(cookie string, config OAuthConfig) (authCode string){
 	authorizedScopes   := `scope.0=scope.openid&scope.1=scope.cloud_controller.read&scope.2=scope.cloud_controller.write&user_oauth_approval=true`
-	authorizeScopesUri := fmt.Sprintf("%v/oauth/authorize", tokenEndpoint)
-	result := Curl(authorizeScopesUri, `-L`, `--data`, authorizedScopes, `--cookie`, cookie, `--insecure`)
+	authorizeScopesUri := fmt.Sprintf("%v/oauth/authorize", config.AuthorizationEndpoint)
 
-	authCode = string(result.FullOutput())
+	result       := Curl(authorizeScopesUri, `-i`, `--data`, authorizedScopes, `--cookie`, cookie, `--insecure`, `-v`)
+	stringResult := string(result.FullOutput())
+
+	pattern  := fmt.Sprintf(`%v\?code=([a-zA-Z0-9]+)`, regexp.QuoteMeta(config.RedirectUri))
+	regEx, _ := regexp.Compile(pattern)
+	authCode = regEx.FindStringSubmatch(stringResult)[1]
+
 	return
 }
 
-func GetAccessToken(tokenEndpoint string, authCode string, config OAuthConfig) (accessToken string) {
+func GetAccessToken(authCode string, config OAuthConfig) (accessToken string) {
 	clientCredentials        := []byte(fmt.Sprintf("%v:%v", config.ClientId, config.ClientSecret))
 	encodedClientCredentials := base64.StdEncoding.EncodeToString(clientCredentials)
 	authHeader               := fmt.Sprintf("Authorization: Basic %v", encodedClientCredentials)
-	requestTokenUri          := fmt.Sprintf("%v/oauth/token", tokenEndpoint)
+	requestTokenUri          := fmt.Sprintf("%v/oauth/token", config.TokenEndpoint)
 	requestTokenData         := fmt.Sprintf("scope=%v&code=%v&grant_type=authorization_code&redirect_uri=%v", config.RequestedScopes, authCode, config.RedirectUri)
 
-	result     := Curl(requestTokenUri, `-H`, authHeader, `--data`, requestTokenData, `--insecure`).FullOutput()
-	jsonResult := ParseJsonResponse(result)
+	result     := Curl(requestTokenUri, `-H`, authHeader, `--data`, requestTokenData, `--insecure`, `-v`)
+	jsonResult := ParseJsonResponse(result.FullOutput())
 
 	accessToken = fmt.Sprintf("%v", jsonResult[`access_token`])
 	return
@@ -114,8 +107,8 @@ func QueryServiceInstancePermissionEndpoint(apiEndpoint string, accessToken stri
 	authHeader     := fmt.Sprintf("Authorization: bearer %v", accessToken)
 	permissionsUri := fmt.Sprintf("%v/v2/service_instances/%v/permissions", apiEndpoint, serviceInstanceGuid)
 
-	result     := Curl(permissionsUri, `-H`, authHeader, `-w`, `:TestReponseCode:%{http_code}`, `--insecure`).FullOutput()
-	resultBody := string(result)
+	result     := Curl(permissionsUri, `-H`, authHeader, `-w`, `:TestReponseCode:%{http_code}`, `--insecure`, `-v`)
+	resultBody := string(result.FullOutput())
 	resultMap  := strings.Split(resultBody, `:TestReponseCode:`)
 
 	resultText := resultMap[0]
