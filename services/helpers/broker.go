@@ -19,8 +19,9 @@ type ServiceBroker struct {
 		Name string `json:"name"`
 		ID   string `json:"id"`
 		DashboardClient struct {
-			ID     string `json:"id"`
-			Secret string `json:"secret"`
+			ID          string `json:"id"`
+			Secret      string `json:"secret"`
+			RedirectUri string `json:"redirect_uri"`
 		}
 	}
 	Plan struct {
@@ -67,6 +68,7 @@ func NewServiceBroker(name string, path string) ServiceBroker {
 	b.Plan.ID = generator.RandomName()
 	b.Service.DashboardClient.ID = generator.RandomName()
 	b.Service.DashboardClient.Secret = generator.RandomName()
+	b.Service.DashboardClient.RedirectUri = generator.RandomName()
 	return b
 }
 

@@ -27,13 +27,15 @@ func ParseJsonResponse(response []byte) (resultMap map[string]interface{}) {
 	return
 }
 
-func StartListeningForAuthCallback(port string) {
+func RegisterAuthCallbackHandler() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		code := r.FormValue("code")
 		w.Write([]byte(code))
 	})
-	go http.ListenAndServe(fmt.Sprintf(":%v", port), nil)
-	return
+}
+
+func StartListeningForAuthCallback(port int) {
+	go http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }
 
 func GetTokenEndpoint(apiEndpoint string) (tokenEndpoint string) {

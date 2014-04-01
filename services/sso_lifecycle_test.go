@@ -23,24 +23,35 @@ var _ = Describe("SSO Lifecycle", func() {
 		password string
 	)
 
-	redirectUriPort := `5551`
-	StartListeningForAuthCallback(redirectUriPort)
+	var redirectUriPort int
+
+	RegisterAuthCallbackHandler()
 
 	BeforeEach(func() {
 		LoginAsAdmin()
-		broker = NewServiceBroker(generator.RandomName(), NewAssets().ServiceBroker)
-		broker.Push()
-		broker.Configure()
-
-		config.RedirectUriPort = redirectUriPort
-		config.ClientId        = broker.Service.DashboardClient.ID
-		config.ClientSecret    = broker.Service.DashboardClient.Secret
-		config.RedirectUri     = fmt.Sprintf("http://localhost:%v", config.RedirectUriPort)
-		config.RequestedScopes = `openid,cloud_controller.read,cloud_controller.write`
 
 		apiEndpoint = LoadConfig().ApiEndpoint
 		username    = RegularUserContext.Username
 		password    = RegularUserContext.Password
+	})
+
+	JustBeforeEach(func() {
+		StartListeningForAuthCallback(redirectUriPort)
+
+		redirectUriPortString := fmt.Sprintf("%d", redirectUriPort)
+		redirectUri           := fmt.Sprintf("http://localhost:%v", redirectUriPortString)
+
+		broker = NewServiceBroker(generator.RandomName(), NewAssets().ServiceBroker)
+		broker.Push()
+		broker.Service.DashboardClient.RedirectUri = redirectUri
+		broker.Configure()
+
+		config = OAuthConfig{}
+		config.RedirectUriPort = redirectUriPortString
+		config.ClientId        = broker.Service.DashboardClient.ID
+		config.ClientSecret    = broker.Service.DashboardClient.Secret
+		config.RedirectUri     = redirectUri
+		config.RequestedScopes = `openid,cloud_controller.read,cloud_controller.write`
 	})
 
 	AfterEach(func() {
@@ -49,6 +60,10 @@ var _ = Describe("SSO Lifecycle", func() {
 	})
 
 	Context("When a service broker is created", func() {
+		BeforeEach(func() {
+			redirectUriPort = 5551
+		})
+
 		It("can perform an operation on a user's behalf using sso", func() {
 			defer Recover() // Catches panic thrown by Require expectations
 
@@ -78,6 +93,10 @@ var _ = Describe("SSO Lifecycle", func() {
 	})
 
 	Context("When a service broker is updated", func() {
+		BeforeEach(func() {
+			redirectUriPort = 5552
+		})
+
 		It("can perform an operation on a user's behalf using sso", func() {
 			defer Recover() // Catches panic thrown by Require expectations
 
@@ -113,6 +132,10 @@ var _ = Describe("SSO Lifecycle", func() {
 	})
 
 	Context("When a service broker is deleted", func() {
+		BeforeEach(func() {
+			redirectUriPort = 5553
+		})
+
 		It("can no longer perform an operation on a user's behalf using sso", func() {
 			defer Recover() // Catches panic thrown by Require expectations
 
