@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"regexp"
 	"net/http"
+	"net/url"
 	"strings"
 
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/runner"
@@ -47,7 +48,9 @@ func GetTokenEndpoint(apiEndpoint string) (tokenEndpoint string) {
 
 func LogIntoTokenEndpoint(tokenEndpoint string, username string, password string) (cookie string) {
 	loginUri         := fmt.Sprintf("%v/authorize/login.do", tokenEndpoint)
-	loginCredentials := fmt.Sprintf("username=%v&password=%v", username, password)
+	usernameEncoded  := url.QueryEscape(username)
+	passwordEncoded  := url.QueryEscape(password)
+	loginCredentials := fmt.Sprintf("username=%v&password=%v", usernameEncoded, passwordEncoded)
 
 	result       := Curl(loginUri, `--data`, loginCredentials, `--insecure`, `-i`).FullOutput()
 	stringResult := string(result)
@@ -60,10 +63,10 @@ func LogIntoTokenEndpoint(tokenEndpoint string, username string, password string
 
 func RequestScopes(tokenEndpoint string, cookie string, config OAuthConfig) (authCode string, httpCode string) {
 	requestScopesUri := fmt.Sprintf("%v/authorize?client_id=%v&response_type=code+id_token&redirect_uri=%v&scope=%v",
-	tokenEndpoint,
-	config.ClientId,
-	config.RedirectUri,
-	config.RequestedScopes)
+		tokenEndpoint,
+		url.QueryEscape(config.ClientId),
+		config.RedirectUri,
+		config.RequestedScopes)
 
 	result     := Curl(requestScopesUri, `-L`, `--cookie`, cookie, `--insecure`, `-w`, `:TestReponseCode:%{http_code}`).FullOutput()
 	resultBody := string(result)
