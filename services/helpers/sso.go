@@ -42,12 +42,12 @@ func StartListeningForAuthCallback(port int) {
 func GetTokenEndpoint(apiEndpoint string) (tokenEndpoint string) {
 	result        := Curl(fmt.Sprintf("%v/info", apiEndpoint)).FullOutput()
 	jsonResult    := ParseJsonResponse(result)
-	tokenEndpoint = fmt.Sprintf("%v/oauth", jsonResult[`token_endpoint`])
+	tokenEndpoint = fmt.Sprintf("%v", jsonResult[`token_endpoint`])
 	return
 }
 
 func LogIntoTokenEndpoint(tokenEndpoint string, username string, password string) (cookie string) {
-	loginUri         := fmt.Sprintf("%v/authorize/login.do", tokenEndpoint)
+	loginUri         := fmt.Sprintf("%v/login.do", tokenEndpoint)
 	usernameEncoded  := url.QueryEscape(username)
 	passwordEncoded  := url.QueryEscape(password)
 	loginCredentials := fmt.Sprintf("username=%v&password=%v", usernameEncoded, passwordEncoded)
@@ -62,7 +62,7 @@ func LogIntoTokenEndpoint(tokenEndpoint string, username string, password string
 }
 
 func RequestScopes(tokenEndpoint string, cookie string, config OAuthConfig) (authCode string, httpCode string) {
-	requestScopesUri := fmt.Sprintf("%v/authorize?client_id=%v&response_type=code+id_token&redirect_uri=%v&scope=%v",
+	requestScopesUri := fmt.Sprintf("%v/oauth/authorize?client_id=%v&response_type=code+id_token&redirect_uri=%v&scope=%v",
 		tokenEndpoint,
 		url.QueryEscape(config.ClientId),
 		config.RedirectUri,
@@ -88,7 +88,7 @@ func RequestScopes(tokenEndpoint string, cookie string, config OAuthConfig) (aut
 
 func AuthorizeScopes(tokenEndpoint string, cookie string) (authCode string){
 	authorizedScopes   := `scope.0=scope.openid&scope.1=scope.cloud_controller.read&scope.2=scope.cloud_controller.write&user_oauth_approval=true`
-	authorizeScopesUri := fmt.Sprintf("%v/authorize", tokenEndpoint)
+	authorizeScopesUri := fmt.Sprintf("%v/oauth/authorize", tokenEndpoint)
 	result := Curl(authorizeScopesUri, `-L`, `--data`, authorizedScopes, `--cookie`, cookie, `--insecure`)
 
 	authCode = string(result.FullOutput())
@@ -99,7 +99,7 @@ func GetAccessToken(tokenEndpoint string, authCode string, config OAuthConfig) (
 	clientCredentials        := []byte(fmt.Sprintf("%v:%v", config.ClientId, config.ClientSecret))
 	encodedClientCredentials := base64.StdEncoding.EncodeToString(clientCredentials)
 	authHeader               := fmt.Sprintf("Authorization: Basic %v", encodedClientCredentials)
-	requestTokenUri          := fmt.Sprintf("%v/token", tokenEndpoint)
+	requestTokenUri          := fmt.Sprintf("%v/oauth/token", tokenEndpoint)
 	requestTokenData         := fmt.Sprintf("scope=%v&code=%v&grant_type=authorization_code&redirect_uri=%v", config.RequestedScopes, authCode, config.RedirectUri)
 
 	result     := Curl(requestTokenUri, `-H`, authHeader, `--data`, requestTokenData, `--insecure`).FullOutput()
