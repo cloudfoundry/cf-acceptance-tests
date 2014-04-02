@@ -1,158 +1,128 @@
-# CF Acceptance Tests
+# CF Acceptance Tests (CATs)
 
-This test suite exercises a full [Cloud Foundry][cf-release] deployment using
-the `gcf` CLI and `curl`. It is restricted to testing high-level user-facing
-features that touch more than one component in the deployment.
+This test suite exercises a full [Cloud Foundry](https://github.com/cloudfoundry/cf-release) deployment using
+the golang `cf` CLI and `curl`. It is restricted to testing user-facing
+features as a user interacting with the system via the CLI.
 
-For example, one test pushes an app with `gcf push`, hits an endpoint on the
+For example, one test pushes an app with `cf push`, hits an endpoint on the
 app with `curl` that causes it to crash, and asserts that we eventually see a
 crash event registered in `gcf events`.
 
-Tests that will NOT be introduced here are things that only really test one
-single component, like basic CRUD of an object in the CC. These tests belong
-further down.
+Tests that will NOT be introduced here are ones which could be tested at the component level,
+such as basic CRUD of an object in the Cloud Controller. These tests belong with that component.
 
-When running the tests, they will use `gcf` in whatever state it's already
-configured for. Setting up users and organizations and spaces is out of scope.
-This simplifies the tests themselves and is likely more natural for someone
-testing their own CF deployment, as they're probably kicking the tires on it
-themselves.
+NOTE: Because we want to parallize execution, tests should be written in such a way as to be runable individually.
+This means that tests should not depend on state in other tests,
+and should not modify the CF state in such a way as to impact other tests.
 
 ## Running the tests
 
-You will need a working Go environment with `$GOPATH` set, and you will need
-`gcf` and `curl` in your `$PATH`.
+### Set up your `go` environment
 
-See [Go CLI][cli] for instructions on installing `gcf`. See [Go][go] for
-instructions on installing `go`.
+Set up your golang development environment, [per golang.org](http://golang.org/doc/install).
 
-### Cloud Foundry set up
-Assuming a fresh instance of cloud foundry, you need to set up a user, space and org
-to run the CATs against. This will look something like the following:
-```
-gcf login -a api.mycf-example.com -u admin -p password
-gcf create-user cats-user cats-password
-gcf create-org cats-org
-gcf create-space cats-space -o cats-org
-gcf target -o cats-org -s cats-space
-gcf set-space-role cats-user cats-space cats-org SpaceManager
-gcf set-space-role cats-user cats-space cats-org SpaceDeveloper
-gcf set-space-role cats-user cats-space cats-org SpaceAuditor
-```
+You will probably also need the following SCM programs in order to `go get` source code:
+* [git](http://git-scm.com/)
+* [mercurial](http://mercurial.selenic.com/)
+* [bazaar](http://bazaar.canonical.com/)
 
-There also needs to be a persistent-space which the CATs user has all roles in.
+See [Go CLI][cli] for instructions on installing the go version of `cf`.
 
-```
-gcf create-space persistent-space -o cats-org
-gcf set-space-role cats-user persistent-space cats-org SpaceManager
-gcf set-space-role cats-user persistent-space cats-org SpaceDeveloper
-gcf set-space-role cats-user persistent-space cats-org SpaceAuditor
-```
+Make sure that [curl](http://curl.haxx.se/) is installed on your system.
 
-### Configuration
+Make sure that the go version of `cf` is accessible in your `$PATH`, and that it is either
+renamed to `gcf`, or that there is a symlink from `gcf` to the location of `cf`.
 
-Before running the tests, you must make sure you've logged in to your
-runtime environment and targeted a space using
-```
-  gcf target -o [your_org] -s [your_space]
-```
+Check out a copy of `cf-acceptance-tests` and make sure that it is added to your `$GOPATH`.
+The recommended way to do this is to run `go get github.com/cloudfoundry/cf-acceptance-tests`
 
-You must also set `$CONFIG` to point to a `.json` file which contains the 
-configuration for the tests.
+All `go` dependencies required by CATs are vendored in `cf-acceptance-tests/Godeps`.
 
-There is not much to configure - for now you just need to set the domain that
-the deployment is configured to use for the apps, and set several environment variables.
+### Test Setup and Execution
 
-The tests must run as a user - you must create a user and specify its credentials in the env vars.
+To run the CF Acceptance tests, you will need a running CF instance; the examples below show the configuration
+which would be used to run against a [bosh-lite](https://github.com/cloudfoundry/bosh-lite) installation.
 
-For example, to run these against a local BOSH lite deployment, you'll likely
-need:
+The tests expect a set of credentials for an Admin and a regular user, an org, a temporary space,
+and a persistent space within that org.
 
-```sh
+You must also provide a `$CONFIG` variable which points to a `.json` file that contains the application domain.
+
+```bash
+export ADMIN_USER=admin
+export ADMIN_PASSWORD=admin
+export CF_USER=cats-user
+export CF_USER_PASSWORD=cats-user-pass
+export CF_ORG=cats-org
+export CF_SPACE=cats-space
+export API_ENDPOINT=api.10.244.0.34.xip.io
+
+gcf login -a $API_ENDPOINT -u $ADMIN_USER -p $ADMIN_PASSWORD
+gcf create-user $CF_USER $CF_USER_PASSWORD
+gcf create-org $CF_ORG
+gcf create-space $CF_SPACE -o $CF_ORG
+gcf target -o $CF_ORG -s $CF_SPACE
+gcf set-space-role $CF_USER $CF_ORG $CF_SPACE SpaceManager
+gcf set-space-role $CF_USER $CF_ORG $CF_SPACE SpaceDeveloper
+gcf set-space-role $CF_USER $CF_ORG $CF_SPACE SpaceAuditor
+
+gcf create-space persistent-space -o $CF_ORG
+gcf set-space-role $CF_USER $CF_ORG persistent-space SpaceManager
+gcf set-space-role $CF_USER $CF_ORG persistent-space SpaceDeveloper
+gcf set-space-role $CF_USER $CF_ORG persistent-space SpaceAuditor
+
 cat > integration_config.json <<EOF
 { "apps_domain": "10.244.0.34.xip.io" }
 EOF
-
-export ADMIN_USER=admin-username
-export ADMIN_PASSWORD=admin-password
-export CF_USER=cf-user-username
-export CF_USER_PASSWORD=cf-user-password
-export CF_ORG=org-name
-export CF_SPACE=space-name
-export API_ENDPOINT=http://cf.api.endpoint.url.com
-```
-
-### Running
-
-To run the CF Acceptance tests, you need to be logged in and targeting an empty space and org (we suggest the `cats-space` inside the `cats-org`).
-
-```sh
-gcf logout
-gcf api api.10.244.0.34.xip.io
-gcf auth admin admin
-gcf create-org cats-org
-gcf target -o cats-org
-gcf create-space cats-space
-gcf target -o cats-org -s cats-space
 export CONFIG=$PWD/integration_config.json
-./bin/test [ginkgo arguments ...]
 ```
 
-The `test` script will pass any given arguments to `ginkgo`, so this is where
-you pass `-focus=`, `-nodes=`, etc.
+To execute the tests, run:
 
-#### Running in parallel
-
-To run the tests in parallel, pass `-nodes=X`, where X is how many examples to
-run at once.
-
-```sh
-./bin/test -nodes=10
-```
-
-Be careful with this number, as it's effectively "how many apps to push at
-once", as every example probably pushes an app. For a [BOSH Lite][bosh-lite]
-deployment, you may want to just set this to `10`. For a larger AWS deployment,
-`100` may be just fine.
-
-#### Seeing command-line output
-
-If you want to see the output of all of the commands it shells out to, set
-`CF_VERBOSE_OUTPUT` to `true`.
-
-```sh
-export CF_VERBOSE_OUTPUT=true
+```bash
 ./bin/test
 ```
 
-#### Capturing CF cli output
+Internally the `bin/test` script runs tests using [ginkgo](https://github.com/onsi/ginkgo).
 
-If `CF_TRACE_BASENAME` is set, then `CF_TRACE` will be set to `${CF_TRACE_BASENAME}${Ginko Node Id}.txt`
-for each invocation of `gcf`.
+Arguments, such as `-focus=`, `-nodes=`, etc., that are passed to the script are sent to `ginkgo`
 
-##### Example:
+For example, to execute tests in parallel across four processes one would run:
 
-```sh
-export CF_TRACE_BASENAME=cf_trace_
-./bin/test -nodes=10
+```bash
+./bin/test -nodes=4
 ```
+
+Be careful with this number, as it's effectively "how many apps to push at once", as nearly every example pushes an app.
+
+#### Seeing command-line output
+
+To see verbose output from `cf`, set `CF_VERBOSE_OUTPUT` to `true` before running the tests.
+
+```bash
+export CF_VERBOSE_OUTPUT=true
+```
+
+#### Capturing CF CLI output
+
+Set `CF_TRACE_BASENAME` and the trace output from `cf` will be captured in files named
+`${CF_TRACE_BASENAME}${Ginkgo Node Id}.txt`.
+
+```bash
+export CF_TRACE_BASENAME=cf_trace_
+```
+
 The following files may be created:
 
-```sh
+```bash
 cf_trace_1.txt
 cf_trace_2.txt
-cf_trace_3.txt
-cf_trace_4.txt
-cf_trace_5.txt
-cf_trace_6.txt
-cf_trace_7.txt
-cf_trace_8.txt
-cf_trace_9.txt
-cf_trace_10.txt
+...
 ```
+
 If a test fails, look for the node id is the test output:
 
-```sh
+```bash
 === RUN TestLifecycle
 
 Running Suite: Application Lifecycle
@@ -161,10 +131,4 @@ Random Seed: 1389376383
 Parallel test node 2/10. Assigned 14 of 137 specs.
 ```
 
-The `gcf` trace output for the tests in these specs will be in in `cf_trace_2.txt`
-
-[cf-release]: https://github.com/cloudfoundry/cf-release
-[ginkgo]: https://github.com/onsi/ginkgo
-[bosh-lite]: https://github.com/cloudfoundry/bosh-lite
-[cli]: https://github.com/cloudfoundry/cli
-[go]: http://golang.org
+The `cf` trace output for the tests in these specs will be found in `cf_trace_2.txt`
