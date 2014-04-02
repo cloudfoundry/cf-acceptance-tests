@@ -23,8 +23,11 @@ themselves.
 You will need a working Go environment with `$GOPATH` set, and you will need
 `gcf` and `curl` in your `$PATH`.
 
-See [Go CLI][cli] for instructions on installing `gcf`. See [Go][go] for
-instructions on installing `go`.
+See [Go CLI][cli] for instructions on installing `cf`. See [Go][go] for
+instructions on installing `go1.2.1`.
+
+Note: This project requires you to change cli command `cf` to `gcf`. This means
+that you must copy or rename the `cf` executable to `gcf`.
 
 ### Cloud Foundry set up
 Assuming a fresh instance of cloud foundry, you need to set up a user, space and org
@@ -35,18 +38,18 @@ gcf create-user cats-user cats-password
 gcf create-org cats-org
 gcf create-space cats-space -o cats-org
 gcf target -o cats-org -s cats-space
-gcf set-space-role cats-user cats-space cats-org SpaceManager
-gcf set-space-role cats-user cats-space cats-org SpaceDeveloper
-gcf set-space-role cats-user cats-space cats-org SpaceAuditor
+gcf set-space-role cats-user cats-org cats-space SpaceManager
+gcf set-space-role cats-user cats-org cats-space SpaceDeveloper
+gcf set-space-role cats-user cats-org cats-space SpaceAuditor
 ```
 
 There also needs to be a persistent-space which the CATs user has all roles in.
 
 ```
 gcf create-space persistent-space -o cats-org
-gcf set-space-role cats-user persistent-space cats-org SpaceManager
-gcf set-space-role cats-user persistent-space cats-org SpaceDeveloper
-gcf set-space-role cats-user persistent-space cats-org SpaceAuditor
+gcf set-space-role cats-user cats-org persistent-space SpaceManager
+gcf set-space-role cats-user cats-org persistent-space SpaceDeveloper
+gcf set-space-role cats-user cats-org persistent-space SpaceAuditor
 ```
 
 ### Configuration
@@ -168,3 +171,8 @@ The `gcf` trace output for the tests in these specs will be in in `cf_trace_2.tx
 [bosh-lite]: https://github.com/cloudfoundry/bosh-lite
 [cli]: https://github.com/cloudfoundry/cli
 [go]: http://golang.org
+
+### Troubleshooting
+
+1. Upgrading Go to version 1.2.1 will cause the installed ginkgo package to break.
+To easily resolve this error, delete the cf-acceptance-tests repository and start over.
