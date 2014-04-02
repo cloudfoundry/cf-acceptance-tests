@@ -36,7 +36,9 @@ renamed to `gcf`, or that there is a symlink from `gcf` to the location of `cf`.
 Check out a copy of `cf-acceptance-tests` and make sure that it is added to your `$GOPATH`.
 The recommended way to do this is to run `go get github.com/cloudfoundry/cf-acceptance-tests`
 
-All `go` dependencies required by CATs are vendored in `cf-acceptance-tests/Godeps`.
+All `go` dependencies required by CATs are vendored in `cf-acceptance-tests/Godeps`. The script `bin/test`
+[ensures that](https://github.com/cloudfoundry/cf-acceptance-tests/blob/master/bin/test#L10-L15)
+the vendored dependencies are available when executing the tests.
 
 ### Test Setup and Execution
 
