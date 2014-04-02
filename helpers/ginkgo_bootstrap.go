@@ -24,5 +24,5 @@ func GinkgoBootstrap(t *testing.T, suiteName string) {
 }
 
 var _ = BeforeEach(func() {
-	Expect(cf.Cf("target", "-s", RegularUserContext.Space)).To(ExitWith(0))
+	Expect(cf.Cf("target", "-s", RegularUserContext.Space, "-o", RegularUserContext.Org)).To(ExitWith(0))
 })
