@@ -132,3 +132,15 @@ Parallel test node 2/10. Assigned 14 of 137 specs.
 ```
 
 The `cf` trace output for the tests in these specs will be found in `cf_trace_2.txt`
+
+
+## Changing CATs
+
+### Dependency Management
+
+CATs use [godep](https://github.com/tools/godep) to manage `go` dependencies.
+
+All `go` packages required to run CATs are vendored into the `cf-acceptance-tests/Godeps` directory.
+
+When making changes to the test suite that bring in additional `go` packages, you should use the workflow described in the
+[Add or Update a Dependency](https://github.com/tools/godep#add-or-update-a-dependency) section of the godep documentation.
