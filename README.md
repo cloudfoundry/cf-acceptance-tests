@@ -59,10 +59,11 @@ export CF_ORG=cats-org
 export CF_SPACE=cats-space
 export API_ENDPOINT=api.10.244.0.34.xip.io
 
-gcf login -a $API_ENDPOINT -u $ADMIN_USER -p $ADMIN_PASSWORD
+gcf api $API_ENDPOINT
+gcf auth $ADMIN_USER $ADMIN_PASSWORD
 gcf create-user $CF_USER $CF_USER_PASSWORD
 gcf create-org $CF_ORG
-gcf create-space $CF_SPACE -o $CF_ORG
+gcf create-space -o $CF_ORG $CF_SPACE
 gcf target -o $CF_ORG -s $CF_SPACE
 gcf set-space-role $CF_USER $CF_ORG $CF_SPACE SpaceManager
 gcf set-space-role $CF_USER $CF_ORG $CF_SPACE SpaceDeveloper
@@ -74,7 +75,10 @@ gcf set-space-role $CF_USER $CF_ORG persistent-space SpaceDeveloper
 gcf set-space-role $CF_USER $CF_ORG persistent-space SpaceAuditor
 
 cat > integration_config.json <<EOF
-{ "apps_domain": "10.244.0.34.xip.io" }
+{
+  "apps_domain": "10.244.0.34.xip.io",
+  "persistent_app_host": "persistent-app-6"
+}
 EOF
 export CONFIG=$PWD/integration_config.json
 ```
