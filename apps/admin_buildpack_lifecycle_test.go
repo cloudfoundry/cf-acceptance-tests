@@ -18,7 +18,7 @@ import (
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/zip"
 )
 
-var _ = Describe("An application using an admin buildpack", func() {
+var _ = PDescribe("An application using an admin buildpack", func() {
 	var (
 		appName       string
 		BuildpackName string

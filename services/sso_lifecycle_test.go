@@ -12,7 +12,7 @@ import (
 		"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 )
 
-var _ = Describe("SSO Lifecycle", func() {
+var _ = PDescribe("SSO Lifecycle", func() {
 	var broker ServiceBroker
 	var config OAuthConfig
 
