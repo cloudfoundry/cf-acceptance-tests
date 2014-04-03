@@ -28,7 +28,7 @@ var _ = Describe("An application being staged", func() {
 		stagingLogsShown := false
 		Expect(push).To(SayBranches(
 			cmdtest.ExpectBranch{
-				Pattern: "Downloading app package",
+				Pattern: "Downloaded app package",
 				Callback: func() {
 					stagingLogsShown = true
 				},
