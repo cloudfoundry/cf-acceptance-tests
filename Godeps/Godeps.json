@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/cloudfoundry/cf-acceptance-tests",
-	"GoVersion": "go1.2.1",
+	"GoVersion": "go1.2",
 	"Packages": [
 		"./..."
 	],
@@ -19,19 +19,19 @@
 		},
 		{
 			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/cf",
-			"Rev": "770ea2c178ee9223dd8a10d72cecbb886344a6d8"
+			"Rev": "bbec7a09d03fb6714c8685012136ce2b8b51f77e"
 		},
 		{
 			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/generator",
-			"Rev": "770ea2c178ee9223dd8a10d72cecbb886344a6d8"
+			"Rev": "bbec7a09d03fb6714c8685012136ce2b8b51f77e"
 		},
 		{
 			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/runner",
-			"Rev": "770ea2c178ee9223dd8a10d72cecbb886344a6d8"
+			"Rev": "bbec7a09d03fb6714c8685012136ce2b8b51f77e"
 		},
 		{
 			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/zip",
-			"Rev": "770ea2c178ee9223dd8a10d72cecbb886344a6d8"
+			"Rev": "bbec7a09d03fb6714c8685012136ce2b8b51f77e"
 		},
 		{
 			"ImportPath": "github.com/vito/cmdtest",

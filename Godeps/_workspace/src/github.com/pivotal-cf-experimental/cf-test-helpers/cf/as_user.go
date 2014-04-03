@@ -38,7 +38,13 @@ func InitiateUserContext(userContext UserContext) (originalCfHomeDir, currentCfH
 }
 
 func TargetSpace(userContext UserContext) {
-	Expect(Cf("target", "-o", userContext.Org, "-s", userContext.Space)).To(ExitWith(0))
+	if userContext.Org != "" {
+		if userContext.Space != "" {
+			Expect(Cf("target", "-o", userContext.Org, "-s", userContext.Space)).To(ExitWith(0))
+		} else {
+			Expect(Cf("target", "-o", userContext.Org)).To(ExitWith(0))
+		}
+	}
 }
 
 func RestoreUserContext(_ UserContext, originalCfHomeDir, currentCfHomeDir string) {

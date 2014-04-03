@@ -11,7 +11,7 @@ import (
 )
 
 var _ = Describe("AsUser", func() {
-	var FakeThingsToRunAsUser = func() {  }
+	var FakeThingsToRunAsUser = func() {}
 	var FakeCfCalls = [][]string{}
 
 	var FakeCf = func(args ...string) *cmdtest.Session {
@@ -26,7 +26,6 @@ var _ = Describe("AsUser", func() {
 		cf.Cf = FakeCf
 	})
 
-
 	It("calls cf api", func() {
 		cf.AsUser(user, FakeThingsToRunAsUser)
 
@@ -39,10 +38,50 @@ var _ = Describe("AsUser", func() {
 		Expect(FakeCfCalls[1]).To(Equal([]string{"auth", "FAKE_USERNAME", "FAKE_PASSWORD"}))
 	})
 
-	It("calls cf target", func() {
-		cf.AsUser(user, FakeThingsToRunAsUser)
+	Describe("cf target", func() {
+		Context("when org is set and space is set", func() {
+			It("sets org and space", func() {
+				cf.AsUser(user, FakeThingsToRunAsUser)
 
-		Expect(FakeCfCalls[2]).To(Equal([]string{"target", "-o", "FAKE_ORG", "-s", "FAKE_SPACE"}))
+				Expect(FakeCfCalls[2]).To(Equal([]string{"target", "-o", "FAKE_ORG", "-s", "FAKE_SPACE"}))
+			})
+
+			Context("when org is set and space is NOT set", func() {
+				BeforeEach(func() {
+					user.Space = ""
+				})
+
+				It("sets org", func() {
+					cf.AsUser(user, FakeThingsToRunAsUser)
+
+					Expect(FakeCfCalls[2]).To(Equal([]string{"target", "-o", "FAKE_ORG"}))
+				})
+
+				Context("when org is NOT set and space is NOT set", func() {
+					BeforeEach(func() {
+						user.Org = ""
+					})
+				})
+			})
+		})
+
+		Context("when org is NOT set", func() {
+
+			It("sets org", func() {
+				cf.AsUser(user, FakeThingsToRunAsUser)
+
+				Expect(FakeCfCalls[2]).NotTo(Equal([]string{"target", "-o", "FAKE_ORG", "-s", "FAKE_SPACE"}))
+			})
+		})
+
+		Context("when org is set", func() {
+			BeforeEach(func() {
+				user.Space = ""
+			})
+
+			Context("when space is set", func() {
+			})
+		})
 	})
 
 	It("calls cf logout", func() {
@@ -52,7 +91,7 @@ var _ = Describe("AsUser", func() {
 	})
 
 	It("logs out even if actions contain a failing expectation", func() {
-		RegisterFailHandler(func(message string, callerSkip ...int) { })
+		RegisterFailHandler(func(message string, callerSkip ...int) {})
 		cf.AsUser(user, func() { Expect(1).To(Equal(2)) })
 		RegisterFailHandler(Fail)
 
@@ -85,7 +124,7 @@ var _ = Describe("AsUser", func() {
 
 	It("returns CF_HOME to its original value", func() {
 		os.Setenv("CF_HOME", "some-crazy-value")
-		cf.AsUser(user, func() {  })
+		cf.AsUser(user, func() {})
 
 		Expect(os.Getenv("CF_HOME")).To(Equal("some-crazy-value"))
 	})

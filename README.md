@@ -53,26 +53,8 @@ You must also provide a `$CONFIG` variable which points to a `.json` file that c
 ```bash
 export ADMIN_USER=admin
 export ADMIN_PASSWORD=admin
-export CF_USER=cats-user
-export CF_USER_PASSWORD=cats-user-pass
-export CF_ORG=cats-org
-export CF_SPACE=cats-space
+export CF_ORG=CATS-org
 export API_ENDPOINT=api.10.244.0.34.xip.io
-
-gcf api $API_ENDPOINT
-gcf auth $ADMIN_USER $ADMIN_PASSWORD
-gcf create-user $CF_USER $CF_USER_PASSWORD
-gcf create-org $CF_ORG
-gcf create-space -o $CF_ORG $CF_SPACE
-gcf target -o $CF_ORG -s $CF_SPACE
-gcf set-space-role $CF_USER $CF_ORG $CF_SPACE SpaceManager
-gcf set-space-role $CF_USER $CF_ORG $CF_SPACE SpaceDeveloper
-gcf set-space-role $CF_USER $CF_ORG $CF_SPACE SpaceAuditor
-
-gcf create-space persistent-space -o $CF_ORG
-gcf set-space-role $CF_USER $CF_ORG persistent-space SpaceManager
-gcf set-space-role $CF_USER $CF_ORG persistent-space SpaceDeveloper
-gcf set-space-role $CF_USER $CF_ORG persistent-space SpaceAuditor
 
 cat > integration_config.json <<EOF
 {
