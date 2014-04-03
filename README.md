@@ -26,7 +26,7 @@ You will probably also need the following SCM programs in order to `go get` sour
 * [mercurial](http://mercurial.selenic.com/)
 * [bazaar](http://bazaar.canonical.com/)
 
-See [Go CLI][cli] for instructions on installing the go version of `cf`.
+See [Go CLI](https://github.com/cloudfoundry/cli) for instructions on installing the go version of `cf`.
 
 Make sure that [curl](http://curl.haxx.se/) is installed on your system.
 
