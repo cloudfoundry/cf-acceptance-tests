@@ -36,10 +36,10 @@ func GinkgoBootstrap(t *testing.T, suiteName string) {
 
 	BeforeEach(func() {
 		RegularUserContext = NewRegularUserContext()
-		cf.AsUser(adminContext, func(){
+		cf.AsUser(adminContext, func() {
 			Expect(cf.Cf("create-user", RegularUserContext.Username, RegularUserContext.Password)).To(SayBranches(
-				cmdtest.ExpectBranch{"OK", func(){ }},
-				cmdtest.ExpectBranch{"scim_resource_already_exists", func() { }},
+				cmdtest.ExpectBranch{"OK", func() {}},
+				cmdtest.ExpectBranch{"scim_resource_already_exists", func() {}},
 			))
 			Expect(cf.Cf("create-org", RegularUserContext.Org)).To(ExitWith(0))
 

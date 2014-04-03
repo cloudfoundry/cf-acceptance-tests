@@ -1,10 +1,10 @@
 package services
 
 import (
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/services/helpers"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 )
 
@@ -22,9 +22,9 @@ var _ = Describe("SSO Lifecycle", func() {
 		broker.Configure()
 
 		config = OAuthConfig{}
-		config.ClientId        = broker.Service.DashboardClient.ID
-		config.ClientSecret    = broker.Service.DashboardClient.Secret
-		config.RedirectUri     = redirectUri
+		config.ClientId = broker.Service.DashboardClient.ID
+		config.ClientSecret = broker.Service.DashboardClient.Secret
+		config.RedirectUri = redirectUri
 		config.RequestedScopes = `openid,cloud_controller.read,cloud_controller.write`
 
 		SetOauthEndpoints(apiEndpoint, &config)

@@ -1,11 +1,11 @@
 package helpers
 
 import (
-"os"
-"fmt"
+	"fmt"
+	"os"
 
-ginkgoconfig "github.com/onsi/ginkgo/config"
-"github.com/pivotal-cf-experimental/cf-test-helpers/cf"
+	ginkgoconfig "github.com/onsi/ginkgo/config"
+	"github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 )
 
 var AdminUserContext = cf.NewUserContext(

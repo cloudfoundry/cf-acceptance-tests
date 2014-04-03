@@ -38,7 +38,7 @@ var _ = Describe("Purging service offerings", func() {
 
 		Expect(Cf("services")).To(Say(instanceName))
 		Expect(Cf("delete", broker.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
-		AsUser(AdminUserContext, func(){
+		AsUser(AdminUserContext, func() {
 			Expect(Cf("purge-service-offering", broker.Service.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
 		})
 		Expect(Cf("services")).NotTo(Say(instanceName))

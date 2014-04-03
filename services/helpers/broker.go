@@ -9,16 +9,16 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
-	. "github.com/vito/cmdtest/matchers"
 	"github.com/vito/cmdtest"
+	. "github.com/vito/cmdtest/matchers"
 )
 
 type ServiceBroker struct {
 	Name    string
 	Path    string
 	Service struct {
-		Name string `json:"name"`
-		ID   string `json:"id"`
+		Name            string `json:"name"`
+		ID              string `json:"id"`
 		DashboardClient struct {
 			ID          string `json:"id"`
 			Secret      string `json:"secret"`
@@ -89,27 +89,27 @@ func (b ServiceBroker) Restart() {
 }
 
 func (b ServiceBroker) Create(appsDomain string) {
-	AsUser(AdminUserContext, func(){
+	AsUser(AdminUserContext, func() {
 		Require(Cf("create-service-broker", b.Name, "username", "password", AppUri(b.Name, "", appsDomain))).To(ExitWithTimeout(0, 30*time.Second))
 		Expect(Cf("service-brokers")).To(Say(b.Name))
 	})
 }
 
 func (b ServiceBroker) Update(appsDomain string) {
-	AsUser(AdminUserContext, func(){
+	AsUser(AdminUserContext, func() {
 		Require(Cf("update-service-broker", b.Name, "username", "password", AppUri(b.Name, "", appsDomain))).To(ExitWithTimeout(0, 30*time.Second))
 	})
 }
 
 func (b ServiceBroker) Delete() {
-	AsUser(AdminUserContext, func(){
+	AsUser(AdminUserContext, func() {
 		Expect(Cf("delete-service-broker", b.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
 	})
 	Expect(Cf("service-brokers")).ToNot(Say(b.Name))
 }
 
 func (b ServiceBroker) Destroy() {
-	AsUser(AdminUserContext, func(){
+	AsUser(AdminUserContext, func() {
 		Expect(Cf("purge-service-offering", b.Service.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
 	})
 	b.Delete()
@@ -128,7 +128,7 @@ func (b ServiceBroker) ToJSON() string {
 func (b ServiceBroker) PublicizePlans() {
 	url := fmt.Sprintf("/v2/services?inline-relations-depth=1&q=label:%s", b.Service.Name)
 	var session *cmdtest.Session
-	AsUser(AdminUserContext, func(){
+	AsUser(AdminUserContext, func() {
 		session = Cf("curl", url)
 	})
 	structure := ServicesResponse{}
@@ -149,7 +149,7 @@ func (b ServiceBroker) PublicizePlan(url string) {
 	jsonMap := make(map[string]bool)
 	jsonMap["public"] = true
 	planJson, _ := json.Marshal(jsonMap)
-	AsUser(AdminUserContext, func(){
+	AsUser(AdminUserContext, func() {
 		Expect(Cf("curl", url, "-X", "PUT", "-d", string(planJson))).To(ExitWithTimeout(0, 5*time.Second))
 	})
 }
