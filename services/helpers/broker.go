@@ -10,6 +10,7 @@ import (
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 	. "github.com/vito/cmdtest/matchers"
+	"github.com/vito/cmdtest"
 )
 
 type ServiceBroker struct {
@@ -88,13 +89,30 @@ func (b ServiceBroker) Restart() {
 }
 
 func (b ServiceBroker) Create(appsDomain string) {
-	Require(Cf("create-service-broker", b.Name, "username", "password", AppUri(b.Name, "", appsDomain))).To(ExitWithTimeout(0, 30*time.Second))
-	Expect(Cf("service-brokers")).To(Say(b.Name))
+	AsUser(AdminUserContext, func(){
+		Require(Cf("create-service-broker", b.Name, "username", "password", AppUri(b.Name, "", appsDomain))).To(ExitWithTimeout(0, 30*time.Second))
+		Expect(Cf("service-brokers")).To(Say(b.Name))
+	})
+}
+
+func (b ServiceBroker) Update(appsDomain string) {
+	AsUser(AdminUserContext, func(){
+		Require(Cf("update-service-broker", b.Name, "username", "password", AppUri(b.Name, "", appsDomain))).To(ExitWithTimeout(0, 30*time.Second))
+	})
+}
+
+func (b ServiceBroker) Delete() {
+	AsUser(AdminUserContext, func(){
+		Expect(Cf("delete-service-broker", b.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
+	})
+	Expect(Cf("service-brokers")).ToNot(Say(b.Name))
 }
 
 func (b ServiceBroker) Destroy() {
-	Expect(Cf("purge-service-offering", b.Service.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
-	Expect(Cf("delete-service-broker", b.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
+	AsUser(AdminUserContext, func(){
+		Expect(Cf("purge-service-offering", b.Service.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
+	})
+	b.Delete()
 	Expect(Cf("delete", b.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
 }
 
@@ -109,7 +127,10 @@ func (b ServiceBroker) ToJSON() string {
 
 func (b ServiceBroker) PublicizePlans() {
 	url := fmt.Sprintf("/v2/services?inline-relations-depth=1&q=label:%s", b.Service.Name)
-	session := Cf("curl", url)
+	var session *cmdtest.Session
+	AsUser(AdminUserContext, func(){
+		session = Cf("curl", url)
+	})
 	structure := ServicesResponse{}
 	json.Unmarshal(session.FullOutput(), &structure)
 	for _, service := range structure.Resources {
@@ -128,10 +149,17 @@ func (b ServiceBroker) PublicizePlan(url string) {
 	jsonMap := make(map[string]bool)
 	jsonMap["public"] = true
 	planJson, _ := json.Marshal(jsonMap)
-	Expect(Cf("curl", url, "-X", "PUT", "-d", string(planJson))).To(ExitWithTimeout(0, 5*time.Second))
+	AsUser(AdminUserContext, func(){
+		Expect(Cf("curl", url, "-X", "PUT", "-d", string(planJson))).To(ExitWithTimeout(0, 5*time.Second))
+	})
 }
 
 func (b ServiceBroker) CreateServiceInstance(instanceName string) (guid string) {
+	// TODO:  CreateServiceInstance is used as a workaround for the problem in cf 6.0.1 that prevents us from
+	//        creating an instance of a service when there are more than 50 services in the environment.
+	//        Should be replaced by the following line ASAP
+
+	// Expect(Cf("create-service", broker.Service.Name, broker.Plan.Name, instanceName)).To(ExitWith(0))
 	url := fmt.Sprintf("/v2/services?inline-relations-depth=1&q=label:%s", b.Service.Name)
 	session := Cf("curl", url)
 	structure := ServicesResponse{}

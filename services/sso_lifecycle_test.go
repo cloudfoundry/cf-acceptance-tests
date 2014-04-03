@@ -1,38 +1,21 @@
 package services
 
 import (
-	"time"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/vito/cmdtest/matchers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/services/helpers"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
-		"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
+	"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 )
 
 var _ = Describe("SSO Lifecycle", func() {
 	var broker ServiceBroker
 	var config OAuthConfig
-
-	var (
-		apiEndpoint,
-		username,
-		password string
-	)
+	var apiEndpoint = LoadConfig().ApiEndpoint
 
 	redirectUri := `http://example.com`
 
 	BeforeEach(func() {
-		LoginAsAdmin()
-
-		apiEndpoint = LoadConfig().ApiEndpoint
-		username    = RegularUserContext.Username
-		password    = RegularUserContext.Password
-	})
-
-	JustBeforeEach(func() {
 		broker = NewServiceBroker(generator.RandomName(), NewAssets().ServiceBroker)
 		broker.Push()
 		broker.Service.DashboardClient.RedirectUri = redirectUri
@@ -49,22 +32,20 @@ var _ = Describe("SSO Lifecycle", func() {
 
 	AfterEach(func() {
 		broker.Destroy()
-		LoginAsUser()
 	})
 
 	Context("When a service broker is created", func() {
 		It("can perform an operation on a user's behalf using sso", func() {
 			defer Recover() // Catches panic thrown by Require expectations
 
-			Require(Cf("create-service-broker", broker.Name, "username", "password", AppUri(broker.Name, "", LoadConfig().AppsDomain))).To(ExitWithTimeout(0, 20*time.Second))
-			Expect(Cf("service-brokers")).To(Say(broker.Name))
+			broker.Create(LoadConfig().AppsDomain)
 
 			//create a service instance
 			broker.PublicizePlans()
 			serviceInstanceGuid := broker.CreateServiceInstance(generator.RandomName())
 
 			// perform the OAuth lifecycle to obtain an access token
-			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, username, password)
+			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, RegularUserContext.Username, RegularUserContext.Password)
 
 			authCode, _ := RequestScopes(userSessionCookie, config)
 			Expect(authCode).ToNot(BeNil(), `Failed to request and authorize scopes.`)
@@ -84,21 +65,20 @@ var _ = Describe("SSO Lifecycle", func() {
 		It("can perform an operation on a user's behalf using sso", func() {
 			defer Recover() // Catches panic thrown by Require expectations
 
-			Require(Cf("create-service-broker", broker.Name, "username", "password", AppUri(broker.Name, "", LoadConfig().AppsDomain))).To(ExitWithTimeout(0, 20*time.Second))
-			Expect(Cf("service-brokers")).To(Say(broker.Name))
+			broker.Create(LoadConfig().AppsDomain)
 
 			config.ClientId = generator.RandomName()
 			broker.Service.DashboardClient.ID = config.ClientId
 			broker.Configure()
 
-			Require(Cf("update-service-broker", broker.Name, "username", "password", AppUri(broker.Name, "", LoadConfig().AppsDomain))).To(ExitWithTimeout(0, 20*time.Second))
+			broker.Update(LoadConfig().AppsDomain)
 
 			//create a service instance
 			broker.PublicizePlans()
 			serviceInstanceGuid := broker.CreateServiceInstance(generator.RandomName())
 
 			// perform the OAuth lifecycle to obtain an access token
-			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, username, password)
+			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, RegularUserContext.Username, RegularUserContext.Password)
 
 			authCode, _ := RequestScopes(userSessionCookie, config)
 			Expect(authCode).ToNot(BeNil(), `Failed to request and authorize scopes.`)
@@ -118,14 +98,12 @@ var _ = Describe("SSO Lifecycle", func() {
 		It("can no longer perform an operation on a user's behalf using sso", func() {
 			defer Recover() // Catches panic thrown by Require expectations
 
-			Require(Cf("create-service-broker", broker.Name, "username", "password", AppUri(broker.Name, "", LoadConfig().AppsDomain))).To(ExitWithTimeout(0, 20*time.Second))
-			Expect(Cf("service-brokers")).To(Say(broker.Name))
+			broker.Create(LoadConfig().AppsDomain)
 
-			Require(Cf("delete-service-broker", broker.Name, "-f")).To(ExitWithTimeout(0, 20*time.Second))
-			Expect(Cf("service-brokers")).ToNot(Say(broker.Name))
+			broker.Delete()
 
 			// perform the OAuth lifecycle to obtain an access token
-			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, username, password)
+			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, RegularUserContext.Username, RegularUserContext.Password)
 
 			_, httpCode := RequestScopes(userSessionCookie, config)
 

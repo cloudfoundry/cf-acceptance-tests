@@ -12,9 +12,9 @@ import (
 )
 
 type OAuthConfig struct {
-	ClientId 				      string
-	ClientSecret 		      string
-	RedirectUri 		      string
+	ClientId              string
+	ClientSecret          string
+	RedirectUri           string
 	RequestedScopes       string
 	AuthorizationEndpoint string
 	TokenEndpoint         string
@@ -43,8 +43,8 @@ func AuthenticateUser(authorizationEndpoint string, username string, password st
 	passwordEncoded  := url.QueryEscape(password)
 	loginCredentials := fmt.Sprintf("username=%v&password=%v", usernameEncoded, passwordEncoded)
 
-	result       := Curl(loginUri, `--data`, loginCredentials, `--insecure`, `-i`, `-v`).FullOutput()
-	stringResult := string(result)
+	result       := Curl(loginUri, `--data`, loginCredentials, `--insecure`, `-i`, `-v`)
+	stringResult := string(result.FullOutput())
 
 	regEx, _  := regexp.Compile(`JSESSIONID([^;]*)`)
 	sessionId := regEx.FindString(stringResult)

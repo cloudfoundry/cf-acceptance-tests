@@ -6,7 +6,6 @@ import (
 
 ginkgoconfig "github.com/onsi/ginkgo/config"
 "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
-"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 )
 
 var AdminUserContext = cf.NewUserContext(
@@ -21,10 +20,10 @@ var AdminUserContext = cf.NewUserContext(
 func NewRegularUserContext() cf.UserContext {
 	return cf.NewUserContext(
 		os.Getenv("API_ENDPOINT"),
-		fmt.Sprintf("CAT-user-%d-%s", ginkgoconfig.GinkgoConfig.ParallelNode, generator.RandomName()),
-		"password",
+		fmt.Sprintf("CAT-user-%d", ginkgoconfig.GinkgoConfig.ParallelNode),
+		fmt.Sprintf("CAT-user-pass-%d", ginkgoconfig.GinkgoConfig.ParallelNode),
 		os.Getenv("CF_ORG"),
-		fmt.Sprintf("CAT-space-%d-%s", ginkgoconfig.GinkgoConfig.ParallelNode, generator.RandomName()),
+		fmt.Sprintf("CAT-space-%d", ginkgoconfig.GinkgoConfig.ParallelNode),
 		os.Getenv("CF_LOGIN_FLAGS"),
 	)
 }
