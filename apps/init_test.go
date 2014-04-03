@@ -6,6 +6,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
 )
 
-func TestServices(t *testing.T) {
+func TestApplications(t *testing.T) {
 	helpers.GinkgoBootstrap(t, "Applications")
 }
