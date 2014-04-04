@@ -8,7 +8,7 @@ import (
 type Config struct {
 	AppsDomain        string `json:"apps_domain"`
 	PersistentAppHost string `json:"persistent_app_host"`
-	ApiEndpoint       string
+	ApiEndpoint       string `json:"api"`
 }
 
 var loadedConfig *Config

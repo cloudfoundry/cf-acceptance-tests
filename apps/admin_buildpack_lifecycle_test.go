@@ -5,20 +5,17 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"path/filepath"
 
+	catsHelpers "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/vito/cmdtest/matchers"
-
-	"github.com/cloudfoundry/cf-acceptance-tests/apps/helpers"
-	catsHelpers "github.com/cloudfoundry/cf-acceptance-tests/helpers"
+	"github.com/pivotal-cf-experimental/cf-test-helpers/archiver"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/zip"
+	. "github.com/vito/cmdtest/matchers"
 )
 
-var _ = PDescribe("An application using an admin buildpack", func() {
+var _ = Describe("An application using an admin buildpack", func() {
 	var (
 		appName       string
 		BuildpackName string
@@ -49,19 +46,48 @@ var _ = PDescribe("An application using an admin buildpack", func() {
 			buildpackPath = tmpdir
 			buildpackArchivePath = path.Join(buildpackPath, "buildpack.zip")
 
-			err = helpers.GenerateBuildpack(buildpackPath, matchingFilename(appName))
-			Expect(err).ToNot(HaveOccurred())
+			archiver.CreateZipArchive(buildpackArchivePath, []archiver.ArchiveFile{
+				{
+					Name: "bin/compile",
+					Body: `#!/usr/bin/env bash
+
+sleep 1
+
+echo "Staging with Simple Buildpack"
+`,
+				},
+				{
+					Name: "bin/detect",
+					Body: fmt.Sprintf(`#!/bin/bash
+
+if [ -f "${1}/%s" ]; then
+  echo Simple
+else
+  echo no
+  exit 1
+fi
+`, matchingFilename(appName)),
+				},
+				{
+					Name: "bin/release",
+					Body: `#!/usr/bin/env bash
+
+cat <<EOF
+---
+config_vars:
+  PATH: bin:/usr/local/bin:/usr/bin:/bin
+  FROM_BUILD_PACK: "yes"
+default_process_types:
+  web: while true; do { echo -e 'HTTP/1.1 200 OK\r\n'; echo "hi from a simple admin buildpack"; } | nc -l \$PORT; done
+EOF
+`,
+				},
+			})
 
 			_, err = os.Create(path.Join(appPath, matchingFilename(appName)))
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = os.Create(path.Join(appPath, "some-file"))
-			Expect(err).ToNot(HaveOccurred())
-
-			buildpathFile, err := os.Create(buildpackArchivePath)
-			Expect(err).ToNot(HaveOccurred())
-
-			err = Zip(filepath.Join(buildpackPath, "bin"), buildpathFile)
 			Expect(err).ToNot(HaveOccurred())
 
 			createBuildpack := Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0")
@@ -109,22 +135,24 @@ var _ = PDescribe("An application using an admin buildpack", func() {
 		})
 	})
 
-	PContext("when the buildpack is disabled", func() {
+	Context("when the buildpack is disabled", func() {
 		BeforeEach(func() {
-			var response QueryResponse
+			AsUser(catsHelpers.AdminUserContext, func() {
+				var response QueryResponse
 
-			ApiRequest("GET", "/v2/buildpacks?q=name:"+BuildpackName, &response)
+				ApiRequest("GET", "/v2/buildpacks?q=name:"+BuildpackName, &response)
 
-			Expect(response.Resources).To(HaveLen(1))
+				Expect(response.Resources).To(HaveLen(1))
 
-			buildpackGuid := response.Resources[0].Metadata.Guid
+				buildpackGuid := response.Resources[0].Metadata.Guid
 
-			ApiRequest(
-				"PUT",
-				"/v2/buildpacks/"+buildpackGuid,
-				nil,
-				`{"enabled":false}`,
-			)
+				ApiRequest(
+					"PUT",
+					"/v2/buildpacks/"+buildpackGuid,
+					nil,
+					`{"enabled":false}`,
+				)
+			})
 		})
 
 		It("fails to stage", func() {
