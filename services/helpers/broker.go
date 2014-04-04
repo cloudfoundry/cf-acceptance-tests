@@ -80,7 +80,7 @@ func (b ServiceBroker) Push() {
 }
 
 func (b ServiceBroker) Configure() {
-	Expect(Cf("set-env", b.Name, "CONFIG", b.ToJSON())).To(ExitWithTimeout(0, 2*time.Second))
+	Expect(Cf("set-env", b.Name, "CONFIG", b.ToJSON())).To(ExitWith(0))
 	b.Restart()
 }
 
@@ -103,17 +103,17 @@ func (b ServiceBroker) Update(appsDomain string) {
 
 func (b ServiceBroker) Delete() {
 	AsUser(AdminUserContext, func() {
-		Expect(Cf("delete-service-broker", b.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
+		Expect(Cf("delete-service-broker", b.Name, "-f")).To(ExitWith(0))
 		Expect(Cf("service-brokers")).ToNot(Say(b.Name))
 	})
 }
 
 func (b ServiceBroker) Destroy() {
 	AsUser(AdminUserContext, func() {
-		Expect(Cf("purge-service-offering", b.Service.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
+		Expect(Cf("purge-service-offering", b.Service.Name, "-f")).To(ExitWith(0))
 	})
 	b.Delete()
-	Expect(Cf("delete", b.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
+	Expect(Cf("delete", b.Name, "-f")).To(ExitWith(0))
 }
 
 func (b ServiceBroker) ToJSON() string {
