@@ -34,7 +34,8 @@ Make sure that the go version of `cf` is accessible in your `$PATH`, and that it
 renamed to `gcf`, or that there is a symlink from `gcf` to the location of `cf`.
 
 Check out a copy of `cf-acceptance-tests` and make sure that it is added to your `$GOPATH`.
-The recommended way to do this is to run `go get github.com/cloudfoundry/cf-acceptance-tests`. You will receive a warning "no buildable Go source files"; this can be ignored as there is no compilable go code in the package. 
+The recommended way to do this is to run `go get github.com/cloudfoundry/cf-acceptance-tests`. You will receive a 
+warning "no buildable Go source files"; this can be ignored as there is no compilable go code in the package. 
 
 All `go` dependencies required by CATs are vendored in `cf-acceptance-tests/Godeps`. The test script itself, `bin/test`,
 [ensures that](https://github.com/cloudfoundry/cf-acceptance-tests/blob/master/bin/test#L10-L15)
@@ -48,20 +49,19 @@ To run the CF Acceptance tests, you will need:
 - an org, a temporary space, and a persistent space within that org
 - an environment variable `$CONFIG` which points to a `.json` file that contains the application domain
 
-The following script will configure these prerequisites for a [bosh-lite](https://github.com/cloudfoundry/bosh-lite) installation. Replace credentials and URLs as appropriate for your environment.
+The following script will configure these prerequisites for a [bosh-lite](https://github.com/cloudfoundry/bosh-lite) 
+installation. Replace credentials and URLs as appropriate for your environment.
 
 ```bash
 #! /bin/bash
 
-export ADMIN_USER=admin
-export ADMIN_PASSWORD=admin
-export CF_ORG=CATS-org
-export API_ENDPOINT=api.10.244.0.34.xip.io
-
 cat > integration_config.json <<EOF
 {
+  "api": "api.10.244.0.34.xip.io"
+  "admin_user": "admin",
+  "admin_password": "admin",
   "apps_domain": "10.244.0.34.xip.io",
-  "persistent_app_host": "persistent-app-6"
+  "persistent_app_host": "persistent-app"
 }
 EOF
 export CONFIG=$PWD/integration_config.json

@@ -6,9 +6,17 @@ import (
 )
 
 type Config struct {
+	ApiEndpoint string `json:"api"`
+
+	AdminUser     string `json:"admin_user"`
+	AdminPassword string `json:"admin_password"`
+
 	AppsDomain        string `json:"apps_domain"`
 	PersistentAppHost string `json:"persistent_app_host"`
-	ApiEndpoint       string `json:"api"`
+
+	SkipSSLValidation bool `json:"skip_ssl_validation"`
+
+	ArtifactsDirectory string `json:"artifacts_directory"`
 }
 
 var loadedConfig *Config
@@ -18,21 +26,32 @@ func LoadConfig() Config {
 		loadedConfig = loadConfigJsonFromPath()
 	}
 
-	if loadedConfig.PersistentAppHost == "" {
-		loadedConfig.PersistentAppHost = "persistent-app"
+	if loadedConfig.ApiEndpoint == "" {
+		panic("missing configuration 'api'")
+	}
+
+	if loadedConfig.AdminUser == "" {
+		panic("missing configuration 'admin_user'")
 	}
 
 	if loadedConfig.ApiEndpoint == "" {
-		loadedConfig.ApiEndpoint = os.Getenv("API_ENDPOINT")
+		panic("missing configuration 'admin_password'")
 	}
 
 	return *loadedConfig
 }
 
 func loadConfigJsonFromPath() *Config {
-	var config *Config = &Config{}
+	var config *Config = &Config{
+		ApiEndpoint: os.Getenv("API_ENDPOINT"),
 
-	path := loadConfigPathFromEnv()
+		AdminUser:     os.Getenv("ADMIN_USER"),
+		AdminPassword: os.Getenv("ADMIN_PASSWORD"),
+
+		PersistentAppHost: "persistent-app",
+	}
+
+	path := configPath()
 
 	configFile, err := os.Open(path)
 	if err != nil {
@@ -48,7 +67,7 @@ func loadConfigJsonFromPath() *Config {
 	return config
 }
 
-func loadConfigPathFromEnv() string {
+func configPath() string {
 	path := os.Getenv("CONFIG")
 	if path == "" {
 		panic("Must set $CONFIG to point to an integration config .json file.")
