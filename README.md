@@ -26,7 +26,7 @@ You will probably also need the following SCM programs in order to `go get` sour
 * [mercurial](http://mercurial.selenic.com/)
 * [bazaar](http://bazaar.canonical.com/)
 
-See [Go CLI][cli] for instructions on installing the go version of `cf`.
+See [Go CLI](https://github.com/cloudfoundry/cli) for instructions on installing the go version of `cf`.
 
 Make sure that [curl](http://curl.haxx.se/) is installed on your system.
 
@@ -34,23 +34,25 @@ Make sure that the go version of `cf` is accessible in your `$PATH`, and that it
 renamed to `gcf`, or that there is a symlink from `gcf` to the location of `cf`.
 
 Check out a copy of `cf-acceptance-tests` and make sure that it is added to your `$GOPATH`.
-The recommended way to do this is to run `go get github.com/cloudfoundry/cf-acceptance-tests`
+The recommended way to do this is to run `go get github.com/cloudfoundry/cf-acceptance-tests`. You will receive a warning "no buildable Go source files"; this can be ignored as there is no compilable go code in the package. 
 
-All `go` dependencies required by CATs are vendored in `cf-acceptance-tests/Godeps`. The script `bin/test`
+All `go` dependencies required by CATs are vendored in `cf-acceptance-tests/Godeps`. The test script itself, `bin/test`,
 [ensures that](https://github.com/cloudfoundry/cf-acceptance-tests/blob/master/bin/test#L10-L15)
-the vendored dependencies are available when executing the tests.
+the vendored dependencies are available when executing the tests by prepending this directory to `$GOPATH`.
 
-### Test Setup and Execution
+### Test Setup
 
-To run the CF Acceptance tests, you will need a running CF instance; the examples below show the configuration
-which would be used to run against a [bosh-lite](https://github.com/cloudfoundry/bosh-lite) installation.
+To run the CF Acceptance tests, you will need:
+- a running CF instance 
+- credentials for an Admin and a regular user
+- an org, a temporary space, and a persistent space within that org
+- an environment variable `$CONFIG` which points to a `.json` file that contains the application domain
 
-The tests expect a set of credentials for an Admin and a regular user, an org, a temporary space,
-and a persistent space within that org.
-
-You must also provide a `$CONFIG` variable which points to a `.json` file that contains the application domain.
+The following script will configure these prerequisites for a [bosh-lite](https://github.com/cloudfoundry/bosh-lite) installation. Replace credentials and URLs as appropriate for your environment.
 
 ```bash
+#! /bin/bash
+
 export ADMIN_USER=admin
 export ADMIN_PASSWORD=admin
 export CF_ORG=CATS-org
@@ -64,6 +66,8 @@ cat > integration_config.json <<EOF
 EOF
 export CONFIG=$PWD/integration_config.json
 ```
+
+### Test Execution
 
 To execute the tests, run:
 
