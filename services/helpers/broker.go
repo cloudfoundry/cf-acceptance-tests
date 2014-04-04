@@ -104,8 +104,8 @@ func (b ServiceBroker) Update(appsDomain string) {
 func (b ServiceBroker) Delete() {
 	AsUser(AdminUserContext, func() {
 		Expect(Cf("delete-service-broker", b.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
+		Expect(Cf("service-brokers")).ToNot(Say(b.Name))
 	})
-	Expect(Cf("service-brokers")).ToNot(Say(b.Name))
 }
 
 func (b ServiceBroker) Destroy() {
