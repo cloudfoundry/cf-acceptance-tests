@@ -18,20 +18,20 @@
 			"Rev": "bad854a45453ec22d99c8bd982e2302f64d3fc37"
 		},
 		{
+			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/archiver",
+			"Rev": "531bcf97f687edb6c93898ab7647a0a8475d2eb6"
+		},
+		{
 			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/cf",
-			"Rev": "bbec7a09d03fb6714c8685012136ce2b8b51f77e"
+			"Rev": "531bcf97f687edb6c93898ab7647a0a8475d2eb6"
 		},
 		{
 			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/generator",
-			"Rev": "bbec7a09d03fb6714c8685012136ce2b8b51f77e"
+			"Rev": "531bcf97f687edb6c93898ab7647a0a8475d2eb6"
 		},
 		{
 			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/runner",
-			"Rev": "bbec7a09d03fb6714c8685012136ce2b8b51f77e"
-		},
-		{
-			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/zip",
-			"Rev": "bbec7a09d03fb6714c8685012136ce2b8b51f77e"
+			"Rev": "531bcf97f687edb6c93898ab7647a0a8475d2eb6"
 		},
 		{
 			"ImportPath": "github.com/vito/cmdtest",
