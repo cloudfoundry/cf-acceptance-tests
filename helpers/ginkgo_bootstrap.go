@@ -29,7 +29,7 @@ func GinkgoBootstrap(t *testing.T, suiteName string) {
 	adminContext := AdminUserContext
 	defer func() {
 		cf.Cf("delete-user", "-f", RegularUserContext.Username)
-		cf.Cf("delete-org", "-f", RegularUserContext.Org)
+		cf.Cf("delete-space", "-f", RegularUserContext.Space)
 	}()
 
 	var originalCfHomeDir, currentCfHomeDir string
