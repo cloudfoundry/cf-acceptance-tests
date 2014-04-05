@@ -19,7 +19,7 @@ var _ = Describe("AsUser", func() {
 		var session, _ = cmdtest.Start(exec.Command("echo", "nothing"))
 		return session
 	}
-	var user = cf.NewUserContext("http://FAKE_API.example.com", "FAKE_USERNAME", "FAKE_PASSWORD", "FAKE_ORG", "FAKE_SPACE", "--skip-ssl-validation")
+	var user = cf.NewUserContext("http://FAKE_API.example.com", "FAKE_USERNAME", "FAKE_PASSWORD", "FAKE_ORG", "FAKE_SPACE", true)
 
 	BeforeEach(func() {
 		FakeCfCalls = [][]string{}

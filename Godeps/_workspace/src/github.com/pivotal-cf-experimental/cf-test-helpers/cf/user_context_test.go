@@ -10,7 +10,7 @@ import (
 var _ = Describe("NewUserContext", func() {
 
 	var createUser = func() cf.UserContext {
-		return cf.NewUserContext("http://FAKE_API.example.com", "FAKE_USERNAME", "FAKE_PASSWORD", "FAKE_ORG", "FAKE_SPACE", "")
+		return cf.NewUserContext("http://FAKE_API.example.com", "FAKE_USERNAME", "FAKE_PASSWORD", "FAKE_ORG", "FAKE_SPACE", false)
 	}
 
 	It("returns a UserContext struct", func() {

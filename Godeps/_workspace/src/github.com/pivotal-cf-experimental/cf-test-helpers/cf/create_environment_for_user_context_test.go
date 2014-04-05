@@ -5,8 +5,8 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/vito/cmdtest"
 	"github.com/pivotal-cf-experimental/cf-test-helpers/cf"
+	"github.com/vito/cmdtest"
 )
 
 var _ = Describe("CreateEnvironmentForUserContext", func() {
@@ -17,8 +17,8 @@ var _ = Describe("CreateEnvironmentForUserContext", func() {
 		var session, _ = cmdtest.Start(exec.Command("echo", "nothing"))
 		return session
 	}
-	var user = cf.NewUserContext("http://FAKE_API.example.com", "FAKE_USERNAME", "FAKE_PASSWORD", "FAKE_ORG", "FAKE_SPACE", "")
-	var admin = cf.NewUserContext("http://FAKE_API.example.com", "FAKE_ADMIN_USERNAME", "FAKE_ADMIN_PASSWORD", "FAKE_ADMIN_ORG", "FAKE_ADMIN_SPACE", "--skip-ssl-validation")
+	var user = cf.NewUserContext("http://FAKE_API.example.com", "FAKE_USERNAME", "FAKE_PASSWORD", "FAKE_ORG", "FAKE_SPACE", false)
+	var admin = cf.NewUserContext("http://FAKE_API.example.com", "FAKE_ADMIN_USERNAME", "FAKE_ADMIN_PASSWORD", "FAKE_ADMIN_ORG", "FAKE_ADMIN_SPACE", true)
 
 	BeforeEach(func() {
 		FakeCfCalls = [][]string{}
