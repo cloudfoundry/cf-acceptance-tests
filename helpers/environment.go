@@ -5,7 +5,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/vito/cmdtest"
 	. "github.com/vito/cmdtest/matchers"
 
 	"github.com/pivotal-cf-experimental/cf-test-helpers/cf"
@@ -32,13 +31,6 @@ func SetupEnvironment(t *testing.T, context SuiteContext) {
 		context.Setup()
 
 		cf.AsUser(AdminUserContext, func() {
-			Expect(cf.Cf("create-user", RegularUserContext.Username, RegularUserContext.Password)).To(SayBranches(
-				cmdtest.ExpectBranch{"OK", func() {}},
-				cmdtest.ExpectBranch{"scim_resource_already_exists", func() {}},
-			))
-
-			Expect(cf.Cf("create-org", RegularUserContext.Org)).To(ExitWith(0))
-
 			setUpSpaceWithUserAccess(RegularUserContext, RegularUserContext.Space)
 			setUpSpaceWithUserAccess(RegularUserContext, "persistent-space")
 		})
@@ -49,9 +41,6 @@ func SetupEnvironment(t *testing.T, context SuiteContext) {
 
 	AfterEach(func() {
 		cf.RestoreUserContext(RegularUserContext, originalCfHomeDir, currentCfHomeDir)
-
-		Expect(cf.Cf("delete-user", "-f", RegularUserContext.Username)).To(ExitWith(0))
-		Expect(cf.Cf("delete-org", "-f", RegularUserContext.Org)).To(ExitWith(0))
 
 		context.Teardown()
 	})
