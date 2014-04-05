@@ -3,6 +3,8 @@ package helpers
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	ginkgoconfig "github.com/onsi/ginkgo/config"
@@ -36,19 +38,31 @@ type quotaDefinition struct {
 }
 
 func NewContext(config Config) *ConfiguredContext {
+	node := ginkgoconfig.GinkgoConfig.ParallelNode
+	timeTag := time.Now().Format("2006_01_02-15h04m")
+
 	return &ConfiguredContext{
 		config: config,
 
-		quotaDefinitionName: fmt.Sprintf(time.Now().Format("CATS-QUOTA-%d-2006_01_02-15h04m"), ginkgoconfig.GinkgoConfig.ParallelNode),
+		quotaDefinitionName: fmt.Sprintf("CATS-QUOTA-%d-%s", node, timeTag),
 
-		organizationName: fmt.Sprintf(time.Now().Format("CATS-%d-2006_01_02-15h04m"), ginkgoconfig.GinkgoConfig.ParallelNode),
+		organizationName: fmt.Sprintf("CATS-ORG-%d-%s", node, timeTag),
 
-		regularUserUsername: fmt.Sprintf(time.Now().Format("CATS-USER-%d-2006_01_02-15h04m"), ginkgoconfig.GinkgoConfig.ParallelNode),
-		regularUserPassword: "password",
+		regularUserUsername: fmt.Sprintf("CATS-USER-%d-%s", node, timeTag),
+		regularUserPassword: "meow",
 	}
 }
 
 func (context *ConfiguredContext) Setup() {
+	os.Setenv(
+		"CF_TRACE",
+		filepath.Join(
+			context.config.ArtifactsDirectory,
+			"results",
+			fmt.Sprintf("CATS-TRACE-%d.txt", ginkgoconfig.GinkgoConfig.ParallelNode),
+		),
+	)
+
 	cf.AsUser(context.AdminUserContext(), func() {
 		definition := quotaDefinition{
 			Name: context.quotaDefinitionName,
