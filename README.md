@@ -45,8 +45,8 @@ the vendored dependencies are available when executing the tests by prepending t
 
 To run the CF Acceptance tests, you will need:
 - a running CF instance 
-- credentials for an Admin and a regular user
-- an org, a temporary space, and a persistent space within that org
+- credentials for an Admin user
+- an org, and a persistent space within that org
 - an environment variable `$CONFIG` which points to a `.json` file that contains the application domain
 
 The following script will configure these prerequisites for a [bosh-lite](https://github.com/cloudfoundry/bosh-lite) 
