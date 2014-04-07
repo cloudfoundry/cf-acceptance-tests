@@ -3,6 +3,7 @@ package helpers
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 )
 
 type Config struct {
@@ -49,6 +50,8 @@ func loadConfigJsonFromPath() *Config {
 		AdminPassword: os.Getenv("ADMIN_PASSWORD"),
 
 		PersistentAppHost: "persistent-app",
+
+		ArtifactsDirectory: filepath.Join("..", "results"),
 	}
 
 	path := configPath()

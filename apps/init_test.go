@@ -2,6 +2,7 @@ package apps
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -23,12 +24,20 @@ func TestApplications(t *testing.T) {
 	rs := []Reporter{}
 
 	if config.ArtifactsDirectory != "" {
+		os.Setenv(
+			"CF_TRACE",
+			filepath.Join(
+				config.ArtifactsDirectory,
+				fmt.Sprintf("CATS-TRACE-%s-%d.txt", "Applications", ginkgoconfig.GinkgoConfig.ParallelNode),
+			),
+		)
+
 		rs = append(
 			rs,
 			reporters.NewJUnitReporter(
 				filepath.Join(
 					config.ArtifactsDirectory,
-					fmt.Sprintf("%s-junit_%d.xml", "Applications", ginkgoconfig.GinkgoConfig.ParallelNode),
+					fmt.Sprintf("junit-%s-%d.xml", "Applications", ginkgoconfig.GinkgoConfig.ParallelNode),
 				),
 			),
 		)

@@ -3,8 +3,6 @@ package helpers
 import (
 	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
 	"time"
 
 	ginkgoconfig "github.com/onsi/ginkgo/config"
@@ -54,15 +52,6 @@ func NewContext(config Config) *ConfiguredContext {
 }
 
 func (context *ConfiguredContext) Setup() {
-	os.Setenv(
-		"CF_TRACE",
-		filepath.Join(
-			context.config.ArtifactsDirectory,
-			"results",
-			fmt.Sprintf("CATS-TRACE-%d.txt", ginkgoconfig.GinkgoConfig.ParallelNode),
-		),
-	)
-
 	cf.AsUser(context.AdminUserContext(), func() {
 		definition := quotaDefinition{
 			Name: context.quotaDefinitionName,
