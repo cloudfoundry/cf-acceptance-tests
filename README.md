@@ -34,8 +34,8 @@ Make sure that the go version of `cf` is accessible in your `$PATH`, and that it
 renamed to `gcf`, or that there is a symlink from `gcf` to the location of `cf`.
 
 Check out a copy of `cf-acceptance-tests` and make sure that it is added to your `$GOPATH`.
-The recommended way to do this is to run `go get github.com/cloudfoundry/cf-acceptance-tests`. You will receive a 
-warning "no buildable Go source files"; this can be ignored as there is no compilable go code in the package. 
+The recommended way to do this is to run `go get github.com/cloudfoundry/cf-acceptance-tests`. You will receive a
+warning "no buildable Go source files"; this can be ignored as there is no compilable go code in the package.
 
 All `go` dependencies required by CATs are vendored in `cf-acceptance-tests/Godeps`. The test script itself, `bin/test`,
 [ensures that](https://github.com/cloudfoundry/cf-acceptance-tests/blob/master/bin/test#L10-L15)
@@ -44,12 +44,11 @@ the vendored dependencies are available when executing the tests by prepending t
 ### Test Setup
 
 To run the CF Acceptance tests, you will need:
-- a running CF instance 
+- a running CF instance
 - credentials for an Admin user
-- an org, and a persistent space within that org
 - an environment variable `$CONFIG` which points to a `.json` file that contains the application domain
 
-The following script will configure these prerequisites for a [bosh-lite](https://github.com/cloudfoundry/bosh-lite) 
+The following script will configure these prerequisites for a [bosh-lite](https://github.com/cloudfoundry/bosh-lite)
 installation. Replace credentials and URLs as appropriate for your environment.
 
 ```bash
@@ -60,11 +59,34 @@ cat > integration_config.json <<EOF
   "api": "api.10.244.0.34.xip.io",
   "admin_user": "admin",
   "admin_password": "admin",
-  "apps_domain": "10.244.0.34.xip.io",
-  "persistent_app_host": "persistent-app"
+  "apps_domain": "10.244.0.34.xip.io"
 }
 EOF
 export CONFIG=$PWD/integration_config.json
+```
+
+If you are running the tests with version 6.0.2 or later of the Go CLI against bosh-lite or any other environment
+using self-signed certificates, add
+
+```
+  "skip_ssl_validation": true
+```
+
+to your integration_config.json as well.
+
+
+### Persistent App Test Setup
+
+The tests in `one_push_many_restarts_test.go` operate on an app that is supposed to persist between runs of the CF
+Acceptance tests. If these tests are run, they will create an org, space, and quota and push the app to this space.
+The test config will provide default names for these entities, but to configure them, add the following key-value
+pairs to integration_config.json:
+
+```
+  "persistent_app_host": "myapp",
+  "persistent_app_space": "myspace",
+  "persistent_app_org": "myorg",
+  "persistent_app_quota_name": "myquota",
 ```
 
 ### Test Execution
