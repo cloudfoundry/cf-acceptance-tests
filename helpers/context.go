@@ -104,7 +104,7 @@ func (context *ConfiguredContext) Setup() {
 
 func (context *ConfiguredContext) Teardown() {
 	cf.AsUser(context.AdminUserContext(), func() {
-		Expect(cf.Cf("delete-user", "-f", context.regularUserUsername)).To(ExitWith(0))
+		Expect(cf.Cf("delete-user", "-f", context.regularUserUsername)).To(Say("OK"))
 
 		if !context.isPersistent {
 			Expect(cf.Cf("delete-org", "-f", context.organizationName)).To(Say("OK"))
