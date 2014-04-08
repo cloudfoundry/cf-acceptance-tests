@@ -107,7 +107,7 @@ func (context *ConfiguredContext) Teardown() {
 		Expect(cf.Cf("delete-user", "-f", context.regularUserUsername)).To(ExitWith(0))
 
 		if !context.isPersistent {
-			Expect(cf.Cf("delete-org", "-f", context.organizationName)).To(ExitWith(0))
+			Expect(cf.Cf("delete-org", "-f", context.organizationName)).To(Say("OK"))
 
 			cf.ApiRequest(
 				"DELETE",
