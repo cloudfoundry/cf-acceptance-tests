@@ -31,7 +31,7 @@ var _ = Describe("An application that's already been pushed", func() {
 		context := NewPersistentAppContext(config)
 
 		adminUserContext = context.AdminUserContext()
-		persistentAppUserContext = context.PersistentAppUserContext()
+		persistentAppUserContext = context.RegularUserContext()
 
 		context.Setup()
 

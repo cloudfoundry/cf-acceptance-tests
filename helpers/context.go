@@ -16,6 +16,7 @@ type ConfiguredContext struct {
 	config Config
 
 	organizationName string
+	spaceName        string
 
 	quotaDefinitionName string
 	quotaDefinitionGUID string
@@ -45,6 +46,7 @@ func NewContext(config Config) *ConfiguredContext {
 		quotaDefinitionName: fmt.Sprintf("CATS-QUOTA-%d-%s", node, timeTag),
 
 		organizationName: fmt.Sprintf("CATS-ORG-%d-%s", node, timeTag),
+		spaceName:        fmt.Sprintf("CATS-SPACE-%d-%s", node, timeTag),
 
 		regularUserUsername: fmt.Sprintf("CATS-USER-%d-%s", node, timeTag),
 		regularUserPassword: "meow",
@@ -56,6 +58,7 @@ func NewPersistentAppContext(config Config) *ConfiguredContext {
 
 	baseContext.quotaDefinitionName = config.PersistentAppQuotaName
 	baseContext.organizationName = config.PersistentAppOrg
+	baseContext.spaceName = config.PersistentAppSpace
 
 	return baseContext
 }
@@ -125,18 +128,7 @@ func (context *ConfiguredContext) RegularUserContext() cf.UserContext {
 		context.regularUserUsername,
 		context.regularUserPassword,
 		context.organizationName,
-		fmt.Sprintf("CATS-space-%d", ginkgoconfig.GinkgoConfig.ParallelNode),
-		context.config.SkipSSLValidation,
-	)
-}
-
-func (context *ConfiguredContext) PersistentAppUserContext() cf.UserContext {
-	return cf.NewUserContext(
-		context.config.ApiEndpoint,
-		context.regularUserUsername,
-		context.regularUserPassword,
-		context.organizationName,
-		context.config.PersistentAppSpace,
+		context.spaceName,
 		context.config.SkipSSLValidation,
 	)
 }
