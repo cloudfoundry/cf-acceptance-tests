@@ -23,25 +23,10 @@ import (
 
 var _ = Describe("An application that's already been pushed", func() {
 	var appName string
-	var originalCfHomeDir, currentCfHomeDir string
-	var config = LoadConfig()
-	var adminUserContext, persistentAppUserContext UserContext
+	config := LoadConfig()
+	SetupEnvironment(NewPersistentAppContext(config))
 
 	BeforeEach(func() {
-		context := NewPersistentAppContext(config)
-
-		adminUserContext = context.AdminUserContext()
-		persistentAppUserContext = context.RegularUserContext()
-
-		context.Setup()
-
-		AsUser(adminUserContext, func() {
-			SetUpSpaceWithUserAccess(persistentAppUserContext, persistentAppUserContext.Space)
-		})
-
-		originalCfHomeDir, currentCfHomeDir = InitiateUserContext(persistentAppUserContext)
-		TargetSpace(persistentAppUserContext)
-
 		appName = config.PersistentAppHost
 
 		Expect(Cf("app", appName)).To(SayBranches(
@@ -55,14 +40,6 @@ var _ = Describe("An application that's already been pushed", func() {
 			},
 			cmdtest.ExpectBranch{"running", func() {}},
 		))
-	})
-
-	AfterEach(func() {
-		RestoreUserContext(persistentAppUserContext, originalCfHomeDir, currentCfHomeDir)
-
-		AsUser(adminUserContext, func() {
-			Expect(Cf("delete-user", "-f", persistentAppUserContext.Username)).To(ExitWith(0))
-		})
 	})
 
 	It("can be restarted and still come up", func() {

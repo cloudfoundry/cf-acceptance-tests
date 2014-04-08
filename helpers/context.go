@@ -23,6 +23,8 @@ type ConfiguredContext struct {
 
 	regularUserUsername string
 	regularUserPassword string
+
+	isPersistent bool
 }
 
 type quotaDefinition struct {
@@ -38,7 +40,7 @@ type quotaDefinition struct {
 
 func NewContext(config Config) *ConfiguredContext {
 	node := ginkgoconfig.GinkgoConfig.ParallelNode
-	timeTag := time.Now().Format("2006_01_02-15h04m05s")
+	timeTag := time.Now().Format("2006_01_02-15h04m05.999s")
 
 	return &ConfiguredContext{
 		config: config,
@@ -50,6 +52,8 @@ func NewContext(config Config) *ConfiguredContext {
 
 		regularUserUsername: fmt.Sprintf("CATS-USER-%d-%s", node, timeTag),
 		regularUserPassword: "meow",
+
+		isPersistent: false,
 	}
 }
 
@@ -59,6 +63,7 @@ func NewPersistentAppContext(config Config) *ConfiguredContext {
 	baseContext.quotaDefinitionName = config.PersistentAppQuotaName
 	baseContext.organizationName = config.PersistentAppOrg
 	baseContext.spaceName = config.PersistentAppSpace
+	baseContext.isPersistent = true
 
 	return baseContext
 }
@@ -99,15 +104,17 @@ func (context *ConfiguredContext) Setup() {
 
 func (context *ConfiguredContext) Teardown() {
 	cf.AsUser(context.AdminUserContext(), func() {
-		Expect(cf.Cf("delete-org", "-f", context.organizationName)).To(ExitWith(0))
-
 		Expect(cf.Cf("delete-user", "-f", context.regularUserUsername)).To(ExitWith(0))
 
-		cf.ApiRequest(
-			"DELETE",
-			"/v2/quota_definitions/"+context.quotaDefinitionGUID+"?recursive=true",
-			nil,
-		)
+		if !context.isPersistent {
+			Expect(cf.Cf("delete-org", "-f", context.organizationName)).To(ExitWith(0))
+
+			cf.ApiRequest(
+				"DELETE",
+				"/v2/quota_definitions/"+context.quotaDefinitionGUID+"?recursive=true",
+				nil,
+			)
+		}
 	})
 }
 

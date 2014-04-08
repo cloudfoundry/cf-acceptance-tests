@@ -1,8 +1,6 @@
 package helpers
 
 import (
-	"testing"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/vito/cmdtest/matchers"
@@ -21,7 +19,7 @@ type SuiteContext interface {
 	RegularUserContext() cf.UserContext
 }
 
-func SetupEnvironment(t *testing.T, context SuiteContext) {
+func SetupEnvironment(context SuiteContext) {
 	var originalCfHomeDir, currentCfHomeDir string
 
 	BeforeEach(func() {
