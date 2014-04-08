@@ -65,7 +65,7 @@ EOF
 export CONFIG=$PWD/integration_config.json
 ```
 
-If you are running the tests with version 6.0.2 or later of the Go CLI against bosh-lite or any other environment
+If you are running the tests with version newer than 6.0.2-0bba99f of the Go CLI against bosh-lite or any other environment
 using self-signed certificates, add
 
 ```
