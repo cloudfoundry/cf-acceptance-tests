@@ -8,11 +8,11 @@ import (
 
 type Config struct {
 	ApiEndpoint string `json:"api"`
+	AppsDomain  string `json:"apps_domain"`
 
 	AdminUser     string `json:"admin_user"`
 	AdminPassword string `json:"admin_password"`
 
-	AppsDomain             string `json:"apps_domain"`
 	PersistentAppHost      string `json:"persistent_app_host"`
 	PersistentAppSpace     string `json:"persistent_app_space"`
 	PersistentAppOrg       string `json:"persistent_app_org"`
