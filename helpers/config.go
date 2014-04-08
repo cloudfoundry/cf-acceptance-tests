@@ -47,11 +47,6 @@ func LoadConfig() Config {
 
 func loadConfigJsonFromPath() *Config {
 	var config *Config = &Config{
-		ApiEndpoint: os.Getenv("API_ENDPOINT"),
-
-		AdminUser:     os.Getenv("ADMIN_USER"),
-		AdminPassword: os.Getenv("ADMIN_PASSWORD"),
-
 		PersistentAppHost:      "CATS-persistent-app",
 		PersistentAppSpace:     "CATS-persistent-space",
 		PersistentAppOrg:       "CATS-persistent-org",
