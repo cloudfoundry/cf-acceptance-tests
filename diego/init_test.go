@@ -19,7 +19,7 @@ func TestApplications(t *testing.T) {
 
 	config := helpers.LoadConfig()
 
-	helpers.SetupEnvironment(t, helpers.NewContext(config))
+	helpers.SetupEnvironment(helpers.NewContext(config))
 
 	rs := []Reporter{}
 
