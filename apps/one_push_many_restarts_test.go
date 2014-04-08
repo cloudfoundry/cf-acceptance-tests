@@ -23,10 +23,26 @@ import (
 
 var _ = Describe("An application that's already been pushed", func() {
 	var appName string
+	var originalCfHomeDir, currentCfHomeDir string
+	var config = LoadConfig()
+	var adminUserContext, persistentAppUserContext UserContext
 
 	BeforeEach(func() {
-		appName = LoadConfig().PersistentAppHost
-		Expect(Cf("target", "-s", "persistent-space")).To(ExitWith(0))
+		context := NewPersistentAppContext(config)
+
+		adminUserContext = context.AdminUserContext()
+		persistentAppUserContext = context.PersistentAppUserContext()
+
+		context.Setup()
+
+		AsUser(adminUserContext, func() {
+			SetUpSpaceWithUserAccess(persistentAppUserContext, persistentAppUserContext.Space)
+		})
+
+		originalCfHomeDir, currentCfHomeDir = InitiateUserContext(persistentAppUserContext)
+		TargetSpace(persistentAppUserContext)
+
+		appName = config.PersistentAppHost
 
 		Expect(Cf("app", appName)).To(SayBranches(
 			cmdtest.ExpectBranch{
@@ -41,15 +57,23 @@ var _ = Describe("An application that's already been pushed", func() {
 		))
 	})
 
+	AfterEach(func() {
+		RestoreUserContext(persistentAppUserContext, originalCfHomeDir, currentCfHomeDir)
+
+		AsUser(adminUserContext, func() {
+			Expect(Cf("delete-user", "-f", persistentAppUserContext.Username)).To(ExitWith(0))
+		})
+	})
+
 	It("can be restarted and still come up", func() {
-		Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("Hi, I'm Dora!"))
+		Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
 
 		Expect(Cf("stop", appName)).To(ExitWith(0))
 
-		Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("404"))
+		Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("404"))
 
 		Expect(Cf("start", appName)).To(Say("App started"))
 
-		Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("Hi, I'm Dora!"))
+		Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
 	})
 })

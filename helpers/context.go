@@ -37,7 +37,7 @@ type quotaDefinition struct {
 
 func NewContext(config Config) *ConfiguredContext {
 	node := ginkgoconfig.GinkgoConfig.ParallelNode
-	timeTag := time.Now().Format("2006_01_02-15h04m")
+	timeTag := time.Now().Format("2006_01_02-15h04m05s")
 
 	return &ConfiguredContext{
 		config: config,
@@ -49,6 +49,15 @@ func NewContext(config Config) *ConfiguredContext {
 		regularUserUsername: fmt.Sprintf("CATS-USER-%d-%s", node, timeTag),
 		regularUserPassword: "meow",
 	}
+}
+
+func NewPersistentAppContext(config Config) *ConfiguredContext {
+	baseContext := NewContext(config)
+
+	baseContext.quotaDefinitionName = config.PersistentAppQuotaName
+	baseContext.organizationName = config.PersistentAppOrg
+
+	return baseContext
 }
 
 func (context *ConfiguredContext) Setup() {
@@ -117,6 +126,17 @@ func (context *ConfiguredContext) RegularUserContext() cf.UserContext {
 		context.regularUserPassword,
 		context.organizationName,
 		fmt.Sprintf("CATS-space-%d", ginkgoconfig.GinkgoConfig.ParallelNode),
+		context.config.SkipSSLValidation,
+	)
+}
+
+func (context *ConfiguredContext) PersistentAppUserContext() cf.UserContext {
+	return cf.NewUserContext(
+		context.config.ApiEndpoint,
+		context.regularUserUsername,
+		context.regularUserPassword,
+		context.organizationName,
+		context.config.PersistentAppSpace,
 		context.config.SkipSSLValidation,
 	)
 }

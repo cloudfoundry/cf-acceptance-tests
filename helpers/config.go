@@ -12,8 +12,11 @@ type Config struct {
 	AdminUser     string `json:"admin_user"`
 	AdminPassword string `json:"admin_password"`
 
-	AppsDomain        string `json:"apps_domain"`
-	PersistentAppHost string `json:"persistent_app_host"`
+	AppsDomain             string `json:"apps_domain"`
+	PersistentAppHost      string `json:"persistent_app_host"`
+	PersistentAppSpace     string `json:"persistent_app_space"`
+	PersistentAppOrg       string `json:"persistent_app_org"`
+	PersistentAppQuotaName string `json:"persistent_app_quota_name"`
 
 	SkipSSLValidation bool `json:"skip_ssl_validation"`
 
@@ -49,7 +52,10 @@ func loadConfigJsonFromPath() *Config {
 		AdminUser:     os.Getenv("ADMIN_USER"),
 		AdminPassword: os.Getenv("ADMIN_PASSWORD"),
 
-		PersistentAppHost: "persistent-app",
+		PersistentAppHost:      "CATS-persistent-app",
+		PersistentAppSpace:     "CATS-persistent-space",
+		PersistentAppOrg:       "CATS-persistent-org",
+		PersistentAppQuotaName: "CATS-persistent-quota",
 
 		ArtifactsDirectory: filepath.Join("..", "results"),
 	}
