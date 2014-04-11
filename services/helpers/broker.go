@@ -90,14 +90,14 @@ func (b ServiceBroker) Restart() {
 
 func (b ServiceBroker) Create(appsDomain string) {
 	AsUser(AdminUserContext, func() {
-		Require(Cf("create-service-broker", b.Name, "username", "password", AppUri(b.Name, "", appsDomain))).To(ExitWithTimeout(0, 30*time.Second))
+		Expect(Cf("create-service-broker", b.Name, "username", "password", AppUri(b.Name, "", appsDomain))).To(ExitWithTimeout(0, 30*time.Second))
 		Expect(Cf("service-brokers")).To(Say(b.Name))
 	})
 }
 
 func (b ServiceBroker) Update(appsDomain string) {
 	AsUser(AdminUserContext, func() {
-		Require(Cf("update-service-broker", b.Name, "username", "password", AppUri(b.Name, "", appsDomain))).To(ExitWithTimeout(0, 30*time.Second))
+		Expect(Cf("update-service-broker", b.Name, "username", "password", AppUri(b.Name, "", appsDomain))).To(ExitWithTimeout(0, 30*time.Second))
 	})
 }
 

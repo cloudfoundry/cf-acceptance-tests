@@ -36,8 +36,6 @@ var _ = Describe("SSO Lifecycle", func() {
 
 	Context("When a service broker is created", func() {
 		It("can perform an operation on a user's behalf using sso", func() {
-			defer Recover() // Catches panic thrown by Require expectations
-
 			broker.Create(LoadConfig().AppsDomain)
 
 			//create a service instance
@@ -63,8 +61,6 @@ var _ = Describe("SSO Lifecycle", func() {
 
 	Context("When a service broker is updated", func() {
 		It("can perform an operation on a user's behalf using sso", func() {
-			defer Recover() // Catches panic thrown by Require expectations
-
 			broker.Create(LoadConfig().AppsDomain)
 
 			config.ClientId = generator.RandomName()
@@ -96,8 +92,6 @@ var _ = Describe("SSO Lifecycle", func() {
 
 	Context("When a service broker is deleted", func() {
 		It("can no longer perform an operation on a user's behalf using sso", func() {
-			defer Recover() // Catches panic thrown by Require expectations
-
 			broker.Create(LoadConfig().AppsDomain)
 
 			broker.Delete()

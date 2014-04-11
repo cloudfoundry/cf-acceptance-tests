@@ -21,8 +21,6 @@ var _ = Describe("Service Broker Lifecycle", func() {
 	})
 
 	It("confirms correct behavior in the lifecycle of a service broker", func() {
-		defer helpers.Recover() // Catches panic thrown by Require expectations
-
 		// Adding the service broker
 		broker.Create(LoadConfig().AppsDomain)
 

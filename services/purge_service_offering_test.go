@@ -29,8 +29,6 @@ var _ = Describe("Purging service offerings", func() {
 	})
 
 	It("removes all instances and plans of the service, then removes the service offering", func() {
-		defer helpers.Recover() // Catches panic thrown by Require expectations
-
 		instanceName := "purge-offering-instance"
 
 		Expect(Cf("marketplace")).To(Say(broker.Plan.Name))
