@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/cloudfoundry/cf-acceptance-tests",
-	"GoVersion": "go1.2",
+	"GoVersion": "go1.2.1",
 	"Packages": [
 		"./..."
 	],
@@ -15,11 +15,7 @@
 		},
 		{
 			"ImportPath": "github.com/onsi/gomega",
-			"Rev": "bad854a45453ec22d99c8bd982e2302f64d3fc37"
-		},
-		{
-			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/archiver",
-			"Rev": "db2936df21b42702ed1a2cfba1061e7407c106aa"
+			"Rev": "b017f5b84e91054313ed33ba2422e992c3b08626"
 		},
 		{
 			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/cf",
@@ -32,6 +28,10 @@
 		{
 			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/runner",
 			"Rev": "db2936df21b42702ed1a2cfba1061e7407c106aa"
+		},
+		{
+			"ImportPath": "github.com/pivotal-golang/archiver/extractor/test_helper",
+			"Rev": "338bf2b31d42f9ff6f57e0944cf5628bdfee546c"
 		},
 		{
 			"ImportPath": "github.com/vito/cmdtest",

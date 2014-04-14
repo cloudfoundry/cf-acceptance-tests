@@ -9,9 +9,9 @@ import (
 	catsHelpers "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf-experimental/cf-test-helpers/archiver"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
+	archive_helpers "github.com/pivotal-golang/archiver/extractor/test_helper"
 	. "github.com/vito/cmdtest/matchers"
 )
 
@@ -46,7 +46,7 @@ var _ = Describe("An application using an admin buildpack", func() {
 			buildpackPath = tmpdir
 			buildpackArchivePath = path.Join(buildpackPath, "buildpack.zip")
 
-			archiver.CreateZipArchive(buildpackArchivePath, []archiver.ArchiveFile{
+			archive_helpers.CreateZipArchive(buildpackArchivePath, []archive_helpers.ArchiveFile{
 				{
 					Name: "bin/compile",
 					Body: `#!/usr/bin/env bash

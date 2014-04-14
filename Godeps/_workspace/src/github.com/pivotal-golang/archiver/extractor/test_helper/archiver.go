@@ -1,4 +1,4 @@
-package archiver
+package test_helper
 
 import (
 	"archive/tar"
