@@ -51,9 +51,10 @@ var _ = Describe("An application using an admin buildpack", func() {
 					Name: "bin/compile",
 					Body: `#!/usr/bin/env bash
 
-sleep 1
 
 echo "Staging with Simple Buildpack"
+
+sleep 2
 `,
 				},
 				{
