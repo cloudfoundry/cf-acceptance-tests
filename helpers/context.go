@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -19,7 +18,6 @@ type ConfiguredContext struct {
 	spaceName        string
 
 	quotaDefinitionName string
-	quotaDefinitionGUID string
 
 	regularUserUsername string
 	regularUserPassword string
@@ -28,14 +26,13 @@ type ConfiguredContext struct {
 }
 
 type quotaDefinition struct {
-	Name string `json:"name"`
+	Name string
 
-	NonBasicServicesAllowed bool `json:"non_basic_services_allowed"`
+	TotalServices string
+	TotalRoutes   string
+	MemoryLimit string
 
-	TotalServices int `json:"total_services"`
-	TotalRoutes   int `json:"total_routes"`
-
-	MemoryLimit int `json:"memory_limit"`
+	NonBasicServicesAllowed bool
 }
 
 func NewContext(config Config) *ConfiguredContext {
@@ -73,24 +70,18 @@ func (context *ConfiguredContext) Setup() {
 		definition := quotaDefinition{
 			Name: context.quotaDefinitionName,
 
-			TotalServices: 100,
-			TotalRoutes:   1000,
+			TotalServices: "100",
+			TotalRoutes:   "1000",
+			MemoryLimit: "10G",
 
-			MemoryLimit: 10240,
-
-			NonBasicServicesAllowed: true,
+			NonBasicServicesAllowed: true, //TODO:Needs to be added once CLI gets updated
 		}
 
-		definitionPayload, err := json.Marshal(definition)
-		Expect(err).ToNot(HaveOccurred())
-
-		var response cf.GenericResource
-
-		cf.ApiRequest("POST", "/v2/quota_definitions", &response, string(definitionPayload))
-
-		context.quotaDefinitionGUID = response.Metadata.Guid
-		fmt.Printf("QuotaDefinition Response: %#v\n", response)
-		println("GUID", context.quotaDefinitionGUID)
+		Expect(cf.Cf("create-quota",
+					 context.quotaDefinitionName,
+			         "-m", definition.MemoryLimit,
+		             "-r", definition.TotalRoutes,
+		             "-s", definition.TotalServices)).To(Say("OK"))
 
 		Expect(cf.Cf("create-user", context.regularUserUsername, context.regularUserPassword)).To(SayBranches(
 			cmdtest.ExpectBranch{"OK", func() {}},
@@ -109,11 +100,7 @@ func (context *ConfiguredContext) Teardown() {
 		if !context.isPersistent {
 			Expect(cf.Cf("delete-org", "-f", context.organizationName)).To(Say("OK"))
 
-			cf.ApiRequest(
-				"DELETE",
-				"/v2/quota_definitions/"+context.quotaDefinitionGUID+"?recursive=true",
-				nil,
-			)
+			Expect(cf.Cf("delete-quota", "-f", context.quotaDefinitionName)).To(Say("OK"))
 		}
 	})
 }
