@@ -77,11 +77,17 @@ func (context *ConfiguredContext) Setup() {
 			NonBasicServicesAllowed: true, //TODO:Needs to be added once CLI gets updated
 		}
 
-		Expect(cf.Cf("create-quota",
-					 context.quotaDefinitionName,
-			         "-m", definition.MemoryLimit,
-		             "-r", definition.TotalRoutes,
-		             "-s", definition.TotalServices)).To(Say("OK"))
+		args := []string {
+			"create-quota",
+			context.quotaDefinitionName,
+			"-m", definition.MemoryLimit,
+			"-r", definition.TotalRoutes,
+			"-s", definition.TotalServices,
+		}
+		if (definition.NonBasicServicesAllowed) {
+			args = append(args, "--allow-paid-service-plans")
+		}
+		Expect(cf.Cf(args...)).To(Say("OK"))
 
 		Expect(cf.Cf("create-user", context.regularUserUsername, context.regularUserPassword)).To(SayBranches(
 			cmdtest.ExpectBranch{"OK", func() {}},
