@@ -50,7 +50,7 @@ func AuthenticateUser(authorizationEndpoint string, username string, password st
 	vcapidRegEx, _ := regexp.Compile(`__VCAP_ID__([^;]*)`)
 	sessionId := jsessionRegEx.FindString(stringResult)
 	vcapId := vcapidRegEx.FindString(stringResult)
-	cookie = fmt.Sprintf("\"%v;%v\"", sessionId,vcapId)
+	cookie = fmt.Sprintf("%v;%v", sessionId, vcapId)
 	return
 }
 
