@@ -1,5 +1,4 @@
 tags
 integration_config.json
-apps.test
-services.test
+*.test
 results/*.*
