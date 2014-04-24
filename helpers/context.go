@@ -74,7 +74,7 @@ func (context *ConfiguredContext) Setup() {
 			TotalRoutes:   "1000",
 			MemoryLimit: "10G",
 
-			NonBasicServicesAllowed: true, //TODO:Needs to be added once CLI gets updated
+			NonBasicServicesAllowed: true,
 		}
 
 		args := []string {
@@ -87,6 +87,7 @@ func (context *ConfiguredContext) Setup() {
 		if (definition.NonBasicServicesAllowed) {
 			args = append(args, "--allow-paid-service-plans")
 		}
+
 		Expect(cf.Cf(args...)).To(Say("OK"))
 
 		Expect(cf.Cf("create-user", context.regularUserUsername, context.regularUserPassword)).To(SayBranches(
