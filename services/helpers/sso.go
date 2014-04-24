@@ -46,9 +46,11 @@ func AuthenticateUser(authorizationEndpoint string, username string, password st
 	result := Curl(loginUri, `--data`, loginCredentials, `--insecure`, `-i`, `-v`)
 	stringResult := string(result.FullOutput())
 
-	regEx, _ := regexp.Compile(`JSESSIONID([^;]*)`)
-	sessionId := regEx.FindString(stringResult)
-	cookie = fmt.Sprintf("\"%v\"", sessionId)
+	jsessionRegEx, _ := regexp.Compile(`JSESSIONID([^;]*)`)
+	vcapidRegEx, _ := regexp.Compile(`__VCAP_ID__([^;]*)`)
+	sessionId := jsessionRegEx.FindString(stringResult)
+	vcapId := vcapidRegEx.FindString(stringResult)
+	cookie = fmt.Sprintf("\"%v;%v\"", sessionId,vcapId)
 	return
 }
 
