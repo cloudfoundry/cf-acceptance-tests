@@ -36,4 +36,14 @@ var _ = Describe("Application", func() {
 			Expect(Cf("delete", appName, "-f")).To(Say("OK"))
 		})
 	})
+
+	Describe("go", func() {
+		It("makes the app reachable via its bound route", func() {
+			Expect(Cf("push", appName, "-p", NewAssets().Go)).To(Say("App started"))
+
+			Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("go, world"))
+
+			Expect(Cf("delete", appName, "-f")).To(Say("OK"))
+		})
+	})
 })
