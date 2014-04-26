@@ -12,10 +12,10 @@
 package apps
 
 import (
+	"time"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/vito/cmdtest"
-	. "github.com/vito/cmdtest/matchers"
+	. "github.com/onsi/gomega/gexec"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
@@ -24,33 +24,43 @@ import (
 var _ = Describe("An application that's already been pushed", func() {
 	var appName string
 	config := LoadConfig()
-	SetupEnvironment(NewPersistentAppContext(config))
+	var environment *Environment
+
+	BeforeEach(func() {
+		persistentContext := NewPersistentAppContext(config)
+		environment = NewEnvironment(persistentContext)
+		environment.Setup()
+	})
+
+	AfterEach(func() {
+		environment.Teardown()
+	})
 
 	BeforeEach(func() {
 		appName = config.PersistentAppHost
 
-		Expect(Cf("app", appName)).To(SayBranches(
-			cmdtest.ExpectBranch{
-				"not found",
-				func() {
-					Expect(
-						Cf("push", appName, "-p", NewAssets().Dora),
-					).To(Say("App started"))
-				},
-			},
-			cmdtest.ExpectBranch{"running", func() {}},
-		))
+		appQuery := Cf("app", appName)
+
+		select {
+		case <-appQuery.Out.Detect("not found"):
+			Eventually(Cf("push", appName, "-p", NewAssets().Dora), CFPushTimeout).Should(Exit(0))
+		case <-appQuery.Out.Detect("running"):
+		case <-time.After(DefaultTimeout * time.Second):
+			Fail("failed to find or setup app")
+		}
+
+		appQuery.Out.CancelDetects()
 	})
 
 	It("can be restarted and still come up", func() {
-		Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
+		Eventually(CurlFetcher(appName, "/", config.AppsDomain), DefaultTimeout).Should(ContainSubstring("Hi, I'm Dora!"))
 
-		Expect(Cf("stop", appName)).To(ExitWith(0))
+		Eventually(Cf("stop", appName), DefaultTimeout).Should(Exit(0))
 
-		Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("404"))
+		Eventually(CurlFetcher(appName, "/", config.AppsDomain), DefaultTimeout).Should(ContainSubstring("404"))
 
-		Expect(Cf("start", appName)).To(Say("App started"))
+		Eventually(Cf("start", appName), DefaultTimeout).Should(Exit(0))
 
-		Eventually(Curling(appName, "/", config.AppsDomain)).Should(Say("Hi, I'm Dora!"))
+		Eventually(CurlFetcher(appName, "/", config.AppsDomain), DefaultTimeout).Should(ContainSubstring("Hi, I'm Dora!"))
 	})
 })

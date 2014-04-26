@@ -16,7 +16,7 @@ var _ = Describe("SSO Lifecycle", func() {
 	redirectUri := `http://example.com`
 
 	BeforeEach(func() {
-		broker = NewServiceBroker(generator.RandomName(), NewAssets().ServiceBroker)
+		broker = NewServiceBroker(generator.RandomName(), NewAssets().ServiceBroker, context)
 		broker.Push()
 		broker.Service.DashboardClient.RedirectUri = redirectUri
 		broker.Configure()
@@ -43,7 +43,7 @@ var _ = Describe("SSO Lifecycle", func() {
 			serviceInstanceGuid := broker.CreateServiceInstance(generator.RandomName())
 
 			// perform the OAuth lifecycle to obtain an access token
-			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, RegularUserContext.Username, RegularUserContext.Password)
+			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
 
 			authCode, _ := RequestScopes(userSessionCookie, config)
 			Expect(authCode).ToNot(BeNil(), `Failed to request and authorize scopes.`)
@@ -74,7 +74,7 @@ var _ = Describe("SSO Lifecycle", func() {
 			serviceInstanceGuid := broker.CreateServiceInstance(generator.RandomName())
 
 			// perform the OAuth lifecycle to obtain an access token
-			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, RegularUserContext.Username, RegularUserContext.Password)
+			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
 
 			authCode, _ := RequestScopes(userSessionCookie, config)
 			Expect(authCode).ToNot(BeNil(), `Failed to request and authorize scopes.`)
@@ -97,7 +97,7 @@ var _ = Describe("SSO Lifecycle", func() {
 			broker.Delete()
 
 			// perform the OAuth lifecycle to obtain an access token
-			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, RegularUserContext.Username, RegularUserContext.Password)
+			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
 
 			_, httpCode := RequestScopes(userSessionCookie, config)
 

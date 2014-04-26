@@ -1,15 +1,11 @@
 package helpers
 
 import (
-	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/vito/cmdtest/matchers"
+	. "github.com/onsi/gomega/gexec"
 
 	"github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 )
-
-var AdminUserContext cf.UserContext
-var RegularUserContext cf.UserContext
 
 type SuiteContext interface {
 	Setup()
@@ -19,33 +15,37 @@ type SuiteContext interface {
 	RegularUserContext() cf.UserContext
 }
 
-func SetupEnvironment(context SuiteContext) {
-	var originalCfHomeDir, currentCfHomeDir string
+type Environment struct {
+	context           SuiteContext
+	originalCfHomeDir string
+	currentCfHomeDir  string
+}
 
-	BeforeEach(func() {
-		AdminUserContext = context.AdminUserContext()
-		RegularUserContext = context.RegularUserContext()
+func NewEnvironment(context SuiteContext) *Environment {
+	return &Environment{context: context}
+}
 
-		context.Setup()
+func (e *Environment) Setup() {
+	e.context.Setup()
 
-		cf.AsUser(AdminUserContext, func() {
-			setUpSpaceWithUserAccess(RegularUserContext)
-		})
-
-		originalCfHomeDir, currentCfHomeDir = cf.InitiateUserContext(RegularUserContext)
-		cf.TargetSpace(RegularUserContext)
+	cf.AsUser(e.context.AdminUserContext(), func() {
+		setUpSpaceWithUserAccess(e.context.RegularUserContext())
 	})
 
-	AfterEach(func() {
-		cf.RestoreUserContext(RegularUserContext, originalCfHomeDir, currentCfHomeDir)
+	e.originalCfHomeDir, e.currentCfHomeDir = cf.InitiateUserContext(e.context.RegularUserContext())
+	cf.TargetSpace(e.context.RegularUserContext())
+}
 
-		context.Teardown()
-	})
+func (e *Environment) Teardown() {
+	cf.RestoreUserContext(e.context.RegularUserContext(), e.originalCfHomeDir, e.currentCfHomeDir)
+
+	e.context.Teardown()
 }
 
 func setUpSpaceWithUserAccess(uc cf.UserContext) {
-	Expect(cf.Cf("create-space", "-o", uc.Org, uc.Space)).To(ExitWith(0))
-	Expect(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceManager")).To(ExitWith(0))
-	Expect(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceDeveloper")).To(ExitWith(0))
-	Expect(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceAuditor")).To(ExitWith(0))
+	spaceSetupTimeout := 10.0
+	Eventually(cf.Cf("create-space", "-o", uc.Org, uc.Space), spaceSetupTimeout).Should(Exit(0))
+	Eventually(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceManager"), spaceSetupTimeout).Should(Exit(0))
+	Eventually(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceDeveloper"), spaceSetupTimeout).Should(Exit(0))
+	Eventually(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceAuditor"), spaceSetupTimeout).Should(Exit(0))
 }

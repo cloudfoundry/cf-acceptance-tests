@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/onsi/ginkgo"
 	ginkgoconfig "github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gexec"
 	"github.com/pivotal-cf-experimental/cf-test-helpers/cf"
-	"github.com/vito/cmdtest"
-	. "github.com/vito/cmdtest/matchers"
 )
 
 type ConfiguredContext struct {
@@ -30,7 +30,7 @@ type quotaDefinition struct {
 
 	TotalServices string
 	TotalRoutes   string
-	MemoryLimit string
+	MemoryLimit   string
 
 	NonBasicServicesAllowed bool
 }
@@ -72,42 +72,47 @@ func (context *ConfiguredContext) Setup() {
 
 			TotalServices: "100",
 			TotalRoutes:   "1000",
-			MemoryLimit: "10G",
+			MemoryLimit:   "10G",
 
 			NonBasicServicesAllowed: true,
 		}
 
-		args := []string {
+		args := []string{
 			"create-quota",
 			context.quotaDefinitionName,
 			"-m", definition.MemoryLimit,
 			"-r", definition.TotalRoutes,
 			"-s", definition.TotalServices,
 		}
-		if (definition.NonBasicServicesAllowed) {
+		if definition.NonBasicServicesAllowed {
 			args = append(args, "--allow-paid-service-plans")
 		}
 
-		Expect(cf.Cf(args...)).To(Say("OK"))
+		Eventually(cf.Cf(args...), 30).Should(Exit(0))
 
-		Expect(cf.Cf("create-user", context.regularUserUsername, context.regularUserPassword)).To(SayBranches(
-			cmdtest.ExpectBranch{"OK", func() {}},
-			cmdtest.ExpectBranch{"scim_resource_already_exists", func() {}},
-		))
+		createUserSession := cf.Cf("create-user", context.regularUserUsername, context.regularUserPassword)
 
-		Expect(cf.Cf("create-org", context.organizationName)).To(ExitWith(0))
-		Expect(cf.Cf("set-quota", context.organizationName, definition.Name)).To(ExitWith(0))
+		select {
+		case <-createUserSession.Out.Detect("OK"):
+		case <-createUserSession.Out.Detect("scim_resource_already_exists"):
+		case <-time.After(30 * time.Second):
+			ginkgo.Fail("Failed to create user")
+		}
+		createUserSession.Out.CancelDetects()
+
+		Eventually(cf.Cf("create-org", context.organizationName), 30).Should(Exit(0))
+		Eventually(cf.Cf("set-quota", context.organizationName, definition.Name), 30).Should(Exit(0))
 	})
 }
 
 func (context *ConfiguredContext) Teardown() {
 	cf.AsUser(context.AdminUserContext(), func() {
-		Expect(cf.Cf("delete-user", "-f", context.regularUserUsername)).To(Say("OK"))
+		Eventually(cf.Cf("delete-user", "-f", context.regularUserUsername), 30).Should(Exit(0))
 
 		if !context.isPersistent {
-			Expect(cf.Cf("delete-org", "-f", context.organizationName)).To(Say("OK"))
+			Eventually(cf.Cf("delete-org", "-f", context.organizationName), 30).Should(Exit(0))
 
-			Expect(cf.Cf("delete-quota", "-f", context.quotaDefinitionName)).To(Say("OK"))
+			Eventually(cf.Cf("delete-quota", "-f", context.quotaDefinitionName), 30).Should(Exit(0))
 		}
 	})
 }

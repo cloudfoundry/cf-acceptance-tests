@@ -6,13 +6,13 @@ import (
 	"os"
 	"path"
 
-	catsHelpers "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gbytes"
+	. "github.com/onsi/gomega/gexec"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 	archive_helpers "github.com/pivotal-golang/archiver/extractor/test_helper"
-	. "github.com/vito/cmdtest/matchers"
 )
 
 var _ = Describe("An application using an admin buildpack", func() {
@@ -31,7 +31,7 @@ var _ = Describe("An application using an admin buildpack", func() {
 	}
 
 	BeforeEach(func() {
-		AsUser(catsHelpers.AdminUserContext, func() {
+		AsUser(context.AdminUserContext(), func() {
 			BuildpackName = RandomName()
 			appName = RandomName()
 
@@ -92,24 +92,25 @@ EOF
 			Expect(err).ToNot(HaveOccurred())
 
 			createBuildpack := Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0")
-			Expect(createBuildpack).To(Say("Creating"))
-			Expect(createBuildpack).To(Say("OK"))
-			Expect(createBuildpack).To(Say("Uploading"))
-			Expect(createBuildpack).To(Say("OK"))
+			Eventually(createBuildpack, DefaultTimeout).Should(Say("Creating"))
+			Eventually(createBuildpack, DefaultTimeout).Should(Say("OK"))
+			Eventually(createBuildpack, DefaultTimeout).Should(Say("Uploading"))
+			Eventually(createBuildpack, DefaultTimeout).Should(Say("OK"))
+			Eventually(createBuildpack, DefaultTimeout).Should(Exit(0))
 		})
 	})
 
 	AfterEach(func() {
-		AsUser(catsHelpers.AdminUserContext, func() {
-			Expect(Cf("delete-buildpack", BuildpackName, "-f")).To(Say("OK"))
+		AsUser(context.AdminUserContext(), func() {
+			Eventually(Cf("delete-buildpack", BuildpackName, "-f"), DefaultTimeout).Should(Exit(0))
 		})
 	})
 
 	Context("when the buildpack is detected", func() {
 		It("is used for the app", func() {
 			push := Cf("push", appName, "-p", appPath)
-			Expect(push).To(Say("Staging with Simple Buildpack"))
-			Expect(push).To(Say("App started"))
+			Eventually(push, CFPushTimeout).Should(Say("Staging with Simple Buildpack"))
+			Eventually(push, CFPushTimeout).Should(Exit(0))
 		})
 	})
 
@@ -120,25 +121,25 @@ EOF
 		})
 
 		It("fails to stage", func() {
-			Expect(Cf("push", appName, "-p", appPath)).To(Say("Staging error"))
+			Eventually(Cf("push", appName, "-p", appPath), CFPushTimeout).Should(Say("Staging error"))
 		})
 	})
 
 	Context("when the buildpack is deleted", func() {
 		BeforeEach(func() {
-			AsUser(catsHelpers.AdminUserContext, func() {
-				Expect(Cf("delete-buildpack", BuildpackName, "-f")).To(Say("OK"))
+			AsUser(context.AdminUserContext(), func() {
+				Eventually(Cf("delete-buildpack", BuildpackName, "-f"), DefaultTimeout).Should(Exit(0))
 			})
 		})
 
 		It("fails to stage", func() {
-			Expect(Cf("push", appName, "-p", appPath)).To(Say("Staging error"))
+			Eventually(Cf("push", appName, "-p", appPath), CFPushTimeout).Should(Say("Staging error"))
 		})
 	})
 
 	Context("when the buildpack is disabled", func() {
 		BeforeEach(func() {
-			AsUser(catsHelpers.AdminUserContext, func() {
+			AsUser(context.AdminUserContext(), func() {
 				var response QueryResponse
 
 				ApiRequest("GET", "/v2/buildpacks?q=name:"+BuildpackName, &response)
@@ -157,7 +158,7 @@ EOF
 		})
 
 		It("fails to stage", func() {
-			Expect(Cf("push", appName, "-p", appPath)).To(Say("Staging error"))
+			Eventually(Cf("push", appName, "-p", appPath), CFPushTimeout).Should(Say("Staging error"))
 		})
 	})
 })

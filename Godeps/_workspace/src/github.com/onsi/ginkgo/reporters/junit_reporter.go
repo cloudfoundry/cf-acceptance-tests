@@ -57,45 +57,60 @@ func NewJUnitReporter(filename string) *JUnitReporter {
 
 func (reporter *JUnitReporter) SpecSuiteWillBegin(config config.GinkgoConfigType, summary *types.SuiteSummary) {
 	reporter.suite = JUnitTestSuite{
-		Tests:     summary.NumberOfExamplesThatWillBeRun,
+		Tests:     summary.NumberOfSpecsThatWillBeRun,
 		TestCases: []JUnitTestCase{},
 	}
 	reporter.testSuiteName = summary.SuiteDescription
 }
 
-func (reporter *JUnitReporter) ExampleWillRun(exampleSummary *types.ExampleSummary) {
+func (reporter *JUnitReporter) SpecWillRun(specSummary *types.SpecSummary) {
 }
 
-func (reporter *JUnitReporter) ExampleDidComplete(exampleSummary *types.ExampleSummary) {
+func (reporter *JUnitReporter) BeforeSuiteDidRun(setupSummary *types.SetupSummary) {
+	reporter.handleSetupSummary("BeforeSuite", setupSummary)
+}
+
+func (reporter *JUnitReporter) AfterSuiteDidRun(setupSummary *types.SetupSummary) {
+	reporter.handleSetupSummary("AfterSuite", setupSummary)
+}
+
+func (reporter *JUnitReporter) handleSetupSummary(name string, setupSummary *types.SetupSummary) {
+	if setupSummary.State != types.SpecStatePassed {
+		testCase := JUnitTestCase{
+			Name:      name,
+			ClassName: reporter.testSuiteName,
+		}
+
+		testCase.FailureMessage = &JUnitFailureMessage{
+			Type:    reporter.failureTypeForState(setupSummary.State),
+			Message: fmt.Sprintf("%s\n%s", setupSummary.Failure.ComponentCodeLocation.String(), setupSummary.Failure.Message),
+		}
+		testCase.Time = setupSummary.RunTime.Seconds()
+		reporter.suite.TestCases = append(reporter.suite.TestCases, testCase)
+	}
+}
+
+func (reporter *JUnitReporter) SpecDidComplete(specSummary *types.SpecSummary) {
 	testCase := JUnitTestCase{
-		Name:      strings.Join(exampleSummary.ComponentTexts[1:], " "),
+		Name:      strings.Join(specSummary.ComponentTexts[1:], " "),
 		ClassName: reporter.testSuiteName,
 	}
-	if exampleSummary.State == types.ExampleStateFailed || exampleSummary.State == types.ExampleStateTimedOut || exampleSummary.State == types.ExampleStatePanicked {
-		failureType := ""
-		switch exampleSummary.State {
-		case types.ExampleStateFailed:
-			failureType = "Failure"
-		case types.ExampleStateTimedOut:
-			failureType = "Timeout"
-		case types.ExampleStatePanicked:
-			failureType = "Panic"
-		}
+	if specSummary.State == types.SpecStateFailed || specSummary.State == types.SpecStateTimedOut || specSummary.State == types.SpecStatePanicked {
 		testCase.FailureMessage = &JUnitFailureMessage{
-			Type:    failureType,
-			Message: fmt.Sprintf("%s\n%s", exampleSummary.Failure.ComponentCodeLocation.String(), exampleSummary.Failure.Message),
+			Type:    reporter.failureTypeForState(specSummary.State),
+			Message: fmt.Sprintf("%s\n%s", specSummary.Failure.ComponentCodeLocation.String(), specSummary.Failure.Message),
 		}
 	}
-	if exampleSummary.State == types.ExampleStateSkipped || exampleSummary.State == types.ExampleStatePending {
+	if specSummary.State == types.SpecStateSkipped || specSummary.State == types.SpecStatePending {
 		testCase.Skipped = &JUnitSkipped{}
 	}
-	testCase.Time = exampleSummary.RunTime.Seconds()
+	testCase.Time = specSummary.RunTime.Seconds()
 	reporter.suite.TestCases = append(reporter.suite.TestCases, testCase)
 }
 
 func (reporter *JUnitReporter) SpecSuiteDidEnd(summary *types.SuiteSummary) {
 	reporter.suite.Time = summary.RunTime.Seconds()
-	reporter.suite.Failures = summary.NumberOfFailedExamples
+	reporter.suite.Failures = summary.NumberOfFailedSpecs
 	file, err := os.Create(reporter.filename)
 	if err != nil {
 		fmt.Printf("Failed to create JUnit report file: %s\n\t%s", reporter.filename, err.Error())
@@ -107,5 +122,18 @@ func (reporter *JUnitReporter) SpecSuiteDidEnd(summary *types.SuiteSummary) {
 	err = encoder.Encode(reporter.suite)
 	if err != nil {
 		fmt.Printf("Failed to generate JUnit report\n\t%s", err.Error())
+	}
+}
+
+func (reporter *JUnitReporter) failureTypeForState(state types.SpecState) string {
+	switch state {
+	case types.SpecStateFailed:
+		return "Failure"
+	case types.SpecStateTimedOut:
+		return "Timeout"
+	case types.SpecStatePanicked:
+		return "Panic"
+	default:
+		return ""
 	}
 }

@@ -3,7 +3,8 @@ package apps
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/vito/cmdtest/matchers"
+	. "github.com/onsi/gomega/gbytes"
+	. "github.com/onsi/gomega/gexec"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
@@ -18,14 +19,15 @@ var _ = Describe("An application being staged", func() {
 	})
 
 	AfterEach(func() {
-		Expect(Cf("delete", appName, "-f")).To(Say("OK"))
+		Eventually(Cf("delete", appName, "-f"), DefaultTimeout).Should(Exit(0))
 	})
 
 	It("has its staging log streamed during a push", func() {
 		push := Cf("push", appName, "-p", NewAssets().Dora)
 
-		// Expect(push).To(Say("Installing dependencies"))
-		Expect(push).To(Say("Uploading droplet"))
-		Expect(push).To(Say("App started"))
+		Eventually(push, CFPushTimeout).Should(Say("Installing dependencies"))
+		Eventually(push, CFPushTimeout).Should(Say("Uploading droplet"))
+		Eventually(push, CFPushTimeout).Should(Say("App started"))
+		Eventually(push, CFPushTimeout).Should(Exit(0))
 	})
 })

@@ -3,7 +3,7 @@ package apps
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/vito/cmdtest/matchers"
+	. "github.com/onsi/gomega/gexec"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
@@ -19,31 +19,31 @@ var _ = Describe("Application", func() {
 
 	Describe("node", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(Cf("push", appName, "-p", NewAssets().Node, "-c", "node app.js")).To(Say("App started"))
+			Eventually(Cf("push", appName, "-p", NewAssets().Node, "-c", "node app.js"), CFPushTimeout).Should(Exit(0))
 
-			Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("Hello from a node app!"))
+			Eventually(CurlFetcher(appName, "/", LoadConfig().AppsDomain), DefaultTimeout).Should(ContainSubstring("Hello from a node app!"))
 
-			Expect(Cf("delete", appName, "-f")).To(Say("OK"))
+			Eventually(Cf("delete", appName, "-f"), DefaultTimeout).Should(Exit(0))
 		})
 	})
 
 	Describe("java", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(Cf("push", appName, "-p", NewAssets().Java)).To(Say("App started"))
+			Eventually(Cf("push", appName, "-p", NewAssets().Java), CFPushTimeout).Should(Exit(0))
 
-			Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("Hello, from your friendly neighborhood Java JSP!"))
+			Eventually(CurlFetcher(appName, "/", LoadConfig().AppsDomain), DefaultTimeout).Should(ContainSubstring("Hello, from your friendly neighborhood Java JSP!"))
 
-			Expect(Cf("delete", appName, "-f")).To(Say("OK"))
+			Eventually(Cf("delete", appName, "-f"), DefaultTimeout).Should(Exit(0))
 		})
 	})
 
 	Describe("go", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(Cf("push", appName, "-p", NewAssets().Go)).To(Say("App started"))
+			Eventually(Cf("push", appName, "-p", NewAssets().Go), CFPushTimeout).Should(Exit(0))
 
-			Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("go, world"))
+			Eventually(CurlFetcher(appName, "/", LoadConfig().AppsDomain), DefaultTimeout).Should(ContainSubstring("go, world"))
 
-			Expect(Cf("delete", appName, "-f")).To(Say("OK"))
+			Eventually(Cf("delete", appName, "-f"), DefaultTimeout).Should(Exit(0))
 		})
 	})
 })

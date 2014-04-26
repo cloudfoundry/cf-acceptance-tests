@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/config"
+	"github.com/onsi/ginkgo/internal/codelocation"
 	"github.com/onsi/ginkgo/reporters"
 	"github.com/onsi/ginkgo/types"
 	. "github.com/onsi/gomega"
@@ -31,25 +32,35 @@ var _ = Describe("JUnit Reporter", func() {
 		reporter = reporters.NewJUnitReporter(outputFile)
 
 		reporter.SpecSuiteWillBegin(config.GinkgoConfigType{}, &types.SuiteSummary{
-			SuiteDescription:              "My test suite",
-			NumberOfExamplesThatWillBeRun: 1,
+			SuiteDescription:           "My test suite",
+			NumberOfSpecsThatWillBeRun: 1,
 		})
 	})
 
 	Describe("a passing test", func() {
 		BeforeEach(func() {
-			example := &types.ExampleSummary{
+			beforeSuite := &types.SetupSummary{
+				State: types.SpecStatePassed,
+			}
+			reporter.BeforeSuiteDidRun(beforeSuite)
+
+			afterSuite := &types.SetupSummary{
+				State: types.SpecStatePassed,
+			}
+			reporter.AfterSuiteDidRun(afterSuite)
+
+			spec := &types.SpecSummary{
 				ComponentTexts: []string{"[Top Level]", "A", "B", "C"},
-				State:          types.ExampleStatePassed,
+				State:          types.SpecStatePassed,
 				RunTime:        5 * time.Second,
 			}
-			reporter.ExampleWillRun(example)
-			reporter.ExampleDidComplete(example)
+			reporter.SpecWillRun(spec)
+			reporter.SpecDidComplete(spec)
 
 			reporter.SpecSuiteDidEnd(&types.SuiteSummary{
-				NumberOfExamplesThatWillBeRun: 1,
-				NumberOfFailedExamples:        0,
-				RunTime:                       10 * time.Second,
+				NumberOfSpecsThatWillBeRun: 1,
+				NumberOfFailedSpecs:        0,
+				RunTime:                    10 * time.Second,
 			})
 		})
 
@@ -67,36 +78,108 @@ var _ = Describe("JUnit Reporter", func() {
 		})
 	})
 
-	exampleStateCases := []struct {
-		state   types.ExampleState
+	Describe("when the BeforeSuite fails", func() {
+		var beforeSuite *types.SetupSummary
+
+		BeforeEach(func() {
+			beforeSuite = &types.SetupSummary{
+				State:   types.SpecStateFailed,
+				RunTime: 3 * time.Second,
+				Failure: types.SpecFailure{
+					Message:               "failed to setup",
+					ComponentCodeLocation: codelocation.New(0),
+				},
+			}
+			reporter.BeforeSuiteDidRun(beforeSuite)
+
+			reporter.SpecSuiteDidEnd(&types.SuiteSummary{
+				NumberOfSpecsThatWillBeRun: 1,
+				NumberOfFailedSpecs:        1,
+				RunTime:                    10 * time.Second,
+			})
+		})
+
+		It("should record the test as having failed", func() {
+			output := readOutputFile()
+			Ω(output.Tests).Should(Equal(1))
+			Ω(output.Failures).Should(Equal(1))
+			Ω(output.Time).Should(Equal(10.0))
+			Ω(output.TestCases[0].Name).Should(Equal("BeforeSuite"))
+			Ω(output.TestCases[0].Time).Should(Equal(3.0))
+			Ω(output.TestCases[0].ClassName).Should(Equal("My test suite"))
+			Ω(output.TestCases[0].FailureMessage.Type).Should(Equal("Failure"))
+			Ω(output.TestCases[0].FailureMessage.Message).Should(ContainSubstring("failed to setup"))
+			Ω(output.TestCases[0].FailureMessage.Message).Should(ContainSubstring(beforeSuite.Failure.ComponentCodeLocation.String()))
+			Ω(output.TestCases[0].Skipped).Should(BeNil())
+		})
+	})
+
+	Describe("when the AfterSuite fails", func() {
+		var afterSuite *types.SetupSummary
+
+		BeforeEach(func() {
+			afterSuite = &types.SetupSummary{
+				State:   types.SpecStateFailed,
+				RunTime: 3 * time.Second,
+				Failure: types.SpecFailure{
+					Message:               "failed to setup",
+					ComponentCodeLocation: codelocation.New(0),
+				},
+			}
+			reporter.AfterSuiteDidRun(afterSuite)
+
+			reporter.SpecSuiteDidEnd(&types.SuiteSummary{
+				NumberOfSpecsThatWillBeRun: 1,
+				NumberOfFailedSpecs:        1,
+				RunTime:                    10 * time.Second,
+			})
+		})
+
+		It("should record the test as having failed", func() {
+			output := readOutputFile()
+			Ω(output.Tests).Should(Equal(1))
+			Ω(output.Failures).Should(Equal(1))
+			Ω(output.Time).Should(Equal(10.0))
+			Ω(output.TestCases[0].Name).Should(Equal("AfterSuite"))
+			Ω(output.TestCases[0].Time).Should(Equal(3.0))
+			Ω(output.TestCases[0].ClassName).Should(Equal("My test suite"))
+			Ω(output.TestCases[0].FailureMessage.Type).Should(Equal("Failure"))
+			Ω(output.TestCases[0].FailureMessage.Message).Should(ContainSubstring("failed to setup"))
+			Ω(output.TestCases[0].FailureMessage.Message).Should(ContainSubstring(afterSuite.Failure.ComponentCodeLocation.String()))
+			Ω(output.TestCases[0].Skipped).Should(BeNil())
+		})
+	})
+
+	specStateCases := []struct {
+		state   types.SpecState
 		message string
 	}{
-		{types.ExampleStateFailed, "Failure"},
-		{types.ExampleStateTimedOut, "Timeout"},
-		{types.ExampleStatePanicked, "Panic"},
+		{types.SpecStateFailed, "Failure"},
+		{types.SpecStateTimedOut, "Timeout"},
+		{types.SpecStatePanicked, "Panic"},
 	}
 
-	for _, exampleStateCase := range exampleStateCases {
-		exampleStateCase := exampleStateCase
+	for _, specStateCase := range specStateCases {
+		specStateCase := specStateCase
 		Describe("a failing test", func() {
-			var example *types.ExampleSummary
+			var spec *types.SpecSummary
 			BeforeEach(func() {
-				example = &types.ExampleSummary{
+				spec = &types.SpecSummary{
 					ComponentTexts: []string{"[Top Level]", "A", "B", "C"},
-					State:          exampleStateCase.state,
+					State:          specStateCase.state,
 					RunTime:        5 * time.Second,
-					Failure: types.ExampleFailure{
-						ComponentCodeLocation: types.GenerateCodeLocation(0),
+					Failure: types.SpecFailure{
+						ComponentCodeLocation: codelocation.New(0),
 						Message:               "I failed",
 					},
 				}
-				reporter.ExampleWillRun(example)
-				reporter.ExampleDidComplete(example)
+				reporter.SpecWillRun(spec)
+				reporter.SpecDidComplete(spec)
 
 				reporter.SpecSuiteDidEnd(&types.SuiteSummary{
-					NumberOfExamplesThatWillBeRun: 1,
-					NumberOfFailedExamples:        1,
-					RunTime:                       10 * time.Second,
+					NumberOfSpecsThatWillBeRun: 1,
+					NumberOfFailedSpecs:        1,
+					RunTime:                    10 * time.Second,
 				})
 			})
 
@@ -107,31 +190,31 @@ var _ = Describe("JUnit Reporter", func() {
 				Ω(output.Time).Should(Equal(10.0))
 				Ω(output.TestCases[0].Name).Should(Equal("A B C"))
 				Ω(output.TestCases[0].ClassName).Should(Equal("My test suite"))
-				Ω(output.TestCases[0].FailureMessage.Type).Should(Equal(exampleStateCase.message))
+				Ω(output.TestCases[0].FailureMessage.Type).Should(Equal(specStateCase.message))
 				Ω(output.TestCases[0].FailureMessage.Message).Should(ContainSubstring("I failed"))
-				Ω(output.TestCases[0].FailureMessage.Message).Should(ContainSubstring(example.Failure.ComponentCodeLocation.String()))
+				Ω(output.TestCases[0].FailureMessage.Message).Should(ContainSubstring(spec.Failure.ComponentCodeLocation.String()))
 				Ω(output.TestCases[0].Skipped).Should(BeNil())
 			})
 		})
 	}
 
-	for _, exampleStateCase := range []types.ExampleState{types.ExampleStatePending, types.ExampleStateSkipped} {
-		exampleStateCase := exampleStateCase
+	for _, specStateCase := range []types.SpecState{types.SpecStatePending, types.SpecStateSkipped} {
+		specStateCase := specStateCase
 		Describe("a skipped test", func() {
-			var example *types.ExampleSummary
+			var spec *types.SpecSummary
 			BeforeEach(func() {
-				example = &types.ExampleSummary{
+				spec = &types.SpecSummary{
 					ComponentTexts: []string{"[Top Level]", "A", "B", "C"},
-					State:          exampleStateCase,
+					State:          specStateCase,
 					RunTime:        5 * time.Second,
 				}
-				reporter.ExampleWillRun(example)
-				reporter.ExampleDidComplete(example)
+				reporter.SpecWillRun(spec)
+				reporter.SpecDidComplete(spec)
 
 				reporter.SpecSuiteDidEnd(&types.SuiteSummary{
-					NumberOfExamplesThatWillBeRun: 1,
-					NumberOfFailedExamples:        0,
-					RunTime:                       10 * time.Second,
+					NumberOfSpecsThatWillBeRun: 1,
+					NumberOfFailedSpecs:        0,
+					RunTime:                    10 * time.Second,
 				})
 			})
 

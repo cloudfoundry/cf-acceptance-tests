@@ -14,12 +14,25 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
 )
 
+const CFPushTimeout = 60.0
+const DefaultTimeout = 30.0
+
+var context helpers.SuiteContext
+
 func TestApplications(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	config := helpers.LoadConfig()
+	context = helpers.NewContext(config)
+	environment := helpers.NewEnvironment(context)
 
-	helpers.SetupEnvironment(helpers.NewContext(config))
+	BeforeSuite(func() {
+		environment.Setup()
+	})
+
+	AfterSuite(func() {
+		environment.Teardown()
+	})
 
 	rs := []Reporter{}
 

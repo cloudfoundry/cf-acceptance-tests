@@ -1,11 +1,10 @@
 package apps
 
 import (
-	"github.com/vito/cmdtest"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/vito/cmdtest/matchers"
+	. "github.com/onsi/gomega/gbytes"
+	. "github.com/onsi/gomega/gexec"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
@@ -19,40 +18,36 @@ var _ = Describe("A running application", func() {
 	BeforeEach(func() {
 		appName = RandomName()
 
-		Expect(Cf("push", appName, "-p", NewAssets().Dora)).To(Say("App started"))
+		Eventually(Cf("push", appName, "-p", NewAssets().Dora), CFPushTimeout).Should(Exit(0))
 	})
 
 	AfterEach(func() {
-		Expect(Cf("delete", appName, "-f")).To(Say("OK"))
+		Eventually(Cf("delete", appName, "-f"), DefaultTimeout).Should(Exit(0))
 	})
 
 	It("can have its files inspected", func() {
 		// Currently cannot work with multiple instances since GCF always checks instance 0
-		Expect(Cf("files", appName)).To(Say("app/"))
-		Expect(Cf("files", appName, "app/")).To(Say("config.ru"))
-		Expect(Cf("files", appName, "app/config.ru")).To(
-			Say("run Dora"),
-		)
+		Eventually(Cf("files", appName), DefaultTimeout).Should(Say("app/"))
+		Eventually(Cf("files", appName, "app/"), DefaultTimeout).Should(Say("config.ru"))
+		Eventually(Cf("files", appName, "app/config.ru"), DefaultTimeout).Should(Say("run Dora"))
 	})
 
 	It("can show crash events", func() {
-		Expect(Curl(AppUri(appName, "/sigterm/KILL", LoadConfig().AppsDomain))).To(ExitWith(0))
-		Eventually(func() *cmdtest.Session {
-			return Cf("events", appName)
-		}, 10).Should(Say("exited"))
+		Eventually(Curl(AppUri(appName, "/sigterm/KILL", LoadConfig().AppsDomain)), DefaultTimeout).Should(Exit(0))
+		Eventually(func() string {
+			return string(Cf("events", appName).Wait(DefaultTimeout).Out.Contents())
+		}, DefaultTimeout).Should(ContainSubstring("exited"))
 	})
 
 	Context("with multiple instances", func() {
 		BeforeEach(func() {
-			Expect(
-				Cf("scale", appName, "-i", "2"),
-			).To(Say("OK"))
+			Eventually(Cf("scale", appName, "-i", "2"), DefaultTimeout).Should(Exit(0))
 		})
 
 		It("can be queried for state by instance", func() {
 			app := Cf("app", appName)
-			Expect(app).To(Say("#0"))
-			Expect(app).To(Say("#1"))
+			Eventually(app, DefaultTimeout).Should(Say("#0"))
+			Eventually(app, DefaultTimeout).Should(Say("#1"))
 		})
 	})
 })

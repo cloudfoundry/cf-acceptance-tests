@@ -7,18 +7,17 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	"github.com/pivotal-cf-experimental/cf-test-helpers/runner"
-	"github.com/vito/cmdtest"
 )
 
 var _ = Describe("ApiRequest", func() {
 	It("sends the request to current CF target", func() {
-		runner.SessionStarter = func(cmd *exec.Cmd) (*cmdtest.Session, error) {
+		runner.CommandInterceptor = func(cmd *exec.Cmd) *exec.Cmd {
 			Expect(cmd.Path).To(Equal(exec.Command("gcf").Path))
 			Expect(cmd.Args).To(Equal([]string{
 				"gcf", "curl", "/v2/info", "-X", "GET", "-d", "somedata",
 			}))
 
-			return cmdtest.Start(exec.Command("bash", "-c", `echo \{ \"metadata\": \{ \"guid\": \"abc\" \} \}`))
+			return exec.Command("bash", "-c", `echo \{ \"metadata\": \{ \"guid\": \"abc\" \} \}`)
 		}
 
 		var response GenericResource

@@ -3,18 +3,19 @@ package testrunner
 import (
 	"bytes"
 	"fmt"
-	"github.com/onsi/ginkgo/config"
-	"github.com/onsi/ginkgo/ginkgo/aggregator"
-	"github.com/onsi/ginkgo/ginkgo/testsuite"
-	"github.com/onsi/ginkgo/remote"
-	"github.com/onsi/ginkgo/stenographer"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sync"
-	"syscall"
+	"strconv"
+	"strings"
 	"time"
+
+	"github.com/onsi/ginkgo/config"
+	"github.com/onsi/ginkgo/ginkgo/testsuite"
+	"github.com/onsi/ginkgo/internal/remote"
+	"github.com/onsi/ginkgo/reporters/stenographer"
 )
 
 type TestRunner struct {
@@ -24,21 +25,17 @@ type TestRunner struct {
 	parallelStream bool
 	race           bool
 	cover          bool
-
-	executedCommands []*exec.Cmd
-
-	lock *sync.Mutex
+	additionalArgs []string
 }
 
-func New(suite *testsuite.TestSuite, numCPU int, parallelStream bool, race bool, cover bool) *TestRunner {
+func New(suite *testsuite.TestSuite, numCPU int, parallelStream bool, race bool, cover bool, additionalArgs []string) *TestRunner {
 	return &TestRunner{
-		suite:            suite,
-		numCPU:           numCPU,
-		parallelStream:   parallelStream,
-		race:             race,
-		cover:            cover,
-		executedCommands: []*exec.Cmd{},
-		lock:             &sync.Mutex{},
+		suite:          suite,
+		numCPU:         numCPU,
+		parallelStream: parallelStream,
+		race:           race,
+		cover:          cover,
+		additionalArgs: additionalArgs,
 	}
 }
 
@@ -54,8 +51,6 @@ func (t *TestRunner) Compile() error {
 	}
 
 	cmd := exec.Command("go", args...)
-	t.registerCmd(cmd)
-	defer t.unregisterCmd(cmd)
 
 	cmd.Dir = t.suite.Path
 
@@ -92,19 +87,7 @@ func (t *TestRunner) Run() bool {
 }
 
 func (t *TestRunner) CleanUp(signal ...os.Signal) {
-	t.lock.Lock()
-	for _, cmd := range t.executedCommands {
-		if cmd.Process != nil {
-			if len(signal) == 0 {
-				cmd.Process.Signal(syscall.SIGINT)
-			} else {
-				cmd.Process.Signal(signal[0])
-			}
-			cmd.Wait()
-		}
-	}
 	os.Remove(t.compiledArtifact())
-	t.lock.Unlock()
 }
 
 func (t *TestRunner) compiledArtifact() string {
@@ -114,26 +97,44 @@ func (t *TestRunner) compiledArtifact() string {
 
 func (t *TestRunner) runSerialGinkgoSuite() bool {
 	ginkgoArgs := config.BuildFlagArgs("ginkgo", config.GinkgoConfig, config.DefaultReporterConfig)
-	return t.run(ginkgoArgs, nil, os.Stdout, nil)
+	return t.run(t.cmd(ginkgoArgs, os.Stdout, 1), nil)
 }
 
 func (t *TestRunner) runGoTestSuite() bool {
-	return t.run([]string{"-test.v"}, nil, os.Stdout, nil)
+	return t.run(t.cmd([]string{"-test.v"}, os.Stdout, 1), nil)
 }
 
 func (t *TestRunner) runAndStreamParallelGinkgoSuite() bool {
 	completions := make(chan bool)
 	writers := make([]*logWriter, t.numCPU)
 
+	server, err := remote.NewServer(t.numCPU)
+	if err != nil {
+		panic("Failed to start parallel spec server")
+	}
+
+	server.Start()
+	defer server.Close()
+
 	for cpu := 0; cpu < t.numCPU; cpu++ {
 		config.GinkgoConfig.ParallelNode = cpu + 1
 		config.GinkgoConfig.ParallelTotal = t.numCPU
+		config.GinkgoConfig.SyncHost = server.Address()
 
 		ginkgoArgs := config.BuildFlagArgs("ginkgo", config.GinkgoConfig, config.DefaultReporterConfig)
 
-		writers[cpu] = newLogWriter(fmt.Sprintf("[%d]", cpu+1))
+		writers[cpu] = newLogWriter(os.Stdout, cpu+1)
 
-		go t.run(ginkgoArgs, nil, writers[cpu], completions)
+		cmd := t.cmd(ginkgoArgs, writers[cpu], cpu+1)
+
+		server.RegisterAlive(cpu+1, func() bool {
+			if cmd.ProcessState == nil {
+				return true
+			}
+			return !cmd.ProcessState.Exited()
+		})
+
+		go t.run(cmd, completions)
 	}
 
 	passed := true
@@ -148,51 +149,65 @@ func (t *TestRunner) runAndStreamParallelGinkgoSuite() bool {
 
 	os.Stdout.Sync()
 
+	if t.cover {
+		t.combineCoverprofiles()
+	}
+
 	return passed
 }
 
 func (t *TestRunner) runParallelGinkgoSuite() bool {
 	result := make(chan bool)
 	completions := make(chan bool)
+	writers := make([]*logWriter, t.numCPU)
 	reports := make([]*bytes.Buffer, t.numCPU)
 
 	stenographer := stenographer.New(!config.DefaultReporterConfig.NoColor)
-	aggregator := aggregator.NewAggregator(t.numCPU, result, config.DefaultReporterConfig, stenographer)
-	server, err := remote.NewServer()
+	aggregator := remote.NewAggregator(t.numCPU, result, config.DefaultReporterConfig, stenographer)
+
+	server, err := remote.NewServer(t.numCPU)
 	if err != nil {
 		panic("Failed to start parallel spec server")
 	}
-
 	server.RegisterReporters(aggregator)
 	server.Start()
-	defer server.Stop()
-	serverAddress := server.Address()
+	defer server.Close()
 
 	for cpu := 0; cpu < t.numCPU; cpu++ {
 		config.GinkgoConfig.ParallelNode = cpu + 1
 		config.GinkgoConfig.ParallelTotal = t.numCPU
+		config.GinkgoConfig.SyncHost = server.Address()
+		config.GinkgoConfig.StreamHost = server.Address()
 
 		ginkgoArgs := config.BuildFlagArgs("ginkgo", config.GinkgoConfig, config.DefaultReporterConfig)
 
-		env := os.Environ()
-		env = append(env, fmt.Sprintf("GINKGO_REMOTE_REPORTING_SERVER=%s", serverAddress))
-
 		reports[cpu] = &bytes.Buffer{}
-		go t.run(ginkgoArgs, env, reports[cpu], completions)
+		writers[cpu] = newLogWriter(reports[cpu], cpu+1)
+
+		cmd := t.cmd(ginkgoArgs, writers[cpu], cpu+1)
+
+		server.RegisterAlive(cpu+1, func() bool {
+			if cmd.ProcessState == nil {
+				return true
+			}
+			return !cmd.ProcessState.Exited()
+		})
+
+		go t.run(cmd, completions)
 	}
 
+	passed := true
+
 	for cpu := 0; cpu < t.numCPU; cpu++ {
-		<-completions
+		passed = <-completions && passed
 	}
 
 	//all test processes are done, at this point
 	//we should be able to wait for the aggregator to tell us that it's done
 
-	var passed = false
 	select {
-	case passed = <-result:
+	case <-result:
 		fmt.Println("")
-		//the aggregator is done and can tell us whether or not the suite passed
 	case <-time.After(time.Second):
 		//the aggregator never got back to us!  something must have gone wrong
 		fmt.Println("")
@@ -210,6 +225,10 @@ func (t *TestRunner) runParallelGinkgoSuite() bool {
 
 		time.Sleep(time.Second)
 
+		for _, writer := range writers {
+			writer.Close()
+		}
+
 		for _, report := range reports {
 			fmt.Print(report.String())
 		}
@@ -217,32 +236,42 @@ func (t *TestRunner) runParallelGinkgoSuite() bool {
 		os.Stdout.Sync()
 	}
 
+	if t.cover {
+		t.combineCoverprofiles()
+	}
+
 	return passed
 }
 
-func (t *TestRunner) run(ginkgoArgs []string, env []string, stream io.Writer, completions chan bool) bool {
+func (t *TestRunner) cmd(ginkgoArgs []string, stream io.Writer, node int) *exec.Cmd {
+	args := []string{"-test.timeout=24h"}
+	if t.cover {
+		coverprofile := "--test.coverprofile=" + t.suite.PackageName + ".coverprofile"
+		if t.numCPU > 1 {
+			coverprofile = fmt.Sprintf("%s.%d", coverprofile, node)
+		}
+		args = append(args, coverprofile)
+	}
+
+	args = append(args, ginkgoArgs...)
+	args = append(args, t.additionalArgs...)
+
+	cmd := exec.Command(t.compiledArtifact(), args...)
+
+	cmd.Dir = t.suite.Path
+	cmd.Stderr = stream
+	cmd.Stdout = stream
+
+	return cmd
+}
+
+func (t *TestRunner) run(cmd *exec.Cmd, completions chan bool) bool {
 	var err error
 	defer func() {
 		if completions != nil {
 			completions <- (err == nil)
 		}
 	}()
-
-	args := []string{"-test.timeout=24h"}
-	if t.cover {
-		args = append(args, "--test.coverprofile="+t.suite.PackageName+".coverprofile")
-	}
-
-	args = append(args, ginkgoArgs...)
-
-	cmd := exec.Command(t.compiledArtifact(), args...)
-	t.registerCmd(cmd)
-	defer t.unregisterCmd(cmd)
-
-	cmd.Env = env
-	cmd.Dir = t.suite.Path
-	cmd.Stderr = stream
-	cmd.Stdout = stream
 
 	err = cmd.Start()
 	if err != nil {
@@ -255,20 +284,41 @@ func (t *TestRunner) run(ginkgoArgs []string, env []string, stream io.Writer, co
 	return err == nil
 }
 
-func (t *TestRunner) registerCmd(cmd *exec.Cmd) {
-	t.lock.Lock()
-	t.executedCommands = append(t.executedCommands, cmd)
-	t.lock.Unlock()
-}
+func (t *TestRunner) combineCoverprofiles() {
+	profiles := []string{}
+	for cpu := 1; cpu <= t.numCPU; cpu++ {
+		coverFile := fmt.Sprintf("%s.coverprofile.%d", t.suite.PackageName, cpu)
+		coverFile = filepath.Join(t.suite.Path, coverFile)
+		coverProfile, err := ioutil.ReadFile(coverFile)
+		os.Remove(coverFile)
 
-func (t *TestRunner) unregisterCmd(cmd *exec.Cmd) {
-	t.lock.Lock()
-	for commandIndex, executedCommand := range t.executedCommands {
-		if executedCommand == cmd {
-			t.executedCommands[commandIndex] = t.executedCommands[len(t.executedCommands)-1]
-			t.executedCommands = t.executedCommands[0 : len(t.executedCommands)-1]
-			break
+		if err == nil {
+			profiles = append(profiles, string(coverProfile))
 		}
 	}
-	t.lock.Unlock()
+
+	if len(profiles) != t.numCPU {
+		return
+	}
+
+	lines := map[string]int{}
+
+	for _, coverProfile := range profiles {
+		for _, line := range strings.Split(string(coverProfile), "\n")[1:] {
+			if len(line) == 0 {
+				continue
+			}
+			components := strings.Split(line, " ")
+			count, _ := strconv.Atoi(components[len(components)-1])
+			prefix := strings.Join(components[0:len(components)-1], " ")
+			lines[prefix] += count
+		}
+	}
+
+	output := []string{"mode: atomic"}
+	for line, count := range lines {
+		output = append(output, fmt.Sprintf("%s %d", line, count))
+	}
+	finalOutput := strings.Join(output, "\n")
+	ioutil.WriteFile(filepath.Join(t.suite.Path, fmt.Sprintf("%s.coverprofile", t.suite.PackageName)), []byte(finalOutput), 0666)
 }

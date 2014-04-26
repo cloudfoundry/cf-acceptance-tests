@@ -1,11 +1,10 @@
 package services
 
 import (
-	"time"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/vito/cmdtest/matchers"
+	. "github.com/onsi/gomega/gbytes"
+	. "github.com/onsi/gomega/gexec"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/services/helpers"
@@ -17,7 +16,7 @@ var _ = Describe("Purging service offerings", func() {
 	var broker helpers.ServiceBroker
 
 	BeforeEach(func() {
-		broker = helpers.NewServiceBroker(generator.RandomName(), NewAssets().ServiceBroker)
+		broker = helpers.NewServiceBroker(generator.RandomName(), NewAssets().ServiceBroker, context)
 		broker.Push()
 		broker.Configure()
 		broker.Create(LoadConfig().AppsDomain)
@@ -31,15 +30,15 @@ var _ = Describe("Purging service offerings", func() {
 	It("removes all instances and plans of the service, then removes the service offering", func() {
 		instanceName := "purge-offering-instance"
 
-		Expect(Cf("marketplace")).To(Say(broker.Plan.Name))
+		Eventually(Cf("marketplace"), DefaultTimeout).Should(Say(broker.Plan.Name))
 		broker.CreateServiceInstance(instanceName)
 
-		Expect(Cf("services")).To(Say(instanceName))
-		Expect(Cf("delete", broker.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
-		AsUser(AdminUserContext, func() {
-			Expect(Cf("purge-service-offering", broker.Service.Name, "-f")).To(ExitWithTimeout(0, 10*time.Second))
+		Eventually(Cf("services"), DefaultTimeout).Should(Say(instanceName))
+		Eventually(Cf("delete", broker.Name, "-f"), DefaultTimeout).Should(Exit(0))
+		AsUser(context.AdminUserContext(), func() {
+			Eventually(Cf("purge-service-offering", broker.Service.Name, "-f"), DefaultTimeout).Should(Exit(0))
 		})
-		Expect(Cf("services")).NotTo(Say(instanceName))
-		Expect(Cf("marketplace")).NotTo(Say(broker.Service.Name))
+		Expect(Cf("services").Wait(DefaultTimeout).Out.Contents()).NotTo(ContainSubstring(instanceName))
+		Expect(Cf("marketplace").Wait(DefaultTimeout).Out.Contents()).NotTo(ContainSubstring(broker.Service.Name))
 	})
 })

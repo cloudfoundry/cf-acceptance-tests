@@ -3,7 +3,8 @@ package apps
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/vito/cmdtest/matchers"
+	. "github.com/onsi/gomega/gbytes"
+	. "github.com/onsi/gomega/gexec"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
@@ -16,60 +17,60 @@ var _ = Describe("Application", func() {
 	BeforeEach(func() {
 		appName = RandomName()
 
-		Expect(Cf("push", appName, "-p", NewAssets().Dora)).To(Say("App started"))
+		Eventually(Cf("push", appName, "-p", NewAssets().Dora), CFPushTimeout).Should(Exit(0))
 	})
 
 	AfterEach(func() {
-		Expect(Cf("delete", appName, "-f")).To(Say("OK"))
+		Eventually(Cf("delete", appName, "-f"), DefaultTimeout).Should(Exit(0))
 	})
 
 	Describe("pushing", func() {
 		It("makes the app reachable via its bound route", func() {
-			Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("Hi, I'm Dora!"))
+			Eventually(CurlFetcher(appName, "/", LoadConfig().AppsDomain), DefaultTimeout).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 	})
 
 	Describe("stopping", func() {
 		BeforeEach(func() {
-			Expect(Cf("stop", appName)).To(Say("OK"))
+			Eventually(Cf("stop", appName), DefaultTimeout).Should(Exit(0))
 		})
 
 		It("makes the app unreachable", func() {
-			Eventually(Curling(appName, "/", LoadConfig().AppsDomain), 5.0).Should(Say("404"))
+			Eventually(CurlFetcher(appName, "/", LoadConfig().AppsDomain), DefaultTimeout).Should(ContainSubstring("404"))
 		})
 
 		Describe("and then starting", func() {
 			BeforeEach(func() {
-				Expect(Cf("start", appName)).To(Say("App started"))
+				Eventually(Cf("start", appName), DefaultTimeout).Should(Exit(0))
 			})
 
 			It("makes the app reachable again", func() {
-				Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("Hi, I'm Dora!"))
+				Eventually(CurlFetcher(appName, "/", LoadConfig().AppsDomain), DefaultTimeout).Should(ContainSubstring("Hi, I'm Dora!"))
 			})
 		})
 	})
 
 	Describe("updating", func() {
 		It("is reflected through another push", func() {
-			Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("Hi, I'm Dora!"))
+			Eventually(CurlFetcher(appName, "/", LoadConfig().AppsDomain), DefaultTimeout).Should(ContainSubstring("Hi, I'm Dora!"))
 
-			Expect(Cf("push", appName, "-p", NewAssets().HelloWorld)).To(Say("App started"))
+			Eventually(Cf("push", appName, "-p", NewAssets().HelloWorld), CFPushTimeout).Should(Exit(0))
 
-			Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("Hello, world!"))
+			Eventually(CurlFetcher(appName, "/", LoadConfig().AppsDomain), DefaultTimeout).Should(ContainSubstring("Hello, world!"))
 		})
 	})
 
 	Describe("deleting", func() {
 		BeforeEach(func() {
-			Expect(Cf("delete", appName, "-f")).To(Say("OK"))
+			Eventually(Cf("delete", appName, "-f"), DefaultTimeout).Should(Exit(0))
 		})
 
 		It("removes the application", func() {
-			Expect(Cf("app", appName)).To(Say("not found"))
+			Eventually(Cf("app", appName), DefaultTimeout).Should(Say("not found"))
 		})
 
 		It("makes the app unreachable", func() {
-			Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("404"))
+			Eventually(CurlFetcher(appName, "/", LoadConfig().AppsDomain), DefaultTimeout).Should(ContainSubstring("404"))
 		})
 	})
 })

@@ -9,16 +9,18 @@ import (
 type FakeReporter struct {
 	Config config.GinkgoConfigType
 
-	BeginSummary            *types.SuiteSummary
-	ExampleWillRunSummaries []*types.ExampleSummary
-	ExampleSummaries        []*types.ExampleSummary
-	EndSummary              *types.SuiteSummary
+	BeginSummary         *types.SuiteSummary
+	BeforeSuiteSummary   *types.SetupSummary
+	SpecWillRunSummaries []*types.SpecSummary
+	SpecSummaries        []*types.SpecSummary
+	AfterSuiteSummary    *types.SetupSummary
+	EndSummary           *types.SuiteSummary
 }
 
 func NewFakeReporter() *FakeReporter {
 	return &FakeReporter{
-		ExampleWillRunSummaries: make([]*types.ExampleSummary, 0),
-		ExampleSummaries:        make([]*types.ExampleSummary, 0),
+		SpecWillRunSummaries: make([]*types.SpecSummary, 0),
+		SpecSummaries:        make([]*types.SpecSummary, 0),
 	}
 }
 
@@ -27,12 +29,20 @@ func (fakeR *FakeReporter) SpecSuiteWillBegin(config config.GinkgoConfigType, su
 	fakeR.BeginSummary = summary
 }
 
-func (fakeR *FakeReporter) ExampleWillRun(exampleSummary *types.ExampleSummary) {
-	fakeR.ExampleWillRunSummaries = append(fakeR.ExampleWillRunSummaries, exampleSummary)
+func (fakeR *FakeReporter) BeforeSuiteDidRun(setupSummary *types.SetupSummary) {
+	fakeR.BeforeSuiteSummary = setupSummary
 }
 
-func (fakeR *FakeReporter) ExampleDidComplete(exampleSummary *types.ExampleSummary) {
-	fakeR.ExampleSummaries = append(fakeR.ExampleSummaries, exampleSummary)
+func (fakeR *FakeReporter) SpecWillRun(specSummary *types.SpecSummary) {
+	fakeR.SpecWillRunSummaries = append(fakeR.SpecWillRunSummaries, specSummary)
+}
+
+func (fakeR *FakeReporter) SpecDidComplete(specSummary *types.SpecSummary) {
+	fakeR.SpecSummaries = append(fakeR.SpecSummaries, specSummary)
+}
+
+func (fakeR *FakeReporter) AfterSuiteDidRun(setupSummary *types.SetupSummary) {
+	fakeR.AfterSuiteSummary = setupSummary
 }
 
 func (fakeR *FakeReporter) SpecSuiteDidEnd(summary *types.SuiteSummary) {

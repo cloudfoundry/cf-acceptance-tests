@@ -109,12 +109,74 @@ var _ = Describe("ReceiveMatcher", func() {
 				channel := make(chan int)
 				var incorrectType bool
 
-				success, _, err := (&ReceiveMatcher{Arg: &incorrectType}).Match(channel)
+				success, err := (&ReceiveMatcher{Arg: &incorrectType}).Match(channel)
 				Ω(success).Should(BeFalse())
 				Ω(err).Should(HaveOccurred())
 
 				var notAPointer int
-				success, _, err = (&ReceiveMatcher{Arg: notAPointer}).Match(channel)
+				success, err = (&ReceiveMatcher{Arg: notAPointer}).Match(channel)
+				Ω(success).Should(BeFalse())
+				Ω(err).Should(HaveOccurred())
+			})
+		})
+	})
+
+	Context("with a matcher", func() {
+		It("should defer to the underlying matcher", func() {
+			intChannel := make(chan int, 1)
+			intChannel <- 3
+			Ω(intChannel).Should(Receive(Equal(3)))
+
+			intChannel <- 2
+			Ω(intChannel).ShouldNot(Receive(Equal(3)))
+
+			stringChannel := make(chan []string, 1)
+			stringChannel <- []string{"foo", "bar", "baz"}
+			Ω(stringChannel).Should(Receive(ContainElement(ContainSubstring("fo"))))
+
+			stringChannel <- []string{"foo", "bar", "baz"}
+			Ω(stringChannel).ShouldNot(Receive(ContainElement(ContainSubstring("archipelago"))))
+		})
+
+		It("should defer to the underlying matcher for the message", func() {
+			matcher := Receive(Equal(3))
+			channel := make(chan int, 1)
+			channel <- 2
+			matcher.Match(channel)
+			Ω(matcher.FailureMessage(channel)).Should(MatchRegexp(`Expected\s+<int>: 2\s+to equal\s+<int>: 3`))
+
+			channel <- 3
+			matcher.Match(channel)
+			Ω(matcher.NegatedFailureMessage(channel)).Should(MatchRegexp(`Expected\s+<int>: 3\s+not to equal\s+<int>: 3`))
+		})
+
+		It("should work just fine with Eventually", func() {
+			stringChannel := make(chan string)
+
+			go func() {
+				time.Sleep(5 * time.Millisecond)
+				stringChannel <- "A"
+				time.Sleep(5 * time.Millisecond)
+				stringChannel <- "B"
+			}()
+
+			Eventually(stringChannel).Should(Receive(Equal("B")))
+		})
+
+		Context("if the matcher errors", func() {
+			It("should error", func() {
+				channel := make(chan int, 1)
+				channel <- 3
+				success, err := (&ReceiveMatcher{Arg: ContainSubstring("three")}).Match(channel)
+				Ω(success).Should(BeFalse())
+				Ω(err).Should(HaveOccurred())
+			})
+		})
+
+		Context("if nothing is received", func() {
+			It("should error", func() {
+				channel := make(chan int, 1)
+				success, err := (&ReceiveMatcher{Arg: Equal(1)}).Match(channel)
 				Ω(success).Should(BeFalse())
 				Ω(err).Should(HaveOccurred())
 			})
@@ -131,7 +193,7 @@ var _ = Describe("ReceiveMatcher", func() {
 
 				Ω(channel).Should(Receive())
 
-				success, _, err := (&ReceiveMatcher{}).Match(channel)
+				success, err := (&ReceiveMatcher{}).Match(channel)
 				Ω(success).Should(BeFalse())
 				Ω(err).Should(HaveOccurred())
 			})
@@ -142,7 +204,7 @@ var _ = Describe("ReceiveMatcher", func() {
 				channel := make(chan bool)
 				close(channel)
 
-				success, _, err := (&ReceiveMatcher{}).Match(channel)
+				success, err := (&ReceiveMatcher{}).Match(channel)
 				Ω(success).Should(BeFalse())
 				Ω(err).Should(HaveOccurred())
 			})
@@ -156,7 +218,7 @@ var _ = Describe("ReceiveMatcher", func() {
 			var writerChannel chan<- bool
 			writerChannel = channel
 
-			success, _, err := (&ReceiveMatcher{}).Match(writerChannel)
+			success, err := (&ReceiveMatcher{}).Match(writerChannel)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 		})
@@ -166,15 +228,15 @@ var _ = Describe("ReceiveMatcher", func() {
 		It("should error", func() {
 			var nilChannel chan bool
 
-			success, _, err := (&ReceiveMatcher{}).Match(nilChannel)
+			success, err := (&ReceiveMatcher{}).Match(nilChannel)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 
-			success, _, err = (&ReceiveMatcher{}).Match(nil)
+			success, err = (&ReceiveMatcher{}).Match(nil)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 
-			success, _, err = (&ReceiveMatcher{}).Match(3)
+			success, err = (&ReceiveMatcher{}).Match(3)
 			Ω(success).Should(BeFalse())
 			Ω(err).Should(HaveOccurred())
 		})

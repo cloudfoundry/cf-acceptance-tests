@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	. "github.com/onsi/gomega"
-	. "github.com/vito/cmdtest/matchers"
+	. "github.com/onsi/gomega/gexec"
 )
 
 type GenericResource struct {
@@ -26,10 +26,10 @@ func ApiRequest(method, endpoint string, response interface{}, data ...string) {
 		"-d", strings.Join(data, ""),
 	)
 
-	Expect(request).To(ExitWith(0))
+	Eventually(request).Should(Exit(0))
 
 	if response != nil {
-		err := json.Unmarshal(request.FullOutput(), response)
+		err := json.Unmarshal(request.Out.Contents(), response)
 		Expect(err).ToNot(HaveOccurred())
 	}
 }

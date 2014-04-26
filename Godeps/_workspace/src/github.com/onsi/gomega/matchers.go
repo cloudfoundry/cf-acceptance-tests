@@ -1,13 +1,8 @@
 package gomega
 
 import (
-	"fmt"
-
 	"github.com/onsi/gomega/matchers"
 )
-
-//Track whether we've already warned about a deprecated feature. Nobody likes a nag.
-var deprecationWarnings map[string]bool = make(map[string]bool)
 
 //Equal uses reflect.DeepEqual to compare actual with expected.  Equal is strict about
 //types when performing comparisons.
@@ -48,17 +43,6 @@ func BeFalse() OmegaMatcher {
 //    err := SomethingThatMightFail()
 //    Ω(err).ShouldNot(HaveOccurred())
 func HaveOccurred() OmegaMatcher {
-	return &matchers.HaveOccurredMatcher{}
-}
-
-//Legacy misspelling, provided for backwards compatibility.
-func HaveOccured() OmegaMatcher {
-	if !deprecationWarnings["HaveOccured"] {
-		fmt.Println("\nWARNING: The HaveOccured matcher is deprecated!")
-		fmt.Println(`We've corrected the spelling of "HaveOccured" to "HaveOccurred".`)
-		fmt.Println(`Update your package by running "gofmt -r 'HaveOccured() -> HaveOccurred()' -w *.go".`)
-		deprecationWarnings["HaveOccured"] = true
-	}
 	return &matchers.HaveOccurredMatcher{}
 }
 
@@ -109,11 +93,22 @@ func BeClosed() OmegaMatcher {
 //A similar use-case is to assert that no go-routine writes to a channel (for a period of time).  You can do this with `Consistently`:
 //    Consistently(c).ShouldNot(Receive())
 //
-//Finally, you often want to make assertions on the value *sent* to the channel.  You can ask the Receive matcher for the value passed
-//to the channel by passing it a pointer to a variable of the appropriate type:
-//    var receivedString string
-//    Eventually(stringChan).Should(Receive(&receivedString))
-//    Ω(receivedString).Shoudl(Equal("foo"))
+//You can pass `Receive` a matcher.  If you do so, it will match the received object against the matcher.  For example:
+//    Ω(c).Should(Receive(Equal("foo")))
+//
+//When given a matcher, `Receive` will always fail if there is nothing to be received on the channel.
+//
+//Passing Receive a matcher is especially useful when paired with Eventually:
+//
+//    Eventually(c).Should(Receive(ContainSubstring("bar")))
+//
+//will repeatedly attempt to pull values out of `c` until a value matching "bar" is received.
+//
+//Finally, if you want to have a reference to the value *sent* to the channel you can pass the `Receive` matcher a pointer to a variable of the appropriate type:
+//    var myThing thing
+//    Eventually(thingChan).Should(Receive(&myThing))
+//    Ω(myThing.Sprocket).Should(Equal("foo"))
+//    Ω(myThing.IsValid()).Should(BeTrue())
 func Receive(args ...interface{}) OmegaMatcher {
 	var arg interface{}
 	if len(args) > 0 {

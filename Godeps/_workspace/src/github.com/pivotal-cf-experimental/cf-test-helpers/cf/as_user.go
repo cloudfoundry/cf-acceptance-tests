@@ -7,7 +7,7 @@ import (
 
 	ginkgoconfig "github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
-	. "github.com/vito/cmdtest/matchers"
+	. "github.com/onsi/gomega/gexec"
 )
 
 func AsUser(userContext UserContext, actions func()) {
@@ -31,13 +31,14 @@ func InitiateUserContext(userContext UserContext) (originalCfHomeDir, currentCfH
 
 	os.Setenv("CF_HOME", currentCfHomeDir)
 
+	cfSetApiArgs := []string{"api", userContext.ApiUrl}
 	if userContext.SkipSSLValidation {
-		Expect(Cf("api", userContext.ApiUrl, "--skip-ssl-validation")).To(ExitWith(0))
-	} else {
-		Expect(Cf("api", userContext.ApiUrl)).To(ExitWith(0))
+		cfSetApiArgs = append(cfSetApiArgs, "--skip-ssl-validation")
 	}
 
-	Expect(Cf("auth", userContext.Username, userContext.Password)).To(ExitWith(0))
+	Eventually(Cf(cfSetApiArgs...), 10).Should(Exit(0))
+
+	Eventually(Cf("auth", userContext.Username, userContext.Password), 10).Should(Exit(0))
 
 	return
 }
@@ -45,15 +46,15 @@ func InitiateUserContext(userContext UserContext) (originalCfHomeDir, currentCfH
 func TargetSpace(userContext UserContext) {
 	if userContext.Org != "" {
 		if userContext.Space != "" {
-			Expect(Cf("target", "-o", userContext.Org, "-s", userContext.Space)).To(ExitWith(0))
+			Eventually(Cf("target", "-o", userContext.Org, "-s", userContext.Space), 10).Should(Exit(0))
 		} else {
-			Expect(Cf("target", "-o", userContext.Org)).To(ExitWith(0))
+			Eventually(Cf("target", "-o", userContext.Org), 10).Should(Exit(0))
 		}
 	}
 }
 
 func RestoreUserContext(_ UserContext, originalCfHomeDir, currentCfHomeDir string) {
-	Expect(Cf("logout")).To(ExitWith(0))
+	Eventually(Cf("logout"), 10).Should(Exit(0))
 	os.Setenv("CF_HOME", originalCfHomeDir)
 	os.RemoveAll(currentCfHomeDir)
 }

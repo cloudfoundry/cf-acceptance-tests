@@ -16,4 +16,4 @@ export PATH=$local_gopath/bin:$PATH
 
 go install -v github.com/onsi/ginkgo/ginkgo
 echo "RUNNING LOCAL CODE"
-ginkgo -r -v -slowSpecThreshold=120 "$@"
+ginkgo -r -slowSpecThreshold=120 $@

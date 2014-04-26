@@ -1,6 +1,7 @@
 package gomega
 
 import (
+	"fmt"
 	. "github.com/onsi/ginkgo"
 	"testing"
 )
@@ -18,12 +19,19 @@ func TestTestingT(t *testing.T) {
 type fakeMatcher struct {
 	receivedActual  interface{}
 	matchesToReturn bool
-	messageToReturn string
 	errToReturn     error
 }
 
-func (matcher *fakeMatcher) Match(actual interface{}) (bool, string, error) {
+func (matcher *fakeMatcher) Match(actual interface{}) (bool, error) {
 	matcher.receivedActual = actual
 
-	return matcher.matchesToReturn, matcher.messageToReturn, matcher.errToReturn
+	return matcher.matchesToReturn, matcher.errToReturn
+}
+
+func (matcher *fakeMatcher) FailureMessage(actual interface{}) string {
+	return fmt.Sprintf("positive: %v", actual)
+}
+
+func (matcher *fakeMatcher) NegatedFailureMessage(actual interface{}) string {
+	return fmt.Sprintf("negative: %v", actual)
 }

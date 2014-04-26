@@ -10,11 +10,11 @@ import (
 )
 
 var originalCf = cf.Cf
-var originalStarter = runner.SessionStarter
+var originalCommandInterceptor = runner.CommandInterceptor
 
 var _ = AfterEach(func() {
 	cf.Cf = originalCf
-	runner.SessionStarter = originalStarter
+	runner.CommandInterceptor = originalCommandInterceptor
 })
 
 func TestCf(t *testing.T) {

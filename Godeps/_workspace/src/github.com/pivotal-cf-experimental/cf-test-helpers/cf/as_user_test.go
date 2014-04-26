@@ -6,17 +6,17 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gexec"
 	"github.com/pivotal-cf-experimental/cf-test-helpers/cf"
-	"github.com/vito/cmdtest"
 )
 
 var _ = Describe("AsUser", func() {
 	var FakeThingsToRunAsUser = func() {}
 	var FakeCfCalls = [][]string{}
 
-	var FakeCf = func(args ...string) *cmdtest.Session {
+	var FakeCf = func(args ...string) *gexec.Session {
 		FakeCfCalls = append(FakeCfCalls, args)
-		var session, _ = cmdtest.Start(exec.Command("echo", "nothing"))
+		var session, _ = gexec.Start(exec.Command("echo", "nothing"), nil, nil)
 		return session
 	}
 	var user = cf.NewUserContext("http://FAKE_API.example.com", "FAKE_USERNAME", "FAKE_PASSWORD", "FAKE_ORG", "FAKE_SPACE", true)

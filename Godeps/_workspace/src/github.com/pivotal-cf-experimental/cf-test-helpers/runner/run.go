@@ -2,55 +2,40 @@ package runner
 
 import (
 	"fmt"
-	"io"
-	"os"
 	"os/exec"
 	"strings"
 
-	"github.com/vito/cmdtest"
+	"github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/config"
+
+	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gexec"
 )
 
-var SessionStarter = func(cmd *exec.Cmd) (*cmdtest.Session, error) {
-	return cmdtest.StartWrapped(cmd, teeStdout, teeStderr)
+var CommandInterceptor = func(cmd *exec.Cmd) *exec.Cmd {
+	return cmd
 }
 
-func Run(executable string, args ...string) *cmdtest.Session {
+func Run(executable string, args ...string) *gexec.Session {
 	cmd := exec.Command(executable, args...)
 
-	if verboseOutputEnabled() {
-		fmt.Println("\n", "> ", strings.Join(cmd.Args, " "))
+	if config.DefaultReporterConfig.Verbose {
+		startColor := ""
+		endColor := ""
+		if !config.DefaultReporterConfig.NoColor {
+			startColor = "\x1b[32m"
+			endColor = "\x1b[0m"
+		}
+		fmt.Println("\n", startColor, "> ", strings.Join(cmd.Args, " "), endColor)
 	}
 
-	sess, err := SessionStarter(cmd)
-	if err != nil {
-		panic(err)
-	}
+	sess, err := gexec.Start(CommandInterceptor(cmd), ginkgo.GinkgoWriter, ginkgo.GinkgoWriter)
+	Expect(err).NotTo(HaveOccurred())
 
 	return sess
 }
 
-func Curl(args ...string) *cmdtest.Session {
+func Curl(args ...string) *gexec.Session {
 	args = append([]string{"-s"}, args...)
 	return Run("curl", args...)
-}
-
-func teeStdout(out io.Writer) io.Writer {
-	if verboseOutputEnabled() {
-		return io.MultiWriter(out, os.Stdout)
-	} else {
-		return out
-	}
-}
-
-func teeStderr(out io.Writer) io.Writer {
-	if verboseOutputEnabled() {
-		return io.MultiWriter(out, os.Stderr)
-	} else {
-		return out
-	}
-}
-
-func verboseOutputEnabled() bool {
-	verbose := os.Getenv("CF_VERBOSE_OUTPUT")
-	return verbose == "yes" || verbose == "true"
 }

@@ -1,14 +1,14 @@
 package apps
 
 import (
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/vito/cmdtest/matchers"
+	. "github.com/onsi/gomega/gbytes"
+	. "github.com/onsi/gomega/gexec"
 
-	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
-	"time"
 )
 
 var _ = PDescribe("loggregator", func() {
@@ -17,22 +17,22 @@ var _ = PDescribe("loggregator", func() {
 	BeforeEach(func() {
 		appName = RandomName()
 
-		Expect(Cf("push", appName, "-p", NewAssets().Dora)).To(SayWithTimeout("App started", time.Minute*2))
+		Eventually(Cf("push", appName, "-p", NewAssets().Dora), CFPushTimeout).Should(Exit(0))
 	})
 
 	AfterEach(func() {
-		Expect(Cf("delete", appName, "-f")).To(SayWithTimeout("OK", time.Minute*2))
+		Eventually(Cf("delete", appName, "-f"), DefaultTimeout).Should(Exit(0))
 	})
 
 	Context("gcf logs", func() {
-		PIt("blocks and exercises basic loggregator behavior", func() {
+		It("blocks and exercises basic loggregator behavior", func() {
 			logs := Cf("logs", appName)
 
-			Expect(logs).To(SayWithTimeout("Connected, tailing logs for app", time.Second*15))
+			Eventually(logs, DefaultTimeout).Should(Say("Connected, tailing logs for app"))
 
-			Eventually(Curling(appName, "/", LoadConfig().AppsDomain)).Should(Say("Hi, I'm Dora!"))
+			Eventually(CurlFetcher(appName, "/", LoadConfig().AppsDomain), DefaultTimeout).Should(ContainSubstring("Hi, I'm Dora!"))
 
-			Expect(logs).To(SayWithTimeout("OUT "+appName+"."+LoadConfig().AppsDomain, time.Second*15))
+			Eventually(logs, DefaultTimeout).Should(Say("OUT " + appName + "." + LoadConfig().AppsDomain))
 		})
 	})
 
@@ -40,10 +40,9 @@ var _ = PDescribe("loggregator", func() {
 		It("makes loggregator buffer and dump log messages", func() {
 			logs := Cf("logs", appName, "--recent")
 
-			Expect(logs).To(SayWithTimeout("Connected, dumping recent logs for app", time.Second*15))
-
-			Expect(logs).To(SayWithTimeout("OUT Created app", time.Second*15))
-			Expect(logs).To(SayWithTimeout("OUT Starting app instance", time.Second*15))
+			Eventually(logs, DefaultTimeout).Should(Say("Connected, dumping recent logs for app"))
+			Eventually(logs, DefaultTimeout).Should(Say("OUT Created app"))
+			Eventually(logs, DefaultTimeout).Should(Say("OUT Starting app instance"))
 		})
 	})
 })

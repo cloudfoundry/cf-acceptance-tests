@@ -111,10 +111,10 @@ Be careful with this number, as it's effectively "how many apps to push at once"
 
 #### Seeing command-line output
 
-To see verbose output from `cf`, set `CF_VERBOSE_OUTPUT` to `true` before running the tests.
+To see verbose output from `cf`, use [ginkgo](https://github.com/onsi/ginkgo)'s `-v` flag.
 
 ```bash
-export CF_VERBOSE_OUTPUT=true
+./bin/test -v
 ```
 
 #### Capturing CF CLI output

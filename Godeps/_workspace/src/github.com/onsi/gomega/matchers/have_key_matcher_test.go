@@ -53,21 +53,21 @@ var _ = Describe("HaveKey", func() {
 
 		It("should fail if the matcher ever fails", func() {
 			actual := map[interface{}]string{"foo": "a", 3: "b", "bar": "c"}
-			success, _, err := (&HaveKeyMatcher{Key: ContainSubstring("ar")}).Match(actual)
+			success, err := (&HaveKeyMatcher{Key: ContainSubstring("ar")}).Match(actual)
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 		})
 	})
 
 	Context("when passed something that is not a map", func() {
 		It("should error", func() {
-			success, _, err := (&HaveKeyMatcher{Key: "foo"}).Match([]string{"foo"})
+			success, err := (&HaveKeyMatcher{Key: "foo"}).Match([]string{"foo"})
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 
-			success, _, err = (&HaveKeyMatcher{Key: "foo"}).Match(nil)
+			success, err = (&HaveKeyMatcher{Key: "foo"}).Match(nil)
 			Ω(success).Should(BeFalse())
-			Ω(err).Should(HaveOccured())
+			Ω(err).Should(HaveOccurred())
 		})
 	})
 })

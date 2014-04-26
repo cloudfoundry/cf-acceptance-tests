@@ -1,10 +1,10 @@
 package cf
 
 import (
+	. "github.com/onsi/gomega/gexec"
 	"github.com/pivotal-cf-experimental/cf-test-helpers/runner"
-	"github.com/vito/cmdtest"
 )
 
-var Cf = func(args ...string) *cmdtest.Session {
+var Cf = func(args ...string) *Session {
 	return runner.Run("gcf", args...)
 }

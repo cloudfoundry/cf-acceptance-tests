@@ -11,31 +11,27 @@
 		},
 		{
 			"ImportPath": "github.com/onsi/ginkgo",
-			"Rev": "3632cbe0b58a9005513942e9d4c4920e375d6778"
+			"Rev": "b7291895c890c7f560d82751954c5a7501c57a7f"
 		},
 		{
 			"ImportPath": "github.com/onsi/gomega",
-			"Rev": "b017f5b84e91054313ed33ba2422e992c3b08626"
+			"Rev": "b9d60a4e5bdc7bb0cf7b175cde451d4064dd1610"
 		},
 		{
 			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/cf",
-			"Rev": "db2936df21b42702ed1a2cfba1061e7407c106aa"
+			"Rev": "bf6731e5c9be59be50ab7303606e80dbd379dbfe"
 		},
 		{
 			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/generator",
-			"Rev": "db2936df21b42702ed1a2cfba1061e7407c106aa"
+			"Rev": "bf6731e5c9be59be50ab7303606e80dbd379dbfe"
 		},
 		{
 			"ImportPath": "github.com/pivotal-cf-experimental/cf-test-helpers/runner",
-			"Rev": "db2936df21b42702ed1a2cfba1061e7407c106aa"
+			"Rev": "bf6731e5c9be59be50ab7303606e80dbd379dbfe"
 		},
 		{
 			"ImportPath": "github.com/pivotal-golang/archiver/extractor/test_helper",
 			"Rev": "338bf2b31d42f9ff6f57e0944cf5628bdfee546c"
-		},
-		{
-			"ImportPath": "github.com/vito/cmdtest",
-			"Rev": "c56fe40f700cbe87257137c14ae739c59897fc6b"
 		}
 	]
 }

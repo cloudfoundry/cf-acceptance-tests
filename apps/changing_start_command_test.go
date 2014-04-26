@@ -3,7 +3,7 @@ package apps
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/vito/cmdtest/matchers"
+	. "github.com/onsi/gomega/gexec"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
@@ -16,22 +16,20 @@ var _ = Describe("Changing an app's start command", func() {
 	BeforeEach(func() {
 		appName = RandomName()
 
-		Expect(
-			Cf(
-				"push", appName,
-				"-p", NewAssets().Dora,
-				"-d", LoadConfig().AppsDomain,
-				"-c", "FOO=foo bundle exec rackup config.ru -p $PORT",
-			),
-		).To(Say("App started"))
+		Eventually(Cf(
+			"push", appName,
+			"-p", NewAssets().Dora,
+			"-d", LoadConfig().AppsDomain,
+			"-c", "FOO=foo bundle exec rackup config.ru -p $PORT",
+		), CFPushTimeout).Should(Exit(0))
 	})
 
 	AfterEach(func() {
-		Expect(Cf("delete", appName, "-f")).To(Say("OK"))
+		Eventually(Cf("delete", appName, "-f"), DefaultTimeout).Should(Exit(0))
 	})
 
 	It("takes effect after a restart, not requiring a push", func() {
-		Eventually(Curling(appName, "/env/FOO", LoadConfig().AppsDomain)).Should(Say("foo"))
+		Eventually(CurlFetcher(appName, "/env/FOO", LoadConfig().AppsDomain), DefaultTimeout).Should(ContainSubstring("foo"))
 
 		var response QueryResponse
 
@@ -48,12 +46,12 @@ var _ = Describe("Changing an app's start command", func() {
 			`{"command":"FOO=bar bundle exec rackup config.ru -p $PORT"}`,
 		)
 
-		Expect(Cf("stop", appName)).To(Say("OK"))
+		Eventually(Cf("stop", appName), DefaultTimeout).Should(Exit(0))
 
-		Eventually(Curling(appName, "/env/FOO", LoadConfig().AppsDomain)).Should(Say("404"))
+		Eventually(CurlFetcher(appName, "/env/FOO", LoadConfig().AppsDomain), DefaultTimeout).Should(ContainSubstring("404"))
 
-		Expect(Cf("start", appName)).To(Say("App started"))
+		Eventually(Cf("start", appName), DefaultTimeout).Should(Exit(0))
 
-		Eventually(Curling(appName, "/env/FOO", LoadConfig().AppsDomain)).Should(Say("bar"))
+		Eventually(CurlFetcher(appName, "/env/FOO", LoadConfig().AppsDomain), DefaultTimeout).Should(ContainSubstring("bar"))
 	})
 })
