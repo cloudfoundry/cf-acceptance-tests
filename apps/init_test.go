@@ -14,7 +14,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
 )
 
-const CFPushTimeout = 60.0
+const CFPushTimeout = 120.0
 const DefaultTimeout = 30.0
 
 var context helpers.SuiteContext
