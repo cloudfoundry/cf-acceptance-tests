@@ -12,7 +12,7 @@ import (
 	"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 )
 
-const brokerStartTimeout = 3 * 60.0
+const brokerStartTimeout = 5 * 60.0
 const defaultTimeout = 30
 
 type ServiceBroker struct {
