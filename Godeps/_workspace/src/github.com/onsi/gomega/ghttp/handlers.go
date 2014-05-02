@@ -108,7 +108,9 @@ func RespondWith(statusCode int, body string) http.HandlerFunc {
 func RespondWithPtr(statusCode *int, body *string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(*statusCode)
-		w.Write([]byte(*body))
+		if body != nil {
+			w.Write([]byte(*body))
+		}
 	}
 }
 

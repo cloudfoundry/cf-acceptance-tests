@@ -19,15 +19,7 @@ var CommandInterceptor = func(cmd *exec.Cmd) *exec.Cmd {
 func Run(executable string, args ...string) *gexec.Session {
 	cmd := exec.Command(executable, args...)
 
-	if config.DefaultReporterConfig.Verbose {
-		startColor := ""
-		endColor := ""
-		if !config.DefaultReporterConfig.NoColor {
-			startColor = "\x1b[32m"
-			endColor = "\x1b[0m"
-		}
-		fmt.Println("\n", startColor, "> ", strings.Join(cmd.Args, " "), endColor)
-	}
+	sayCommandWillRun(cmd)
 
 	sess, err := gexec.Start(CommandInterceptor(cmd), ginkgo.GinkgoWriter, ginkgo.GinkgoWriter)
 	Expect(err).NotTo(HaveOccurred())
@@ -38,4 +30,14 @@ func Run(executable string, args ...string) *gexec.Session {
 func Curl(args ...string) *gexec.Session {
 	args = append([]string{"-s"}, args...)
 	return Run("curl", args...)
+}
+
+func sayCommandWillRun(cmd *exec.Cmd) {
+	startColor := ""
+	endColor := ""
+	if !config.DefaultReporterConfig.NoColor {
+		startColor = "\x1b[32m"
+		endColor = "\x1b[0m"
+	}
+	fmt.Fprintf(ginkgo.GinkgoWriter, "\n%s> %s %s\n", startColor, strings.Join(cmd.Args, " "), endColor)
 }

@@ -354,6 +354,27 @@ var _ = Describe("TestServer", func() {
 				Ω(err).ShouldNot(HaveOccurred())
 				Ω(body).Should(Equal([]byte("tasty")))
 			})
+
+			Context("when passed a nil body", func() {
+				BeforeEach(func() {
+					s.SetHandler(0, CombineHandlers(
+						VerifyRequest("POST", "/foo"),
+						RespondWithPtr(&code, nil),
+					))
+				})
+
+				It("should return an empty body and not explode", func() {
+					resp, err = http.Post(s.URL()+"/foo", "application/json", nil)
+
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(resp.StatusCode).Should(Equal(http.StatusOK))
+					body, err := ioutil.ReadAll(resp.Body)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(body).Should(BeEmpty())
+
+					Ω(s.ReceivedRequests()).Should(HaveLen(1))
+				})
+			})
 		})
 
 		Describe("RespondWithJSON", func() {

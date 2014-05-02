@@ -11,7 +11,6 @@ import (
 var _ = Describe("Run", func() {
 	It("runs the given command in a cmdtest Session", func() {
 		session := runner.Run("bash", "-c", "echo hi out; echo hi err 1>&2; exit 42")
-
 		Eventually(session.Out).Should(Say("hi out"))
 		Eventually(session.Err).Should(Say("hi err"))
 		Eventually(session).Should(Exit(42))

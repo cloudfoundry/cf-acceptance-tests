@@ -13,13 +13,22 @@ Gomega is MIT-Licensed
 */
 package gomega
 
-import "time"
+import (
+	"fmt"
+	"reflect"
+	"time"
+)
 
 const GOMEGA_VERSION = "0.9"
 
 var globalFailHandler OmegaFailHandler
 
 type OmegaFailHandler func(message string, callerSkip ...int)
+
+var defaultEventuallyTimeout = time.Second
+var defaultEventuallyPollingInterval = 10 * time.Millisecond
+var defaultConsistentlyDuration = 100 * time.Millisecond
+var defaultConsistentlyPollingInterval = 10 * time.Millisecond
 
 //RegisterFailHandler connects Ginkgo to Gomega.  When a matcher fails
 //the fail handler passed into RegisterFailHandler is called.
@@ -86,8 +95,11 @@ func ExpectWithOffset(offset int, actual interface{}, extra ...interface{}) Actu
 //The assertion is tried periodically until it passes or a timeout occurs.
 //
 //Both the timeout and polling interval are configurable as optional arguments:
-//The first optional argument is the timeout in seconds expressed as a float64.
-//The second optional argument is the polling interval in seconds expressd as a float64.
+//The first optional argument is the timeout
+//The second optional argument is the polling interval
+//
+//Both intervals can either be specified as time.Duration, parsable duration strings or as floats/integers.  In the
+//last case they are interpreted as seconds.
 //
 //If Eventually is passed an actual that is a function taking no arguments and returning at least one value,
 //then Eventually will call the function periodically and try the matcher against the function's first return value.
@@ -115,21 +127,21 @@ func ExpectWithOffset(offset int, actual interface{}, extra ...interface{}) Actu
 //Will pass only if the the returned error is nil and the returned string passes the matcher.
 //
 //Eventually's default timeout is 1 second, and its default polling interval is 10ms
-func Eventually(actual interface{}, intervals ...float64) AsyncActual {
+func Eventually(actual interface{}, intervals ...interface{}) AsyncActual {
 	return EventuallyWithOffset(0, actual, intervals...)
 }
 
 //EventuallyWithOffset operates like Eventually but takes an additional
 //initial argument to indicate an offset in the call stack.  This is useful when building helper
 //functions that contain matchers.  To learn more, read about `ExpectWithOffset`.
-func EventuallyWithOffset(offset int, actual interface{}, intervals ...float64) AsyncActual {
-	timeoutInterval := time.Duration(1 * time.Second)
-	pollingInterval := time.Duration(10 * time.Millisecond)
+func EventuallyWithOffset(offset int, actual interface{}, intervals ...interface{}) AsyncActual {
+	timeoutInterval := defaultEventuallyTimeout
+	pollingInterval := defaultEventuallyPollingInterval
 	if len(intervals) > 0 {
-		timeoutInterval = time.Duration(intervals[0] * float64(time.Second))
+		timeoutInterval = toDuration(intervals[0])
 	}
 	if len(intervals) > 1 {
-		pollingInterval = time.Duration(intervals[1] * float64(time.Second))
+		pollingInterval = toDuration(intervals[1])
 	}
 	return newAsyncActual(asyncActualTypeEventually, actual, globalFailHandler, timeoutInterval, pollingInterval, offset)
 }
@@ -138,8 +150,11 @@ func EventuallyWithOffset(offset int, actual interface{}, intervals ...float64) 
 //The assertion is tried periodically and is required to pass for a period of time.
 //
 //Both the total time and polling interval are configurable as optional arguments:
-//The first optional argument is the duration, in seconds expressed as a float64, that Consistently will run for.
-//The second optional argument is the polling interval in seconds expressd as a float64.
+//The first optional argument is the duration that Consistently will run for
+//The second optional argument is the polling interval
+//
+//Both intervals can either be specified as time.Duration, parsable duration strings or as floats/integers.  In the
+//last case they are interpreted as seconds.
 //
 //If Consistently is passed an actual that is a function taking no arguments and returning at least one value,
 //then Consistently will call the function periodically and try the matcher against the function's first return value.
@@ -154,23 +169,43 @@ func EventuallyWithOffset(offset int, actual interface{}, intervals ...float64) 
 //  Consistently(channel).ShouldNot(Receive())
 //
 //Consistently's default duration is 100ms, and its default polling interval is 10ms
-func Consistently(actual interface{}, intervals ...float64) AsyncActual {
+func Consistently(actual interface{}, intervals ...interface{}) AsyncActual {
 	return ConsistentlyWithOffset(0, actual, intervals...)
 }
 
 //ConsistentlyWithOffset operates like Consistnetly but takes an additional
 //initial argument to indicate an offset in the call stack.  This is useful when building helper
 //functions that contain matchers.  To learn more, read about `ExpectWithOffset`.
-func ConsistentlyWithOffset(offset int, actual interface{}, intervals ...float64) AsyncActual {
-	timeoutInterval := time.Duration(100 * time.Millisecond)
-	pollingInterval := time.Duration(10 * time.Millisecond)
+func ConsistentlyWithOffset(offset int, actual interface{}, intervals ...interface{}) AsyncActual {
+	timeoutInterval := defaultConsistentlyDuration
+	pollingInterval := defaultConsistentlyPollingInterval
 	if len(intervals) > 0 {
-		timeoutInterval = time.Duration(intervals[0] * float64(time.Second))
+		timeoutInterval = toDuration(intervals[0])
 	}
 	if len(intervals) > 1 {
-		pollingInterval = time.Duration(intervals[1] * float64(time.Second))
+		pollingInterval = toDuration(intervals[1])
 	}
 	return newAsyncActual(asyncActualTypeConsistently, actual, globalFailHandler, timeoutInterval, pollingInterval, offset)
+}
+
+//Set the default timeout duration for Eventually.  Eventually will repeatedly poll your condition until it succeeds, or until this timeout elapses.
+func SetDefaultEventuallyTimeout(t time.Duration) {
+	defaultEventuallyTimeout = t
+}
+
+//Set the default polling interval for Eventually.
+func SetDefaultEventuallyPollingInterval(t time.Duration) {
+	defaultEventuallyPollingInterval = t
+}
+
+//Set the default duration for Consistently.  Consistently will verify that your condition is satsified for this long.
+func SetDefaultConsistentlyDuration(t time.Duration) {
+	defaultConsistentlyDuration = t
+}
+
+//Set the default polling interval for Consistently.
+func SetDefaultConsistentlyPollingInterval(t time.Duration) {
+	defaultConsistentlyPollingInterval = t
 }
 
 //AsyncActual is returned by Eventually and Consistently and polls the actual value passed into Eventually against
@@ -223,6 +258,35 @@ type OmegaMatcher interface {
 	NegatedFailureMessage(actual interface{}) (message string)
 }
 
+//The DeprecatedOmegaMatcher interface is... deprecated.  It will be removed in v1.0
+//
+//The new OmegaMatcher interface allows for lazy failure message evaluation.
 type DeprecatedOmegaMatcher interface {
 	Match(actual interface{}) (success bool, message string, err error)
+}
+
+func toDuration(input interface{}) time.Duration {
+	duration, ok := input.(time.Duration)
+	if ok {
+		return duration
+	}
+
+	value := reflect.ValueOf(input)
+	kind := reflect.TypeOf(input).Kind()
+
+	if reflect.Int <= kind && kind <= reflect.Int64 {
+		return time.Duration(value.Int()) * time.Second
+	} else if reflect.Uint <= kind && kind <= reflect.Uint64 {
+		return time.Duration(value.Uint()) * time.Second
+	} else if reflect.Float32 <= kind && kind <= reflect.Float64 {
+		return time.Duration(value.Float() * float64(time.Second))
+	} else if reflect.String == kind {
+		duration, err := time.ParseDuration(value.String())
+		if err != nil {
+			panic(fmt.Sprintf("%#v is not a valid parsable duration string.", input))
+		}
+		return duration
+	}
+
+	panic(fmt.Sprintf("%v is not a valid interval.  Must be time.Duration, parsable duration string or a number.", input))
 }
