@@ -34,7 +34,7 @@ Make sure that the go version of `cf` is accessible in your `$PATH`, and that it
 renamed to `gcf`, or that there is a symlink from `gcf` to the location of `cf`.
 
 Check out a copy of `cf-acceptance-tests` and make sure that it is added to your `$GOPATH`.
-The recommended way to do this is to run `go get github.com/cloudfoundry/cf-acceptance-tests`. You will receive a
+The recommended way to do this is to run `go get -d github.com/cloudfoundry/cf-acceptance-tests`. You will receive a
 warning "no buildable Go source files"; this can be ignored as there is no compilable go code in the package.
 
 All `go` dependencies required by CATs are vendored in `cf-acceptance-tests/Godeps`. The test script itself, `bin/test`,
