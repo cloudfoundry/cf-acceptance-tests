@@ -56,10 +56,22 @@ type ServicePlanResponse struct {
 	}
 }
 
-type ServiceInstanceResponse struct {
+type ServiceInstance struct {
 	Metadata struct {
 		Guid string `json:"guid"`
 	}
+}
+
+type ServiceInstanceResponse struct {
+	Resources []ServiceInstance
+}
+
+type SpaceJson struct {
+	Resources []struct {
+	  Metadata struct {
+		  Guid string
+	  }
+  }
 }
 
 func NewServiceBroker(name string, path string, context SuiteContext) ServiceBroker {
@@ -158,51 +170,15 @@ func (b ServiceBroker) PublicizePlan(url string) {
 }
 
 func (b ServiceBroker) CreateServiceInstance(instanceName string) (guid string) {
-	// TODO:  CreateServiceInstance is used as a workaround for the problem in cf 6.0.1 that prevents us from
-	//        creating an instance of a service when there are more than 50 services in the environment.
-	//        Should be replaced by the following line ASAP
+  Eventually(Cf("create-service", b.Service.Name, b.Plan.Name, instanceName), defaultTimeout).Should(Exit(0))
+	url := fmt.Sprintf("/v2/service_instances?q=name:%s", instanceName)
+	apiResponse := Cf("curl", url).Wait(defaultTimeout).Out.Contents()
 
-	// Expect(Cf("create-service", broker.Service.Name, broker.Plan.Name, instanceName)).To(ExitWith(0))
-	url := fmt.Sprintf("/v2/services?inline-relations-depth=1&q=label:%s", b.Service.Name)
-	structure := ServicesResponse{}
-	json.Unmarshal(Cf("curl", url).Wait(defaultTimeout).Out.Contents(), &structure)
-	for _, service := range structure.Resources {
-		if service.Entity.Label == b.Service.Name {
-			for _, plan := range service.Entity.ServicePlans {
-				if plan.Entity.Name == b.Plan.Name {
-					guid = b.createInstanceForPlan(plan.Metadata.Guid, instanceName)
-					break
-				}
-			}
-		}
-	}
-	return
-}
-
-func (b ServiceBroker) createInstanceForPlan(planGuid, instanceName string) (guid string) {
-	spaceGuid := b.GetSpaceGuid()
-
-	attributes := make(map[string]string)
-	attributes["name"] = instanceName
-	attributes["service_plan_guid"] = planGuid
-	attributes["space_guid"] = spaceGuid
-	jsonBytes, _ := json.Marshal(attributes)
-
-	apiResponse := Cf("curl", "/v2/service_instances", "-X", "POST", "-d", string(jsonBytes)).Wait(defaultTimeout).Out.Contents()
-
-	serviceInstance := ServiceInstanceResponse{}
+  serviceInstance := ServiceInstanceResponse{}
 	json.Unmarshal(apiResponse, &serviceInstance)
 
-	guid = serviceInstance.Metadata.Guid
+	guid = serviceInstance.Resources[0].Metadata.Guid
 	return
-}
-
-type SpaceJson struct {
-	Resources []struct {
-		Metadata struct {
-			Guid string
-		}
-	}
 }
 
 func (b ServiceBroker) GetSpaceGuid() string {
