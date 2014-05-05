@@ -1,33 +1,38 @@
 package apps
 
 import (
+	"strings"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
-	. "github.com/onsi/gomega/gexec"
 
-	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
+	"github.com/pivotal-cf-experimental/cf-test-helpers/cf"
+	"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 )
 
 var _ = Describe("An application being staged", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = RandomName()
+		appName = generator.RandomName()
 	})
 
 	AfterEach(func() {
-		Eventually(Cf("delete", appName, "-f"), DefaultTimeout).Should(Exit(0))
+		cf.Cf("delete", appName, "-f").Wait(DefaultTimeout)
 	})
 
 	It("has its staging log streamed during a push", func() {
-		push := Cf("push", appName, "-p", NewAssets().Dora)
+		push := cf.Cf("push", appName, "-p", helpers.NewAssets().Dora).Wait(CFPushTimeout)
 
-		Eventually(push, CFPushTimeout).Should(Say("Installing dependencies"))
-		Eventually(push, CFPushTimeout).Should(Say("Uploading droplet"))
-		Eventually(push, CFPushTimeout).Should(Say("App started"))
-		Eventually(push, CFPushTimeout).Should(Exit(0))
+		output := string(push.Buffer().Contents())
+		expected := []string{"Installing dependencies", "Uploading droplet", "App started"}
+		found := false
+		for _, value := range expected {
+			if strings.Contains(output, value) {
+				found = true
+				break
+			}
+		}
+		Expect(found).To(BeTrue(), "Did not find one of the expected log lines: %s", expected)
 	})
 })
