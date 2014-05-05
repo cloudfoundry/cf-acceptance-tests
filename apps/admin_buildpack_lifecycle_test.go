@@ -91,26 +91,26 @@ EOF
 			_, err = os.Create(path.Join(appPath, "some-file"))
 			Expect(err).ToNot(HaveOccurred())
 
-			createBuildpack := Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0")
-			Eventually(createBuildpack, DefaultTimeout).Should(Say("Creating"))
-			Eventually(createBuildpack, DefaultTimeout).Should(Say("OK"))
-			Eventually(createBuildpack, DefaultTimeout).Should(Say("Uploading"))
-			Eventually(createBuildpack, DefaultTimeout).Should(Say("OK"))
-			Eventually(createBuildpack, DefaultTimeout).Should(Exit(0))
+			createBuildpack := Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0").Wait(DefaultTimeout)
+			Expect(createBuildpack).Should(Exit(0))
+			Expect(createBuildpack).Should(Say("Creating"))
+			Expect(createBuildpack).Should(Say("OK"))
+			Expect(createBuildpack).Should(Say("Uploading"))
+			Expect(createBuildpack).Should(Say("OK"))
 		})
 	})
 
 	AfterEach(func() {
 		AsUser(context.AdminUserContext(), func() {
-			Eventually(Cf("delete-buildpack", BuildpackName, "-f"), DefaultTimeout).Should(Exit(0))
+			Expect(Cf("delete-buildpack", BuildpackName, "-f").Wait(DefaultTimeout)).To(Exit(0))
 		})
 	})
 
 	Context("when the buildpack is detected", func() {
 		It("is used for the app", func() {
-			push := Cf("push", appName, "-p", appPath)
-			Eventually(push, CFPushTimeout).Should(Say("Staging with Simple Buildpack"))
-			Eventually(push, CFPushTimeout).Should(Exit(0))
+			push := Cf("push", appName, "-p", appPath).Wait(CFPushTimeout)
+			Expect(push).To(Exit(0))
+			Expect(push).To(Say("Staging with Simple Buildpack"))
 		})
 	})
 
@@ -121,19 +121,23 @@ EOF
 		})
 
 		It("fails to stage", func() {
-			Eventually(Cf("push", appName, "-p", appPath), CFPushTimeout).Should(Say("Staging error"))
+			push := Cf("push", appName, "-p", appPath).Wait(CFPushTimeout)
+			Expect(push).To(Exit(1))
+			Expect(push).To(Say("Staging error"))
 		})
 	})
 
 	Context("when the buildpack is deleted", func() {
 		BeforeEach(func() {
 			AsUser(context.AdminUserContext(), func() {
-				Eventually(Cf("delete-buildpack", BuildpackName, "-f"), DefaultTimeout).Should(Exit(0))
+				Expect(Cf("delete-buildpack", BuildpackName, "-f").Wait(DefaultTimeout)).To(Exit(0))
 			})
 		})
 
 		It("fails to stage", func() {
-			Eventually(Cf("push", appName, "-p", appPath), CFPushTimeout).Should(Say("Staging error"))
+			push := Cf("push", appName, "-p", appPath).Wait(CFPushTimeout)
+			Expect(push).To(Exit(1))
+			Expect(push).To(Say("Staging error"))
 		})
 	})
 
@@ -158,7 +162,9 @@ EOF
 		})
 
 		It("fails to stage", func() {
-			Eventually(Cf("push", appName, "-p", appPath), CFPushTimeout).Should(Say("Staging error"))
+			push := Cf("push", appName, "-p", appPath).Wait(CFPushTimeout)
+			Expect(push).To(Exit(1))
+			Expect(push).To(Say("Staging error"))
 		})
 	})
 })
