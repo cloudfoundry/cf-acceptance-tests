@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -e -x
+
+if ! which go 2>/dev/null; then
+  echo "Go is not installed."
+  exit 1
+fi
+
+local_gopath=`godep path`
+
+mkdir -p $local_gopath/bin
+
+export GOPATH=$local_gopath:$GOPATH
+export PATH=$local_gopath/bin:$PATH

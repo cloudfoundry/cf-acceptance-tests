@@ -1,18 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e -x
 
-if ! which go 2>/dev/null; then
-  echo "Go is not installed."
-  exit 1
-fi
-
-local_gopath=$PWD/Godeps/_workspace
-
-mkdir -p $local_gopath/bin
-
-export GOPATH=$local_gopath:$GOPATH
-export PATH=$local_gopath/bin:$PATH
+. $(dirname $0)/goenv
 
 go install -v github.com/onsi/ginkgo/ginkgo
 echo "RUNNING LOCAL CODE"
