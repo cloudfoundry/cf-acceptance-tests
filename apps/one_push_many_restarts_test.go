@@ -12,23 +12,24 @@
 package apps
 
 import (
-	"time"
+	"strings"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 
-	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
+	"github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 )
 
 var _ = Describe("An application that's already been pushed", func() {
 	var appName string
-	config := LoadConfig()
-	var environment *Environment
+	config := helpers.LoadConfig()
+	var environment *helpers.Environment
 
 	BeforeEach(func() {
-		persistentContext := NewPersistentAppContext(config)
-		environment = NewEnvironment(persistentContext)
+		persistentContext := helpers.NewPersistentAppContext(config)
+		environment = helpers.NewEnvironment(persistentContext)
 		environment.Setup()
 	})
 
@@ -39,28 +40,24 @@ var _ = Describe("An application that's already been pushed", func() {
 	BeforeEach(func() {
 		appName = config.PersistentAppHost
 
-		appQuery := Cf("app", appName)
+		appQuery := cf.Cf("app", appName).Wait(DEFAULT_TIMEOUT)
+		// might exit with 1 or 0, depending on app status
+		output := string(appQuery.Out.Contents())
 
-		select {
-		case <-appQuery.Out.Detect("not found"):
-			Eventually(Cf("push", appName, "-p", NewAssets().Dora), CFPushTimeout).Should(Exit(0))
-		case <-appQuery.Out.Detect("running"):
-		case <-time.After(DefaultTimeout * time.Second):
-			Fail("failed to find or setup app")
+		if appQuery.ExitCode() == 1 && strings.Contains(output, "not found") {
+			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		}
-
-		appQuery.Out.CancelDetects()
 	})
 
 	It("can be restarted and still come up", func() {
-		Eventually(CurlFetcher(appName, "/", config.AppsDomain), DefaultTimeout).Should(ContainSubstring("Hi, I'm Dora!"))
+		Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hi, I'm Dora!"))
 
-		Eventually(Cf("stop", appName), DefaultTimeout).Should(Exit(0))
+		Expect(cf.Cf("stop", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
-		Eventually(CurlFetcher(appName, "/", config.AppsDomain), DefaultTimeout).Should(ContainSubstring("404"))
+		Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("404"))
 
-		Eventually(Cf("start", appName), DefaultTimeout).Should(Exit(0))
+		Expect(cf.Cf("start", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
-		Eventually(CurlFetcher(appName, "/", config.AppsDomain), DefaultTimeout).Should(ContainSubstring("Hi, I'm Dora!"))
+		Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hi, I'm Dora!"))
 	})
 })
