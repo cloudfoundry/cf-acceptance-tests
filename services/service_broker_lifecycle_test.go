@@ -4,10 +4,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	. "github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/services/helpers"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
-	"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 )
 
 var _ = Describe("Service Broker Lifecycle", func() {

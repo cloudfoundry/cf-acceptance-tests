@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 
+	. "github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
-	"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 )
 
 const brokerStartTimeout = 5 * 60.0
@@ -68,10 +68,10 @@ type ServiceInstanceResponse struct {
 
 type SpaceJson struct {
 	Resources []struct {
-	  Metadata struct {
-		  Guid string
-	  }
-  }
+		Metadata struct {
+			Guid string
+		}
+	}
 }
 
 func NewServiceBroker(name string, path string, context SuiteContext) ServiceBroker {
@@ -170,11 +170,11 @@ func (b ServiceBroker) PublicizePlan(url string) {
 }
 
 func (b ServiceBroker) CreateServiceInstance(instanceName string) (guid string) {
-  Eventually(Cf("create-service", b.Service.Name, b.Plan.Name, instanceName), defaultTimeout).Should(Exit(0))
+	Eventually(Cf("create-service", b.Service.Name, b.Plan.Name, instanceName), defaultTimeout).Should(Exit(0))
 	url := fmt.Sprintf("/v2/service_instances?q=name:%s", instanceName)
 	apiResponse := Cf("curl", url).Wait(defaultTimeout).Out.Contents()
 
-  serviceInstance := ServiceInstanceResponse{}
+	serviceInstance := ServiceInstanceResponse{}
 	json.Unmarshal(apiResponse, &serviceInstance)
 
 	guid = serviceInstance.Resources[0].Metadata.Guid

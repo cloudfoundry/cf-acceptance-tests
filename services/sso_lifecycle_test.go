@@ -1,11 +1,11 @@
 package services
 
 import (
+	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/services/helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 )
 
 var _ = Describe("SSO Lifecycle", func() {

@@ -6,10 +6,10 @@ import (
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 
+	. "github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/services/helpers"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
-	"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 )
 
 var _ = Describe("Purging service offerings", func() {

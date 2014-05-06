@@ -6,12 +6,12 @@ import (
 	"os"
 	"path"
 
+	. "github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	. "github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 	archive_helpers "github.com/pivotal-golang/archiver/extractor/test_helper"
 )
 
