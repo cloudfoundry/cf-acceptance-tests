@@ -3,14 +3,15 @@ package diego
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/vito/cmdtest/matchers"
+	. "github.com/onsi/gomega/gbytes"
+	. "github.com/onsi/gomega/gexec"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
 	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 )
 
-var _ = PDescribe("An application being staged with Diego", func() {
+var _ = Describe("An application being staged with Diego", func() {
 	var appName string
 
 	BeforeEach(func() {
@@ -18,18 +19,19 @@ var _ = PDescribe("An application being staged with Diego", func() {
 	})
 
 	AfterEach(func() {
-		Expect(Cf("delete", appName, "-f")).To(Say("OK"))
+		Eventually(Cf("delete", appName, "-f"), DefaultTimeout).Should(Exit(0))
 	})
 
 	It("has its staging log streamed during a push", func() {
-		Expect(Cf("push", appName, "-p", NewAssets().Dora, "--no-start")).To(ExitWith(0))
-		Expect(Cf("set-env", appName, "CF_DIEGO_BETA", "true")).To(ExitWith(0))
+		//Diego needs a custom buildpack until the ruby buildpack lands
+		Eventually(Cf("push", appName, "-p", NewAssets().Dora, "--no-start", "-b=https://github.com/cloudfoundry/cf-buildpack-ruby/archive/master.zip"), CFPushTimeout).Should(Exit(0))
+		Eventually(Cf("set-env", appName, "CF_DIEGO_BETA", "true"), DefaultTimeout).Should(Exit(0))
 
 		start := Cf("start", appName)
 
-		Expect(start).To(Say("Downloading app package"))
-		Expect(start).To(Say("Downloaded app package"))
-		Expect(start).To(Say("Compiling"))
-		Expect(start).To(Say("App started"))
+		Eventually(start, CFPushTimeout).Should(Say("Downloading App Package"))
+		Eventually(start, CFPushTimeout).Should(Say("Downloaded App Package"))
+		Eventually(start, CFPushTimeout).Should(Say(`Staging\.\.\.`))
+		Eventually(start, CFPushTimeout).Should(Exit(0))
 	})
 })
