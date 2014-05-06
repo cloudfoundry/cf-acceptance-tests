@@ -13,7 +13,7 @@ import (
 	"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 )
 
-var _ = PDescribe("loggregator", func() {
+var _ = Describe("loggregator", func() {
 	var appName string
 
 	BeforeEach(func() {
@@ -27,18 +27,26 @@ var _ = PDescribe("loggregator", func() {
 	})
 
 	Context("gcf logs", func() {
-		It("blocks and exercises basic loggregator behavior", func() {
-			logs := cf.Cf("logs", appName)
+		var logs *Session
 
+		BeforeEach(func() {
+			logs = cf.Cf("logs", appName)
+		})
+
+		AfterEach(func() {
+			// logs might be nil if the BeforeEach panics
+			if logs != nil {
+				logs.Interrupt().Wait(DEFAULT_TIMEOUT)
+			}
+		})
+
+		It("exercises basic loggregator behavior", func() {
 			Eventually(logs, DEFAULT_TIMEOUT).Should(Say("Connected, tailing logs for app"))
 
 			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hi, I'm Dora!"))
 
 			expectedLogMessage := fmt.Sprintf("OUT %s.%s", appName, helpers.LoadConfig().AppsDomain)
 			Eventually(logs, DEFAULT_TIMEOUT).Should(Say(expectedLogMessage))
-
-			// stop tailing the logs
-			Expect(logs.Interrupt().Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 	})
 
