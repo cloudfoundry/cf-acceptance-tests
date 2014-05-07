@@ -3,22 +3,26 @@ package helpers
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
-	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
-	"github.com/pivotal-cf-experimental/cf-test-helpers/generator"
+
+	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
 )
 
-const brokerStartTimeout = 5 * 60.0
-const defaultTimeout = 30
+const (
+	BROKER_START_TIMEOUT = 5 * time.Minute
+	DEFAULT_TIMEOUT      = 30 * time.Second
+)
 
 type ServiceBroker struct {
 	Name    string
 	Path    string
-	context SuiteContext
+	context helpers.SuiteContext
 	Service struct {
 		Name            string `json:"name"`
 		ID              string `json:"id"`
@@ -68,13 +72,13 @@ type ServiceInstanceResponse struct {
 
 type SpaceJson struct {
 	Resources []struct {
-	  Metadata struct {
-		  Guid string
-	  }
-  }
+		Metadata struct {
+			Guid string
+		}
+	}
 }
 
-func NewServiceBroker(name string, path string, context SuiteContext) ServiceBroker {
+func NewServiceBroker(name string, path string, context helpers.SuiteContext) ServiceBroker {
 	b := ServiceBroker{}
 	b.Path = path
 	b.Name = name
@@ -90,44 +94,47 @@ func NewServiceBroker(name string, path string, context SuiteContext) ServiceBro
 }
 
 func (b ServiceBroker) Push() {
-	Eventually(Cf("push", b.Name, "-p", b.Path), brokerStartTimeout).Should(Exit(0))
+	Expect(cf.Cf("push", b.Name, "-p", b.Path).Wait(BROKER_START_TIMEOUT)).To(Exit(0))
 }
 
 func (b ServiceBroker) Configure() {
-	Eventually(Cf("set-env", b.Name, "CONFIG", b.ToJSON()), defaultTimeout).Should(Exit(0))
+	Expect(cf.Cf("set-env", b.Name, "CONFIG", b.ToJSON()).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	b.Restart()
 }
 
 func (b ServiceBroker) Restart() {
-	Eventually(Cf("restart", b.Name), brokerStartTimeout).Should(Exit(0))
+	Expect(cf.Cf("restart", b.Name).Wait(BROKER_START_TIMEOUT)).To(Exit(0))
 }
 
-func (b ServiceBroker) Create(appsDomain string) {
-	AsUser(b.context.AdminUserContext(), func() {
-		Eventually(Cf("create-service-broker", b.Name, "username", "password", AppUri(b.Name, "", appsDomain)), defaultTimeout).Should(Exit(0))
-		Eventually(Cf("service-brokers"), defaultTimeout).Should(Say(b.Name))
+func (b ServiceBroker) Create() {
+	cf.AsUser(b.context.AdminUserContext(), func() {
+		Expect(cf.Cf("create-service-broker", b.Name, "username", "password", helpers.AppUri(b.Name, "")).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("service-brokers").Wait(DEFAULT_TIMEOUT)).To(Say(b.Name))
 	})
 }
 
-func (b ServiceBroker) Update(appsDomain string) {
-	AsUser(b.context.AdminUserContext(), func() {
-		Eventually(Cf("update-service-broker", b.Name, "username", "password", AppUri(b.Name, "", appsDomain)), defaultTimeout).Should(Exit(0))
+func (b ServiceBroker) Update() {
+	cf.AsUser(b.context.AdminUserContext(), func() {
+		Expect(cf.Cf("update-service-broker", b.Name, "username", "password", helpers.AppUri(b.Name, "")).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 }
 
 func (b ServiceBroker) Delete() {
-	AsUser(b.context.AdminUserContext(), func() {
-		Eventually(Cf("delete-service-broker", b.Name, "-f"), defaultTimeout).Should(Exit(0))
-		Expect(Cf("service-brokers").Wait(defaultTimeout).Out.Contents()).ToNot(ContainSubstring(b.Name))
+	cf.AsUser(b.context.AdminUserContext(), func() {
+		Expect(cf.Cf("delete-service-broker", b.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
+		brokers := cf.Cf("service-brokers").Wait(DEFAULT_TIMEOUT)
+		Expect(brokers).To(Exit(0))
+		Expect(brokers.Out.Contents()).ToNot(ContainSubstring(b.Name))
 	})
 }
 
 func (b ServiceBroker) Destroy() {
-	AsUser(b.context.AdminUserContext(), func() {
-		Eventually(Cf("purge-service-offering", b.Service.Name, "-f"), defaultTimeout).Should(Exit(0))
+	cf.AsUser(b.context.AdminUserContext(), func() {
+		Expect(cf.Cf("purge-service-offering", b.Service.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 	b.Delete()
-	Eventually(Cf("delete", b.Name, "-f"), defaultTimeout).Should(Exit(0))
+	Expect(cf.Cf("delete", b.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 }
 
 func (b ServiceBroker) ToJSON() string {
@@ -142,8 +149,9 @@ func (b ServiceBroker) ToJSON() string {
 func (b ServiceBroker) PublicizePlans() {
 	url := fmt.Sprintf("/v2/services?inline-relations-depth=1&q=label:%s", b.Service.Name)
 	var session *Session
-	AsUser(b.context.AdminUserContext(), func() {
-		session = Cf("curl", url).Wait(defaultTimeout)
+	cf.AsUser(b.context.AdminUserContext(), func() {
+		session = cf.Cf("curl", url).Wait(DEFAULT_TIMEOUT)
+		Expect(session).To(Exit(0))
 	})
 	structure := ServicesResponse{}
 	json.Unmarshal(session.Out.Contents(), &structure)
@@ -164,26 +172,26 @@ func (b ServiceBroker) PublicizePlan(url string) {
 	jsonMap := make(map[string]bool)
 	jsonMap["public"] = true
 	planJson, _ := json.Marshal(jsonMap)
-	AsUser(b.context.AdminUserContext(), func() {
-		Eventually(Cf("curl", url, "-X", "PUT", "-d", string(planJson)), defaultTimeout).Should(Exit(0))
+	cf.AsUser(b.context.AdminUserContext(), func() {
+		Expect(cf.Cf("curl", url, "-X", "PUT", "-d", string(planJson)).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 }
 
-func (b ServiceBroker) CreateServiceInstance(instanceName string) (guid string) {
-  Eventually(Cf("create-service", b.Service.Name, b.Plan.Name, instanceName), defaultTimeout).Should(Exit(0))
+func (b ServiceBroker) CreateServiceInstance(instanceName string) string {
+	Expect(cf.Cf("create-service", b.Service.Name, b.Plan.Name, instanceName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	url := fmt.Sprintf("/v2/service_instances?q=name:%s", instanceName)
-	apiResponse := Cf("curl", url).Wait(defaultTimeout).Out.Contents()
-
-  serviceInstance := ServiceInstanceResponse{}
-	json.Unmarshal(apiResponse, &serviceInstance)
-
-	guid = serviceInstance.Resources[0].Metadata.Guid
-	return
+	serviceInstance := ServiceInstanceResponse{}
+	curl := cf.Cf("curl", url).Wait(DEFAULT_TIMEOUT)
+	Expect(curl).To(Exit(0))
+	json.Unmarshal(curl.Out.Contents(), &serviceInstance)
+	return serviceInstance.Resources[0].Metadata.Guid
 }
 
 func (b ServiceBroker) GetSpaceGuid() string {
 	url := fmt.Sprintf("/v2/spaces?q=name%%3A%s", b.context.RegularUserContext().Space)
 	jsonResults := SpaceJson{}
-	json.Unmarshal(Cf("curl", url).Wait(defaultTimeout).Out.Contents(), &jsonResults)
+	curl := cf.Cf("curl", url).Wait(DEFAULT_TIMEOUT)
+	Expect(curl).To(Exit(0))
+	json.Unmarshal(curl.Out.Contents(), &jsonResults)
 	return jsonResults.Resources[0].Metadata.Guid
 }

@@ -1,48 +1,62 @@
 package apps
 
 import (
-	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
+	"fmt"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
 )
 
-var _ = PDescribe("loggregator", func() {
+var _ = Describe("loggregator", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = RandomName()
+		appName = generator.RandomName()
 
-		Eventually(Cf("push", appName, "-p", NewAssets().Dora), CFPushTimeout).Should(Exit(0))
+		Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 
 	AfterEach(func() {
-		Eventually(Cf("delete", appName, "-f"), DefaultTimeout).Should(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 
 	Context("gcf logs", func() {
-		It("blocks and exercises basic loggregator behavior", func() {
-			logs := Cf("logs", appName)
+		var logs *Session
 
-			Eventually(logs, DefaultTimeout).Should(Say("Connected, tailing logs for app"))
+		BeforeEach(func() {
+			logs = cf.Cf("logs", appName)
+		})
 
-			Eventually(CurlFetcher(appName, "/", LoadConfig().AppsDomain), DefaultTimeout).Should(ContainSubstring("Hi, I'm Dora!"))
+		AfterEach(func() {
+			// logs might be nil if the BeforeEach panics
+			if logs != nil {
+				logs.Interrupt().Wait(DEFAULT_TIMEOUT)
+			}
+		})
 
-			Eventually(logs, DefaultTimeout).Should(Say("OUT " + appName + "." + LoadConfig().AppsDomain))
+		It("exercises basic loggregator behavior", func() {
+			Eventually(logs, DEFAULT_TIMEOUT).Should(Say("Connected, tailing logs for app"))
+
+			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hi, I'm Dora!"))
+
+			expectedLogMessage := fmt.Sprintf("OUT %s.%s", appName, helpers.LoadConfig().AppsDomain)
+			Eventually(logs, DEFAULT_TIMEOUT).Should(Say(expectedLogMessage))
 		})
 	})
 
 	Context("gcf logs --recent", func() {
 		It("makes loggregator buffer and dump log messages", func() {
-			logs := Cf("logs", appName, "--recent")
-
-			Eventually(logs, DefaultTimeout).Should(Say("Connected, dumping recent logs for app"))
-			Eventually(logs, DefaultTimeout).Should(Say("OUT Created app"))
-			Eventually(logs, DefaultTimeout).Should(Say("OUT Starting app instance"))
+			logs := cf.Cf("logs", appName, "--recent").Wait(DEFAULT_TIMEOUT)
+			Expect(logs).To(Exit(0))
+			Expect(logs).To(Say("Connected, dumping recent logs for app"))
+			Expect(logs).To(Say("OUT Created app"))
+			Expect(logs).To(Say("OUT Starting app instance"))
 		})
 	})
 })

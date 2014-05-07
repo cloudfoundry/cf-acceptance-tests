@@ -5,45 +5,43 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 
-	. "github.com/cloudfoundry/cf-acceptance-tests/helpers"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
 )
 
-var _ = Describe("Application", func() {
+var _ = Describe("Buildpacks", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = RandomName()
+		appName = generator.RandomName()
+	})
+
+	AfterEach(func() {
+		Expect(cf.Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 
 	Describe("node", func() {
 		It("makes the app reachable via its bound route", func() {
-			Eventually(Cf("push", appName, "-p", NewAssets().Node, "-c", "node app.js"), CFPushTimeout).Should(Exit(0))
+			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Node, "-c", "node app.js").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
-			Eventually(CurlFetcher(appName, "/", LoadConfig().AppsDomain), DefaultTimeout).Should(ContainSubstring("Hello from a node app!"))
-
-			Eventually(Cf("delete", appName, "-f"), DefaultTimeout).Should(Exit(0))
+			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hello from a node app!"))
 		})
 	})
 
 	Describe("java", func() {
 		It("makes the app reachable via its bound route", func() {
-			Eventually(Cf("push", appName, "-p", NewAssets().Java), CFPushTimeout).Should(Exit(0))
+			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Java).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
-			Eventually(CurlFetcher(appName, "/", LoadConfig().AppsDomain), DefaultTimeout).Should(ContainSubstring("Hello, from your friendly neighborhood Java JSP!"))
-
-			Eventually(Cf("delete", appName, "-f"), DefaultTimeout).Should(Exit(0))
+			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hello, from your friendly neighborhood Java JSP!"))
 		})
 	})
 
 	Describe("go", func() {
 		It("makes the app reachable via its bound route", func() {
-			Eventually(Cf("push", appName, "-p", NewAssets().Go), CFPushTimeout).Should(Exit(0))
+			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Go).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
-			Eventually(CurlFetcher(appName, "/", LoadConfig().AppsDomain), DefaultTimeout).Should(ContainSubstring("go, world"))
-
-			Eventually(Cf("delete", appName, "-f"), DefaultTimeout).Should(Exit(0))
+			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("go, world"))
 		})
 	})
 })

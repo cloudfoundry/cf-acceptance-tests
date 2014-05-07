@@ -6,16 +6,16 @@ import (
 	"os"
 	"path"
 
+	. "github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	. "github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/cf"
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/generator"
 	archive_helpers "github.com/pivotal-golang/archiver/extractor/test_helper"
 )
 
-var _ = Describe("An application using an admin buildpack", func() {
+var _ = Describe("Admin Buildpacks", func() {
 	var (
 		appName       string
 		BuildpackName string
@@ -91,7 +91,7 @@ EOF
 			_, err = os.Create(path.Join(appPath, "some-file"))
 			Expect(err).ToNot(HaveOccurred())
 
-			createBuildpack := Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0").Wait(DefaultTimeout)
+			createBuildpack := Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0").Wait(DEFAULT_TIMEOUT)
 			Expect(createBuildpack).Should(Exit(0))
 			Expect(createBuildpack).Should(Say("Creating"))
 			Expect(createBuildpack).Should(Say("OK"))
@@ -102,13 +102,13 @@ EOF
 
 	AfterEach(func() {
 		AsUser(context.AdminUserContext(), func() {
-			Expect(Cf("delete-buildpack", BuildpackName, "-f").Wait(DefaultTimeout)).To(Exit(0))
+			Expect(Cf("delete-buildpack", BuildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 	})
 
 	Context("when the buildpack is detected", func() {
 		It("is used for the app", func() {
-			push := Cf("push", appName, "-p", appPath).Wait(CFPushTimeout)
+			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(0))
 			Expect(push).To(Say("Staging with Simple Buildpack"))
 		})
@@ -121,7 +121,7 @@ EOF
 		})
 
 		It("fails to stage", func() {
-			push := Cf("push", appName, "-p", appPath).Wait(CFPushTimeout)
+			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(1))
 			Expect(push).To(Say("Staging error"))
 		})
@@ -130,12 +130,12 @@ EOF
 	Context("when the buildpack is deleted", func() {
 		BeforeEach(func() {
 			AsUser(context.AdminUserContext(), func() {
-				Expect(Cf("delete-buildpack", BuildpackName, "-f").Wait(DefaultTimeout)).To(Exit(0))
+				Expect(Cf("delete-buildpack", BuildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 		})
 
 		It("fails to stage", func() {
-			push := Cf("push", appName, "-p", appPath).Wait(CFPushTimeout)
+			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(1))
 			Expect(push).To(Say("Staging error"))
 		})
@@ -162,7 +162,7 @@ EOF
 		})
 
 		It("fails to stage", func() {
-			push := Cf("push", appName, "-p", appPath).Wait(CFPushTimeout)
+			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(1))
 			Expect(push).To(Say("Staging error"))
 		})

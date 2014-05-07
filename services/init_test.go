@@ -1,25 +1,23 @@
 package services
 
 import (
-	"fmt"
-	"os"
-	"path/filepath"
 	"testing"
+	"time"
 
 	. "github.com/onsi/ginkgo"
-	ginkgoconfig "github.com/onsi/ginkgo/config"
-	"github.com/onsi/ginkgo/reporters"
 	. "github.com/onsi/gomega"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
 )
 
-const CFPushTimeout = 60.0
-const DefaultTimeout = 30.0
+const (
+	DEFAULT_TIMEOUT = 30 * time.Second
+	CF_PUSH_TIMEOUT = 2 * time.Minute
+)
 
 var context helpers.SuiteContext
 
-func TestServices(t *testing.T) {
+func TestApplications(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	config := helpers.LoadConfig()
@@ -34,27 +32,14 @@ func TestServices(t *testing.T) {
 		environment.Teardown()
 	})
 
+	componentName := "Services"
+
 	rs := []Reporter{}
 
 	if config.ArtifactsDirectory != "" {
-		os.Setenv(
-			"CF_TRACE",
-			filepath.Join(
-				config.ArtifactsDirectory,
-				fmt.Sprintf("CATS-TRACE-%s-%d.txt", "Services", ginkgoconfig.GinkgoConfig.ParallelNode),
-			),
-		)
-
-		rs = append(
-			rs,
-			reporters.NewJUnitReporter(
-				filepath.Join(
-					config.ArtifactsDirectory,
-					fmt.Sprintf("junit-%s-%d.xml", "Services", ginkgoconfig.GinkgoConfig.ParallelNode),
-				),
-			),
-		)
+		helpers.EnableCFTrace(config, componentName)
+		rs = append(rs, helpers.NewJUnitReporter(config, componentName))
 	}
 
-	RunSpecsWithDefaultAndCustomReporters(t, "Services", rs)
+	RunSpecsWithDefaultAndCustomReporters(t, componentName, rs)
 }

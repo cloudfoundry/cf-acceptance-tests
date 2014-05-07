@@ -1,16 +1,41 @@
 package helpers
 
 import (
-	. "github.com/pivotal-cf-experimental/cf-test-helpers/runner"
+	"time"
+
+	"github.com/onsi/gomega"
+	"github.com/onsi/gomega/gexec"
+
+	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 )
 
-func AppUri(appName, endpoint, appsDomain string) string {
-	return "http://" + appName + "." + appsDomain + endpoint
+const CURL_TIMEOUT = 10 * time.Second
+
+// Gets an app's endpoint with the specified path
+func AppUri(appName, path string) string {
+	appsDomain := LoadConfig().AppsDomain
+	return "http://" + appName + "." + appsDomain + path
 }
 
-func CurlFetcher(appName, endpoint, appsDomain string) func() string {
-	uri := AppUri(appName, endpoint, appsDomain)
-	return func() string {
-		return string(Curl(uri).Wait(10).Out.Contents())
-	}
+// Gets an app's root endpoint
+func AppRootUri(appName string) string {
+	return AppUri(appName, "/")
+}
+
+// Curls an app's endpoint and exit successfully before the specified timeout
+func CurlAppWithTimeout(appName, path string, timeout time.Duration) string {
+	uri := AppUri(appName, path)
+	curl := runner.Curl(uri).Wait(timeout)
+	gomega.Expect(curl).To(gexec.Exit(0))
+	return string(curl.Out.Contents())
+}
+
+// Curls an app's endpoint and exit successfully before the default timeout
+func CurlApp(appName, path string) string {
+	return CurlAppWithTimeout(appName, path, CURL_TIMEOUT)
+}
+
+// Curls an app's root endpoint and exit successfully before the default timeout
+func CurlAppRoot(appName string) string {
+	return CurlApp(appName, "/")
 }
