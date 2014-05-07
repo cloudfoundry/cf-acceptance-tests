@@ -8,6 +8,9 @@ import (
 	"regexp"
 	"strings"
 
+	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gexec"
+
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 )
 
@@ -29,8 +32,11 @@ func ParseJsonResponse(response []byte) (resultMap map[string]interface{}) {
 }
 
 func SetOauthEndpoints(apiEndpoint string, config *OAuthConfig) {
-	result := runner.Curl(fmt.Sprintf("%v/info", apiEndpoint)).Wait(DEFAULT_TIMEOUT).Out.Contents()
-	jsonResult := ParseJsonResponse(result)
+	url := fmt.Sprintf("%v/info", apiEndpoint)
+	curl := runner.Curl(url).Wait(DEFAULT_TIMEOUT)
+	Expect(curl).To(Exit(0))
+	apiResponse := curl.Out.Contents()
+	jsonResult := ParseJsonResponse(apiResponse)
 
 	config.TokenEndpoint = fmt.Sprintf("%v", jsonResult[`token_endpoint`])
 	config.AuthorizationEndpoint = fmt.Sprintf("%v", jsonResult[`authorization_endpoint`])
@@ -43,7 +49,9 @@ func AuthenticateUser(authorizationEndpoint string, username string, password st
 	passwordEncoded := url.QueryEscape(password)
 	loginCredentials := fmt.Sprintf("username=%v&password=%v", usernameEncoded, passwordEncoded)
 
-	apiResponse := string(runner.Curl(loginUri, `--data`, loginCredentials, `--insecure`, `-i`, `-v`).Wait(DEFAULT_TIMEOUT).Out.Contents())
+	curl := runner.Curl(loginUri, `--data`, loginCredentials, `--insecure`, `-i`, `-v`).Wait(DEFAULT_TIMEOUT)
+	Expect(curl).To(Exit(0))
+	apiResponse := string(curl.Out.Contents())
 
 	jsessionRegEx, _ := regexp.Compile(`JSESSIONID([^;]*)`)
 	vcapidRegEx, _ := regexp.Compile(`__VCAP_ID__([^;]*)`)
@@ -62,7 +70,9 @@ func RequestScopes(cookie string, config OAuthConfig) (authCode string, httpCode
 		config.RedirectUri,
 		config.RequestedScopes)
 
-	apiResponse := string(runner.Curl(requestScopesUri, `-L`, `--cookie`, cookie, `--insecure`, `-w`, `:TestReponseCode:%{http_code}`, `-v`).Wait(DEFAULT_TIMEOUT).Out.Contents())
+	curl := runner.Curl(requestScopesUri, `-L`, `--cookie`, cookie, `--insecure`, `-w`, `:TestReponseCode:%{http_code}`, `-v`).Wait(DEFAULT_TIMEOUT)
+	Expect(curl).To(Exit(0))
+	apiResponse := string(curl.Out.Contents())
 	resultMap := strings.Split(apiResponse, `:TestReponseCode:`)
 
 	httpCode = resultMap[1]
@@ -78,7 +88,9 @@ func AuthorizeScopes(cookie string, config OAuthConfig) (authCode string) {
 	authorizedScopes := `scope.0=scope.openid&scope.1=scope.cloud_controller.read&scope.2=scope.cloud_controller.write&user_oauth_approval=true`
 	authorizeScopesUri := fmt.Sprintf("%v/oauth/authorize", config.AuthorizationEndpoint)
 
-	apiResponse := string(runner.Curl(authorizeScopesUri, `-i`, `--data`, authorizedScopes, `--cookie`, cookie, `--insecure`, `-v`).Wait(DEFAULT_TIMEOUT).Out.Contents())
+	curl := runner.Curl(authorizeScopesUri, `-i`, `--data`, authorizedScopes, `--cookie`, cookie, `--insecure`, `-v`).Wait(DEFAULT_TIMEOUT)
+	Expect(curl).To(Exit(0))
+	apiResponse := string(curl.Out.Contents())
 
 	pattern := fmt.Sprintf(`%v\?code=([a-zA-Z0-9]+)`, regexp.QuoteMeta(config.RedirectUri))
 	regEx, _ := regexp.Compile(pattern)
@@ -94,7 +106,9 @@ func GetAccessToken(authCode string, config OAuthConfig) (accessToken string) {
 	requestTokenUri := fmt.Sprintf("%v/oauth/token", config.TokenEndpoint)
 	requestTokenData := fmt.Sprintf("scope=%v&code=%v&grant_type=authorization_code&redirect_uri=%v", config.RequestedScopes, authCode, config.RedirectUri)
 
-	apiResponse := runner.Curl(requestTokenUri, `-H`, authHeader, `--data`, requestTokenData, `--insecure`, `-v`).Wait(DEFAULT_TIMEOUT).Out.Contents()
+	curl := runner.Curl(requestTokenUri, `-H`, authHeader, `--data`, requestTokenData, `--insecure`, `-v`).Wait(DEFAULT_TIMEOUT)
+	Expect(curl).To(Exit(0))
+	apiResponse := curl.Out.Contents()
 	jsonResult := ParseJsonResponse(apiResponse)
 
 	accessToken = fmt.Sprintf("%v", jsonResult[`access_token`])
@@ -106,7 +120,9 @@ func QueryServiceInstancePermissionEndpoint(apiEndpoint string, accessToken stri
 	authHeader := fmt.Sprintf("Authorization: bearer %v", accessToken)
 	permissionsUri := fmt.Sprintf("%v/v2/service_instances/%v/permissions", apiEndpoint, serviceInstanceGuid)
 
-	apiResponse := string(runner.Curl(permissionsUri, `-H`, authHeader, `-w`, `:TestReponseCode:%{http_code}`, `--insecure`, `-v`).Wait(DEFAULT_TIMEOUT).Out.Contents())
+	curl := runner.Curl(permissionsUri, `-H`, authHeader, `-w`, `:TestReponseCode:%{http_code}`, `--insecure`, `-v`).Wait(DEFAULT_TIMEOUT)
+	Expect(curl).To(Exit(0))
+	apiResponse := string(curl.Out.Contents())
 	resultMap := strings.Split(apiResponse, `:TestReponseCode:`)
 
 	resultText := resultMap[0]

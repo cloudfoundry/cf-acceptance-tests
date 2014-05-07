@@ -3,6 +3,7 @@ package services
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
@@ -24,16 +25,20 @@ var _ = Describe("Service Broker Lifecycle", func() {
 		broker.Create()
 
 		// Confirming the plans are not yet public
-		plans := cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT).Out.Contents()
-		Expect(plans).NotTo(ContainSubstring(broker.Service.Name))
-		Expect(plans).NotTo(ContainSubstring(broker.Plan.Name))
+		plans := cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
+		Expect(plans).To(Exit(0))
+		output := plans.Out.Contents()
+		Expect(output).NotTo(ContainSubstring(broker.Service.Name))
+		Expect(output).NotTo(ContainSubstring(broker.Plan.Name))
 
 		broker.PublicizePlans()
 
 		// Confirming plans show up in the marketplace
-		plans = cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT).Out.Contents()
-		Expect(plans).To(ContainSubstring(broker.Service.Name))
-		Expect(plans).To(ContainSubstring(broker.Plan.Name))
+		plans = cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
+		Expect(plans).To(Exit(0))
+		output = plans.Out.Contents()
+		Expect(output).To(ContainSubstring(broker.Service.Name))
+		Expect(output).To(ContainSubstring(broker.Plan.Name))
 
 		// Changing the catalog on the broker
 		oldServiceName := broker.Service.Name
@@ -44,19 +49,23 @@ var _ = Describe("Service Broker Lifecycle", func() {
 		broker.Update()
 
 		// Confirming the changes to the broker show up in the marketplace
-		plans = cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT).Out.Contents()
-		Expect(plans).NotTo(ContainSubstring(oldServiceName))
-		Expect(plans).NotTo(ContainSubstring(oldPlanName))
-		Expect(plans).To(ContainSubstring(broker.Service.Name))
-		Expect(plans).To(ContainSubstring(broker.Plan.Name))
+		plans = cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
+		Expect(plans).To(Exit(0))
+		output = plans.Out.Contents()
+		Expect(output).NotTo(ContainSubstring(oldServiceName))
+		Expect(output).NotTo(ContainSubstring(oldPlanName))
+		Expect(output).To(ContainSubstring(broker.Service.Name))
+		Expect(output).To(ContainSubstring(broker.Plan.Name))
 
 		// Deleting the service broker and confirming the plans no longer display
 		broker.Delete()
-		plans = cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT).Out.Contents()
-		Expect(plans).NotTo(ContainSubstring(oldServiceName))
-		Expect(plans).NotTo(ContainSubstring(oldPlanName))
-		Expect(plans).NotTo(ContainSubstring(broker.Service.Name))
-		Expect(plans).NotTo(ContainSubstring(broker.Plan.Name))
+		plans = cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
+		Expect(plans).To(Exit(0))
+		output = plans.Out.Contents()
+		Expect(output).NotTo(ContainSubstring(oldServiceName))
+		Expect(output).NotTo(ContainSubstring(oldPlanName))
+		Expect(output).NotTo(ContainSubstring(broker.Service.Name))
+		Expect(output).NotTo(ContainSubstring(broker.Plan.Name))
 
 		broker.Destroy()
 	})

@@ -30,15 +30,28 @@ var _ = Describe("Purging service offerings", func() {
 	It("removes all instances and plans of the service, then removes the service offering", func() {
 		instanceName := "purge-offering-instance"
 
-		Eventually(cf.Cf("marketplace"), DEFAULT_TIMEOUT).Should(Say(broker.Plan.Name))
+		marketplace := cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
+		Expect(marketplace).To(Exit(0))
+		Expect(marketplace).To(Say(broker.Plan.Name))
+
 		broker.CreateServiceInstance(instanceName)
 
-		Eventually(cf.Cf("services"), DEFAULT_TIMEOUT).Should(Say(instanceName))
-		Eventually(cf.Cf("delete", broker.Name, "-f"), DEFAULT_TIMEOUT).Should(Exit(0))
+		services := cf.Cf("services").Wait(DEFAULT_TIMEOUT)
+		Expect(marketplace).To(Exit(0))
+		Expect(services).To(Say(instanceName))
+
+		Expect(cf.Cf("delete", broker.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
 		cf.AsUser(context.AdminUserContext(), func() {
-			Eventually(cf.Cf("purge-service-offering", broker.Service.Name, "-f"), DEFAULT_TIMEOUT).Should(Exit(0))
+			Expect(cf.Cf("purge-service-offering", broker.Service.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
-		Expect(cf.Cf("services").Wait(DEFAULT_TIMEOUT).Out.Contents()).NotTo(ContainSubstring(instanceName))
-		Expect(cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT).Out.Contents()).NotTo(ContainSubstring(broker.Service.Name))
+
+		services = cf.Cf("services").Wait(DEFAULT_TIMEOUT)
+		Expect(services).To(Exit(0))
+		Expect(services.Out.Contents()).NotTo(ContainSubstring(instanceName)) //TODO: Say?
+
+		marketplace = cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
+		Expect(marketplace).To(Exit(0))
+		Expect(marketplace.Out.Contents()).NotTo(ContainSubstring(broker.Service.Name)) //TODO: Say?
 	})
 })
