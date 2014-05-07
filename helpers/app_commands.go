@@ -11,25 +11,31 @@ import (
 
 const CURL_TIMEOUT = 10 * time.Second
 
-func AppUri(appName, endpoint, appsDomain string) string {
-	return "http://" + appName + "." + appsDomain + endpoint
+// Gets an app's endpoint with the specified path
+func AppUri(appName, path string) string {
+	appsDomain := LoadConfig().AppsDomain
+	return "http://" + appName + "." + appsDomain + path
 }
 
-// Curl an app's endpoint and exit successfully before the specified timeout
+// Gets an app's root endpoint
+func AppRootUri(appName string) string {
+	return AppUri(appName, "/")
+}
+
+// Curls an app's endpoint and exit successfully before the specified timeout
 func CurlAppWithTimeout(appName, path string, timeout time.Duration) string {
-	appsDomain := LoadConfig().AppsDomain
-	url := "http://" + appName + "." + appsDomain + path
-	curl := runner.Curl(url).Wait(timeout)
+	uri := AppUri(appName, path)
+	curl := runner.Curl(uri).Wait(timeout)
 	gomega.Expect(curl).To(gexec.Exit(0))
 	return string(curl.Out.Contents())
 }
 
-// Curl an app's endpoint and exit successfully before the default timeout
+// Curls an app's endpoint and exit successfully before the default timeout
 func CurlApp(appName, path string) string {
 	return CurlAppWithTimeout(appName, path, CURL_TIMEOUT)
 }
 
-// Curl an app's root endpoint and exit successfully before the default timeout
+// Curls an app's root endpoint and exit successfully before the default timeout
 func CurlAppRoot(appName string) string {
 	return CurlApp(appName, "/")
 }
