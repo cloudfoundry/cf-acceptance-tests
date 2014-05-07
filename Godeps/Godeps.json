@@ -23,15 +23,15 @@
 		},
 		{
 			"ImportPath": "github.com/onsi/ginkgo",
-			"Rev": "2a0c5c3f92805fd1f431dfbe22625e811b6b3f18"
+			"Rev": "51ddbbc2ace9f9ad4cf06ba63442ea2ef2019837"
 		},
 		{
 			"ImportPath": "github.com/onsi/gomega",
-			"Rev": "660b70079010c9eeeffdc381fcb3a8cde45ce495"
+			"Rev": "f5533d435ebfcf4fa0463202dc0e966b983618b8"
 		},
 		{
 			"ImportPath": "github.com/pivotal-golang/archiver/extractor/test_helper",
-			"Rev": "338bf2b31d42f9ff6f57e0944cf5628bdfee546c"
+			"Rev": "e46831b67d1f71fe27f85b6b4224e2cf55efea8a"
 		}
 	]
 }
