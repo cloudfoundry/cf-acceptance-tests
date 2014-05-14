@@ -5,11 +5,14 @@ import (
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/onsi/ginkgo"
+
 	ginkgoconfig "github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	. "github.com/onsi/gomega/gbytes"
 )
+
+const CF_API_TIMEOUT = 30 * time.Second
 
 type ConfiguredContext struct {
 	config Config
@@ -88,31 +91,27 @@ func (context *ConfiguredContext) Setup() {
 			args = append(args, "--allow-paid-service-plans")
 		}
 
-		Eventually(cf.Cf(args...), 30).Should(Exit(0))
+		Expect(cf.Cf(args...).Wait(CF_API_TIMEOUT)).To(Exit(0))
 
 		createUserSession := cf.Cf("create-user", context.regularUserUsername, context.regularUserPassword)
-
-		select {
-		case <-createUserSession.Out.Detect("OK"):
-		case <-createUserSession.Out.Detect("scim_resource_already_exists"):
-		case <-time.After(30 * time.Second):
-			ginkgo.Fail("Failed to create user")
+		createUserSession.Wait(CF_API_TIMEOUT)
+		if createUserSession.ExitCode() != 0 {
+			Expect(createUserSession.Out).To(Say("scim_resource_already_exists"))
 		}
-		createUserSession.Out.CancelDetects()
 
-		Eventually(cf.Cf("create-org", context.organizationName), 30).Should(Exit(0))
-		Eventually(cf.Cf("set-quota", context.organizationName, definition.Name), 30).Should(Exit(0))
+		Expect(cf.Cf("create-org", context.organizationName).Wait(CF_API_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("set-quota", context.organizationName, definition.Name).Wait(CF_API_TIMEOUT)).To(Exit(0))
 	})
 }
 
 func (context *ConfiguredContext) Teardown() {
 	cf.AsUser(context.AdminUserContext(), func() {
-		Eventually(cf.Cf("delete-user", "-f", context.regularUserUsername), 30).Should(Exit(0))
+		Expect(cf.Cf("delete-user", "-f", context.regularUserUsername).Wait(CF_API_TIMEOUT)).To(Exit(0))
 
 		if !context.isPersistent {
-			Eventually(cf.Cf("delete-org", "-f", context.organizationName), 30).Should(Exit(0))
+			Expect(cf.Cf("delete-org", "-f", context.organizationName).Wait(CF_API_TIMEOUT)).To(Exit(0))
 
-			Eventually(cf.Cf("delete-quota", "-f", context.quotaDefinitionName), 30).Should(Exit(0))
+			Expect(cf.Cf("delete-quota", "-f", context.quotaDefinitionName).Wait(CF_API_TIMEOUT)).To(Exit(0))
 		}
 	})
 }
