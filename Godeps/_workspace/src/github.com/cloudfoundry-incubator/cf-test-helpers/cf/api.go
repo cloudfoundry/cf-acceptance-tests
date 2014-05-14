@@ -3,10 +3,13 @@ package cf
 import (
 	"encoding/json"
 	"strings"
+	"time"
 
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 )
+
+const CF_API_TIMEOUT = 10 * time.Second
 
 type GenericResource struct {
 	Metadata struct {
@@ -24,9 +27,9 @@ func ApiRequest(method, endpoint string, response interface{}, data ...string) {
 		endpoint,
 		"-X", method,
 		"-d", strings.Join(data, ""),
-	)
+	).Wait(CF_API_TIMEOUT)
 
-	Eventually(request).Should(Exit(0))
+	Expect(request).To(Exit(0))
 
 	if response != nil {
 		err := json.Unmarshal(request.Out.Contents(), response)
