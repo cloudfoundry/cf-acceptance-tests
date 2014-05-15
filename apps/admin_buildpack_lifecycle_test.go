@@ -123,7 +123,7 @@ EOF
 		It("fails to stage", func() {
 			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(1))
-			Expect(push).To(Say("Staging error"))
+			Expect(push).To(Say("An app was not successfully detected"))
 		})
 	})
 
@@ -137,7 +137,7 @@ EOF
 		It("fails to stage", func() {
 			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(1))
-			Expect(push).To(Say("Staging error"))
+			Expect(push).To(Say("An app was not successfully detected"))
 		})
 	})
 
@@ -164,7 +164,7 @@ EOF
 		It("fails to stage", func() {
 			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(1))
-			Expect(push).To(Say("Staging error"))
+			Expect(push).To(Say("An app was not successfully detected"))
 		})
 	})
 })
