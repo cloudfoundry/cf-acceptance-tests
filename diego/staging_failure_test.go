@@ -8,6 +8,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
+	"github.com/onsi/gomega/gbytes"
 )
 
 var _ = Describe("When staging fails", func() {
@@ -28,6 +29,6 @@ var _ = Describe("When staging fails", func() {
 	It("informs the user", func() {
 		start := cf.Cf("start", appName)
 		Eventually(start, CF_PUSH_TIMEOUT).Should(Exit(1))
-		Ω(start.Out).Should(Say("Failed to Download Buildpack"))
+		Ω(start.Out).Should(gbytes.Say("Failed to Download Buildpack"))
 	})
 })
