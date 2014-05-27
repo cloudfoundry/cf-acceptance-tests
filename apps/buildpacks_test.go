@@ -44,4 +44,12 @@ var _ = Describe("Buildpacks", func() {
 			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("go, world"))
 		})
 	})
+
+	Describe("python", func() {
+		It("makes the app reachable via its bound route", func() {
+			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Python).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+
+			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("python, world"))
+		})
+	})
 })
