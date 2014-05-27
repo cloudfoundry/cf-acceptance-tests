@@ -11,6 +11,34 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
 )
 
+type AppUsageEvent struct {
+	Entity struct {
+		AppName       string `json:"app_name"`
+		State         string `json:"state"`
+		BuildpackName string `json:"buildpack_name"`
+		BuildpackGuid string `json:"buildpack_guid"`
+	} `json:"entity"`
+}
+
+type AppUsageEvents struct {
+	Resources []AppUsageEvent `struct:"resources"`
+}
+
+func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
+	var response AppUsageEvents
+	cf.AsUser(context.AdminUserContext(), func() {
+		cf.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1", &response)
+	})
+
+	for _, event := range response.Resources {
+		if event.Entity.AppName == appName && event.Entity.State == state {
+			return true, event
+		}
+	}
+
+	return false, AppUsageEvent{}
+}
+
 var _ = Describe("Application Lifecycle", func() {
 	var appName string
 
@@ -28,6 +56,19 @@ var _ = Describe("Application Lifecycle", func() {
 		It("makes the app reachable via its bound route", func() {
 			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hi, I'm Dora!"))
 		})
+
+		It("generates an app usage 'started' event", func() {
+			found, _ := lastAppUsageEvent(appName, "STARTED")
+			Expect(found).To(BeTrue())
+		})
+
+		It("generates an app usage 'buildpack_set' event", func() {
+			found, matchingEvent := lastAppUsageEvent(appName, "BUILDPACK_SET")
+
+			Expect(found).To(BeTrue())
+			Expect(matchingEvent.Entity.BuildpackName).To(Equal("ruby_buildpack"))
+			Expect(matchingEvent.Entity.BuildpackGuid).ToNot(BeZero())
+		})
 	})
 
 	Describe("stopping", func() {
@@ -37,6 +78,11 @@ var _ = Describe("Application Lifecycle", func() {
 
 		It("makes the app unreachable", func() {
 			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("404"))
+		})
+
+		It("generates an app usage 'stopped' event", func() {
+			found, _ := lastAppUsageEvent(appName, "STOPPED")
+			Expect(found).To(BeTrue())
 		})
 
 		Describe("and then starting", func() {
@@ -73,6 +119,11 @@ var _ = Describe("Application Lifecycle", func() {
 
 		It("makes the app unreachable", func() {
 			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("404"))
+		})
+
+		It("generates an app usage 'stopped' event", func() {
+			found, _ := lastAppUsageEvent(appName, "STOPPED")
+			Expect(found).To(BeTrue())
 		})
 	})
 })

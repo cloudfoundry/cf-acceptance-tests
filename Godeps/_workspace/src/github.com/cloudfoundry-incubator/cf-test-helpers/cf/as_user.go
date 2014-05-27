@@ -36,9 +36,9 @@ func InitiateUserContext(userContext UserContext) (originalCfHomeDir, currentCfH
 		cfSetApiArgs = append(cfSetApiArgs, "--skip-ssl-validation")
 	}
 
-	Eventually(Cf(cfSetApiArgs...), 10).Should(Exit(0))
+	Expect(Cf(cfSetApiArgs...).Wait(CF_API_TIMEOUT)).To(Exit(0))
 
-	Eventually(Cf("auth", userContext.Username, userContext.Password), 10).Should(Exit(0))
+	Expect(Cf("auth", userContext.Username, userContext.Password).Wait(CF_API_TIMEOUT)).To(Exit(0))
 
 	return
 }
@@ -46,15 +46,15 @@ func InitiateUserContext(userContext UserContext) (originalCfHomeDir, currentCfH
 func TargetSpace(userContext UserContext) {
 	if userContext.Org != "" {
 		if userContext.Space != "" {
-			Eventually(Cf("target", "-o", userContext.Org, "-s", userContext.Space), 10).Should(Exit(0))
+			Expect(Cf("target", "-o", userContext.Org, "-s", userContext.Space).Wait(CF_API_TIMEOUT)).To(Exit(0))
 		} else {
-			Eventually(Cf("target", "-o", userContext.Org), 10).Should(Exit(0))
+			Expect(Cf("target", "-o", userContext.Org).Wait(CF_API_TIMEOUT)).To(Exit(0))
 		}
 	}
 }
 
 func RestoreUserContext(_ UserContext, originalCfHomeDir, currentCfHomeDir string) {
-	Eventually(Cf("logout"), 10).Should(Exit(0))
+	Expect(Cf("logout").Wait(CF_API_TIMEOUT)).To(Exit(0))
 	os.Setenv("CF_HOME", originalCfHomeDir)
 	os.RemoveAll(currentCfHomeDir)
 }

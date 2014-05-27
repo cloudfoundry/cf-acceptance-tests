@@ -19,6 +19,6 @@ var _ = Describe("Cf", func() {
 			return exec.Command("bash", "-c", `exit 42`)
 		}
 
-		Eventually(Cf("apps")).Should(Exit(42))
+		Expect(Cf("apps").Wait(CF_API_TIMEOUT)).To(Exit(42))
 	})
 })

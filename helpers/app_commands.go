@@ -3,8 +3,8 @@ package helpers
 import (
 	"time"
 
-	"github.com/onsi/gomega"
-	"github.com/onsi/gomega/gexec"
+	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 )
@@ -26,7 +26,8 @@ func AppRootUri(appName string) string {
 func CurlAppWithTimeout(appName, path string, timeout time.Duration) string {
 	uri := AppUri(appName, path)
 	curl := runner.Curl(uri).Wait(timeout)
-	gomega.Expect(curl).To(gexec.Exit(0))
+	Expect(curl).To(Exit(0))
+	Expect(string(curl.Err.Contents())).To(HaveLen(0))
 	return string(curl.Out.Contents())
 }
 

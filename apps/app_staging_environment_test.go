@@ -15,7 +15,7 @@ import (
 	archive_helpers "github.com/pivotal-golang/archiver/extractor/test_helper"
 )
 
-var _ = Describe("Admin Buildpacks", func() {
+var _ = Describe("Buildpack Environment", func() {
 	var (
 		appName       string
 		BuildpackName string
@@ -24,10 +24,12 @@ var _ = Describe("Admin Buildpacks", func() {
 
 		buildpackPath        string
 		buildpackArchivePath string
+
+		tmpdir string
 	)
 
 	matchingFilename := func(appName string) string {
-		return fmt.Sprintf("simple-buildpack-please-match-%s", appName)
+		return fmt.Sprintf("buildpack-environment-match-%s", appName)
 	}
 
 	BeforeEach(func() {
@@ -35,15 +37,15 @@ var _ = Describe("Admin Buildpacks", func() {
 			BuildpackName = RandomName()
 			appName = RandomName()
 
-			tmpdir, err := ioutil.TempDir(os.TempDir(), "matching-app")
+			var err error
+			tmpdir, err = ioutil.TempDir("", "buildpack_env")
+			Expect(err).ToNot(HaveOccurred())
+			appPath, err = ioutil.TempDir(tmpdir, "matching-app")
 			Expect(err).ToNot(HaveOccurred())
 
-			appPath = tmpdir
-
-			tmpdir, err = ioutil.TempDir(os.TempDir(), "matching-buildpack")
+			buildpackPath, err = ioutil.TempDir(tmpdir, "matching-buildpack")
 			Expect(err).ToNot(HaveOccurred())
 
-			buildpackPath = tmpdir
 			buildpackArchivePath = path.Join(buildpackPath, "buildpack.zip")
 
 			archive_helpers.CreateZipArchive(buildpackArchivePath, []archive_helpers.ArchiveFile{
@@ -51,8 +53,8 @@ var _ = Describe("Admin Buildpacks", func() {
 					Name: "bin/compile",
 					Body: `#!/usr/bin/env bash
 
-
-echo "Staging with Simple Buildpack"
+echo RUBY_LOCATION=$(which ruby)
+echo RUBY_VERSION=$(ruby --version)
 
 sleep 10
 `,
@@ -84,7 +86,6 @@ EOF
 `,
 				},
 			})
-
 			_, err = os.Create(path.Join(appPath, matchingFilename(appName)))
 			Expect(err).ToNot(HaveOccurred())
 
@@ -104,67 +105,15 @@ EOF
 		AsUser(context.AdminUserContext(), func() {
 			Expect(Cf("delete-buildpack", BuildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
+
+		os.RemoveAll(tmpdir)
 	})
 
-	Context("when the buildpack is detected", func() {
-		It("is used for the app", func() {
-			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
-			Expect(push).To(Exit(0))
-			Expect(push).To(Say("Staging with Simple Buildpack"))
-		})
+	It("uses ruby 1.9.3-p547 for staging", func() {
+		push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
+		Expect(push).To(Exit(0))
+		Expect(push).To(Say("RUBY_LOCATION=/usr/bin/ruby"))
+		Expect(push).To(Say("RUBY_VERSION=ruby 1.9.3p547"))
 	})
 
-	Context("when the buildpack fails to detect", func() {
-		BeforeEach(func() {
-			err := os.Remove(path.Join(appPath, matchingFilename(appName)))
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-		It("fails to stage", func() {
-			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
-			Expect(push).To(Exit(1))
-			Expect(push).To(Say("An app was not successfully detected"))
-		})
-	})
-
-	Context("when the buildpack is deleted", func() {
-		BeforeEach(func() {
-			AsUser(context.AdminUserContext(), func() {
-				Expect(Cf("delete-buildpack", BuildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-			})
-		})
-
-		It("fails to stage", func() {
-			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
-			Expect(push).To(Exit(1))
-			Expect(push).To(Say("An app was not successfully detected"))
-		})
-	})
-
-	Context("when the buildpack is disabled", func() {
-		BeforeEach(func() {
-			AsUser(context.AdminUserContext(), func() {
-				var response QueryResponse
-
-				ApiRequest("GET", "/v2/buildpacks?q=name:"+BuildpackName, &response)
-
-				Expect(response.Resources).To(HaveLen(1))
-
-				buildpackGuid := response.Resources[0].Metadata.Guid
-
-				ApiRequest(
-					"PUT",
-					"/v2/buildpacks/"+buildpackGuid,
-					nil,
-					`{"enabled":false}`,
-				)
-			})
-		})
-
-		It("fails to stage", func() {
-			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
-			Expect(push).To(Exit(1))
-			Expect(push).To(Say("An app was not successfully detected"))
-		})
-	})
 })
