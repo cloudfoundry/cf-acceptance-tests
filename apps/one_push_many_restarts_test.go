@@ -47,6 +47,10 @@ var _ = Describe("An application that's already been pushed", func() {
 		if appQuery.ExitCode() == 1 && strings.Contains(output, "not found") {
 			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		}
+
+		if appQuery.ExitCode() == 0 && strings.Contains(output, "stopped") {
+			Expect(cf.Cf("start", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		}
 	})
 
 	It("can be restarted and still come up", func() {
