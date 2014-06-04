@@ -26,7 +26,7 @@ var _ = Describe("SSO Lifecycle", func() {
 		config.ClientId = broker.Service.DashboardClient.ID
 		config.ClientSecret = broker.Service.DashboardClient.Secret
 		config.RedirectUri = redirectUri
-		config.RequestedScopes = `openid,cloud_controller.read,cloud_controller.write`
+		config.RequestedScopes = `openid,cloud_controller_service_permissions.read`
 
 		shelpers.SetOauthEndpoints(apiEndpoint, &config)
 	})
