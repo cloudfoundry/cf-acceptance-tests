@@ -13,6 +13,7 @@ import (
 
 var _ = Describe("When staging fails", func() {
 	var appName string
+	var start *Session
 
 	BeforeEach(func() {
 		appName = generator.RandomName()
@@ -26,9 +27,15 @@ var _ = Describe("When staging fails", func() {
 		Eventually(cf.Cf("delete", appName, "-f"), DEFAULT_TIMEOUT).Should(Exit(0))
 	})
 
-	It("informs the user", func() {
-		start := cf.Cf("start", appName)
+	JustBeforeEach(func() {
+		start = cf.Cf("start", appName)
+	})
+
+	It("informs the user in the CLI output and the logs", func() {
 		Eventually(start, CF_PUSH_TIMEOUT).Should(Exit(1))
-		Ω(start.Out).Should(gbytes.Say("Failed to Download Buildpack"))
+		Ω(start.Out).Should(gbytes.Say("Staging error: cannot get instances since staging failed"))
+
+		logs := cf.Cf("logs", appName, "--recent")
+		Eventually(logs.Out).Should(gbytes.Say("Failed to Download Buildpack"))
 	})
 })
