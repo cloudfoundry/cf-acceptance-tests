@@ -1,6 +1,8 @@
 package apps
 
 import (
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
@@ -50,6 +52,17 @@ var _ = Describe("Buildpacks", func() {
 			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Python).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("python, world"))
+		})
+	})
+
+	Describe("php", func() {
+		// This test requires more time during push, because the php buildpack is slower than your average bear
+		var phpPushTimeout = CF_PUSH_TIMEOUT + 2 * time.Minute
+
+		It("makes the app reachable via its bound route", func() {
+			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Php).Wait(phpPushTimeout)).To(Exit(0))
+
+			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hello from php"))
 		})
 	})
 })

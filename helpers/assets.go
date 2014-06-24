@@ -9,6 +9,7 @@ type Assets struct {
 	Python                   string
 	LoggregatorLoadGenerator string
 	ServiceBroker            string
+	Php                      string
 }
 
 func NewAssets() Assets {
@@ -21,5 +22,6 @@ func NewAssets() Assets {
 		Python:     "../assets/python",
 		LoggregatorLoadGenerator: "../assets/loggregator-load-generator",
 		ServiceBroker:            "../assets/service_broker",
+		Php:                      "../assets/php",
 	}
 }
