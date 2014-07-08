@@ -48,7 +48,9 @@ var _ = Describe("Changing an app's start command", func() {
 
 		Expect(cf.Cf("stop", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
-		Expect(helpers.CurlApp(appName, "/env/FOO")).To(ContainSubstring("404"))
+		Eventually(func() string {
+			return helpers.CurlApp(appName, "/env/FOO")
+		}).Should(ContainSubstring("404"))
 
 		Expect(cf.Cf("start", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
