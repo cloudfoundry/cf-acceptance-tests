@@ -6,5 +6,5 @@ import (
 )
 
 var Cf = func(args ...string) *Session {
-	return runner.Run("gcf", args...)
+	return runner.Run("cf", args...)
 }

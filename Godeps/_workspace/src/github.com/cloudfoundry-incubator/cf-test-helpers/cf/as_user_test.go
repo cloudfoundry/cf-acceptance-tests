@@ -19,11 +19,12 @@ var _ = Describe("AsUser", func() {
 		var session, _ = gexec.Start(exec.Command("echo", "nothing"), nil, nil)
 		return session
 	}
-	var user = cf.NewUserContext("http://FAKE_API.example.com", "FAKE_USERNAME", "FAKE_PASSWORD", "FAKE_ORG", "FAKE_SPACE", true)
+	var user cf.UserContext
 
 	BeforeEach(func() {
 		FakeCfCalls = [][]string{}
 		cf.Cf = FakeCf
+		user = cf.NewUserContext("http://FAKE_API.example.com", "FAKE_USERNAME", "FAKE_PASSWORD", "FAKE_ORG", "FAKE_SPACE", true)
 	})
 
 	It("calls cf api", func() {
@@ -38,48 +39,53 @@ var _ = Describe("AsUser", func() {
 		Expect(FakeCfCalls[1]).To(Equal([]string{"auth", "FAKE_USERNAME", "FAKE_PASSWORD"}))
 	})
 
-	Describe("cf target", func() {
+	Describe("calling cf target", func() {
 		Context("when org is set and space is set", func() {
-			It("sets org and space", func() {
+			It("includes flags to set org and space", func() {
 				cf.AsUser(user, FakeThingsToRunAsUser)
 
 				Expect(FakeCfCalls[2]).To(Equal([]string{"target", "-o", "FAKE_ORG", "-s", "FAKE_SPACE"}))
 			})
-
-			Context("when org is set and space is NOT set", func() {
-				BeforeEach(func() {
-					user.Space = ""
-				})
-
-				It("sets org", func() {
-					cf.AsUser(user, FakeThingsToRunAsUser)
-
-					Expect(FakeCfCalls[2]).To(Equal([]string{"target", "-o", "FAKE_ORG"}))
-				})
-
-				Context("when org is NOT set and space is NOT set", func() {
-					BeforeEach(func() {
-						user.Org = ""
-					})
-				})
-			})
 		})
 
-		Context("when org is NOT set", func() {
-
-			It("sets org", func() {
-				cf.AsUser(user, FakeThingsToRunAsUser)
-
-				Expect(FakeCfCalls[2]).NotTo(Equal([]string{"target", "-o", "FAKE_ORG", "-s", "FAKE_SPACE"}))
-			})
-		})
-
-		Context("when org is set", func() {
+		Context("when org is set and space is NOT set", func() {
 			BeforeEach(func() {
 				user.Space = ""
 			})
 
-			Context("when space is set", func() {
+			It("includes a flag to set org but NOT for space", func() {
+				cf.AsUser(user, FakeThingsToRunAsUser)
+
+				Expect(FakeCfCalls[2]).To(Equal([]string{"target", "-o", "FAKE_ORG"}))
+			})
+		})
+
+		Context("when org is NOT set and space is NOT set", func() {
+			BeforeEach(func() {
+				user.Org = ""
+				user.Space = ""
+			})
+
+			It("does not call cf target", func() {
+				cf.AsUser(user, FakeThingsToRunAsUser)
+
+				for _, call := range FakeCfCalls {
+					Expect(call).ToNot(ContainElement("target"))
+				}
+			})
+		})
+
+		Context("when org is NOT set and space is set", func() {
+			BeforeEach(func() {
+				user.Org = ""
+			})
+
+			It("does not call cf target", func() {
+				cf.AsUser(user, FakeThingsToRunAsUser)
+
+				for _, call := range FakeCfCalls {
+					Expect(call).ToNot(ContainElement("target"))
+				}
 			})
 		})
 	})

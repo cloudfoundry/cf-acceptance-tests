@@ -12,9 +12,9 @@ import (
 var _ = Describe("ApiRequest", func() {
 	It("sends the request to current CF target", func() {
 		runner.CommandInterceptor = func(cmd *exec.Cmd) *exec.Cmd {
-			Expect(cmd.Path).To(Equal(exec.Command("gcf").Path))
+			Expect(cmd.Path).To(Equal(exec.Command("cf").Path))
 			Expect(cmd.Args).To(Equal([]string{
-				"gcf", "curl", "/v2/info", "-X", "GET", "-d", "somedata",
+				"cf", "curl", "/v2/info", "-X", "GET", "-d", "somedata",
 			}))
 
 			return exec.Command("bash", "-c", `echo \{ \"metadata\": \{ \"guid\": \"abc\" \} \}`)

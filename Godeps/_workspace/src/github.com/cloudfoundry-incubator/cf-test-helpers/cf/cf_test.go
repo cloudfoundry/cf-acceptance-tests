@@ -13,8 +13,8 @@ import (
 var _ = Describe("Cf", func() {
 	It("sends the request to current CF target", func() {
 		runner.CommandInterceptor = func(cmd *exec.Cmd) *exec.Cmd {
-			Expect(cmd.Path).To(Equal(exec.Command("gcf").Path))
-			Expect(cmd.Args).To(Equal([]string{"gcf", "apps"}))
+			Expect(cmd.Path).To(Equal(exec.Command("cf").Path))
+			Expect(cmd.Args).To(Equal([]string{"cf", "apps"}))
 
 			return exec.Command("bash", "-c", `exit 42`)
 		}

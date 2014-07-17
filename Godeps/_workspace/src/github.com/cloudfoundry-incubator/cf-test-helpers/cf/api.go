@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-const CF_API_TIMEOUT = 10 * time.Second
+var CF_API_TIMEOUT = 10 * time.Second
 
 type GenericResource struct {
 	Metadata struct {
