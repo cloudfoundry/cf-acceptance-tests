@@ -26,7 +26,7 @@ var _ = Describe("loggregator", func() {
 		Expect(cf.Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 
-	Context("gcf logs", func() {
+	Context("cf logs", func() {
 		var logs *Session
 
 		BeforeEach(func() {
@@ -50,7 +50,7 @@ var _ = Describe("loggregator", func() {
 		})
 	})
 
-	Context("gcf logs --recent", func() {
+	Context("cf logs --recent", func() {
 		It("makes loggregator buffer and dump log messages", func() {
 			logs := cf.Cf("logs", appName, "--recent").Wait(DEFAULT_TIMEOUT)
 			Expect(logs).To(Exit(0))

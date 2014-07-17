@@ -16,11 +16,11 @@ socat -u TCP4-LISTEN:4567,reuseaddr,fork - | \
 1. Push dora, and bind the syslog drain url to it
 
     ```
-gcf push dora
-gcf delete-service sc -f
-gcf cups sc -l syslog://10.10.16.15:4567
-gcf bind-service dora sc
-gcf restart dora
+cf push dora
+cf delete-service sc -f
+cf cups sc -l syslog://10.10.16.15:4567
+cf bind-service dora sc
+cf restart dora
 ```
 
 1. Use the scale_dora script to achieve n instances evenly distributed on the DEAs

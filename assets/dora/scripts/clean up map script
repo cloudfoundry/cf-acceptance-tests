@@ -9,17 +9,17 @@ drain server logs at the end of the test.
 performance test:
 start drain server on vm
 
-gcf delete-service sc -f
-gcf cups sc -l syslog://10.10.16.15:4567
+cf delete-service sc -f
+cf cups sc -l syslog://10.10.16.15:4567
 
 
 
-gcf push dora
-gcf bind-service dora sc
+cf push dora
+cf bind-service dora sc
 
 
 
-gcf start dora
+cf start dora
 scripts/scale_dora -i 8
 
 ## replaced commands below with map_cookie_jars_to_instances.rb

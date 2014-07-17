@@ -25,6 +25,6 @@ if [ -z "${DESIRED_INSTANCES}" ]; then
 fi
 
 for i in $(seq 1 ${DESIRED_INSTANCES}); do
-   gcf scale $APP_NAME -i $i
+   cf scale $APP_NAME -i $i
    sleep 2
 done

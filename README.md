@@ -6,7 +6,7 @@ features as a user interacting with the system via the CLI.
 
 For example, one test pushes an app with `cf push`, hits an endpoint on the
 app with `curl` that causes it to crash, and asserts that we eventually see a
-crash event registered in `gcf events`.
+crash event registered in `cf events`.
 
 Tests that will NOT be introduced here are ones which could be tested at the component level,
 such as basic CRUD of an object in the Cloud Controller. These tests belong with that component.
@@ -30,8 +30,7 @@ See [Go CLI](https://github.com/cloudfoundry/cli) for instructions on installing
 
 Make sure that [curl](http://curl.haxx.se/) is installed on your system.
 
-Make sure that the go version of `cf` is accessible in your `$PATH`, and that it is either
-renamed to `gcf`, or that there is a symlink from `gcf` to the location of `cf`.
+Make sure that the go version of `cf` is accessible in your `$PATH`.
 
 Check out a copy of `cf-acceptance-tests` and make sure that it is added to your `$GOPATH`.
 The recommended way to do this is to run `go get -d github.com/cloudfoundry/cf-acceptance-tests`. You will receive a
