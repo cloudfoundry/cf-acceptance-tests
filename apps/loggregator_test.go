@@ -2,6 +2,7 @@ package apps
 
 import (
 	"fmt"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -46,7 +47,7 @@ var _ = Describe("loggregator", func() {
 			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hi, I'm Dora!"))
 
 			expectedLogMessage := fmt.Sprintf("OUT %s.%s", appName, helpers.LoadConfig().AppsDomain)
-			Eventually(logs, DEFAULT_TIMEOUT).Should(Say(expectedLogMessage))
+			Eventually(logs, (DEFAULT_TIMEOUT + time.Minute)).Should(Say(expectedLogMessage))
 		})
 	})
 
