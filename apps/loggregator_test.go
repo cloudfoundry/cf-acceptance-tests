@@ -42,7 +42,7 @@ var _ = Describe("loggregator", func() {
 		})
 
 		It("exercises basic loggregator behavior", func() {
-			Eventually(logs, DEFAULT_TIMEOUT).Should(Say("Connected, tailing logs for app"))
+			Eventually(logs, (DEFAULT_TIMEOUT + time.Minute)).Should(Say("Connected, tailing logs for app"))
 
 			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hi, I'm Dora!"))
 
