@@ -26,7 +26,7 @@ describe Curl do
       response = JSON.parse!(last_response.body)
 
       expect(response["stdout"]).to eq("")
-      expect(response["return_code"]).to eq(6)
+      expect(response["return_code"]).to eq(6) # Couldn't resolve host. The given remote host was not resolved.
     end
 
     it "should return error status for connection failure" do
@@ -37,7 +37,7 @@ describe Curl do
       response = JSON.parse!(last_response.body)
 
       expect(response["stdout"]).to eq("")
-      expect(response["return_code"]).to eq(7)
+      expect(response["return_code"]).to eq(7) # Failed to connect to host.
     end
   end
 end
