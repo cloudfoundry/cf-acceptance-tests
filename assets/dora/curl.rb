@@ -4,7 +4,7 @@ class Curl < Sinatra::Base
     host = params[:host]
     port = params[:port] || "80"
 
-    stdout, stderr, status = Open3.capture3("curl -s #{host}:#{port}")
+    stdout, stderr, status = Open3.capture3("curl -m 3 -v -i #{host}:#{port}")
 
     { stdout: stdout, stderr: stderr, return_code: status.exitstatus }.to_json
   end
