@@ -1,0 +1,7 @@
+#!/bin/sh
+
+curl -v -i -m 10 $TESTURI
+
+echo "CURL_EXIT=$?"
+
+exit 1

@@ -10,6 +10,7 @@ type Assets struct {
 	LoggregatorLoadGenerator string
 	ServiceBroker            string
 	Php                      string
+	SecurityGroupBuildpack   string
 }
 
 func NewAssets() Assets {
@@ -23,5 +24,6 @@ func NewAssets() Assets {
 		LoggregatorLoadGenerator: "../assets/loggregator-load-generator",
 		ServiceBroker:            "../assets/service_broker",
 		Php:                      "../assets/php",
+		SecurityGroupBuildpack: "../assets/security_group_buildpack",
 	}
 }

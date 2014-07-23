@@ -75,5 +75,9 @@ class Dora < Sinatra::Base
     ENV.to_hash.to_s
   end
 
+  get '/myip' do
+    `ip addr show  | grep w- | grep inet | awk '{print $2}'`
+  end
+
   run! if app_file == $0
 end
