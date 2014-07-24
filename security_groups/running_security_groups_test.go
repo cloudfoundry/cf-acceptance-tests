@@ -139,7 +139,7 @@ var _ = Describe("Security Groups", func() {
 		testAppName := generator.RandomName()
 		privateUri := fmt.Sprintf("%s:%d", privateHost, privatePort)
 
-		buildpackZip := path.Join(os.TempDir(), Sprintf("%s.zip", buildpack))
+		buildpackZip := path.Join(os.TempDir(), fmt.Sprintf("%s.zip", buildpack))
 		Expect(runner.Run("zip", "-r", "-q", buildpackZip, helpers.NewAssets().SecurityGroupBuildpack).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		defer os.Remove(buildpackZip)
 
