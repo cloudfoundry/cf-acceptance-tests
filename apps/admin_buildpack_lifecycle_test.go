@@ -51,6 +51,7 @@ var _ = Describe("Admin Buildpacks", func() {
 					Name: "bin/compile",
 					Body: `#!/usr/bin/env bash
 
+sleep 1 # give loggregator time to start streaming the logs
 
 echo "Staging with Simple Buildpack"
 
