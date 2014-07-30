@@ -12,8 +12,8 @@ import (
 
 const (
 	DEFAULT_TIMEOUT   = 30 * time.Second
-	CF_PUSH_TIMEOUT   = 2 * time.Minute
-	LONG_CURL_TIMEOUT = 2 * time.Minute
+	CF_PUSH_TIMEOUT   = 4 * time.Minute
+	LONG_CURL_TIMEOUT = 4 * time.Minute
 )
 
 var context helpers.SuiteContext
