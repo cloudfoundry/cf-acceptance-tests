@@ -39,9 +39,9 @@ var _ = Describe("Buildpacks", func() {
 		})
 	})
 
-	Describe("go", func() {
+	Describe("golang", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Go).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Golang).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("go, world"))
 		})
