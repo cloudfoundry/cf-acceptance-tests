@@ -49,7 +49,7 @@ var _ = Describe("Application Lifecycle", func() {
 
 			Describe("pushing", func() {
 				It("makes the app reachable via its bound route", func() {
-					Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hi, I'm Dora!"))
+					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hi, I'm Dora!"))
 				})
 			})
 
@@ -59,7 +59,7 @@ var _ = Describe("Application Lifecycle", func() {
 				})
 
 				It("makes the app unreachable", func() {
-					Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("404"))
+					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("404"))
 				})
 
 				Describe("and then starting", func() {
@@ -68,18 +68,18 @@ var _ = Describe("Application Lifecycle", func() {
 					})
 
 					It("makes the app reachable again", func() {
-						Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hi, I'm Dora!"))
+						Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hi, I'm Dora!"))
 					})
 				})
 			})
 
 			Describe("updating", func() {
 				It("is reflected through another push", func() {
-					Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hi, I'm Dora!"))
+					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hi, I'm Dora!"))
 
 					Eventually(cf.Cf("push", appName, "-p", helpers.NewAssets().HelloWorld), CF_PUSH_TIMEOUT).Should(Exit(0))
 
-					Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hello, world!"))
+					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hello, world!"))
 				})
 			})
 
@@ -90,7 +90,7 @@ var _ = Describe("Application Lifecycle", func() {
 
 				It("removes the application and makes the app unreachable", func() {
 					Eventually(cf.Cf("app", appName), DEFAULT_TIMEOUT).Should(Say("not found"))
-					Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("404"))
+					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("404"))
 				})
 			})
 		})

@@ -40,3 +40,10 @@ func CurlApp(appName, path string) string {
 func CurlAppRoot(appName string) string {
 	return CurlApp(appName, "/")
 }
+
+// Returns a function that curls an app's root endpoint and exit successfully before the default timeout
+func CurlingAppRoot(appName string) func() string {
+	return func() string {
+		return CurlAppRoot(appName)
+	}
+}
