@@ -11,88 +11,87 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
 )
 
-type combination struct {
-	staging string
-	running string
-}
-
-var combinations = []combination{
-	{"DIEGO", "DEA"},
-	{"DIEGO", "DIEGO"},
-	{"DEA", "DIEGO"},
-}
-
 var _ = Describe("Application Lifecycle", func() {
-	for _, combo := range combinations {
-		Describe("staging with "+combo.staging+", running with "+combo.running, func() {
-			var appName string
+	var appName string
 
+	describeLifeCycle := func() {
+		Describe("pushing", func() {
+			It("makes the app reachable via its bound route", func() {
+				Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hi, I'm Dora!"))
+			})
+		})
+
+		Describe("stopping", func() {
 			BeforeEach(func() {
-				appName = generator.RandomName()
-
-				//Diego needs a custom buildpack until the ruby buildpack lands
-				Eventually(cf.Cf("push", appName, "-p", helpers.NewAssets().Dora, "--no-start", "-b=https://github.com/cloudfoundry/cf-buildpack-ruby/archive/master.zip"), CF_PUSH_TIMEOUT).Should(Exit(0))
-
-				if combo.staging == "DIEGO" {
-					Eventually(cf.Cf("set-env", appName, "CF_DIEGO_BETA", "true"), DEFAULT_TIMEOUT).Should(Exit(0))
-				}
-
-				if combo.running == "DIEGO" {
-					Eventually(cf.Cf("set-env", appName, "CF_DIEGO_RUN_BETA", "true"), DEFAULT_TIMEOUT).Should(Exit(0))
-				}
-				Eventually(cf.Cf("start", appName), CF_PUSH_TIMEOUT).Should(Exit(0))
+				Eventually(cf.Cf("stop", appName), DEFAULT_TIMEOUT).Should(Exit(0))
 			})
 
-			AfterEach(func() {
-				Eventually(cf.Cf("delete", appName, "-f"), DEFAULT_TIMEOUT).Should(Exit(0))
+			It("makes the app unreachable", func() {
+				Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("404"))
 			})
 
-			Describe("pushing", func() {
-				It("makes the app reachable via its bound route", func() {
-					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hi, I'm Dora!"))
-				})
-			})
-
-			Describe("stopping", func() {
+			Describe("and then starting", func() {
 				BeforeEach(func() {
-					Eventually(cf.Cf("stop", appName), DEFAULT_TIMEOUT).Should(Exit(0))
+					Eventually(cf.Cf("start", appName), DEFAULT_TIMEOUT).Should(Exit(0))
 				})
 
-				It("makes the app unreachable", func() {
-					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("404"))
-				})
-
-				Describe("and then starting", func() {
-					BeforeEach(func() {
-						Eventually(cf.Cf("start", appName), DEFAULT_TIMEOUT).Should(Exit(0))
-					})
-
-					It("makes the app reachable again", func() {
-						Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hi, I'm Dora!"))
-					})
-				})
-			})
-
-			Describe("updating", func() {
-				It("is reflected through another push", func() {
+				It("makes the app reachable again", func() {
 					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hi, I'm Dora!"))
-
-					Eventually(cf.Cf("push", appName, "-p", helpers.NewAssets().HelloWorld), CF_PUSH_TIMEOUT).Should(Exit(0))
-
-					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hello, world!"))
-				})
-			})
-
-			Describe("deleting", func() {
-				BeforeEach(func() {
-					Eventually(cf.Cf("delete", appName, "-f"), DEFAULT_TIMEOUT).Should(Exit(0))
-				})
-
-				It("removes the application and makes the app unreachable", func() {
-					Eventually(cf.Cf("app", appName), DEFAULT_TIMEOUT).Should(Say("not found"))
-					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("404"))
 				})
 			})
 		})
+
+		Describe("updating", func() {
+			It("is reflected through another push", func() {
+				Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hi, I'm Dora!"))
+
+				Eventually(cf.Cf("push", appName, "-p", helpers.NewAssets().HelloWorld), CF_PUSH_TIMEOUT).Should(Exit(0))
+
+				Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hello, world!"))
+			})
+		})
+
+		Describe("deleting", func() {
+			BeforeEach(func() {
+				Eventually(cf.Cf("delete", appName, "-f"), DEFAULT_TIMEOUT).Should(Exit(0))
+			})
+
+			It("removes the application and makes the app unreachable", func() {
+				Eventually(cf.Cf("app", appName), DEFAULT_TIMEOUT).Should(Say("not found"))
+				Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("404"))
+			})
+		})
 	}
+
+	Describe("An app staged with Diego and running on a DEA", func() {
+		BeforeEach(func() {
+			appName = generator.RandomName()
+
+			Eventually(cf.Cf("push", appName, "-p", helpers.NewAssets().Dora, "--no-start"), CF_PUSH_TIMEOUT).Should(Exit(0))
+			Eventually(cf.Cf("set-env", appName, "CF_DIEGO_BETA", "true"), DEFAULT_TIMEOUT).Should(Exit(0))
+			Eventually(cf.Cf("start", appName), CF_PUSH_TIMEOUT).Should(Exit(0))
+		})
+
+		AfterEach(func() {
+			Eventually(cf.Cf("delete", appName, "-f"), DEFAULT_TIMEOUT).Should(Exit(0))
+		})
+
+		describeLifeCycle()
+	})
+
+	Describe("An app both staged and run with Diego", func() {
+		BeforeEach(func() {
+			appName = generator.RandomName()
+
+			Eventually(cf.Cf("push", appName, "-p", helpers.NewAssets().Dora, "--no-start"), CF_PUSH_TIMEOUT).Should(Exit(0))
+			Eventually(cf.Cf("set-env", appName, "CF_DIEGO_RUN_BETA", "true"), DEFAULT_TIMEOUT).Should(Exit(0)) // CF_DIEGO_RUN_BETA also implies CF_DIEGO_BETA in CC
+			Eventually(cf.Cf("start", appName), CF_PUSH_TIMEOUT).Should(Exit(0))
+		})
+
+		AfterEach(func() {
+			Eventually(cf.Cf("delete", appName, "-f"), DEFAULT_TIMEOUT).Should(Exit(0))
+		})
+
+		describeLifeCycle()
+	})
 })
