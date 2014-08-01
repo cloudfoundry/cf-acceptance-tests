@@ -33,7 +33,7 @@ func ParseJsonResponse(response []byte) (resultMap map[string]interface{}) {
 
 func SetOauthEndpoints(apiEndpoint string, config *OAuthConfig) {
 	url := fmt.Sprintf("%v/info", apiEndpoint)
-	curl := runner.Curl(url).Wait(DEFAULT_TIMEOUT)
+	curl := runner.Curl(url, `--insecure`).Wait(DEFAULT_TIMEOUT)
 	Expect(curl).To(Exit(0))
 	apiResponse := curl.Out.Contents()
 	jsonResult := ParseJsonResponse(apiResponse)
