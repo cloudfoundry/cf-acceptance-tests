@@ -1,4 +1,4 @@
 tags
-integration_config.json
+*config.json
 *.test
 results
