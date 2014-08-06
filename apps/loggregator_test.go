@@ -14,7 +14,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
 )
 
-var _ = FDescribe("loggregator", func() {
+var _ = Describe("loggregator", func() {
 	var appName string
 
 	BeforeEach(func() {
