@@ -77,7 +77,9 @@ var _ = Describe("Application Lifecycle", func() {
 		})
 
 		It("makes the app unreachable", func() {
-			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("404"))
+			Eventually(func() string {
+				return helpers.CurlAppRoot(appName)
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
 		})
 
 		It("generates an app usage 'stopped' event", func() {
@@ -118,7 +120,9 @@ var _ = Describe("Application Lifecycle", func() {
 		})
 
 		It("makes the app unreachable", func() {
-			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("404"))
+			Eventually(func() string {
+				return helpers.CurlAppRoot(appName)
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
 		})
 
 		It("generates an app usage 'stopped' event", func() {
