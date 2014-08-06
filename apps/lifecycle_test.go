@@ -54,7 +54,9 @@ var _ = Describe("Application Lifecycle", func() {
 
 	Describe("pushing", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hi, I'm Dora!"))
+			Eventually(func() string {
+				return helpers.CurlAppRoot(appName)
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 
 		It("generates an app usage 'started' event", func() {
@@ -93,18 +95,24 @@ var _ = Describe("Application Lifecycle", func() {
 			})
 
 			It("makes the app reachable again", func() {
-				Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hi, I'm Dora!"))
+				Eventually(func() string {
+					return helpers.CurlAppRoot(appName)
+				}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
 			})
 		})
 	})
 
 	Describe("updating", func() {
 		It("is reflected through another push", func() {
-			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hi, I'm Dora!"))
+			Eventually(func() string {
+				return helpers.CurlAppRoot(appName)
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
 
 			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().HelloWorld).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
-			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hello, world!"))
+			Eventually(func() string {
+				return helpers.CurlAppRoot(appName)
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hello, world!"))
 		})
 	})
 

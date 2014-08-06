@@ -45,7 +45,9 @@ var _ = Describe("loggregator", func() {
 			Eventually(logs, (DEFAULT_TIMEOUT + time.Minute)).Should(Say("Connected, tailing logs for app"))
 
 			oneSecond := 1000000 // this app uses millionth of seconds
-			Expect(helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", oneSecond))).To(ContainSubstring("Muahaha"))
+			Eventually(func() string {
+				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", oneSecond))
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Muahaha"))
 
 			Eventually(logs, (DEFAULT_TIMEOUT + time.Minute)).Should(Say("Muahaha"))
 		})
@@ -54,13 +56,15 @@ var _ = Describe("loggregator", func() {
 	Context("cf logs --recent", func() {
 		It("makes loggregator buffer and dump log messages", func() {
 			oneSecond := 1000000 // this app uses millionth of seconds
-			Expect(helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", oneSecond))).To(ContainSubstring("Muahaha"))
+			Eventually(func() string {
+				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", oneSecond))
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Muahaha"))
 
 			Eventually(func() *Session {
 				appLogsSession := cf.Cf("logs", "--recent", appName)
 				Expect(appLogsSession.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 				return appLogsSession
-			}, 5).Should(Say("Muahaha"))
+			}, DEFAULT_TIMEOUT).Should(Say("Muahaha"))
 		})
 	})
 })

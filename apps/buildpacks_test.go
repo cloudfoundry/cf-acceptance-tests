@@ -27,7 +27,9 @@ var _ = Describe("Buildpacks", func() {
 		It("makes the app reachable via its bound route", func() {
 			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Node, "-c", "node app.js").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
-			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hello from a node app!"))
+			Eventually(func() string {
+				return helpers.CurlAppRoot(appName)
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hello from a node app!"))
 		})
 	})
 
@@ -35,7 +37,9 @@ var _ = Describe("Buildpacks", func() {
 		It("makes the app reachable via its bound route", func() {
 			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Java).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
-			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hello, from your friendly neighborhood Java JSP!"))
+			Eventually(func() string {
+				return helpers.CurlAppRoot(appName)
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hello, from your friendly neighborhood Java JSP!"))
 		})
 	})
 
@@ -43,7 +47,9 @@ var _ = Describe("Buildpacks", func() {
 		It("makes the app reachable via its bound route", func() {
 			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Golang).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
-			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("go, world"))
+			Eventually(func() string {
+				return helpers.CurlAppRoot(appName)
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("go, world"))
 		})
 	})
 
@@ -51,7 +57,9 @@ var _ = Describe("Buildpacks", func() {
 		It("makes the app reachable via its bound route", func() {
 			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Python).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
-			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("python, world"))
+			Eventually(func() string {
+				return helpers.CurlAppRoot(appName)
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("python, world"))
 		})
 	})
 
@@ -62,7 +70,9 @@ var _ = Describe("Buildpacks", func() {
 		It("makes the app reachable via its bound route", func() {
 			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Php).Wait(phpPushTimeout)).To(Exit(0))
 
-			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hello from php"))
+			Eventually(func() string {
+				return helpers.CurlAppRoot(appName)
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hello from php"))
 		})
 	})
 })

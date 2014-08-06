@@ -54,14 +54,20 @@ var _ = Describe("An application that's already been pushed", func() {
 	})
 
 	It("can be restarted and still come up", func() {
-		Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hi, I'm Dora!"))
+		Eventually(func() string {
+			return helpers.CurlAppRoot(appName)
+		}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
 
 		Expect(cf.Cf("stop", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
-		Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("404"))
+		Eventually(func() string {
+			return helpers.CurlAppRoot(appName)
+		}, DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
 
 		Expect(cf.Cf("start", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
-		Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hi, I'm Dora!"))
+		Eventually(func() string {
+			return helpers.CurlAppRoot(appName)
+		}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
 	})
 })

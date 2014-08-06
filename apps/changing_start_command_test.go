@@ -29,7 +29,9 @@ var _ = Describe("Changing an app's start command", func() {
 	})
 
 	It("takes effect after a restart, not requiring a push", func() {
-		Expect(helpers.CurlApp(appName, "/env/FOO")).To(ContainSubstring("foo"))
+		Eventually(func() string {
+			return helpers.CurlApp(appName, "/env/FOO")
+		}, DEFAULT_TIMEOUT).Should(ContainSubstring("foo"))
 
 		var response cf.QueryResponse
 
@@ -50,10 +52,12 @@ var _ = Describe("Changing an app's start command", func() {
 
 		Eventually(func() string {
 			return helpers.CurlApp(appName, "/env/FOO")
-		}).Should(ContainSubstring("404"))
+		}, DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
 
 		Expect(cf.Cf("start", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
-		Expect(helpers.CurlApp(appName, "/env/FOO")).To(ContainSubstring("bar"))
+		Eventually(func() string {
+			return helpers.CurlApp(appName, "/env/FOO")
+		}, DEFAULT_TIMEOUT).Should(ContainSubstring("bar"))
 	})
 })
