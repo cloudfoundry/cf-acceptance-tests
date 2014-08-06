@@ -14,13 +14,13 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
 )
 
-var _ = Describe("loggregator", func() {
+var _ = FDescribe("loggregator", func() {
 	var appName string
 
 	BeforeEach(func() {
 		appName = generator.RandomName()
 
-		Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().LoggregatorLoadGenerator).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 
 	AfterEach(func() {
@@ -44,20 +44,23 @@ var _ = Describe("loggregator", func() {
 		It("exercises basic loggregator behavior", func() {
 			Eventually(logs, (DEFAULT_TIMEOUT + time.Minute)).Should(Say("Connected, tailing logs for app"))
 
-			Expect(helpers.CurlAppRoot(appName)).To(ContainSubstring("Hi, I'm Dora!"))
+			oneSecond := 1000000 // this app uses millionth of seconds
+			Expect(helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", oneSecond))).To(ContainSubstring("Muahaha"))
 
-			expectedLogMessage := fmt.Sprintf("OUT %s.%s", appName, helpers.LoadConfig().AppsDomain)
-			Eventually(logs, (DEFAULT_TIMEOUT + time.Minute)).Should(Say(expectedLogMessage))
+			Eventually(logs, (DEFAULT_TIMEOUT + time.Minute)).Should(Say("Muahaha"))
 		})
 	})
 
 	Context("cf logs --recent", func() {
 		It("makes loggregator buffer and dump log messages", func() {
-			logs := cf.Cf("logs", appName, "--recent").Wait(DEFAULT_TIMEOUT)
-			Expect(logs).To(Exit(0))
-			Expect(logs).To(Say("Connected, dumping recent logs for app"))
-			Expect(logs).To(Say("OUT Created app"))
-			Expect(logs).To(Say("OUT Starting app instance"))
+			oneSecond := 1000000 // this app uses millionth of seconds
+			Expect(helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", oneSecond))).To(ContainSubstring("Muahaha"))
+
+			Eventually(func() *Session {
+				appLogsSession := cf.Cf("logs", "--recent", appName)
+				Expect(appLogsSession.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				return appLogsSession
+			}, 5).Should(Say("Muahaha"))
 		})
 	})
 })

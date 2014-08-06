@@ -4,7 +4,6 @@ STDOUT.sync = true
 $run = false
 
 get '/' do
-  time = Time.now
 <<-RESPONSE
   Endpoints:<br><br>
   <ul>
@@ -16,12 +15,21 @@ RESPONSE
 end
 
 get '/log/sleep/:logspeed' do
-  $run = true
-  time = Time.now
-  STDOUT.puts("Muahaha... let's go. Waiting #{params[:logspeed].to_f/1000000.to_f} seconds between loglines. Logging 'Muahaha...' every time.")
-  while $run do
-    sleep(params[:logspeed].to_f/1000000.to_f)
-    STDOUT.puts("Log: #{request.host} Muahaha...")
+  if $run
+    "Already running.  Use /log/stop and then restart."
+  else
+    $run       = true
+    sleep_time = params[:logspeed].to_f/1000000.to_f
+
+    STDOUT.puts("Muahaha... let's go. Waiting #{sleep_time} seconds between loglines. Logging 'Muahaha...' every time.")
+    Thread.new do
+      while $run do
+        sleep(sleep_time)
+        STDOUT.puts("Log: #{request.host} Muahaha...")
+      end
+    end
+
+    "Muahaha... let's go. Waiting #{params[:logspeed].to_f/1000000.to_f} seconds between loglines. Logging 'Muahaha...' every time."
   end
 end
 
