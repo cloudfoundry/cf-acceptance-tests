@@ -35,7 +35,10 @@ var _ = Describe("When staging fails", func() {
 		Eventually(start, CF_PUSH_TIMEOUT).Should(Exit(1))
 		Ω(start.Out).Should(gbytes.Say("Staging error: cannot get instances since staging failed"))
 
-		logs := cf.Cf("logs", appName, "--recent")
-		Eventually(logs.Out).Should(gbytes.Say("Failed to Download Buildpack"))
+		Eventually(func() *Session {
+			logs := cf.Cf("logs", appName, "--recent")
+			Expect(logs.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			return logs
+		}, DEFAULT_TIMEOUT).Should(gbytes.Say("Failed to Download Buildpack"))
 	})
 })
