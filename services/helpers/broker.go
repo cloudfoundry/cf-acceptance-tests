@@ -115,7 +115,7 @@ func (b ServiceBroker) Create() {
 
 func (b ServiceBroker) Update() {
 	cf.AsUser(b.context.AdminUserContext(), func() {
-		Expect(cf.Cf("update-service-broker", b.Name, "username", "password", helpers.AppUri(b.Name, "")).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("update-service-broker", b.Name).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 }
 
