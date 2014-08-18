@@ -28,7 +28,12 @@ func CreateZipArchive(filename string, files []ArchiveFile) {
 			Name: file.Name,
 		}
 
-		header.SetMode(0777)
+		mode := file.Mode
+		if mode == 0 {
+			mode = 0777
+		}
+
+		header.SetMode(os.FileMode(mode))
 
 		f, err := w.CreateHeader(header)
 		Ω(err).ShouldNot(HaveOccurred())

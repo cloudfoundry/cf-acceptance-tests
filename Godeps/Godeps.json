@@ -31,7 +31,7 @@
 		},
 		{
 			"ImportPath": "github.com/pivotal-golang/archiver/extractor/test_helper",
-			"Rev": "e46831b67d1f71fe27f85b6b4224e2cf55efea8a"
+			"Rev": "8313f4fb92fd04f23d3132024ca1cdad3bebec3e"
 		}
 	]
 }
