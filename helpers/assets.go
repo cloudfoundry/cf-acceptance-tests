@@ -24,6 +24,6 @@ func NewAssets() Assets {
 		LoggregatorLoadGenerator: "../assets/loggregator-load-generator",
 		ServiceBroker:            "../assets/service_broker",
 		Php:                      "../assets/php",
-		SecurityGroupBuildpack: "../assets/security_group_buildpack",
+		SecurityGroupBuildpack: "../assets/security_group_buildpack.zip",
 	}
 }
