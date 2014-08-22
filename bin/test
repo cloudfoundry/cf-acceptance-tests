@@ -6,4 +6,4 @@ set -e -x
 
 go install -v github.com/onsi/ginkgo/ginkgo
 echo "RUNNING LOCAL CODE"
-ginkgo -r -skipPackage=diego -slowSpecThreshold=120 $@
+ginkgo -r -skipPackage="diego|operator" -slowSpecThreshold=120 $@
