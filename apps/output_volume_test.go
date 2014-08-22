@@ -28,9 +28,8 @@ var _ = Describe("An application printing a bunch of output", func() {
 	It("doesn't die when printing 32MB", func() {
 		beforeId := helpers.CurlApp(appName, "/id")
 
-		Eventually(func() string {
-			return helpers.CurlAppWithTimeout(appName, "/logspew/33554432", LONG_CURL_TIMEOUT)
-		}, DEFAULT_TIMEOUT).Should(ContainSubstring("Just wrote 33554432 random bytes to the log"))
+		Expect(helpers.CurlAppWithTimeout(appName, "/logspew/33554432", LONG_CURL_TIMEOUT)).
+			To(ContainSubstring("Just wrote 33554432 random bytes to the log"))
 
 		// Give time for components (i.e. Warden) to react to the output
 		// and potentially make bad decisions (like killing the app)
