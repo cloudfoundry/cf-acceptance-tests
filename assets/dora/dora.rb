@@ -46,9 +46,10 @@ class Dora < Sinatra::Base
     Process.kill(signal, pid)
   end
 
-  get '/logspew/:bytes' do
-    system "cat /dev/urandom | head -c #{params[:bytes].to_i}"
-    "Just wrote #{params[:bytes]} random bytes to the log"
+  get '/logspew/:kbytes' do
+    kb = "1" * 1024 ;
+    params[:kbytes].to_i.times { puts kb }
+    "Just wrote #{params[:kbytes]} kbytes to the log"
   end
 
   get '/echo/:destination/:output' do
