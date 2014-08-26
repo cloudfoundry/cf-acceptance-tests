@@ -12,7 +12,6 @@ import (
 )
 
 var _ = Describe("Application Lifecycle", func() {
-
 	var appName string
 
 	Context("Application with all buildpacks", func() {
@@ -28,10 +27,10 @@ var _ = Describe("Application Lifecycle", func() {
 		})
 	})
 
-	Context("Application with simple ruby buildpack", func() {
+	Context("Application with simple Null buildpack", func() {
 		BeforeEach(func() {
 			appName = generator.RandomName()
-			Eventually(cf.Cf("push", appName, "-p", helpers.NewAssets().Dora, "--no-start", "-b", "ruby_buildpack"), CF_PUSH_TIMEOUT).Should(Exit(0))
+			Eventually(cf.Cf("push", appName, "-p", helpers.NewAssets().Standalone, "--no-start", "-b", DIEGO_NULL_BUILDPACK), CF_PUSH_TIMEOUT).Should(Exit(0))
 		})
 
 		AfterEach(func() {
@@ -41,21 +40,21 @@ var _ = Describe("Application Lifecycle", func() {
 		describeLifeCycle := func() {
 			Describe("stopping and starting the app", func() {
 				It("makes the app unreachable while it is stopped", func() {
-					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hi, I'm Dora!"))
+					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hi, I'm Bash!"))
 
 					Eventually(cf.Cf("stop", appName), DEFAULT_TIMEOUT).Should(Exit(0))
 					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("404"))
 
 					Eventually(cf.Cf("start", appName), DEFAULT_TIMEOUT).Should(Exit(0))
-					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hi, I'm Dora!"))
+					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hi, I'm Bash!"))
 				})
 			})
 
 			Describe("updating", func() {
-				It("is reflected through another push", func() {
-					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hi, I'm Dora!"))
+				FIt("is reflected through another push", func() {
+					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hi, I'm Bash!"))
 
-					Eventually(cf.Cf("push", appName, "-p", helpers.NewAssets().HelloWorld), CF_PUSH_TIMEOUT).Should(Exit(0))
+					Eventually(cf.Cf("push", appName, "-p", helpers.NewAssets().HelloWorld, "-b", "ruby_buildpack"), CF_PUSH_TIMEOUT).Should(Exit(0))
 
 					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hello, world!"))
 				})
@@ -93,17 +92,16 @@ var _ = Describe("Application Lifecycle", func() {
 
 		Describe("An existing DEA-based app being migrated to Diego", func() {
 			BeforeEach(func() {
-				Eventually(cf.Cf("start", appName), CF_PUSH_TIMEOUT).Should(Exit(0))
+				Eventually(cf.Cf("push", appName, "-p", helpers.NewAssets().Standalone, "-b", DEA_NULL_BUILDPACK), CF_PUSH_TIMEOUT).Should(Exit(0))
 
 				Eventually(cf.Cf("stop", appName), DEFAULT_TIMEOUT).Should(Exit(0))
 				Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("404"))
 
 				Eventually(cf.Cf("set-env", appName, "CF_DIEGO_RUN_BETA", "true"), DEFAULT_TIMEOUT).Should(Exit(0)) // CF_DIEGO_RUN_BETA also implies CF_DIEGO_BETA in CC
-				Eventually(cf.Cf("start", appName), CF_PUSH_TIMEOUT).Should(Exit(0))
+				Eventually(cf.Cf("push", appName, "-p", helpers.NewAssets().Standalone, "-b", DIEGO_NULL_BUILDPACK), CF_PUSH_TIMEOUT).Should(Exit(0))
 			})
 
 			describeLifeCycle()
 		})
 	})
-
 })

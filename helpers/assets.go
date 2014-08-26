@@ -6,6 +6,7 @@ type Assets struct {
 	Node                     string
 	Java                     string
 	Golang                   string
+	Standalone               string
 	Python                   string
 	LoggregatorLoadGenerator string
 	ServiceBroker            string
@@ -20,6 +21,7 @@ func NewAssets() Assets {
 		Node:       "../assets/node",
 		Java:       "../assets/java",
 		Golang:     "../assets/golang",
+		Standalone: "../assets/standalone",
 		Python:     "../assets/python",
 		LoggregatorLoadGenerator: "../assets/loggregator-load-generator",
 		ServiceBroker:            "../assets/service_broker",

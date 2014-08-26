@@ -14,6 +14,9 @@ const (
 	DEFAULT_TIMEOUT   = 30 * time.Second
 	CF_PUSH_TIMEOUT   = 4 * time.Minute
 	LONG_CURL_TIMEOUT = 4 * time.Minute
+
+	DIEGO_NULL_BUILDPACK = "https://github.com/cloudfoundry-incubator/null-buildpack/archive/master.zip"
+	DEA_NULL_BUILDPACK   = "https://github.com/cloudfoundry-incubator/null-buildpack"
 )
 
 var context helpers.SuiteContext
