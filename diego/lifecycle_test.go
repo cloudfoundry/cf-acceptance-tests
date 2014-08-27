@@ -51,7 +51,7 @@ var _ = Describe("Application Lifecycle", func() {
 			})
 
 			Describe("updating", func() {
-				FIt("is reflected through another push", func() {
+				It("is reflected through another push", func() {
 					Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hi, I'm Bash!"))
 
 					Eventually(cf.Cf("push", appName, "-p", helpers.NewAssets().HelloWorld, "-b", "ruby_buildpack"), CF_PUSH_TIMEOUT).Should(Exit(0))
