@@ -118,33 +118,35 @@ To see verbose output from `cf`, use [ginkgo](https://github.com/onsi/ginkgo)'s 
 
 #### Capturing CF CLI output
 
-Set `CF_TRACE_BASENAME` and the trace output from `cf` will be captured in files named
-`${CF_TRACE_BASENAME}${Ginkgo Node Id}.txt`.
+Set '`artifacts_directory`' in your integration_config.json (as shown below) to store cf cli trace output. The output files will be saved inside the given directory.
 
-```bash
-export CF_TRACE_BASENAME=cf_trace_
+```
+  "artifacts_directory": "/tmp/cats-artifacts"
 ```
 
 The following files may be created:
 
 ```bash
-cf_trace_1.txt
-cf_trace_2.txt
+CATS-TRACE-Applications-1.txt
+CATS-TRACE-Applications-2.txt
+CATS-TRACE-Services-1.txt
+CATS-TRACE-Services-2.txt
+junit-Applications-1.xml
 ...
 ```
 
-If a test fails, look for the node id is the test output:
+If a test fails, look for the node id and suite name ("*Applications*" and "*2*" in the example below) in the test output:
 
 ```bash
 === RUN TestLifecycle
 
-Running Suite: Application Lifecycle
+Running Suite: Applications
 ====================================
 Random Seed: 1389376383
 Parallel test node 2/10. Assigned 14 of 137 specs.
 ```
 
-The `cf` trace output for the tests in these specs will be found in `cf_trace_2.txt`
+The `cf` trace output for the tests in these specs will be found in `CF-TRACE-Applications-2.txt`
 
 
 ## Changing CATs
