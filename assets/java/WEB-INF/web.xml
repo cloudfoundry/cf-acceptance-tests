@@ -13,8 +13,16 @@
     <servlet-name>Omega</servlet-name>
     <jsp-file>/Ω.jsp</jsp-file>
   </servlet>
+  <servlet>
+    <servlet-name>RequestUri</servlet-name>
+    <jsp-file>/RequestUri.jsp</jsp-file>
+  </servlet>
   <servlet-mapping>
     <servlet-name>Omega</servlet-name>
     <url-pattern>/omega</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>RequestUri</servlet-name>
+    <url-pattern>/requesturi/*</url-pattern>
   </servlet-mapping>
 </web-app>
