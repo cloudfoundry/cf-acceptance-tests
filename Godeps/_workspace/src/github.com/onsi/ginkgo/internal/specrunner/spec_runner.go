@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+
 	"github.com/onsi/ginkgo/config"
 	"github.com/onsi/ginkgo/internal/leafnodes"
 	"github.com/onsi/ginkgo/internal/spec"
@@ -59,7 +60,7 @@ func (runner *SpecRunner) Run() bool {
 
 	suitePassed = runner.runAfterSuite() && suitePassed
 
-	runner.reportSuiteDidEnd()
+	runner.reportSuiteDidEnd(suitePassed)
 
 	return suitePassed
 }
@@ -96,12 +97,14 @@ func (runner *SpecRunner) runAfterSuite() bool {
 
 func (runner *SpecRunner) runSpecs() bool {
 	suiteFailed := false
+	skipRemainingSpecs := false
 	for _, spec := range runner.specs.Specs() {
 		if runner.wasInterrupted() {
 			return suiteFailed
 		}
-		runner.writer.Truncate()
-
+		if skipRemainingSpecs {
+			spec.Skip()
+		}
 		runner.reportSpecWillRun(spec)
 
 		if !spec.Skipped() && !spec.Pending() {
@@ -110,13 +113,16 @@ func (runner *SpecRunner) runSpecs() bool {
 			runner.runningSpec = nil
 			if spec.Failed() {
 				suiteFailed = true
-				runner.writer.DumpOut()
 			}
 		} else if spec.Pending() && runner.config.FailOnPending {
 			suiteFailed = true
 		}
 
 		runner.reportSpecDidComplete(spec)
+
+		if spec.Failed() && runner.config.FailFast {
+			skipRemainingSpecs = true
+		}
 	}
 
 	return !suiteFailed
@@ -142,7 +148,7 @@ func (runner *SpecRunner) registerForInterrupts() {
 		fmt.Fprintln(os.Stderr, "\nReceived interrupt.  Running AfterSuite...\n^C again to terminate immediately")
 		runner.runAfterSuite()
 	}
-	runner.reportSuiteDidEnd()
+	runner.reportSuiteDidEnd(false)
 	os.Exit(1)
 }
 
@@ -179,7 +185,7 @@ func (runner *SpecRunner) wasInterrupted() bool {
 
 func (runner *SpecRunner) reportSuiteWillBegin() {
 	runner.startTime = time.Now()
-	summary := runner.summary()
+	summary := runner.summary(true)
 	for _, reporter := range runner.reporters {
 		reporter.SpecSuiteWillBegin(runner.config, summary)
 	}
@@ -198,6 +204,8 @@ func (runner *SpecRunner) reportAfterSuite(summary *types.SetupSummary) {
 }
 
 func (runner *SpecRunner) reportSpecWillRun(spec *spec.Spec) {
+	runner.writer.Truncate()
+
 	summary := spec.Summary(runner.suiteID)
 	for _, reporter := range runner.reporters {
 		reporter.SpecWillRun(summary)
@@ -206,13 +214,19 @@ func (runner *SpecRunner) reportSpecWillRun(spec *spec.Spec) {
 
 func (runner *SpecRunner) reportSpecDidComplete(spec *spec.Spec) {
 	summary := spec.Summary(runner.suiteID)
-	for _, reporter := range runner.reporters {
-		reporter.SpecDidComplete(summary)
+	for i := len(runner.reporters) - 1; i >= 1; i-- {
+		runner.reporters[i].SpecDidComplete(summary)
 	}
+
+	if spec.Failed() {
+		runner.writer.DumpOut()
+	}
+
+	runner.reporters[0].SpecDidComplete(summary)
 }
 
-func (runner *SpecRunner) reportSuiteDidEnd() {
-	summary := runner.summary()
+func (runner *SpecRunner) reportSuiteDidEnd(success bool) {
+	summary := runner.summary(success)
 	summary.RunTime = time.Since(runner.startTime)
 	for _, reporter := range runner.reporters {
 		reporter.SpecSuiteDidEnd(summary)
@@ -231,7 +245,7 @@ func (runner *SpecRunner) countSpecsSatisfying(filter func(ex *spec.Spec) bool) 
 	return count
 }
 
-func (runner *SpecRunner) summary() *types.SuiteSummary {
+func (runner *SpecRunner) summary(success bool) *types.SuiteSummary {
 	numberOfSpecsThatWillBeRun := runner.countSpecsSatisfying(func(ex *spec.Spec) bool {
 		return !ex.Skipped() && !ex.Pending()
 	})
@@ -252,19 +266,8 @@ func (runner *SpecRunner) summary() *types.SuiteSummary {
 		return ex.Failed()
 	})
 
-	success := true
-
-	if numberOfFailedSpecs > 0 {
-		success = false
-	} else if numberOfPendingSpecs > 0 && runner.config.FailOnPending {
-		success = false
-	} else if runner.beforeSuiteNode != nil && !runner.beforeSuiteNode.Passed() {
-		success = false
+	if runner.beforeSuiteNode != nil && !runner.beforeSuiteNode.Passed() {
 		numberOfFailedSpecs = numberOfSpecsThatWillBeRun
-	} else if runner.afterSuiteNode != nil && !runner.afterSuiteNode.Passed() {
-		success = false
-	} else if runner.wasInterrupted() {
-		success = false
 	}
 
 	return &types.SuiteSummary{

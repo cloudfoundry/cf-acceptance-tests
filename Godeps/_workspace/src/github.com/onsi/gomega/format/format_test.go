@@ -2,10 +2,11 @@ package format_test
 
 import (
 	"fmt"
+	"strings"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/format"
-	"strings"
+	"github.com/onsi/gomega/types"
 )
 
 //recursive struct
@@ -52,15 +53,33 @@ type SecretiveStruct struct {
 	interfaceValue interface{}
 }
 
+type GoStringer struct {
+}
+
+func (g GoStringer) GoString() string {
+	return "go-string"
+}
+
+func (g GoStringer) String() string {
+	return "string"
+}
+
+type Stringer struct {
+}
+
+func (g Stringer) String() string {
+	return "string"
+}
+
 var _ = Describe("Format", func() {
-	match := func(typeRepresentation string, valueRepresentation string, args ...interface{}) OmegaMatcher {
+	match := func(typeRepresentation string, valueRepresentation string, args ...interface{}) types.GomegaMatcher {
 		if len(args) > 0 {
 			valueRepresentation = fmt.Sprintf(valueRepresentation, args...)
 		}
 		return Equal(fmt.Sprintf("%s<%s>: %s", Indent, typeRepresentation, valueRepresentation))
 	}
 
-	matchRegexp := func(typeRepresentation string, valueRepresentation string, args ...interface{}) OmegaMatcher {
+	matchRegexp := func(typeRepresentation string, valueRepresentation string, args ...interface{}) types.GomegaMatcher {
 		if len(args) > 0 {
 			valueRepresentation = fmt.Sprintf(valueRepresentation, args...)
 		}
@@ -402,7 +421,29 @@ var _ = Describe("Format", func() {
 			m := map[string]interface{}{}
 			m["integer"] = 2
 			m["map"] = m
-			Ω(Object(m, 1)).Should(ContainSubstring("Too deep for me, man..."))
+			Ω(Object(m, 1)).Should(ContainSubstring("..."))
+		})
+	})
+
+	Describe("When instructed to use the Stringer representation", func() {
+		BeforeEach(func() {
+			UseStringerRepresentation = true
+		})
+
+		AfterEach(func() {
+			UseStringerRepresentation = false
+		})
+
+		Context("when passed a GoStringer", func() {
+			It("should use what GoString() returns", func() {
+				Ω(Object(GoStringer{}, 1)).Should(ContainSubstring("<format_test.GoStringer>: go-string"))
+			})
+		})
+
+		Context("when passed a stringer", func() {
+			It("should use what String() returns", func() {
+				Ω(Object(Stringer{}, 1)).Should(ContainSubstring("<format_test.Stringer>: string"))
+			})
 		})
 	})
 })
