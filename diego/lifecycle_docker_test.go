@@ -26,19 +26,24 @@ type SpaceJson struct {
 	}
 }
 
-var createDockerAppPayload = `{"name": "%s", 
-							   "memory":512, 
-							   "instances":1, 
-							   "disk_quota":1024, 
-							   "space_guid":"%s", 
-							   "docker_image":"cloudfoundry/inigodockertest:latest", 
-							   "command":"/dockerapp"}`
+var createDockerAppPayload string
 
 var _ = Describe("Docker Application Lifecycle", func() {
 	appName := generator.RandomName()
 	domain := helpers.LoadConfig().AppsDomain
 
 	BeforeEach(func() {
+		createDockerAppPayload = `{"name": "%s", 
+								   "memory":512, 
+								   "instances":1, 
+								   "disk_quota":1024, 
+								   "space_guid":"%s", 
+								   "docker_image":"cloudfoundry/inigodockertest:latest", 
+								   "command":"/dockerapp"}`
+
+	})
+
+	JustBeforeEach(func() {
 		url := fmt.Sprintf("/v2/spaces?q=name%%3A%s", context.RegularUserContext().Space)
 		jsonResults := SpaceJson{}
 		curl := cf.Cf("curl", url).Wait(DEFAULT_TIMEOUT)
@@ -81,6 +86,22 @@ var _ = Describe("Docker Application Lifecycle", func() {
 		})
 	})
 
+	Describe("running a docker app without a start command ", func() {
+		BeforeEach(func() {
+			createDockerAppPayload = `{"name": "%s", 
+									   "memory":512, 
+									   "instances":1, 
+									   "disk_quota":1024, 
+									   "space_guid":"%s", 
+									   "docker_image":"cloudfoundry/inigodockertest:latest"}`
+		})
+
+		It("locates and invokes the start command", func() {
+			Eventually(helpers.CurlingAppRoot(appName)).Should(Equal("0"))
+
+		})
+	})
+
 	Describe("stopping an app", func() {
 		It("makes the app unreachable while it is stopped", func() {
 			Eventually(helpers.CurlingAppRoot(appName)).Should(Equal("0"))
@@ -94,7 +115,7 @@ var _ = Describe("Docker Application Lifecycle", func() {
 	})
 
 	Describe("scaling the app", func() {
-		BeforeEach(func() {
+		JustBeforeEach(func() {
 			Eventually(cf.Cf("stop", appName), DEFAULT_TIMEOUT).Should(Exit(0))
 			Eventually(cf.Cf("scale", appName, "-i", "3"), DEFAULT_TIMEOUT).Should(Exit(0))
 			Eventually(cf.Cf("start", appName), DEFAULT_TIMEOUT).Should(Exit(0))
@@ -119,7 +140,7 @@ var _ = Describe("Docker Application Lifecycle", func() {
 	})
 
 	Describe("deleting", func() {
-		BeforeEach(func() {
+		JustBeforeEach(func() {
 			Eventually(cf.Cf("delete", appName, "-f"), DEFAULT_TIMEOUT).Should(Exit(0))
 		})
 
