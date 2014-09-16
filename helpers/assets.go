@@ -4,6 +4,7 @@ type Assets struct {
 	Dora                     string
 	HelloWorld               string
 	Node                     string
+	NodeWithProcfile         string
 	Java                     string
 	Golang                   string
 	Standalone               string
@@ -17,13 +18,14 @@ type Assets struct {
 
 func NewAssets() Assets {
 	return Assets{
-		Dora:       "../assets/dora",
-		HelloWorld: "../assets/hello-world",
-		Node:       "../assets/node",
-		Java:       "../assets/java",
-		Golang:     "../assets/golang",
-		Standalone: "../assets/standalone",
-		Python:     "../assets/python",
+		Dora:             "../assets/dora",
+		HelloWorld:       "../assets/hello-world",
+		Node:             "../assets/node",
+		NodeWithProcfile: "../assets/node-with-procfile",
+		Java:             "../assets/java",
+		Golang:           "../assets/golang",
+		Standalone:       "../assets/standalone",
+		Python:           "../assets/python",
 		LoggregatorLoadGenerator: "../assets/loggregator-load-generator",
 		ServiceBroker:            "../assets/service_broker",
 		Php:                      "../assets/php",
