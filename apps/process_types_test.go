@@ -16,9 +16,7 @@ import (
 var _ = Describe("Process Types", func() {
 	type AppResource struct {
 		Entity struct {
-			ExecutionMetadata struct {
-				StartCommand string `json:"start_command"`
-			} `json:"execution_metadata"`
+			DetectedStartCommand string `json:"detected_start_command"`
 		} `json:"entity"`
 	}
 
@@ -47,7 +45,7 @@ var _ = Describe("Process Types", func() {
 				cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/apps?q=name:%s", appName)).Wait(DEFAULT_TIMEOUT).Out.Contents()
 				json.Unmarshal(cfResponse, &appsResponse)
 
-				Expect(appsResponse.Resources[0].Entity.ExecutionMetadata.StartCommand).To(Equal("node app.js"))
+				Expect(appsResponse.Resources[0].Entity.DetectedStartCommand).To(Equal("node app.js"))
 			})
 		})
 
@@ -65,7 +63,7 @@ var _ = Describe("Process Types", func() {
 				cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/apps?q=name:%s", appName)).Wait(DEFAULT_TIMEOUT).Out.Contents()
 				json.Unmarshal(cfResponse, &appsResponse)
 
-				Expect(appsResponse.Resources[0].Entity.ExecutionMetadata.StartCommand).To(Equal("node app.js"))
+				Expect(appsResponse.Resources[0].Entity.DetectedStartCommand).To(Equal("node app.js"))
 			})
 		})
 	})
