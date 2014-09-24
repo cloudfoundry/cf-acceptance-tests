@@ -1,21 +1,25 @@
 {
 	"ImportPath": "github.com/cloudfoundry/cf-acceptance-tests",
-	"GoVersion": "go1.2.1",
+	"GoVersion": "go1.3.1",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/cf",
-			"Rev": "f71489ff97085ccf3a106ff6e27638a34204d5ed"
+			"Rev": "866a2a0085b0a91579a455ec0e142dcf53187f45"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/generator",
-			"Rev": "f71489ff97085ccf3a106ff6e27638a34204d5ed"
+			"Rev": "866a2a0085b0a91579a455ec0e142dcf53187f45"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/helpers",
+			"Rev": "866a2a0085b0a91579a455ec0e142dcf53187f45"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/runner",
-			"Rev": "f71489ff97085ccf3a106ff6e27638a34204d5ed"
+			"Rev": "866a2a0085b0a91579a455ec0e142dcf53187f45"
 		},
 		{
 			"ImportPath": "github.com/nu7hatch/gouuid",

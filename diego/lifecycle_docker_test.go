@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"time"
 
 	. "github.com/onsi/ginkgo"

@@ -8,7 +8,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	shelpers "github.com/cloudfoundry/cf-acceptance-tests/services/helpers"
 )
 
@@ -16,7 +16,7 @@ var _ = Describe("Purging service offerings", func() {
 	var broker shelpers.ServiceBroker
 
 	BeforeEach(func() {
-		broker = shelpers.NewServiceBroker(generator.RandomName(), helpers.NewAssets().ServiceBroker, context)
+		broker = shelpers.NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
 		broker.Push()
 		broker.Configure()
 		broker.Create()

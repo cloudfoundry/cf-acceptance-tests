@@ -8,8 +8,8 @@ import (
 
 	ginkgoconfig "github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gexec"
 	. "github.com/onsi/gomega/gbytes"
+	. "github.com/onsi/gomega/gexec"
 )
 
 const CF_API_TIMEOUT = 30 * time.Second

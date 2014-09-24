@@ -19,7 +19,8 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 )
 
 var _ = Describe("An application that's already been pushed", func() {
@@ -45,7 +46,7 @@ var _ = Describe("An application that's already been pushed", func() {
 		output := string(appQuery.Out.Contents())
 
 		if appQuery.ExitCode() == 1 && strings.Contains(output, "not found") {
-			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		}
 
 		if appQuery.ExitCode() == 0 && strings.Contains(output, "stopped") {

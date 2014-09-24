@@ -8,7 +8,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 )
 
 var _ = Describe("An application being staged with Diego", func() {
@@ -23,7 +23,7 @@ var _ = Describe("An application being staged with Diego", func() {
 	})
 
 	It("has its staging log streamed during a push", func() {
-		Eventually(cf.Cf("push", appName, "-p", helpers.NewAssets().Standalone, "--no-start", "-b", DIEGO_NULL_BUILDPACK), CF_PUSH_TIMEOUT).Should(Exit(0))
+		Eventually(cf.Cf("push", appName, "-p", assets.NewAssets().Standalone, "--no-start", "-b", DIEGO_NULL_BUILDPACK), CF_PUSH_TIMEOUT).Should(Exit(0))
 		Eventually(cf.Cf("set-env", appName, "CF_DIEGO_BETA", "true"), DEFAULT_TIMEOUT).Should(Exit(0))
 
 		start := cf.Cf("start", appName)

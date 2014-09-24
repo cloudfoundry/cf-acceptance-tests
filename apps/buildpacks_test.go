@@ -9,7 +9,8 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 )
 
 var _ = Describe("Buildpacks", func() {
@@ -25,7 +26,7 @@ var _ = Describe("Buildpacks", func() {
 
 	Describe("node", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Node, "-c", "node app.js").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Node, "-c", "node app.js").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(appName)
@@ -35,7 +36,7 @@ var _ = Describe("Buildpacks", func() {
 
 	Describe("java", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Java).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Java).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(appName)
@@ -45,7 +46,7 @@ var _ = Describe("Buildpacks", func() {
 
 	Describe("golang", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Golang).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Golang).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(appName)
@@ -55,7 +56,7 @@ var _ = Describe("Buildpacks", func() {
 
 	Describe("python", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Python).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Python).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(appName)
@@ -68,7 +69,7 @@ var _ = Describe("Buildpacks", func() {
 		var phpPushTimeout = CF_PUSH_TIMEOUT + 6*time.Minute
 
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Php).Wait(phpPushTimeout)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Php).Wait(phpPushTimeout)).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(appName)

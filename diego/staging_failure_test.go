@@ -7,7 +7,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/onsi/gomega/gbytes"
 )
 
@@ -19,7 +19,7 @@ var _ = Describe("When staging fails", func() {
 		appName = generator.RandomName()
 
 		//Diego needs a custom buildpack until the ruby buildpack lands
-		Eventually(cf.Cf("push", appName, "-p", helpers.NewAssets().Dora, "--no-start", "-b=http://example.com/so-not-a-thing/adlfijaskldjlkjaslbnalwieulfjkjsvas.zip"), CF_PUSH_TIMEOUT).Should(Exit(0))
+		Eventually(cf.Cf("push", appName, "-p", assets.NewAssets().Dora, "--no-start", "-b=http://example.com/so-not-a-thing/adlfijaskldjlkjaslbnalwieulfjkjsvas.zip"), CF_PUSH_TIMEOUT).Should(Exit(0))
 		Eventually(cf.Cf("set-env", appName, "CF_DIEGO_BETA", "true"), DEFAULT_TIMEOUT).Should(Exit(0))
 	})
 

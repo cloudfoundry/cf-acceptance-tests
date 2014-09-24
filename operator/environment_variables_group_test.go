@@ -6,7 +6,8 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -65,7 +66,7 @@ exit 1
 			})
 		}()
 
-		Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		defer func() { cf.Cf("delete", appName, "-f").Wait(CF_PUSH_TIMEOUT) }()
 
 		env := helpers.CurlApp(appName, "/env")
@@ -94,7 +95,7 @@ exit 1
 			})
 		}()
 
-		Expect(cf.Cf("push", appName, "-b", buildpackName, "-p", helpers.NewAssets().HelloWorld).Wait(CF_PUSH_TIMEOUT)).To(Exit(1))
+		Expect(cf.Cf("push", appName, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld).Wait(CF_PUSH_TIMEOUT)).To(Exit(1))
 		defer func() { cf.Cf("delete", appName, "-f").Wait(CF_PUSH_TIMEOUT) }()
 
 		Eventually(func() *Session {

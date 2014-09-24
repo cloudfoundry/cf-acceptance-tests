@@ -14,7 +14,8 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 )
 
 var _ = Describe("Security Groups", func() {
@@ -47,7 +48,7 @@ var _ = Describe("Security Groups", func() {
 
 	BeforeEach(func() {
 		serverAppName = generator.RandomName()
-		Expect(cf.Cf("push", serverAppName, "-p", helpers.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", serverAppName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 		// gather app url
 		var appsResponse AppsResponse
@@ -73,7 +74,7 @@ var _ = Describe("Security Groups", func() {
 	//  are discoverable via the cc api and dora's myip endpoint
 	It("allows previously-blocked ip traffic after applying a security group, and re-blocks it when the group is removed", func() {
 		clientAppName := generator.RandomName()
-		Expect(cf.Cf("push", clientAppName, "-p", helpers.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", clientAppName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		defer func() { cf.Cf("delete", clientAppName, "-f").Wait(CF_PUSH_TIMEOUT) }()
 
 		// gather container ip
@@ -137,7 +138,7 @@ var _ = Describe("Security Groups", func() {
 		testAppName := generator.RandomName()
 		privateUri := fmt.Sprintf("%s:%d", privateHost, privatePort)
 
-		buildpackZip := helpers.NewAssets().SecurityGroupBuildpack
+		buildpackZip := assets.NewAssets().SecurityGroupBuildpack
 
 		cf.AsUser(context.AdminUserContext(), func() {
 			Expect(cf.Cf("create-buildpack", buildpack, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
@@ -148,7 +149,7 @@ var _ = Describe("Security Groups", func() {
 			})
 		}()
 
-		Expect(cf.Cf("push", testAppName, "-b", buildpack, "-p", helpers.NewAssets().HelloWorld, "--no-start").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", testAppName, "-b", buildpack, "-p", assets.NewAssets().HelloWorld, "--no-start").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		defer func() { cf.Cf("delete", testAppName, "-f").Wait(CF_PUSH_TIMEOUT) }()
 
 		Expect(cf.Cf("set-env", testAppName, "TESTURI", "www.google.com").Wait(DEFAULT_TIMEOUT)).To(Exit(0))

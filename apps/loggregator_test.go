@@ -11,7 +11,8 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 )
 
 var _ = Describe("loggregator", func() {
@@ -20,7 +21,7 @@ var _ = Describe("loggregator", func() {
 	BeforeEach(func() {
 		appName = generator.RandomName()
 
-		Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().LoggregatorLoadGenerator).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().LoggregatorLoadGenerator).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 
 	AfterEach(func() {

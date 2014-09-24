@@ -5,7 +5,8 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	shelpers "github.com/cloudfoundry/cf-acceptance-tests/services/helpers"
 )
 
@@ -17,7 +18,7 @@ var _ = Describe("SSO Lifecycle", func() {
 	redirectUri := `http://example.com`
 
 	BeforeEach(func() {
-		broker = shelpers.NewServiceBroker(generator.RandomName(), helpers.NewAssets().ServiceBroker, context)
+		broker = shelpers.NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
 		broker.Push()
 		broker.Service.DashboardClient.RedirectUri = redirectUri
 		broker.Configure()

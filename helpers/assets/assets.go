@@ -1,4 +1,4 @@
-package helpers
+package assets
 
 type Assets struct {
 	Dora                     string

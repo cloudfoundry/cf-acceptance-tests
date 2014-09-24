@@ -10,7 +10,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 )
 
 var _ = Describe("Process Types", func() {
@@ -33,7 +33,7 @@ var _ = Describe("Process Types", func() {
 
 		Describe("without a procfile", func() {
 			BeforeEach(func() {
-				Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Node, "-c", "node app.js").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+				Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Node, "-c", "node app.js").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 			})
 
 			AfterEach(func() {
@@ -51,7 +51,7 @@ var _ = Describe("Process Types", func() {
 
 		Describe("with a procfile", func() {
 			BeforeEach(func() {
-				Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().NodeWithProcfile).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+				Expect(cf.Cf("push", appName, "-p", assets.NewAssets().NodeWithProcfile).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 			})
 
 			AfterEach(func() {

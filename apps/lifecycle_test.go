@@ -8,7 +8,8 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 )
 
 type AppUsageEvent struct {
@@ -45,7 +46,7 @@ var _ = Describe("Application Lifecycle", func() {
 	BeforeEach(func() {
 		appName = generator.RandomName()
 
-		Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 
 	AfterEach(func() {
@@ -108,7 +109,7 @@ var _ = Describe("Application Lifecycle", func() {
 				return helpers.CurlAppRoot(appName)
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
 
-			Expect(cf.Cf("push", appName, "-p", helpers.NewAssets().HelloWorld).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().HelloWorld).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(appName)
