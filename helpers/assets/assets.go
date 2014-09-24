@@ -7,7 +7,6 @@ type Assets struct {
 	NodeWithProcfile         string
 	Java                     string
 	Golang                   string
-	Standalone               string
 	Python                   string
 	LoggregatorLoadGenerator string
 	ServiceBroker            string
@@ -24,7 +23,6 @@ func NewAssets() Assets {
 		NodeWithProcfile: "../assets/node-with-procfile",
 		Java:             "../assets/java",
 		Golang:           "../assets/golang",
-		Standalone:       "../assets/standalone",
 		Python:           "../assets/python",
 		LoggregatorLoadGenerator: "../assets/loggregator-load-generator",
 		ServiceBroker:            "../assets/service_broker",

@@ -1,8 +1,0 @@
-#!/bin/bash
-
-RESPONSE="Hi, I'm Bash!"
-
-while true; do {
-  # note that the following must be one single write
-  echo -n -e "HTTP/1.1 200 OK\r\nContent-Length: ${#RESPONSE}\r\n\r\n${RESPONSE}"
-} | nc -l $PORT; done
