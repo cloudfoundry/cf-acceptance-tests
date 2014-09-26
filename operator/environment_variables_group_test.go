@@ -49,25 +49,42 @@ exit 1
 		return buildpackArchivePath
 	}
 
-	It("Applies correct environment variables while running apps", func() {
-		var originalEnv string
-		appName := generator.RandomName()
+	var originalRunningEnv string
+	var originalStagingEnv string
+	var appName string
+	var buildpackName string
 
+	BeforeEach(func() {
+		appName = generator.RandomName()
 		cf.AsUser(context.AdminUserContext(), func() {
-			session := cf.Cf("curl", "/v2/config/environment_variable_groups/staging").Wait(DEFAULT_TIMEOUT)
-			Expect(session).To(Exit(0))
-			originalEnv = string(session.Out.Contents())
+				session := cf.Cf("curl", "/v2/config/environment_variable_groups/running").Wait(DEFAULT_TIMEOUT)
+				Expect(session).To(Exit(0))
+				originalRunningEnv = string(session.Out.Contents())
 
-			Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/running", "-X", "PUT", "-d", `{"CATS_RUNNING_TEST_VAR":"running_env_value"}`).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				session = cf.Cf("curl", "/v2/config/environment_variable_groups/staging").Wait(DEFAULT_TIMEOUT)
+				Expect(session).To(Exit(0))
+				originalStagingEnv = string(session.Out.Contents())
 		})
-		defer func() {
-			cf.AsUser(context.AdminUserContext(), func() {
-				Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/staging", "-X", "PUT", "-d", originalEnv).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	})
+
+	AfterEach(func() {
+		cf.AsUser(context.AdminUserContext(), func() {
+				Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/staging", "-X", "PUT", "-d", originalStagingEnv).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/running", "-X", "PUT", "-d", originalRunningEnv).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
+				if buildpackName != "" {
+					Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				}
 			})
-		}()
+		Expect(cf.Cf("delete", appName, "-f").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+	})
+
+	It("Applies correct environment variables while running apps", func() {
+		cf.AsUser(context.AdminUserContext(), func() {
+			Expect(cf.Cf("set-running-environment-variable-group", `{"CATS_RUNNING_TEST_VAR":"running_env_value"}`).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		})
 
 		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
-		defer func() { cf.Cf("delete", appName, "-f").Wait(CF_PUSH_TIMEOUT) }()
 
 		env := helpers.CurlApp(appName, "/env")
 
@@ -75,28 +92,15 @@ exit 1
 	})
 
 	It("Applies environment variables while staging apps", func() {
-		var originalEnv string
-		appName := generator.RandomName()
-		buildpackName := generator.RandomName()
+		buildpackName = generator.RandomName()
 		buildpackZip := createBuildpack()
 
 		cf.AsUser(context.AdminUserContext(), func() {
-			session := cf.Cf("curl", "/v2/config/environment_variable_groups/staging").Wait(DEFAULT_TIMEOUT)
-			Expect(session).To(Exit(0))
-			originalEnv = string(session.Out.Contents())
-
-			Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/staging", "-X", "PUT", "-d", `{"CATS_STAGING_TEST_VAR":"staging_env_value"}`).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("set-staging-environment-variable-group", `{"CATS_STAGING_TEST_VAR":"staging_env_value"}`).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
-		defer func() {
-			cf.AsUser(context.AdminUserContext(), func() {
-				Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/staging", "-X", "PUT", "-d", originalEnv).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-				Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-			})
-		}()
 
 		Expect(cf.Cf("push", appName, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld).Wait(CF_PUSH_TIMEOUT)).To(Exit(1))
-		defer func() { cf.Cf("delete", appName, "-f").Wait(CF_PUSH_TIMEOUT) }()
 
 		Eventually(func() *Session {
 			appLogsSession := cf.Cf("logs", "--recent", appName)
