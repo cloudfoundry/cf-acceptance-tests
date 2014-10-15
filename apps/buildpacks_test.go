@@ -18,8 +18,6 @@ var _ = Describe("Buildpacks", func() {
 
 	BeforeEach(func() {
 		appName = generator.RandomName()
-		apiEndpoint := helpers.LoadConfig().ApiEndpoint
-		Expect(cf.Cf("api", apiEndpoint, "--skip-ssl-validation").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 
 	AfterEach(func() {
