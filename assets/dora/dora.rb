@@ -52,19 +52,6 @@ class Dora < Sinatra::Base
     "Just wrote #{params[:kbytes]} kbytes to the log"
   end
 
-  get '/log_lines/:count/:delay_ms' do
-    count = params[:count].to_i
-    delay_ms = params[:delay_ms].to_i
-    start = Time.now
-    count.times do |i|
-      puts "message #{i}"
-      sleep(delay_ms / 1000.0)
-    end
-    finish = Time.now
-    "Just wrote (#{count}) lines to the log in #{finish - start} ms"
-  end
-
-
   get '/echo/:destination/:output' do
     redirect =
         case params[:destination]
