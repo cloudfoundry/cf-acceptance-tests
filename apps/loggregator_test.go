@@ -13,10 +13,20 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/matchers"
+	"github.com/cloudfoundry/noaa"
+
+	"crypto/tls"
+	"strings"
+
+	"encoding/json"
+	"os"
+	"path/filepath"
 )
 
 var _ = Describe("loggregator", func() {
 	var appName string
+	const oneSecond = 1000000 // this app uses millionth of seconds
 
 	BeforeEach(func() {
 		appName = generator.RandomName()
@@ -45,7 +55,6 @@ var _ = Describe("loggregator", func() {
 		It("exercises basic loggregator behavior", func() {
 			Eventually(logs, (DEFAULT_TIMEOUT + time.Minute)).Should(Say("Connected, tailing logs for app"))
 
-			oneSecond := 1000000 // this app uses millionth of seconds
 			Eventually(func() string {
 				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", oneSecond))
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Muahaha"))
@@ -56,7 +65,6 @@ var _ = Describe("loggregator", func() {
 
 	Context("cf logs --recent", func() {
 		It("makes loggregator buffer and dump log messages", func() {
-			oneSecond := 1000000 // this app uses millionth of seconds
 			Eventually(func() string {
 				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", oneSecond))
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Muahaha"))
@@ -68,4 +76,42 @@ var _ = Describe("loggregator", func() {
 			}, DEFAULT_TIMEOUT).Should(Say("Muahaha"))
 		})
 	})
+
+	Context("firehose data", func() {
+		It("shows logs and metrics", func() {
+			config := helpers.LoadConfig()
+
+			dopplerEndpoint := "wss://doppler" + strings.TrimPrefix(config.ApiEndpoint, "api") + ":443"
+			noaaConnection := noaa.NewNoaa(dopplerEndpoint, &tls.Config{InsecureSkipVerify: config.SkipSSLValidation}, nil)
+			msgChan, err := noaaConnection.Firehose("firehose-a", getAdminUserAccessToken())
+			Expect(err).NotTo(HaveOccurred())
+
+			Eventually(func() string {
+				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", oneSecond))
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Muahaha"))
+
+			Eventually(msgChan, DEFAULT_TIMEOUT).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
+		})
+	})
 })
+
+func getAdminUserAccessToken() string {
+	type cfHomeConfig struct {
+		AccessToken string
+	}
+	myCfHomeConfig := &cfHomeConfig{}
+
+	cf.AsUser(context.AdminUserContext(), func() {
+		path := filepath.Join(os.Getenv("CF_HOME"), ".cf", "config.json")
+
+		configFile, err := os.Open(path)
+		if err != nil {
+			panic(err)
+		}
+
+		decoder := json.NewDecoder(configFile)
+		err = decoder.Decode(myCfHomeConfig)
+	})
+
+	return myCfHomeConfig.AccessToken
+}

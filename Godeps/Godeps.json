@@ -6,6 +6,10 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "code.google.com/p/gogoprotobuf/proto",
+			"Rev": "6c980277330804e94257ac7ef70a3adbe1641059"
+		},
+		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/cf",
 			"Rev": "866a2a0085b0a91579a455ec0e142dcf53187f45"
 		},
@@ -20,6 +24,14 @@
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/runner",
 			"Rev": "866a2a0085b0a91579a455ec0e142dcf53187f45"
+		},
+		{
+			"ImportPath": "github.com/cloudfoundry/noaa",
+			"Rev": "aaa414839fb22a2de342d14075db6910cfb991e5"
+		},
+		{
+			"ImportPath": "github.com/gorilla/websocket",
+			"Rev": "87f6f6a22ebfbc3f89b9ccdc7fddd1b914c095f9"
 		},
 		{
 			"ImportPath": "github.com/nu7hatch/gouuid",
