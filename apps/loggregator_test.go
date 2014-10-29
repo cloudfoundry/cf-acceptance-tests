@@ -81,8 +81,7 @@ var _ = Describe("loggregator", func() {
 		It("shows logs and metrics", func() {
 			config := helpers.LoadConfig()
 
-			dopplerEndpoint := "wss://doppler" + strings.TrimPrefix(config.ApiEndpoint, "api") + ":443"
-			noaaConnection := noaa.NewNoaa(dopplerEndpoint, &tls.Config{InsecureSkipVerify: config.SkipSSLValidation}, nil)
+			noaaConnection := noaa.NewNoaa(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: config.SkipSSLValidation}, nil)
 			msgChan, err := noaaConnection.Firehose("firehose-a", getAdminUserAccessToken())
 			Expect(err).NotTo(HaveOccurred())
 
@@ -95,10 +94,14 @@ var _ = Describe("loggregator", func() {
 	})
 })
 
-func getAdminUserAccessToken() string {
-	type cfHomeConfig struct {
-		AccessToken string
-	}
+
+
+type cfHomeConfig struct {
+	AccessToken string
+	LoggregatorEndpoint string
+}
+
+func getCfHomeConfig() *cfHomeConfig {
 	myCfHomeConfig := &cfHomeConfig{}
 
 	cf.AsUser(context.AdminUserContext(), func() {
@@ -111,7 +114,18 @@ func getAdminUserAccessToken() string {
 
 		decoder := json.NewDecoder(configFile)
 		err = decoder.Decode(myCfHomeConfig)
+		if err != nil {
+			panic(err)
+		}
 	})
 
-	return myCfHomeConfig.AccessToken
+	return myCfHomeConfig
+}
+
+func getAdminUserAccessToken() string {
+	return getCfHomeConfig().AccessToken
+}
+
+func getDopplerEndpoint() string {
+	return strings.Replace(getCfHomeConfig().LoggregatorEndpoint, "loggregator", "doppler", -1)
 }
