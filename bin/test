@@ -4,6 +4,7 @@ set -e -x
 
 . $(dirname $0)/goenv
 
+sed -i -e s/SYSLOG_IP_ADDRESS/$THIS_MACHINE_IP/ $CONFIG
 go install -v github.com/onsi/ginkgo/ginkgo
 echo "RUNNING LOCAL CODE"
-ginkgo -r -skipPackage="operator" -slowSpecThreshold=120 $@
+ginkgo -r $@
