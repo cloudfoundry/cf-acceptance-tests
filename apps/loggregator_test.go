@@ -94,10 +94,8 @@ var _ = Describe("loggregator", func() {
 	})
 })
 
-
-
 type cfHomeConfig struct {
-	AccessToken string
+	AccessToken         string
 	LoggregatorEndpoint string
 }
 

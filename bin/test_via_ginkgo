@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -e -x
+
+. $(dirname $0)/goenv
+
+go install -v github.com/onsi/ginkgo/ginkgo
+echo "RUNNING LOCAL CODE"
+ginkgo -r $@

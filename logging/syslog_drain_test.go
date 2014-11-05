@@ -10,6 +10,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
@@ -50,7 +51,7 @@ var _ = Describe("Logging", func() {
 
 			appName = generator.RandomName()
 			appUrl = appName + "." + testConfig.AppsDomain
-			Expect(cf.Cf("push", appName, "-p", SIMPLE_RUBY_APP_BITS_PATH).Wait(CF_PUSH_TIMEOUT_IN_SECONDS)).To(Exit(0), "Failed to push app")
+			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().RubySimple).Wait(CF_PUSH_TIMEOUT_IN_SECONDS)).To(Exit(0), "Failed to push app")
 
 			syslogDrainUrl := "syslog://" + syslogDrainAddress
 			serviceName = "service-" + generator.RandomName()

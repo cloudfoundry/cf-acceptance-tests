@@ -57,25 +57,25 @@ exit 1
 	BeforeEach(func() {
 		appName = generator.RandomName()
 		cf.AsUser(context.AdminUserContext(), func() {
-				session := cf.Cf("curl", "/v2/config/environment_variable_groups/running").Wait(DEFAULT_TIMEOUT)
-				Expect(session).To(Exit(0))
-				originalRunningEnv = string(session.Out.Contents())
+			session := cf.Cf("curl", "/v2/config/environment_variable_groups/running").Wait(DEFAULT_TIMEOUT)
+			Expect(session).To(Exit(0))
+			originalRunningEnv = string(session.Out.Contents())
 
-				session = cf.Cf("curl", "/v2/config/environment_variable_groups/staging").Wait(DEFAULT_TIMEOUT)
-				Expect(session).To(Exit(0))
-				originalStagingEnv = string(session.Out.Contents())
+			session = cf.Cf("curl", "/v2/config/environment_variable_groups/staging").Wait(DEFAULT_TIMEOUT)
+			Expect(session).To(Exit(0))
+			originalStagingEnv = string(session.Out.Contents())
 		})
 	})
 
 	AfterEach(func() {
 		cf.AsUser(context.AdminUserContext(), func() {
-				Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/staging", "-X", "PUT", "-d", originalStagingEnv).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-				Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/running", "-X", "PUT", "-d", originalRunningEnv).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/staging", "-X", "PUT", "-d", originalStagingEnv).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/running", "-X", "PUT", "-d", originalRunningEnv).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
-				if buildpackName != "" {
-					Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-				}
-			})
+			if buildpackName != "" {
+				Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			}
+		})
 		Expect(cf.Cf("delete", appName, "-f").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 

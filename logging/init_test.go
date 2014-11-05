@@ -17,8 +17,6 @@ import (
 )
 
 const (
-	SIMPLE_RUBY_APP_BITS_PATH = "../../assets/ruby_simple"
-
 	CF_API_TIMEOUT_OVERRIDE = 1 * time.Minute
 
 	// timeout for most cf cli calls
@@ -90,7 +88,7 @@ func TestSmokeTests(t *testing.T) {
 		rs = append(rs, reporters.NewJUnitReporter(jUnitReportFilePath(testConfig)))
 	}
 
-	RunSpecsWithDefaultAndCustomReporters(t, "CF-Smoke-Tests", rs)
+	RunSpecsWithDefaultAndCustomReporters(t, "CF-Logging-Tests", rs)
 }
 
 func traceLogFilePath(testConfig *Config) string {

@@ -1,10 +1,3 @@
 #!/bin/bash
 
-set -e -x
-
-. $(dirname $0)/goenv
-
-sed -i -e s/SYSLOG_IP_ADDRESS/$THIS_MACHINE_IP/ $CONFIG
-go install -v github.com/onsi/ginkgo/ginkgo
-echo "RUNNING LOCAL CODE"
-ginkgo -r $@
+$(dirname $0)/test_via_ginkgo -skipPackage='operator,logging' $@

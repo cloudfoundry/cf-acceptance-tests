@@ -13,6 +13,7 @@ type Assets struct {
 	Php                      string
 	SecurityGroupBuildpack   string
 	Fuse                     string
+	RubySimple               string
 }
 
 func NewAssets() Assets {
@@ -28,6 +29,7 @@ func NewAssets() Assets {
 		ServiceBroker:            "../assets/service_broker",
 		Php:                      "../assets/php",
 		SecurityGroupBuildpack: "../assets/security_group_buildpack.zip",
-		Fuse: "../assets/fuse-mount",
+		Fuse:       "../assets/fuse-mount",
+		RubySimple: "../assets/ruby_simple",
 	}
 }
