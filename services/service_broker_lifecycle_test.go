@@ -8,14 +8,13 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
-	shelpers "github.com/cloudfoundry/cf-acceptance-tests/services/helpers"
 )
 
 var _ = Describe("Service Broker Lifecycle", func() {
-	var broker shelpers.ServiceBroker
+	var broker ServiceBroker
 
 	BeforeEach(func() {
-		broker = shelpers.NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
+		broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
 		broker.Push()
 		broker.Configure()
 	})

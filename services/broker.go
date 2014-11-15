@@ -1,9 +1,8 @@
-package helpers
+package services
 
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -12,11 +11,6 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-)
-
-const (
-	BROKER_START_TIMEOUT = 5 * time.Minute
-	DEFAULT_TIMEOUT      = 30 * time.Second
 )
 
 type ServiceBroker struct {

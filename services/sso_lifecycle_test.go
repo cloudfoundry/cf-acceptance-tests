@@ -7,29 +7,28 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
-	shelpers "github.com/cloudfoundry/cf-acceptance-tests/services/helpers"
 )
 
 var _ = Describe("SSO Lifecycle", func() {
-	var broker shelpers.ServiceBroker
-	var config shelpers.OAuthConfig
+	var broker ServiceBroker
+	var config OAuthConfig
 	var apiEndpoint = helpers.LoadConfig().ApiEndpoint
 
 	redirectUri := `http://example.com`
 
 	BeforeEach(func() {
-		broker = shelpers.NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
+		broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
 		broker.Push()
 		broker.Service.DashboardClient.RedirectUri = redirectUri
 		broker.Configure()
 
-		config = shelpers.OAuthConfig{}
+		config = OAuthConfig{}
 		config.ClientId = broker.Service.DashboardClient.ID
 		config.ClientSecret = broker.Service.DashboardClient.Secret
 		config.RedirectUri = redirectUri
 		config.RequestedScopes = `openid,cloud_controller_service_permissions.read`
 
-		shelpers.SetOauthEndpoints(apiEndpoint, &config)
+		SetOauthEndpoints(apiEndpoint, &config)
 	})
 
 	AfterEach(func() {
@@ -45,16 +44,16 @@ var _ = Describe("SSO Lifecycle", func() {
 			serviceInstanceGuid := broker.CreateServiceInstance(generator.RandomName())
 
 			// perform the OAuth lifecycle to obtain an access token
-			userSessionCookie := shelpers.AuthenticateUser(config.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
+			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
 
-			authCode, _ := shelpers.RequestScopes(userSessionCookie, config)
+			authCode, _ := RequestScopes(userSessionCookie, config)
 			Expect(authCode).ToNot(BeNil(), `Failed to request and authorize scopes.`)
 
-			accessToken := shelpers.GetAccessToken(authCode, config)
+			accessToken := GetAccessToken(authCode, config)
 			Expect(accessToken).ToNot(BeNil(), `Failed to obtain an access token.`)
 
 			// use the access token to perform an operation on the user's behalf
-			canManage, httpCode := shelpers.QueryServiceInstancePermissionEndpoint(apiEndpoint, accessToken, serviceInstanceGuid)
+			canManage, httpCode := QueryServiceInstancePermissionEndpoint(apiEndpoint, accessToken, serviceInstanceGuid)
 
 			Expect(httpCode).To(Equal(`200`), `The provided access token was not valid.`)
 			Expect(canManage).To(Equal(`true`))
@@ -76,16 +75,16 @@ var _ = Describe("SSO Lifecycle", func() {
 			serviceInstanceGuid := broker.CreateServiceInstance(generator.RandomName())
 
 			// perform the OAuth lifecycle to obtain an access token
-			userSessionCookie := shelpers.AuthenticateUser(config.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
+			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
 
-			authCode, _ := shelpers.RequestScopes(userSessionCookie, config)
+			authCode, _ := RequestScopes(userSessionCookie, config)
 			Expect(authCode).ToNot(BeNil(), `Failed to request and authorize scopes.`)
 
-			accessToken := shelpers.GetAccessToken(authCode, config)
+			accessToken := GetAccessToken(authCode, config)
 			Expect(accessToken).ToNot(BeNil(), `Failed to obtain an access token.`)
 
 			// use the access token to perform an operation on the user's behalf
-			canManage, httpCode := shelpers.QueryServiceInstancePermissionEndpoint(apiEndpoint, accessToken, serviceInstanceGuid)
+			canManage, httpCode := QueryServiceInstancePermissionEndpoint(apiEndpoint, accessToken, serviceInstanceGuid)
 
 			Expect(httpCode).To(Equal(`200`), `The provided access token was not valid.`)
 			Expect(canManage).To(Equal(`true`))
@@ -99,9 +98,9 @@ var _ = Describe("SSO Lifecycle", func() {
 			broker.Delete()
 
 			// perform the OAuth lifecycle to obtain an access token
-			userSessionCookie := shelpers.AuthenticateUser(config.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
+			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
 
-			_, httpCode := shelpers.RequestScopes(userSessionCookie, config)
+			_, httpCode := RequestScopes(userSessionCookie, config)
 
 			// there should not be a client in uaa anymore, so the request for scopes should return an unauthorized
 			Expect(httpCode).To(Equal(`401`))

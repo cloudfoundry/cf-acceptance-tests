@@ -10,9 +10,10 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 )
 
-const (
-	DEFAULT_TIMEOUT = 30 * time.Second
-	CF_PUSH_TIMEOUT = 2 * time.Minute
+var (
+	DEFAULT_TIMEOUT   = 30 * time.Second
+	CF_PUSH_TIMEOUT   = 2 * time.Minute
+	BROKER_START_TIMEOUT = 5 * time.Minute
 )
 
 var context helpers.SuiteContext
@@ -21,6 +22,19 @@ func TestApplications(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	config := helpers.LoadConfig()
+
+	if config.DefaultTimeout > 0 {
+		DEFAULT_TIMEOUT = config.DefaultTimeout * time.Second
+	}
+
+	if config.CfPushTimeout > 0 {
+		CF_PUSH_TIMEOUT = config.CfPushTimeout * time.Second
+	}
+
+	if config.CfPushTimeout > 0 {
+		BROKER_START_TIMEOUT = config.BrokerStartTimeout * time.Second
+	}
+
 	context = helpers.NewContext(config)
 	environment := helpers.NewEnvironment(context)
 
