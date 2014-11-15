@@ -73,6 +73,16 @@ using self-signed certificates, add
 
 to your integration_config.json as well.
 
+To override default timeouts, add
+
+```
+  "default_timeout": 45
+  "cf_push_timeout": 180
+  "long_curl_timeout": 180
+```
+
+to your integration_config.json. All units are in seconds
+
 
 ### Persistent App Test Setup
 
