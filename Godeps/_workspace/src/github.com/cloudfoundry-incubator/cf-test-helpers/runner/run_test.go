@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-const CMD_TIMEOUT = 10 *time.Second
+const CMD_TIMEOUT = 10 * time.Second
 
 var _ = Describe("Run", func() {
 	It("runs the given command in a cmdtest Session", func() {

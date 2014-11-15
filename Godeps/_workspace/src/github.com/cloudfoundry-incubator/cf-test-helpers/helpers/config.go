@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 type Config struct {
@@ -21,6 +22,11 @@ type Config struct {
 	SkipSSLValidation bool `json:"skip_ssl_validation"`
 
 	ArtifactsDirectory string `json:"artifacts_directory"`
+
+	DefaultTimeout     time.Duration `json:"default_timeout"`
+	CfPushTimeout      time.Duration `json:"cf_push_timeout"`
+	LongCurlTimeout    time.Duration `json:"long_curl_timeout"`
+	BrokerStartTimeout time.Duration `json:"broker_start_timeout"`
 }
 
 var loadedConfig *Config
