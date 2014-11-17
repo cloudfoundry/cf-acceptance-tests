@@ -31,7 +31,7 @@ var _ = Describe("Purging service offerings", func() {
 
 		marketplace := cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
 		Expect(marketplace).To(Exit(0))
-		Expect(marketplace).To(Say(broker.Plan.Name))
+		Expect(marketplace).To(Say(broker.Plans[0].Name))
 
 		broker.CreateServiceInstance(instanceName)
 

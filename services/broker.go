@@ -13,6 +13,11 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 )
 
+type Plan struct {
+	Name string `json:"name"`
+	ID   string `json:"id"`
+}
+
 type ServiceBroker struct {
 	Name    string
 	Path    string
@@ -26,10 +31,7 @@ type ServiceBroker struct {
 			RedirectUri string `json:"redirect_uri"`
 		}
 	}
-	Plan struct {
-		Name string `json:"name"`
-		ID   string `json:"id"`
-	}
+	Plans []Plan
 }
 
 type ServicesResponse struct {
@@ -78,8 +80,7 @@ func NewServiceBroker(name string, path string, context helpers.SuiteContext) Se
 	b.Name = name
 	b.Service.Name = generator.RandomName()
 	b.Service.ID = generator.RandomName()
-	b.Plan.Name = generator.RandomName()
-	b.Plan.ID = generator.RandomName()
+	b.Plans = []Plan{{Name: generator.RandomName(), ID: generator.RandomName()}}
 	b.Service.DashboardClient.ID = generator.RandomName()
 	b.Service.DashboardClient.Secret = generator.RandomName()
 	b.Service.DashboardClient.RedirectUri = generator.RandomName()
@@ -134,7 +135,7 @@ func (b ServiceBroker) Destroy() {
 func (b ServiceBroker) ToJSON() string {
 	attributes := make(map[string]interface{})
 	attributes["service"] = b.Service
-	attributes["plan"] = b.Plan
+	attributes["plans"] = b.Plans
 	attributes["dashboard_client"] = b.Service.DashboardClient
 	jsonBytes, _ := json.Marshal(attributes)
 	return string(jsonBytes)
@@ -153,13 +154,22 @@ func (b ServiceBroker) PublicizePlans() {
 	for _, service := range structure.Resources {
 		if service.Entity.Label == b.Service.Name {
 			for _, plan := range service.Entity.ServicePlans {
-				if plan.Entity.Name == b.Plan.Name {
+				if b.HasPlan(plan.Entity.Name) {
 					b.PublicizePlan(plan.Metadata.Url)
 					break
 				}
 			}
 		}
 	}
+}
+
+func (b ServiceBroker) HasPlan(planName string) bool {
+	for _, plan := range b.Plans {
+		if plan.Name == planName {
+			return true
+		}
+	}
+	return false
 }
 
 func (b ServiceBroker) PublicizePlan(url string) {
@@ -172,7 +182,7 @@ func (b ServiceBroker) PublicizePlan(url string) {
 }
 
 func (b ServiceBroker) CreateServiceInstance(instanceName string) string {
-	Expect(cf.Cf("create-service", b.Service.Name, b.Plan.Name, instanceName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	Expect(cf.Cf("create-service", b.Service.Name, b.Plans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	url := fmt.Sprintf("/v2/service_instances?q=name:%s", instanceName)
 	serviceInstance := ServiceInstanceResponse{}
 	curl := cf.Cf("curl", url).Wait(DEFAULT_TIMEOUT)

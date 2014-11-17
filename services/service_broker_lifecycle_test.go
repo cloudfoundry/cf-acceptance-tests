@@ -28,7 +28,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 		Expect(plans).To(Exit(0))
 		output := plans.Out.Contents()
 		Expect(output).NotTo(ContainSubstring(broker.Service.Name))
-		Expect(output).NotTo(ContainSubstring(broker.Plan.Name))
+		Expect(output).NotTo(ContainSubstring(broker.Plans[0].Name))
 
 		broker.PublicizePlans()
 
@@ -37,13 +37,13 @@ var _ = Describe("Service Broker Lifecycle", func() {
 		Expect(plans).To(Exit(0))
 		output = plans.Out.Contents()
 		Expect(output).To(ContainSubstring(broker.Service.Name))
-		Expect(output).To(ContainSubstring(broker.Plan.Name))
+		Expect(output).To(ContainSubstring(broker.Plans[0].Name))
 
 		// Changing the catalog on the broker
 		oldServiceName := broker.Service.Name
-		oldPlanName := broker.Plan.Name
+		oldPlanName := broker.Plans[0].Name
 		broker.Service.Name = generator.RandomName()
-		broker.Plan.Name = generator.RandomName()
+		broker.Plans[0].Name = generator.RandomName()
 		broker.Configure()
 		broker.Update()
 
@@ -54,7 +54,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 		Expect(output).NotTo(ContainSubstring(oldServiceName))
 		Expect(output).NotTo(ContainSubstring(oldPlanName))
 		Expect(output).To(ContainSubstring(broker.Service.Name))
-		Expect(output).To(ContainSubstring(broker.Plan.Name))
+		Expect(output).To(ContainSubstring(broker.Plans[0].Name))
 
 		// Deleting the service broker and confirming the plans no longer display
 		broker.Delete()
@@ -64,7 +64,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 		Expect(output).NotTo(ContainSubstring(oldServiceName))
 		Expect(output).NotTo(ContainSubstring(oldPlanName))
 		Expect(output).NotTo(ContainSubstring(broker.Service.Name))
-		Expect(output).NotTo(ContainSubstring(broker.Plan.Name))
+		Expect(output).NotTo(ContainSubstring(broker.Plans[0].Name))
 
 		broker.Destroy()
 	})

@@ -17,7 +17,37 @@ $stderr.sync = true
 
 class ServiceBroker < Sinatra::Base
 
-  @@catalog = {
+  def dashboard_client
+    {
+      'id'           => 'sso-test',
+      'secret'       => 'sso-secret',
+      'redirect_uri' => 'http://localhost:5551'
+    }.merge(CONFIG_DATA['dashboard_client'])
+  end
+
+  def plans
+    plan_template = {
+      'name' => 'fake-plan',
+      'id' => 'f52eabf8-e38d-422f-8ef9-9dc83b75cc05',
+      'description' => 'Shared fake Server, 5tb persistent disk, 40 max concurrent connections',
+      'max_storage_tb' => 5,
+      'metadata' => {
+        'cost' => 0.0,
+        'bullets' => [
+          { 'content' => 'Shared fake server' },
+          { 'content' => '5 TB storage' },
+          { 'content' => '40 concurrent connections' }
+        ]
+      }
+    }
+
+    CONFIG_DATA.fetch('plans', [plan_template]).map do |plan|
+      plan_template.merge(plan)
+    end
+  end
+
+  def catalog
+    {
     'services' => [
       {
         'name' => 'fake-service',
@@ -35,38 +65,24 @@ class ServiceBroker < Sinatra::Base
           },
           'displayName' => 'The Fake Broker'
         },
-        'dashboard_client' => {
-          'id'           => 'sso-test',
-          'secret'       => 'sso-secret',
-          'redirect_uri' => 'http://localhost:5551'
-        }.merge(CONFIG_DATA['dashboard_client']),
-        'plans' => [
-          {
-            'name' => 'fake-plan',
-            'id' => 'f52eabf8-e38d-422f-8ef9-9dc83b75cc05',
-            'description' => 'Shared fake Server, 5tb persistent disk, 40 max concurrent connections',
-            'max_storage_tb' => 5,
-            'metadata' => {
-              'cost' => 0.0,
-              'bullets' => [
-                { 'content' => 'Shared fake server' },
-                { 'content' => '5 TB storage' },
-                { 'content' => '40 concurrent connections' }
-              ]
-            }
-          }.merge(CONFIG_DATA['plan'])
-        ]
+        'dashboard_client' => dashboard_client,
+        'plans' => plans,
       }.merge(CONFIG_DATA['service'])
     ]
   }
+  end
 
   get '/v2/catalog' do
-    @@catalog.to_json
+    catalog.to_json
   end
 
   put '/v2/service_instances/:id' do
     status 201
     {}.to_json
+  end
+
+  patch '/v2/service_instances/:id' do
+    status 200
   end
 
   delete '/v2/service_instances/:id' do
