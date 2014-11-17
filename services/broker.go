@@ -156,7 +156,6 @@ func (b ServiceBroker) PublicizePlans() {
 			for _, plan := range service.Entity.ServicePlans {
 				if b.HasPlan(plan.Entity.Name) {
 					b.PublicizePlan(plan.Metadata.Url)
-					break
 				}
 			}
 		}
