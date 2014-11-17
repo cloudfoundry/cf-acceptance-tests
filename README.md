@@ -11,7 +11,7 @@ crash event registered in `cf events`.
 Tests that will NOT be introduced here are ones which could be tested at the component level,
 such as basic CRUD of an object in the Cloud Controller. These tests belong with that component.
 
-NOTE: Because we want to parallize execution, tests should be written in such a way as to be runable individually.
+NOTE: Because we want to parallelize execution, tests should be written in such a way as to be runnable individually.
 This means that tests should not depend on state in other tests,
 and should not modify the CF state in such a way as to impact other tests.
 
@@ -169,4 +169,4 @@ CATs use [godep](https://github.com/tools/godep) to manage `go` dependencies.
 All `go` packages required to run CATs are vendored into the `cf-acceptance-tests/Godeps` directory.
 
 When making changes to the test suite that bring in additional `go` packages, you should use the workflow described in the
-[Add or Update a Dependency](https://github.com/tools/godep#add-or-update-a-dependency) section of the godep documentation.
+[Add or Update a Dependency](https://github.com/tools/godep#add-a-dependency) section of the godep documentation.
