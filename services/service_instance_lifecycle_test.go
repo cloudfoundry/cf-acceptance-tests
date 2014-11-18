@@ -24,7 +24,6 @@ var _ = Describe("Service Instance Lifecycle", func() {
 	})
 
 	AfterEach(func() {
-		broker.Delete()
 		broker.Destroy()
 	})
 

@@ -66,6 +66,7 @@ class ServiceBroker < Sinatra::Base
           'displayName' => 'The Fake Broker'
         },
         'dashboard_client' => dashboard_client,
+        'plan_updateable' => true,
         'plans' => plans,
       }.merge(CONFIG_DATA['service'])
     ]
