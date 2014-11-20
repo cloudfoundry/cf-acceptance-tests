@@ -73,20 +73,20 @@ class ServiceBroker < Sinatra::Base
   }
   end
 
-  get '/v2/catalog' do
+  get '/v2/catalog/?' do
     catalog.to_json
   end
 
-  put '/v2/service_instances/:id' do
+  put '/v2/service_instances/:id/?' do
     status 201
     {}.to_json
   end
 
-  patch '/v2/service_instances/:id' do
+  patch '/v2/service_instances/:id/?' do
     status 200
   end
 
-  delete '/v2/service_instances/:id' do
+  delete '/v2/service_instances/:id/?' do
     status 200
     {}.to_json
   end
