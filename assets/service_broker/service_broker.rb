@@ -84,6 +84,7 @@ class ServiceBroker < Sinatra::Base
 
   patch '/v2/service_instances/:id/?' do
     status 200
+    {}.to_json
   end
 
   delete '/v2/service_instances/:id/?' do
