@@ -9,7 +9,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 )
 
-const CURL_TIMEOUT = 10 * time.Second
+const CURL_TIMEOUT = 30 * time.Second
 
 // Gets an app's endpoint with the specified path
 func AppUri(appName, path string) string {

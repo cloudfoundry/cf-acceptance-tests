@@ -47,6 +47,11 @@ func New(description string, beforeSuiteNode leafnodes.SuiteNode, specs *spec.Sp
 }
 
 func (runner *SpecRunner) Run() bool {
+	if runner.config.DryRun {
+		runner.performDryRun()
+		return true
+	}
+
 	runner.reportSuiteWillBegin()
 	go runner.registerForInterrupts()
 
@@ -63,6 +68,33 @@ func (runner *SpecRunner) Run() bool {
 	runner.reportSuiteDidEnd(suitePassed)
 
 	return suitePassed
+}
+
+func (runner *SpecRunner) performDryRun() {
+	runner.reportSuiteWillBegin()
+
+	if runner.beforeSuiteNode != nil {
+		summary := runner.beforeSuiteNode.Summary()
+		summary.State = types.SpecStatePassed
+		runner.reportBeforeSuite(summary)
+	}
+
+	for _, spec := range runner.specs.Specs() {
+		summary := spec.Summary(runner.suiteID)
+		runner.reportSpecWillRun(summary)
+		if summary.State == types.SpecStateInvalid {
+			summary.State = types.SpecStatePassed
+		}
+		runner.reportSpecDidComplete(summary, false)
+	}
+
+	if runner.afterSuiteNode != nil {
+		summary := runner.afterSuiteNode.Summary()
+		summary.State = types.SpecStatePassed
+		runner.reportAfterSuite(summary)
+	}
+
+	runner.reportSuiteDidEnd(true)
 }
 
 func (runner *SpecRunner) runBeforeSuite() bool {
@@ -105,11 +137,11 @@ func (runner *SpecRunner) runSpecs() bool {
 		if skipRemainingSpecs {
 			spec.Skip()
 		}
-		runner.reportSpecWillRun(spec)
+		runner.reportSpecWillRun(spec.Summary(runner.suiteID))
 
 		if !spec.Skipped() && !spec.Pending() {
 			runner.runningSpec = spec
-			spec.Run()
+			spec.Run(runner.writer)
 			runner.runningSpec = nil
 			if spec.Failed() {
 				suiteFailed = true
@@ -118,7 +150,7 @@ func (runner *SpecRunner) runSpecs() bool {
 			suiteFailed = true
 		}
 
-		runner.reportSpecDidComplete(spec)
+		runner.reportSpecDidComplete(spec.Summary(runner.suiteID), spec.Failed())
 
 		if spec.Failed() && runner.config.FailFast {
 			skipRemainingSpecs = true
@@ -144,8 +176,16 @@ func (runner *SpecRunner) registerForInterrupts() {
 	signal.Stop(c)
 	runner.markInterrupted()
 	go runner.registerForHardInterrupts()
+	runner.writer.DumpOutWithHeader(`
+Received interrupt.  Emitting contents of GinkgoWriter...
+---------------------------------------------------------
+`)
 	if runner.afterSuiteNode != nil {
-		fmt.Fprintln(os.Stderr, "\nReceived interrupt.  Running AfterSuite...\n^C again to terminate immediately")
+		fmt.Fprint(os.Stderr, `
+---------------------------------------------------------
+Received interrupt.  Running AfterSuite...
+^C again to terminate immediately
+`)
 		runner.runAfterSuite()
 	}
 	runner.reportSuiteDidEnd(false)
@@ -203,22 +243,20 @@ func (runner *SpecRunner) reportAfterSuite(summary *types.SetupSummary) {
 	}
 }
 
-func (runner *SpecRunner) reportSpecWillRun(spec *spec.Spec) {
+func (runner *SpecRunner) reportSpecWillRun(summary *types.SpecSummary) {
 	runner.writer.Truncate()
 
-	summary := spec.Summary(runner.suiteID)
 	for _, reporter := range runner.reporters {
 		reporter.SpecWillRun(summary)
 	}
 }
 
-func (runner *SpecRunner) reportSpecDidComplete(spec *spec.Spec) {
-	summary := spec.Summary(runner.suiteID)
+func (runner *SpecRunner) reportSpecDidComplete(summary *types.SpecSummary, failed bool) {
 	for i := len(runner.reporters) - 1; i >= 1; i-- {
 		runner.reporters[i].SpecDidComplete(summary)
 	}
 
-	if spec.Failed() {
+	if failed {
 		runner.writer.DumpOut()
 	}
 
@@ -266,7 +304,7 @@ func (runner *SpecRunner) summary(success bool) *types.SuiteSummary {
 		return ex.Failed()
 	})
 
-	if runner.beforeSuiteNode != nil && !runner.beforeSuiteNode.Passed() {
+	if runner.beforeSuiteNode != nil && !runner.beforeSuiteNode.Passed() && !runner.config.DryRun {
 		numberOfFailedSpecs = numberOfSpecsThatWillBeRun
 	}
 
