@@ -27,6 +27,9 @@ type Config struct {
 	CfPushTimeout      time.Duration `json:"cf_push_timeout"`
 	LongCurlTimeout    time.Duration `json:"long_curl_timeout"`
 	BrokerStartTimeout time.Duration `json:"broker_start_timeout"`
+
+	SyslogDrainPort int    `json:"syslog_drain_port"`
+	SyslogIpAddress string `json:"syslog_ip_address"`
 }
 
 var loadedConfig *Config

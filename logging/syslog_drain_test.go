@@ -10,6 +10,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -17,7 +18,7 @@ import (
 )
 
 var _ = Describe("Logging", func() {
-	var testConfig = GetConfig()
+	var testConfig = helpers.LoadConfig()
 	var appName string
 
 	Describe("Syslog drains", func() {
@@ -51,22 +52,23 @@ var _ = Describe("Logging", func() {
 
 			appName = generator.RandomName()
 			appUrl = appName + "." + testConfig.AppsDomain
-			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().RubySimple).Wait(CF_PUSH_TIMEOUT_IN_SECONDS)).To(Exit(0), "Failed to push app")
+
+			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().RubySimple).Wait(CF_PUSH_TIMEOUT)).To(Exit(0), "Failed to push app")
 
 			syslogDrainUrl := "syslog://" + syslogDrainAddress
 			serviceName = "service-" + generator.RandomName()
 
-			Expect(cf.Cf("cups", serviceName, "-l", syslogDrainUrl).Wait(CF_TIMEOUT_IN_SECONDS)).To(Exit(0), "Failed to create syslog drain service")
-			Expect(cf.Cf("bind-service", appName, serviceName).Wait(CF_TIMEOUT_IN_SECONDS)).To(Exit(0), "Failed to bind service")
-			Expect(cf.Cf("restage", appName).Wait(CF_PUSH_TIMEOUT_IN_SECONDS)).To(Exit(0), "Failed to restage app")
+			Expect(cf.Cf("cups", serviceName, "-l", syslogDrainUrl).Wait(DEFAULT_TIMEOUT)).To(Exit(0), "Failed to create syslog drain service")
+			Expect(cf.Cf("bind-service", appName, serviceName).Wait(DEFAULT_TIMEOUT)).To(Exit(0), "Failed to bind service")
+			Expect(cf.Cf("restage", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0), "Failed to restage app")
 		})
 
 		AfterEach(func() {
-			Expect(cf.Cf("delete", appName, "-f").Wait(CF_TIMEOUT_IN_SECONDS)).To(Exit(0), "Failed to delete app")
+			Expect(cf.Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0), "Failed to delete app")
 			if serviceName != "" {
-				Expect(cf.Cf("delete-service", serviceName, "-f").Wait(CF_TIMEOUT_IN_SECONDS)).To(Exit(0), "Failed to delete service")
+				Expect(cf.Cf("delete-service", serviceName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0), "Failed to delete service")
 			}
-			Expect(cf.Cf("delete-orphaned-routes", "-f").Wait(CF_PUSH_TIMEOUT_IN_SECONDS)).To(Exit(0), "Failed to delete orphaned routes")
+			Expect(cf.Cf("delete-orphaned-routes", "-f").Wait(CF_PUSH_TIMEOUT)).To(Exit(0), "Failed to delete orphaned routes")
 
 			drainListener.Stop()
 		})

@@ -73,6 +73,17 @@ using self-signed certificates, add
 
 to your integration_config.json as well.
 
+If you are running the logging suite, add
+
+```
+  "syslog_ip_address": "PUBLICLY_ACCESSIBLE_IP_ADDRESS_OF_LOCAL_MACHINE",
+  "syslog_drain_port": AVAILABLE_PORT_ON_LOCAL_MACHINE
+```
+
+You should replace `AVAILABLE_PORT_ON_LOCAL_MACHINE` with an integer
+for some available port, and `PUBLICLY_ACCESSIBLE_IP_ADDRESS_OF_LOCAL_MACHINE` with an IP address at
+which your deployment can access your machine.
+
 To override default timeouts, add
 
 ```
