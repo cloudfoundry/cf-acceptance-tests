@@ -16,7 +16,7 @@ var _ = Describe("Encoding", func() {
 
 	BeforeEach(func() {
 		appName = generator.RandomName()
-		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Java, "--no-start").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Java, "--no-start", "-m", "512M").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		Expect(cf.Cf("set-env", appName, "JAVA_OPTS", "-Djava.security.egd=file:///dev/urandom").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
