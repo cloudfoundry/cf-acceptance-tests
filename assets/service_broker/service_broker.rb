@@ -100,5 +100,37 @@ class ServiceBroker < Sinatra::Base
     ENV.to_hash.to_s
   end
 
+  put '/v2/service_instances/:instance_id/service_bindings/:id' do |instance_id, binding_id|
+    content_type :json
+
+    begin
+      status 201
+      {
+          "credentials" => {
+          "uri" => "fake-service://fake-user:fake-password@fake-host:3306/fake-dbname",
+          "username" => "fake-user",
+          "password" => "fake-password",
+          "host" => "fake-host",
+          "port" => 3306,
+          "database" => "fake-dbname"}
+      }.to_json
+    rescue Exception => e
+      status 502
+      {"description" => e.message}.to_json
+    end
+  end
+
+  delete '/v2/service_instances/:instance_id/service_bindings/:id' do |instance_id, binding_id|
+    content_type :json
+
+    begin
+      status 200
+      {}.to_json
+    rescue Exception => e
+      status 502
+      {"description" => e.message}.to_json
+    end
+  end
+
   run! if app_file == $0
 end
