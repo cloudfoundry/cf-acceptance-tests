@@ -56,10 +56,12 @@ var _ = Describe("Service Instance Lifecycle", func() {
 			appName, instanceName string
 		)
 
-		It("can bind and unbing service to app and check app env", func() {
+		It("can bind and unbind service to app and check app env and events", func() {
 			appName = generator.RandomName()
 			createApp := cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)
 			Expect(createApp).To(Exit(0), "failed creating app")
+
+			checkForEvents(appName, []string{"audit.app.create"})
 
 			instanceName = generator.RandomName()
 			createService := cf.Cf("create-service", broker.Service.Name, broker.Plans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
@@ -68,8 +70,12 @@ var _ = Describe("Service Instance Lifecycle", func() {
 			bindService := cf.Cf("bind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
 			Expect(bindService).To(Exit(0), "failed binding app to service")
 
+			checkForEvents(appName, []string{"audit.app.update"})
+
 			restageApp := cf.Cf("restage", appName).Wait(CF_PUSH_TIMEOUT)
 			Expect(restageApp).To(Exit(0), "failed restaging app")
+
+			checkForEvents(appName, []string{"audit.app.restage"})
 
 			appEnv := cf.Cf("env", appName).Wait(DEFAULT_TIMEOUT)
 			Expect(appEnv).To(Exit(0), "failed get env for app")
@@ -78,9 +84,20 @@ var _ = Describe("Service Instance Lifecycle", func() {
 			unbindService := cf.Cf("unbind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
 			Expect(unbindService).To(Exit(0), "failed unbinding app to service")
 
+			checkForEvents(appName, []string{"audit.app.update"})
+
 			appEnv = cf.Cf("env", appName).Wait(DEFAULT_TIMEOUT)
 			Expect(appEnv).To(Exit(0), "failed get env for app")
 			Expect(appEnv.Out.Contents()).ToNot(ContainSubstring(fmt.Sprintf("credentials")))
 		})
 	})
 })
+
+func checkForEvents(name string, eventNames []string) {
+	events := cf.Cf("events", name).Wait(DEFAULT_TIMEOUT)
+	Expect(events).To(Exit(0), fmt.Sprintf("failed getting events for %s", name))
+
+	for _, eventName := range eventNames {
+		Expect(events.Out.Contents()).To(ContainSubstring(eventName), "failed to find event")
+	}
+}
