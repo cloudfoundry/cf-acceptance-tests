@@ -22,7 +22,7 @@ describe ServiceBroker do
 
       get '/v2/catalog'
       second_response = last_response
-      expect(second_response.body).to_not eq(first_response.body)
+      expect(second_response.body).to eq(first_response.body)
     end
   end
 

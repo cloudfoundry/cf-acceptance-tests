@@ -4,18 +4,45 @@ require 'rubygems'
 require 'sinatra/base'
 require 'json'
 require 'pp'
+require 'logger'
+
+$log = Logger.new('service_broker.log','weekly')
 
 ID = ((ENV["VCAP_APPLICATION"] && JSON.parse(ENV["VCAP_APPLICATION"])["instance_id"]) || SecureRandom.uuid).freeze
 
 require 'bundler'
 Bundler.require :default, ENV['RACK_ENV'].to_sym
 
-CONFIG_DATA = ENV['CONFIG'] ? JSON.parse(ENV['CONFIG']) : { 'service' => {}, 'plan' => {}, 'dashboard_client' => {} }
+CONFIG_DATA = ENV['CONFIG'] ? JSON.parse(File.read(ENV['CONFIG'])) : { 'service' => {}, 'plan' => {}, 'dashboard_client' => {} }
 
 $stdout.sync = true
 $stderr.sync = true
 
 class ServiceBroker < Sinatra::Base
+  set :logging, true
+
+  configure :production, :developmemt, :test do
+    $log = Logger.new(STDOUT)
+
+    CONFIG_DATA.merge!({ 'service' => {} }) unless CONFIG_DATA.has_key?('service')
+    CONFIG_DATA.merge!({ 'plan' => {} }) unless CONFIG_DATA.has_key?('plan')
+    CONFIG_DATA.merge!({ 'dashboard_client' => {} }) unless CONFIG_DATA.has_key?('dashboard_client')
+  end
+
+  configure :test do
+    $log.level = Logger::INFO
+    $log.info "log configured for test"
+  end
+
+  configure :production do
+    $log.level = Logger::WARN
+    $log.info "log configured for production"
+  end
+
+  configure :development do
+    $log.level = Logger::DEBUG
+    $log.info "log configured for development"
+  end
 
   def dashboard_client
     {
@@ -23,6 +50,10 @@ class ServiceBroker < Sinatra::Base
       'secret'       => 'sso-secret',
       'redirect_uri' => 'http://localhost:5551'
     }.merge(CONFIG_DATA['dashboard_client'])
+  end
+
+  def log(request)
+    $log.info "#{request.env['REQUEST_METHOD']} #{request.env['PATH_INFO']} #{request.env['QUERY_STRING']}"
   end
 
   def plans
@@ -47,6 +78,7 @@ class ServiceBroker < Sinatra::Base
   end
 
   def catalog
+    log(request)
     {
     'services' => [
       {
@@ -74,33 +106,40 @@ class ServiceBroker < Sinatra::Base
   end
 
   get '/v2/catalog/?' do
+    log(request)
     catalog.to_json
   end
 
   put '/v2/service_instances/:id/?' do
+    log(request)
     status 201
     {}.to_json
   end
 
   patch '/v2/service_instances/:id/?' do
+    log(request)
     status 200
     {}.to_json
   end
 
   delete '/v2/service_instances/:id/?' do
+    log(request)
     status 200
     {}.to_json
   end
 
   get '/env/:name' do
+    log(request)
     ENV[params[:name]]
   end
 
   get '/env' do
+    log(request)
     ENV.to_hash.to_s
   end
 
   put '/v2/service_instances/:instance_id/service_bindings/:id' do |instance_id, binding_id|
+    log(request)
     content_type :json
 
     begin
@@ -114,19 +153,20 @@ class ServiceBroker < Sinatra::Base
           "port" => 3306,
           "database" => "fake-dbname"}
       }.to_json
-    rescue Exception => e
+    rescue => e
       status 502
       {"description" => e.message}.to_json
     end
   end
 
   delete '/v2/service_instances/:instance_id/service_bindings/:id' do |instance_id, binding_id|
+    log(request)
     content_type :json
 
     begin
       status 200
       {}.to_json
-    rescue Exception => e
+    rescue => e
       status 502
       {"description" => e.message}.to_json
     end
