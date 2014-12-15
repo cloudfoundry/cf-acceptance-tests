@@ -89,6 +89,13 @@ var _ = Describe("Service Instance Lifecycle", func() {
 			appEnv = cf.Cf("env", appName).Wait(DEFAULT_TIMEOUT)
 			Expect(appEnv).To(Exit(0), "failed get env for app")
 			Expect(appEnv.Out.Contents()).ToNot(ContainSubstring(fmt.Sprintf("credentials")))
+
+			deleteService := cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)
+			Expect(deleteService).To(Exit(0))
+
+			deleteApp := cf.Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)
+			Expect(deleteApp).To(Exit(0))
+
 		})
 	})
 })
