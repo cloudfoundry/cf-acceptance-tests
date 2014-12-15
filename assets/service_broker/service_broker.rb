@@ -13,7 +13,7 @@ ID = ((ENV["VCAP_APPLICATION"] && JSON.parse(ENV["VCAP_APPLICATION"])["instance_
 require 'bundler'
 Bundler.require :default, ENV['RACK_ENV'].to_sym
 
-CONFIG_DATA = ENV['CONFIG'] ? JSON.parse(File.read(ENV['CONFIG'])) : { 'service' => {}, 'plan' => {}, 'dashboard_client' => {} }
+CONFIG_DATA = { 'service' => {}, 'plan' => {}, 'dashboard_client' => {} }
 
 $stdout.sync = true
 $stderr.sync = true
@@ -23,6 +23,12 @@ class ServiceBroker < Sinatra::Base
 
   configure :production, :developmemt, :test do
     $log = Logger.new(STDOUT)
+
+    begin
+      CONFIG_DATA = JSON.parse(ENV['CONFIG'])
+    rescue => e
+      $log.info("Error loading config data as JSON")
+    end
 
     CONFIG_DATA.merge!({ 'service' => {} }) unless CONFIG_DATA.has_key?('service')
     CONFIG_DATA.merge!({ 'plan' => {} }) unless CONFIG_DATA.has_key?('plan')
@@ -53,7 +59,7 @@ class ServiceBroker < Sinatra::Base
   end
 
   def log(request)
-    $log.info "#{request.env['REQUEST_METHOD']} #{request.env['PATH_INFO']} #{request.env['QUERY_STRING']}"
+   $log.info "#{request.env['REQUEST_METHOD']} #{request.env['PATH_INFO']} #{request.env['QUERY_STRING']}"
   end
 
   def plans
@@ -146,12 +152,13 @@ class ServiceBroker < Sinatra::Base
       status 201
       {
           "credentials" => {
-          "uri" => "fake-service://fake-user:fake-password@fake-host:3306/fake-dbname",
-          "username" => "fake-user",
-          "password" => "fake-password",
-          "host" => "fake-host",
-          "port" => 3306,
-          "database" => "fake-dbname"}
+            "uri" => "fake-service://fake-user:fake-password@fake-host:3306/fake-dbname",
+            "username" => "fake-user",
+            "password" => "fake-password",
+            "host" => "fake-host",
+            "port" => 3306,
+            "database" => "fake-dbname"
+          }
       }.to_json
     rescue => e
       status 502
