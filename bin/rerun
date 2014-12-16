@@ -1,0 +1,35 @@
+#!/bin/bash
+
+if ! which go 2>/dev/null; then
+  echo "Go is not installed."
+  exit 1
+fi
+
+if [ -z "$GOPATH" ]; then
+  echo "\$GOPATH is not set."
+  exit 1
+fi
+
+if [ $# -ne 1 ]; then
+  echo "need to set an arg(max repeat count)" 1>&2
+  exit 1
+fi
+
+. $(dirname $0)/goenv
+set +ex
+
+num=1
+while [ $num -le $1 ]
+do
+  echo "/##############################################################/"
+  echo "/# Rerun attempt $num:"
+  echo "/##############################################################/"
+  go run `dirname $0`/rerun.go
+  ret=$?
+  if test ${ret} -eq 0
+  then
+    break
+  fi
+
+  num=`expr $num + 1`
+done
