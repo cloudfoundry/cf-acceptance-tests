@@ -28,6 +28,7 @@ var _ = Describe("Environment Variables Groups", func() {
 			{
 				Name: "bin/compile",
 				Body: `#!/usr/bin/env bash
+sleep 5
 echo $CATS_STAGING_TEST_VAR
 exit 1
 `,
