@@ -39,7 +39,7 @@ var _ = Describe("Buildpacks", func() {
 			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().NodeWithWebsocket, "-c", "node app.js").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			Eventually(func() string {
-					return helpers.CurlAppRoot(appName)
+				return helpers.CurlAppRoot(appName)
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Not implemented"))
 		})
 	})
