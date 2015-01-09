@@ -60,6 +60,18 @@ var _ = Describe("Application Lifecycle", func() {
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 
+		It("makes system environment variables available", func() {
+			var envOutput string
+			Eventually(func() string {
+				envOutput = helpers.CurlApp(appName, "/env")
+				return envOutput
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring(`"CF_INSTANCE_INDEX"=>"0"`))
+			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_IP"=>"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"`))
+			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_PORT"=>"[0-9]+"`))
+			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_ADDR"=>"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+"`))
+			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_PORTS"=>"[{\\"external\\":[0-9]+,\\"internal\\":[0-9]+}]"`))
+		})
+
 		It("generates an app usage 'started' event", func() {
 			found, _ := lastAppUsageEvent(appName, "STARTED")
 			Expect(found).To(BeTrue())
