@@ -11,15 +11,17 @@ import (
 )
 
 var _ = Describe("Service Broker Lifecycle", func() {
-	var broker ServiceBroker
+	var broker, asyncBroker ServiceBroker
 
 	BeforeEach(func() {
 		broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
-		broker.Push()
-		broker.Configure()
+		asyncBroker = NewServiceBroker(generator.RandomName(), assets.NewAssets().AsyncServiceBroker, context)
 	})
 
-	It("confirms correct behavior in the lifecycle of a service broker", func() {
+	serviceBrokerTest := func(broker ServiceBroker) {
+		broker.Push()
+		broker.Configure()
+
 		// Adding the service broker
 		broker.Create()
 
@@ -67,5 +69,17 @@ var _ = Describe("Service Broker Lifecycle", func() {
 		Expect(output).NotTo(ContainSubstring(broker.Plans[0].Name))
 
 		broker.Destroy()
+	}
+
+	Context("Sync broker", func() {
+		It("confirms correct behavior in the lifecycle of a service broker", func() {
+			serviceBrokerTest(broker)
+		})
+	})
+
+	Context("Async broker", func() {
+		It("confirms correct behavior in the lifecycle of an async service broker", func() {
+			serviceBrokerTest(asyncBroker)
+		})
 	})
 })

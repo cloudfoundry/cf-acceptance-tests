@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
@@ -15,87 +16,137 @@ import (
 var _ = Describe("Service Instance Lifecycle", func() {
 	var broker ServiceBroker
 
-	BeforeEach(func() {
-		broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
-		broker.Plans = append(broker.Plans, Plan{Name: generator.RandomName(), ID: generator.RandomName()})
-		broker.Push()
-		broker.Configure()
-		broker.Create()
-		broker.PublicizePlans()
-	})
+	servicesInstancesTest := func(broker ServiceBroker) {
+		instanceName := generator.RandomName()
+		createService := cf.Cf("create-service", broker.Service.Name, broker.Plans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
+		Expect(createService).To(Exit(0))
 
-	AfterEach(func() {
-		broker.Destroy()
-	})
+		serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
+		Expect(serviceInfo.Out.Contents()).To(ContainSubstring(fmt.Sprintf("Plan: %s", broker.Plans[0].Name)))
 
-	Context("just service instances", func() {
-		It("can create, update, and delete a service instance", func() {
-			instanceName := generator.RandomName()
-			createService := cf.Cf("create-service", broker.Service.Name, broker.Plans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
-			Expect(createService).To(Exit(0))
+		updateService := cf.Cf("update-service", instanceName, "-p", broker.Plans[1].Name).Wait(DEFAULT_TIMEOUT)
+		Expect(updateService).To(Exit(0))
 
-			serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
-			Expect(serviceInfo.Out.Contents()).To(ContainSubstring(fmt.Sprintf("Plan: %s", broker.Plans[0].Name)))
+		serviceInfo = cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
+		Expect(serviceInfo.Out.Contents()).To(ContainSubstring(fmt.Sprintf("Plan: %s", broker.Plans[1].Name)))
 
-			updateService := cf.Cf("update-service", instanceName, "-p", broker.Plans[1].Name).Wait(DEFAULT_TIMEOUT)
-			Expect(updateService).To(Exit(0))
+		deleteService := cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)
+		Expect(deleteService).To(Exit(0))
 
-			serviceInfo = cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
-			Expect(serviceInfo.Out.Contents()).To(ContainSubstring(fmt.Sprintf("Plan: %s", broker.Plans[1].Name)))
+		serviceInfo = cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
+		Expect(serviceInfo.Out.Contents()).To(ContainSubstring("not found"))
+	}
 
-			deleteService := cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)
-			Expect(deleteService).To(Exit(0))
+	servicesBindingTest := func(broker ServiceBroker) {
+		appName := generator.RandomName()
+		createApp := cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)
+		Expect(createApp).To(Exit(0), "failed creating app")
 
-			serviceInfo = cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
-			Expect(serviceInfo.Out.Contents()).To(ContainSubstring("not found"))
+		checkForEvents(appName, []string{"audit.app.create"})
+
+		instanceName := generator.RandomName()
+		createService := cf.Cf("create-service", broker.Service.Name, broker.Plans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
+		Expect(createService).To(Exit(0), "failed creating service")
+
+		bindService := cf.Cf("bind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
+		Expect(bindService).To(Exit(0), "failed binding app to service")
+
+		checkForEvents(appName, []string{"audit.app.update"})
+
+		restageApp := cf.Cf("restage", appName).Wait(CF_PUSH_TIMEOUT)
+		Expect(restageApp).To(Exit(0), "failed restaging app")
+
+		checkForEvents(appName, []string{"audit.app.restage"})
+
+		appEnv := cf.Cf("env", appName).Wait(DEFAULT_TIMEOUT)
+		Expect(appEnv).To(Exit(0), "failed get env for app")
+		Expect(appEnv.Out.Contents()).To(ContainSubstring(fmt.Sprintf("credentials")))
+
+		unbindService := cf.Cf("unbind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
+		Expect(unbindService).To(Exit(0), "failed unbinding app to service")
+
+		checkForEvents(appName, []string{"audit.app.update"})
+
+		appEnv = cf.Cf("env", appName).Wait(DEFAULT_TIMEOUT)
+		Expect(appEnv).To(Exit(0), "failed get env for app")
+		Expect(appEnv.Out.Contents()).ToNot(ContainSubstring(fmt.Sprintf("credentials")))
+
+		deleteService := cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)
+		Expect(deleteService).To(Exit(0))
+
+		deleteApp := cf.Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)
+		Expect(deleteApp).To(Exit(0))
+	}
+
+	Context("Sync broker", func() {
+		BeforeEach(func() {
+			broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
+			broker.Plans = append(broker.Plans, Plan{Name: generator.RandomName(), ID: generator.RandomName()})
+			broker.Push()
+			broker.Configure()
+			broker.Create()
+			broker.PublicizePlans()
+		})
+
+		AfterEach(func() {
+			broker.Destroy()
+		})
+
+		Context("just service instances", func() {
+			It("can create, update, and delete a service instance", func() {
+				servicesInstancesTest(broker)
+			})
+		})
+
+		Context("service instances with an app", func() {
+			It("can bind and unbind service to app and check app env and events", func() {
+				servicesBindingTest(broker)
+			})
 		})
 	})
 
-	Context("service instances with an app", func() {
-		var (
-			appName, instanceName string
-		)
+	Context("Async broker", func() {
+		BeforeEach(func() {
+			broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().AsyncServiceBroker, context)
+			broker.Plans = append(broker.Plans, Plan{Name: generator.RandomName(), ID: generator.RandomName()})
+			broker.Push()
+			broker.Configure()
+			broker.Create()
+			broker.PublicizePlans()
+		})
 
-		It("can bind and unbind service to app and check app env and events", func() {
-			appName = generator.RandomName()
-			createApp := cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)
-			Expect(createApp).To(Exit(0), "failed creating app")
+		AfterEach(func() {
+			broker.Destroy()
+		})
 
-			checkForEvents(appName, []string{"audit.app.create"})
+		Context("just service instances", func() {
+			It("can create, update, and delete a service instance", func() {
+				servicesInstancesTest(broker)
+			})
 
-			instanceName = generator.RandomName()
-			createService := cf.Cf("create-service", broker.Service.Name, broker.Plans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
-			Expect(createService).To(Exit(0), "failed creating service")
+			PIt("creates services asynchronously and updates the state and state_description without blocking", func() {
+				instanceName := generator.RandomName()
+				createService := cf.Cf("create-service", broker.Service.Name, broker.Plans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
+				Expect(createService).To(Exit(0), "failed creating service")
 
-			bindService := cf.Cf("bind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
-			Expect(bindService).To(Exit(0), "failed binding app to service")
+				Eventually(func() string {
+					serviceDetails := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
+					Expect(createService).To(Exit(0), "failed getting service instance details")
+					return string(serviceDetails.Out.Contents())
+				}, 20*time.Second, 1*time.Second).Should(ContainSubstring("100% done"))
 
-			checkForEvents(appName, []string{"audit.app.update"})
+				serviceDetails := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
+				Expect(createService).To(Exit(0), "failed getting service instance details")
 
-			restageApp := cf.Cf("restage", appName).Wait(CF_PUSH_TIMEOUT)
-			Expect(restageApp).To(Exit(0), "failed restaging app")
+				Expect(serviceDetails.Out.Contents()).To(ContainSubstring("Status: available"))
+				Expect(serviceDetails.Out.Contents()).To(ContainSubstring("Message: 100% done"))
+			})
+		})
 
-			checkForEvents(appName, []string{"audit.app.restage"})
-
-			appEnv := cf.Cf("env", appName).Wait(DEFAULT_TIMEOUT)
-			Expect(appEnv).To(Exit(0), "failed get env for app")
-			Expect(appEnv.Out.Contents()).To(ContainSubstring(fmt.Sprintf("credentials")))
-
-			unbindService := cf.Cf("unbind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
-			Expect(unbindService).To(Exit(0), "failed unbinding app to service")
-
-			checkForEvents(appName, []string{"audit.app.update"})
-
-			appEnv = cf.Cf("env", appName).Wait(DEFAULT_TIMEOUT)
-			Expect(appEnv).To(Exit(0), "failed get env for app")
-			Expect(appEnv.Out.Contents()).ToNot(ContainSubstring(fmt.Sprintf("credentials")))
-
-			deleteService := cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)
-			Expect(deleteService).To(Exit(0))
-
-			deleteApp := cf.Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)
-			Expect(deleteApp).To(Exit(0))
-
+		Context("service instances with an app", func() {
+			It("can bind and unbind service to app and check app env and events", func() {
+				servicesBindingTest(broker)
+			})
 		})
 	})
 })

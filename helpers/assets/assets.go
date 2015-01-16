@@ -11,6 +11,7 @@ type Assets struct {
 	Python                   string
 	LoggregatorLoadGenerator string
 	ServiceBroker            string
+	AsyncServiceBroker       string
 	Php                      string
 	SecurityGroupBuildpack   string
 	Fuse                     string
@@ -29,6 +30,7 @@ func NewAssets() Assets {
 		Python:            "../assets/python",
 		LoggregatorLoadGenerator: "../assets/loggregator-load-generator",
 		ServiceBroker:            "../assets/service_broker",
+		AsyncServiceBroker:       "../assets/async_service_broker",
 		Php:                      "../assets/php",
 		SecurityGroupBuildpack: "../assets/security_group_buildpack.zip",
 		Fuse:       "../assets/fuse-mount",
