@@ -138,7 +138,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 				serviceDetails := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
 				Expect(createService).To(Exit(0), "failed getting service instance details")
 
-				Expect(serviceDetails.Out.Contents()).To(ContainSubstring("Status: available"))
+				Expect(serviceDetails.Out.Contents()).To(ContainSubstring("Status: create succeeded"))
 				Expect(serviceDetails.Out.Contents()).To(ContainSubstring("Message: 100% done"))
 			})
 		})
