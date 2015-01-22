@@ -133,7 +133,7 @@ class ServiceBroker < Sinatra::Base
       SERVICE_INSTANCE_PROGRESS += 1
       response
     else
-      {state: 'in progress', state_description: "100% done"}.to_json
+      {state: 'succeeded', state_description: "100% done"}.to_json
     end
   end
 
