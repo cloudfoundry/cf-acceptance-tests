@@ -120,19 +120,20 @@ class ServiceBroker < Sinatra::Base
 
   put '/v2/service_instances/:id/?' do
     log(request)
-    status 201
+    status 202
     SERVICE_INSTANCE_PROGRESS = 0
-    {state: 'in progress'}.to_json
+    {state: 'in progress', state_description: '0% done'}.to_json
   end
 
   get '/v2/service_instances/:id/?' do
     log(request)
-    status 201
     if SERVICE_INSTANCE_PROGRESS < 2
-      response = {state: 'in progress', state_description: "#{SERVICE_INSTANCE_PROGRESS * 10}% done"}.to_json
+      status 200
       SERVICE_INSTANCE_PROGRESS += 1
+      response = {state: 'in progress', state_description: "#{SERVICE_INSTANCE_PROGRESS * 10}% done"}.to_json
       response
     else
+      status 200
       {state: 'succeeded', state_description: "100% done"}.to_json
     end
   end
