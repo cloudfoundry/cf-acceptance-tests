@@ -28,7 +28,7 @@ class ServiceBroker < Sinatra::Base
 
     begin
       CONFIG_DATA = JSON.parse(ENV['CONFIG'])
-    rescue => e
+    rescue
       $log.info("Error loading config data as JSON")
     end
 
@@ -163,35 +163,25 @@ class ServiceBroker < Sinatra::Base
     log(request)
     content_type :json
 
-    begin
-      status 201
-      {
-          "credentials" => {
-            "uri" => "fake-service://fake-user:fake-password@fake-host:3306/fake-dbname",
-            "username" => "fake-user",
-            "password" => "fake-password",
-            "host" => "fake-host",
-            "port" => 3306,
-            "database" => "fake-dbname"
-          }
-      }.to_json
-    rescue => e
-      status 502
-      {"description" => e.message}.to_json
-    end
+    status 201
+    {
+        "credentials" => {
+          "uri" => "fake-service://fake-user:fake-password@fake-host:3306/fake-dbname",
+          "username" => "fake-user",
+          "password" => "fake-password",
+          "host" => "fake-host",
+          "port" => 3306,
+          "database" => "fake-dbname"
+        }
+    }.to_json
   end
 
   delete '/v2/service_instances/:instance_id/service_bindings/:id' do |instance_id, binding_id|
     log(request)
     content_type :json
 
-    begin
-      status 200
-      {}.to_json
-    rescue => e
-      status 502
-      {"description" => e.message}.to_json
-    end
+    status 200
+    {}.to_json
   end
 
   run! if app_file == $0
