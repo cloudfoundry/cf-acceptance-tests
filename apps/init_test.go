@@ -39,11 +39,15 @@ func TestApplications(t *testing.T) {
 	environment := helpers.NewEnvironment(context)
 
 	BeforeSuite(func() {
-		environment.Setup()
+		InterceptGomegaFailures(func() {
+			environment.Setup()
+		})
 	})
 
 	AfterSuite(func() {
-		environment.Teardown()
+		InterceptGomegaFailures(func() {
+			environment.Teardown()
+		})
 	})
 
 	componentName := "Applications"
