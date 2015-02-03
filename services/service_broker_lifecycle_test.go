@@ -11,11 +11,10 @@ import (
 )
 
 var _ = Describe("Service Broker Lifecycle", func() {
-	var broker, asyncBroker ServiceBroker
+	var broker ServiceBroker
 
 	BeforeEach(func() {
 		broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
-		asyncBroker = NewServiceBroker(generator.RandomName(), assets.NewAssets().AsyncServiceBroker, context)
 	})
 
 	serviceBrokerTest := func(broker ServiceBroker) {
@@ -71,15 +70,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 		broker.Destroy()
 	}
 
-	Context("Sync broker", func() {
-		It("confirms correct behavior in the lifecycle of a service broker", func() {
-			serviceBrokerTest(broker)
-		})
-	})
-
-	Context("Async broker", func() {
-		It("confirms correct behavior in the lifecycle of an async service broker", func() {
-			serviceBrokerTest(asyncBroker)
-		})
+	It("confirms correct behavior in the lifecycle of a service broker", func() {
+		serviceBrokerTest(broker)
 	})
 })
