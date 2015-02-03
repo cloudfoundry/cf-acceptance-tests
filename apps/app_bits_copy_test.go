@@ -29,7 +29,7 @@ var _ = Describe("Copy app bits", func() {
 	})
 
 	It("Copies over the package from the source app to the destination app", func() {
-		Expect(cf.Cf("copy-source", helloWorldAppName, golangAppName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("copy-source", helloWorldAppName, golangAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(golangAppName)
