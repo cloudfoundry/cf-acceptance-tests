@@ -19,6 +19,7 @@ $stdout.sync = true
 $stderr.sync = true
 
 SERVICE_INSTANCE_PROGRESS = 0
+TOTAL = 2
 
 class ServiceBroker < Sinatra::Base
   set :logging, true
@@ -122,19 +123,33 @@ class ServiceBroker < Sinatra::Base
     log(request)
     status 202
     SERVICE_INSTANCE_PROGRESS = 0
-    {state: 'in progress', state_description: '0% done'}.to_json
+    {
+      last_operation: {
+        state: 'in progress',
+        description: '0% done',
+      }
+    }.to_json
   end
 
   get '/v2/service_instances/:id/?' do
     log(request)
-    if SERVICE_INSTANCE_PROGRESS < 2
+    if SERVICE_INSTANCE_PROGRESS < TOTAL
       status 200
       SERVICE_INSTANCE_PROGRESS += 1
-      response = {state: 'in progress', state_description: "#{SERVICE_INSTANCE_PROGRESS * 10}% done"}.to_json
-      response
+      {
+        last_operation: {
+          state: 'in progress',
+          description: "#{SERVICE_INSTANCE_PROGRESS / (TOTAL.to_f + 1) * 100}% done",
+        }
+      }.to_json
     else
       status 200
-      {state: 'succeeded', state_description: "100% done"}.to_json
+      {
+        last_operation: {
+          state: 'succeeded',
+          description: '100% done',
+        }
+      }.to_json
     end
   end
 
