@@ -33,22 +33,7 @@ var _ = Describe("Logging", func() {
 			drainListener.StartListener()
 			go drainListener.AcceptConnections()
 
-			// verify listener is reachable via configured public IP
-			var conn net.Conn
-
-			var err error
-			conn, err = net.Dial("tcp", syslogDrainAddress)
-			Expect(err).ToNot(HaveOccurred())
-
-			defer conn.Close()
-
-			randomMessage := "random-message-" + generator.RandomName()
-			_, err = conn.Write([]byte(randomMessage))
-			Expect(err).ToNot(HaveOccurred())
-
-			Eventually(func() bool {
-				return drainListener.DidReceive(randomMessage)
-			}).Should(BeTrue())
+			testThatDrainIsReachable(syslogDrainAddress, drainListener)
 
 			appName = generator.RandomName()
 			appUrl = appName + "." + testConfig.AppsDomain
@@ -60,7 +45,6 @@ var _ = Describe("Logging", func() {
 
 			Expect(cf.Cf("cups", serviceName, "-l", syslogDrainUrl).Wait(DEFAULT_TIMEOUT)).To(Exit(0), "Failed to create syslog drain service")
 			Expect(cf.Cf("bind-service", appName, serviceName).Wait(DEFAULT_TIMEOUT)).To(Exit(0), "Failed to bind service")
-			Expect(cf.Cf("restage", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0), "Failed to restage app")
 		})
 
 		AfterEach(func() {
@@ -75,11 +59,11 @@ var _ = Describe("Logging", func() {
 
 		It("forwards app messages to registered syslog drains", func() {
 			randomMessage := "random-message-" + generator.RandomName()
-			http.Get("http://" + appUrl + "/log/" + randomMessage)
 
 			Eventually(func() bool {
+				http.Get("http://" + appUrl + "/log/" + randomMessage)
 				return drainListener.DidReceive(randomMessage)
-			}).Should(BeTrue(), "Never received "+randomMessage+" on syslog drain listener")
+			}, 90, 1).Should(BeTrue(), "Never received "+randomMessage+" on syslog drain listener")
 		})
 	})
 })
@@ -136,4 +120,18 @@ func (s *syslogDrainListener) handleConnection(conn net.Conn) {
 		s.receivedMessages += string(buffer[0:n])
 		s.Unlock()
 	}
+}
+
+func testThatDrainIsReachable(syslogDrainAddress string, drainListener *syslogDrainListener) {
+	conn, err := net.Dial("tcp", syslogDrainAddress)
+	Expect(err).ToNot(HaveOccurred())
+	defer conn.Close()
+
+	randomMessage := "random-message-" + generator.RandomName()
+	_, err = conn.Write([]byte(randomMessage))
+	Expect(err).ToNot(HaveOccurred())
+
+	Eventually(func() bool {
+		return drainListener.DidReceive(randomMessage)
+	}).Should(BeTrue())
 }
