@@ -19,12 +19,13 @@ $stdout.sync = true
 $stderr.sync = true
 
 SERVICE_INSTANCE_PROGRESS = 0
-TOTAL = 2
+TOTAL = 1
 
 class ServiceBroker < Sinatra::Base
   set :logging, true
 
   configure :production, :developmemt, :test do
+    $num_state_fetches = {}
     $log = Logger.new(STDOUT)
 
     begin
@@ -119,10 +120,10 @@ class ServiceBroker < Sinatra::Base
     catalog.to_json
   end
 
-  put '/v2/service_instances/:id/?' do
+  put '/v2/service_instances/:id/?' do |id|
     log(request)
     status 202
-    SERVICE_INSTANCE_PROGRESS = 0
+    $num_state_fetches[id] = 0
     {
       last_operation: {
         state: 'in progress',
@@ -131,18 +132,19 @@ class ServiceBroker < Sinatra::Base
     }.to_json
   end
 
-  get '/v2/service_instances/:id/?' do
+  get '/v2/service_instances/:id/?' do |id|
     log(request)
-    if SERVICE_INSTANCE_PROGRESS < TOTAL
+    if $num_state_fetches[id] < TOTAL
       status 200
-      SERVICE_INSTANCE_PROGRESS += 1
+      $num_state_fetches[id] += 1
       {
         last_operation: {
           state: 'in progress',
-          description: "#{SERVICE_INSTANCE_PROGRESS / (TOTAL.to_f + 1) * 100}% done",
+          description: "#{$num_state_fetches[id] / (TOTAL.to_f + 1) * 100}% done",
         }
       }.to_json
     else
+      $num_state_fetches.delete(id)
       status 200
       {
         last_operation: {
@@ -153,10 +155,16 @@ class ServiceBroker < Sinatra::Base
     end
   end
 
-  patch '/v2/service_instances/:id/?' do
+  patch '/v2/service_instances/:id/?' do |id|
     log(request)
-    status 200
-    {}.to_json
+    status 202
+    $num_state_fetches[id] = 0
+    {
+      last_operation: {
+        state: 'in progress',
+        description: '0% done',
+      }
+    }.to_json
   end
 
   delete '/v2/service_instances/:id/?' do

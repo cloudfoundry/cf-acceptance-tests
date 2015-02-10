@@ -34,7 +34,7 @@ type Response struct {
 var _ = Describe("Service Instance Lifecycle", func() {
 	var broker ServiceBroker
 
-	waitForAsyncProvisioning := func(broker ServiceBroker, instanceName string) {
+	waitForAsyncOperationToComplete := func(broker ServiceBroker, instanceName string) {
 		// TODO: Use this code when CLI supports async
 		// Eventually(func() string {
 		// 	serviceDetails := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
@@ -165,19 +165,21 @@ var _ = Describe("Service Instance Lifecycle", func() {
 				createService := cf.Cf("create-service", broker.Service.Name, broker.Plans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
 				Expect(createService).To(Exit(0))
 
-				waitForAsyncProvisioning(broker, instanceName)
+				waitForAsyncOperationToComplete(broker, instanceName)
 
 				serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
 				Expect(serviceInfo.Out.Contents()).To(ContainSubstring(fmt.Sprintf("Plan: %s", broker.Plans[0].Name)))
+				// TODO: uncomment when CLI supports async
+				// Expect(serviceInfo.Out.Contents()).To(ContainSubstring("Status: create succeeded"))
+				// Expect(serviceInfo.Out.Contents()).To(ContainSubstring("Message: 100% done"))
 
 				updateService := cf.Cf("update-service", instanceName, "-p", broker.Plans[1].Name).Wait(DEFAULT_TIMEOUT)
 				Expect(updateService).To(Exit(0))
 
+				waitForAsyncOperationToComplete(broker, instanceName)
+
 				serviceInfo = cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
 				Expect(serviceInfo).To(Exit(0), "failed getting service instance details")
-				// TODO: uncomment when CLI supports async
-				// Expect(serviceInfo.Out.Contents()).To(ContainSubstring("Status: create succeeded"))
-				// Expect(serviceInfo.Out.Contents()).To(ContainSubstring("Message: 100% done"))
 				Expect(serviceInfo.Out.Contents()).To(ContainSubstring(fmt.Sprintf("Plan: %s", broker.Plans[1].Name)))
 
 				bindService := cf.Cf("bind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
