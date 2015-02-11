@@ -120,7 +120,7 @@ exit 1
 		bytes = runner.Run("bash", "-c", "cf oauth-token | tail -n +4").Wait(5).Out.Contents()
 		token = strings.TrimSpace(string(bytes))
 		uploadUrl := fmt.Sprintf("%s/v3/packages/%s/upload", config.ApiEndpoint, packageGuid)
-		bytes, _ = exec.Command("curl", "-v", "-s", uploadUrl, "-F", `bits=@"/Users/pivotal/workspace/cf-release/src/acceptance-tests/dora.zip"`, "-H", fmt.Sprintf("Authorization: %s", token)).CombinedOutput()
+		bytes, _ = exec.Command("curl", "-v", "-s", uploadUrl, "-F", `bits=@"/Users/pivotal/workspace/cf-release/src/acceptance-tests/v3/dora.zip"`, "-H", fmt.Sprintf("Authorization: %s", token)).CombinedOutput()
 		pkgUrl := fmt.Sprintf("/v3/packages/%s", packageGuid)
 		Eventually(func() *Session {
 			session = cf.Cf("curl", pkgUrl)
