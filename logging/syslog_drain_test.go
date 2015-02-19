@@ -24,7 +24,7 @@ var _ = Describe("Logging", func() {
 	Describe("Syslog drains", func() {
 		var drainListener *syslogDrainListener
 		var serviceName string
-		var appUrl string
+		var appURL string
 
 		BeforeEach(func() {
 			syslogDrainAddress := fmt.Sprintf("%s:%d", testConfig.SyslogIpAddress, testConfig.SyslogDrainPort)
@@ -36,23 +36,24 @@ var _ = Describe("Logging", func() {
 			testThatDrainIsReachable(syslogDrainAddress, drainListener)
 
 			appName = generator.RandomName()
-			appUrl = appName + "." + testConfig.AppsDomain
+			appURL = appName + "." + testConfig.AppsDomain
 
-			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().RubySimple).Wait(CF_PUSH_TIMEOUT)).To(Exit(0), "Failed to push app")
+			Eventually(cf.Cf("push", appName, "-p", assets.NewAssets().RubySimple), CF_PUSH_TIMEOUT).Should(Exit(0), "Failed to push app")
 
-			syslogDrainUrl := "syslog://" + syslogDrainAddress
+			syslogDrainURL := "syslog://" + syslogDrainAddress
 			serviceName = "service-" + generator.RandomName()
 
-			Expect(cf.Cf("cups", serviceName, "-l", syslogDrainUrl).Wait(DEFAULT_TIMEOUT)).To(Exit(0), "Failed to create syslog drain service")
-			Expect(cf.Cf("bind-service", appName, serviceName).Wait(DEFAULT_TIMEOUT)).To(Exit(0), "Failed to bind service")
+			Eventually(cf.Cf("cups", serviceName, "-l", syslogDrainURL), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to create syslog drain service")
+			Eventually(cf.Cf("bind-service", appName, serviceName), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to bind service")
 		})
 
 		AfterEach(func() {
-			Expect(cf.Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0), "Failed to delete app")
+			Eventually(cf.Cf("delete", appName, "-f"), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to delete app")
 			if serviceName != "" {
-				Expect(cf.Cf("delete-service", serviceName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0), "Failed to delete service")
+				Eventually(cf.Cf("delete-service", serviceName, "-f"), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to delete service")
 			}
-			Expect(cf.Cf("delete-orphaned-routes", "-f").Wait(CF_PUSH_TIMEOUT)).To(Exit(0), "Failed to delete orphaned routes")
+
+			Eventually(cf.Cf("delete-orphaned-routes", "-f"), CF_PUSH_TIMEOUT).Should(Exit(0), "Failed to delete orphaned routes")
 
 			drainListener.Stop()
 		})
@@ -61,7 +62,7 @@ var _ = Describe("Logging", func() {
 			randomMessage := "random-message-" + generator.RandomName()
 
 			Eventually(func() bool {
-				http.Get("http://" + appUrl + "/log/" + randomMessage)
+				http.Get("http://" + appURL + "/log/" + randomMessage)
 				return drainListener.DidReceive(randomMessage)
 			}, 90, 1).Should(BeTrue(), "Never received "+randomMessage+" on syslog drain listener")
 		})
