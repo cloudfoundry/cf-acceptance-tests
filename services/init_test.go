@@ -31,7 +31,7 @@ func TestApplications(t *testing.T) {
 		CF_PUSH_TIMEOUT = config.CfPushTimeout * time.Second
 	}
 
-	if config.CfPushTimeout > 0 {
+	if config.BrokerStartTimeout > 0 {
 		BROKER_START_TIMEOUT = config.BrokerStartTimeout * time.Second
 	}
 
