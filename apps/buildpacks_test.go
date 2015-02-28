@@ -34,16 +34,6 @@ var _ = Describe("Buildpacks", func() {
 		})
 	})
 
-	Describe("nodeWithWebsocket", func() {
-		It("pushes successfully", func() {
-			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().NodeWithWebsocket, "-c", "node app.js").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
-
-			Eventually(func() string {
-				return helpers.CurlAppRoot(appName)
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Not implemented"))
-		})
-	})
-
 	Describe("java", func() {
 		It("makes the app reachable via its bound route", func() {
 			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Java, "--no-start", "-m", "512M").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
