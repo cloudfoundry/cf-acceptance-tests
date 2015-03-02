@@ -134,6 +134,7 @@ class ServiceBroker < Sinatra::Base
 
   get '/v2/service_instances/:id/?' do |id|
     log(request)
+    $num_state_fetches[id] ||= 0
     if $num_state_fetches[id] < TOTAL
       status 200
       $num_state_fetches[id] += 1
@@ -167,10 +168,16 @@ class ServiceBroker < Sinatra::Base
     }.to_json
   end
 
-  delete '/v2/service_instances/:id/?' do
+  delete '/v2/service_instances/:id/?' do |id|
     log(request)
-    status 200
-    {}.to_json
+    status 202
+    $num_state_fetches[id] = 0
+    {
+      last_operation: {
+        state: 'in progress',
+        description: '0% done',
+      }
+    }.to_json
   end
 
   get '/env/:name' do
