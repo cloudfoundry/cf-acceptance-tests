@@ -144,7 +144,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 			broker.Destroy()
 		})
 
-		FIt("can create, update, bind, unbind, and delete a service instance", func() {
+		It("can create, update, bind, unbind, and delete a service instance", func() {
 			appName := generator.RandomName()
 			createApp := cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)
 			Expect(createApp).To(Exit(0), "failed creating app")
