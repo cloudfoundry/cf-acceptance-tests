@@ -222,7 +222,5 @@
       }
     }
   },
-  "service_instances": {},
-  "service_bindings": {},
   "max_fetch_service_instance_requests": 1
 }
