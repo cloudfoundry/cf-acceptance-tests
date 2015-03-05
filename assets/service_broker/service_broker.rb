@@ -92,7 +92,7 @@ class DataSource
 
   def merge!(data)
     data = data.dup
-    data['service_instances'] = data['service_instances'].inject({}) do |service_instances, (guid, instance_data)|
+    data['service_instances'] = data.fetch('service_instances', {}).inject({}) do |service_instances, (guid, instance_data)|
       symbolized_data = instance_data.inject({}) do |memo,(k,v)|
         memo[k.to_sym] = v
         memo
@@ -101,7 +101,14 @@ class DataSource
       service_instances[guid] = ServiceInstance.new(symbolized_data)
       service_instances
     end
-    @data.merge!(data)
+
+    data.each_pair do |key, value|
+      if @data[key]
+        @data[key].merge!(value)
+      else
+        @data[key] = value
+      end
+    end
   end
 
   def without_instances_or_bindings
