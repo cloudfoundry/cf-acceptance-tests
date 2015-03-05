@@ -17,10 +17,10 @@ $stderr.sync = true
 class ServiceInstance
   attr_reader :provision_data, :fetch_count, :deleted
 
-  def initialize(provision_data:, fetch_count: 0, deleted: false)
-    @provision_data = provision_data
-    @fetch_count = fetch_count
-    @deleted = deleted
+  def initialize(opts={})
+    @provision_data = opts.fetch(:provision_data)
+    @fetch_count = opts.fetch(:fetch_count, 0)
+    @deleted = opts.fetch(:deleted, false)
   end
 
   def plan_id
@@ -103,7 +103,7 @@ class DataSource
     end
 
     data.each_pair do |key, value|
-      if @data[key]
+      if @data[key] && @data[key].is_a?(Hash)
         @data[key].merge!(value)
       else
         @data[key] = value
