@@ -3,3 +3,4 @@ tags
 *.test
 results
 .idea
+.DS_Store

@@ -52,7 +52,6 @@ var _ = Describe("Service Instance Lifecycle", func() {
 	Context("Sync broker", func() {
 		BeforeEach(func() {
 			broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
-			broker.Plans = append(broker.Plans, Plan{Name: generator.RandomName(), ID: generator.RandomName()})
 			broker.Push()
 			broker.Configure()
 			broker.Create()
@@ -66,17 +65,17 @@ var _ = Describe("Service Instance Lifecycle", func() {
 		Context("just service instances", func() {
 			It("can create, update, and delete a service instance", func() {
 				instanceName := generator.RandomName()
-				createService := cf.Cf("create-service", broker.Service.Name, broker.Plans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
+				createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
 				Expect(createService).To(Exit(0))
 
 				serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
-				Expect(serviceInfo.Out.Contents()).To(ContainSubstring(fmt.Sprintf("Plan: %s", broker.Plans[0].Name)))
+				Expect(serviceInfo.Out.Contents()).To(ContainSubstring(fmt.Sprintf("Plan: %s", broker.SyncPlans[0].Name)))
 
-				updateService := cf.Cf("update-service", instanceName, "-p", broker.Plans[1].Name).Wait(DEFAULT_TIMEOUT)
+				updateService := cf.Cf("update-service", instanceName, "-p", broker.SyncPlans[1].Name).Wait(DEFAULT_TIMEOUT)
 				Expect(updateService).To(Exit(0))
 
 				serviceInfo = cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
-				Expect(serviceInfo.Out.Contents()).To(ContainSubstring(fmt.Sprintf("Plan: %s", broker.Plans[1].Name)))
+				Expect(serviceInfo.Out.Contents()).To(ContainSubstring(fmt.Sprintf("Plan: %s", broker.SyncPlans[1].Name)))
 
 				deleteService := cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)
 				Expect(deleteService).To(Exit(0))
@@ -95,7 +94,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 				checkForEvents(appName, []string{"audit.app.create"})
 
 				instanceName := generator.RandomName()
-				createService := cf.Cf("create-service", broker.Service.Name, broker.Plans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
+				createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
 				Expect(createService).To(Exit(0), "failed creating service")
 
 				bindService := cf.Cf("bind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
@@ -132,8 +131,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 
 	Context("Async broker", func() {
 		BeforeEach(func() {
-			broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().AsyncServiceBroker, context)
-			broker.Plans = append(broker.Plans, Plan{Name: generator.RandomName(), ID: generator.RandomName()})
+			broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
 			broker.Push()
 			broker.Configure()
 			broker.Create()
@@ -150,24 +148,24 @@ var _ = Describe("Service Instance Lifecycle", func() {
 			Expect(createApp).To(Exit(0), "failed creating app")
 
 			instanceName := generator.RandomName()
-			createService := cf.Cf("create-service", broker.Service.Name, broker.Plans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
+			createService := cf.Cf("create-service", broker.Service.Name, broker.AsyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
 			Expect(createService).To(Exit(0))
 
 			waitForAsyncOperationToComplete(broker, instanceName)
 
 			serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
-			Expect(serviceInfo.Out.Contents()).To(ContainSubstring(fmt.Sprintf("Plan: %s", broker.Plans[0].Name)))
+			Expect(serviceInfo.Out.Contents()).To(ContainSubstring(fmt.Sprintf("Plan: %s", broker.AsyncPlans[0].Name)))
 			Expect(serviceInfo.Out.Contents()).To(ContainSubstring("Status: create succeeded"))
-			Expect(serviceInfo.Out.Contents()).To(ContainSubstring("Message: 100% done"))
+			Expect(serviceInfo.Out.Contents()).To(ContainSubstring("Message: 100 percent done"))
 
-			updateService := cf.Cf("update-service", instanceName, "-p", broker.Plans[1].Name).Wait(DEFAULT_TIMEOUT)
+			updateService := cf.Cf("update-service", instanceName, "-p", broker.AsyncPlans[1].Name).Wait(DEFAULT_TIMEOUT)
 			Expect(updateService).To(Exit(0))
 
 			waitForAsyncOperationToComplete(broker, instanceName)
 
 			serviceInfo = cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
 			Expect(serviceInfo).To(Exit(0), "failed getting service instance details")
-			Expect(serviceInfo.Out.Contents()).To(ContainSubstring(fmt.Sprintf("Plan: %s", broker.Plans[1].Name)))
+			Expect(serviceInfo.Out.Contents()).To(ContainSubstring(fmt.Sprintf("Plan: %s", broker.AsyncPlans[1].Name)))
 
 			bindService := cf.Cf("bind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
 			Expect(bindService).To(Exit(0), "failed binding app to service")

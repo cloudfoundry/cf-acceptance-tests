@@ -3,6 +3,8 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"strings"
 
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -11,6 +13,9 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
+
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 )
 
 type Plan struct {
@@ -31,7 +36,8 @@ type ServiceBroker struct {
 			RedirectUri string `json:"redirect_uri"`
 		}
 	}
-	Plans []Plan
+	SyncPlans  []Plan
+	AsyncPlans []Plan
 }
 
 type ServicesResponse struct {
@@ -80,7 +86,14 @@ func NewServiceBroker(name string, path string, context helpers.SuiteContext) Se
 	b.Name = name
 	b.Service.Name = generator.RandomName()
 	b.Service.ID = generator.RandomName()
-	b.Plans = []Plan{{Name: generator.RandomName(), ID: generator.RandomName()}}
+	b.SyncPlans = []Plan{
+		{Name: generator.RandomName(), ID: generator.RandomName()},
+		{Name: generator.RandomName(), ID: generator.RandomName()},
+	}
+	b.AsyncPlans = []Plan{
+		{Name: generator.RandomName(), ID: generator.RandomName()},
+		{Name: generator.RandomName(), ID: generator.RandomName()},
+	}
 	b.Service.DashboardClient.ID = generator.RandomName()
 	b.Service.DashboardClient.Secret = generator.RandomName()
 	b.Service.DashboardClient.RedirectUri = generator.RandomName()
@@ -93,8 +106,7 @@ func (b ServiceBroker) Push() {
 }
 
 func (b ServiceBroker) Configure() {
-	Expect(cf.Cf("set-env", b.Name, "CONFIG", b.ToJSON()).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-	b.Restart()
+	Expect(runner.Curl(helpers.AppUri(b.Name, "/config"), "-d", b.ToJSON()).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 }
 
 func (b ServiceBroker) Restart() {
@@ -133,12 +145,26 @@ func (b ServiceBroker) Destroy() {
 }
 
 func (b ServiceBroker) ToJSON() string {
-	attributes := make(map[string]interface{})
-	attributes["service"] = b.Service
-	attributes["plans"] = b.Plans
-	attributes["dashboard_client"] = b.Service.DashboardClient
-	jsonBytes, _ := json.Marshal(attributes)
-	return string(jsonBytes)
+	bytes, err := ioutil.ReadFile(assets.NewAssets().ServiceBroker + "/cats.json")
+	Expect(err).To(BeNil())
+
+	replacer := strings.NewReplacer(
+		"<fake-service>", b.Service.Name,
+		"<fake-service-guid>", b.Service.ID,
+		"<sso-test>", b.Service.DashboardClient.ID,
+		"<sso-secret>", b.Service.DashboardClient.Secret,
+		"<sso-redirect-uri>", b.Service.DashboardClient.RedirectUri,
+		"<fake-plan>", b.SyncPlans[0].Name,
+		"<fake-plan-guid>", b.SyncPlans[0].ID,
+		"<fake-plan-2>", b.SyncPlans[1].Name,
+		"<fake-plan-2-guid>", b.SyncPlans[1].ID,
+		"<fake-async-plan>", b.AsyncPlans[0].Name,
+		"<fake-async-plan-guid>", b.AsyncPlans[0].ID,
+		"<fake-async-plan-2>", b.AsyncPlans[1].Name,
+		"<fake-async-plan-2-guid>", b.AsyncPlans[1].ID,
+	)
+
+	return replacer.Replace(string(bytes))
 }
 
 func (b ServiceBroker) PublicizePlans() {
@@ -163,7 +189,7 @@ func (b ServiceBroker) PublicizePlans() {
 }
 
 func (b ServiceBroker) HasPlan(planName string) bool {
-	for _, plan := range b.Plans {
+	for _, plan := range b.Plans() {
 		if plan.Name == planName {
 			return true
 		}
@@ -181,7 +207,7 @@ func (b ServiceBroker) PublicizePlan(url string) {
 }
 
 func (b ServiceBroker) CreateServiceInstance(instanceName string) string {
-	Expect(cf.Cf("create-service", b.Service.Name, b.Plans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	Expect(cf.Cf("create-service", b.Service.Name, b.SyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	url := fmt.Sprintf("/v2/service_instances?q=name:%s", instanceName)
 	serviceInstance := ServiceInstanceResponse{}
 	curl := cf.Cf("curl", url).Wait(DEFAULT_TIMEOUT)
@@ -197,4 +223,11 @@ func (b ServiceBroker) GetSpaceGuid() string {
 	Expect(curl).To(Exit(0))
 	json.Unmarshal(curl.Out.Contents(), &jsonResults)
 	return jsonResults.Resources[0].Metadata.Guid
+}
+
+func (b ServiceBroker) Plans() []Plan {
+	plans := make([]Plan, 0)
+	plans = append(plans, b.SyncPlans...)
+	plans = append(plans, b.AsyncPlans...)
+	return plans
 }
