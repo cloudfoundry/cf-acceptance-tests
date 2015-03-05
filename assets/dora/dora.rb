@@ -26,6 +26,10 @@ class Dora < Sinatra::Base
     "Hi, I'm Dora!"
   end
 
+  get '/lsb_release' do
+    `lsb_release --all`
+  end
+
   get '/find/:filename' do
     `find / -name #{params[:filename]}`
   end
