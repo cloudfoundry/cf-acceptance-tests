@@ -199,7 +199,12 @@ class ServiceBroker < Sinatra::Base
       behavior = $datasource.behavior_for_type('fetch', plan_id)[state]
       sleep behavior['sleep_seconds']
       status behavior['status']
-      behavior['body'].to_json
+
+      if behavior['body']
+        behavior['body'].to_json
+      else
+        behavior['raw_body']
+      end
     else
       status 200
       {
