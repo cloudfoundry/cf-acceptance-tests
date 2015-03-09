@@ -92,7 +92,11 @@ if ARGV.length < 1
 end
 
 input_file = ARGV[0]
-output_file = input_file
+
+name = File.basename(input_file, '.*')
+extension = File.extname(input_file)
+output_file = name + "-out" + extension
+
 broker_url = ARGV.length > 1 ? ARGV[1] : DEFAULT_BROKER_URL
 rows = []
 
