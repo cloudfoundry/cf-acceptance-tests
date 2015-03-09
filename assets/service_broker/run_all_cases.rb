@@ -4,6 +4,7 @@ require 'CSV'
 require 'json'
 require 'benchmark'
 require 'securerandom'
+require 'optparse'
 
 class ProvisionCommand
   def setup(instance_name)
@@ -74,8 +75,6 @@ class CleanupCommandWrapper
   end
 end
 
-deferred_deletions = []
-
 action_to_cmd_mapping = {
   provision: CleanupCommandWrapper.new(ProvisionCommand.new),
   update: CleanupCommandWrapper.new(UpdateCommand.new),
@@ -84,55 +83,93 @@ action_to_cmd_mapping = {
 
 DEFAULT_BROKER_URL = 'http://async-broker.10.244.0.34.xip.io'
 
-if ARGV.length < 1
-  puts "Usage: #{$PROGRAM_NAME} CSV_FILE [BROKER_URL]"
-  puts
-  puts "Broker URL defaults to #{DEFAULT_BROKER_URL}"
-  exit(1)
+def write_output_file(output_file, rows)
+  CSV.open(output_file, 'w') do |csv|
+    csv << rows[0].headers
+    rows.each do |row|
+      csv << row
+    end
+  end
 end
 
-input_file = ARGV[0]
+def delete_leftover_instances(deferred_deletions)
+  STDOUT.write("Cleaning up service instances... ")
+  STDOUT.flush
+  deferred_deletions.compact.each do |callback|
+    callback.call
+  end
+  puts "Done"
+end
 
-name = File.basename(input_file, '.*')
-extension = File.extname(input_file)
-output_file = name + "-out" + extension
+def parse_parameters
+  options = { cleanup: true }
+  OptionParser.new do |opts|
+    opts.on("--no-cleanup", "Run script without cleanup") do |v|
+      options[:cleanup] = v
+    end
+  end.parse!
 
-broker_url = ARGV.length > 1 ? ARGV[1] : DEFAULT_BROKER_URL
+  if ARGV.length < 1
+    puts "Usage: #{$PROGRAM_NAME} CSV_FILE [BROKER_URL]"
+    puts
+    puts "Broker URL defaults to #{DEFAULT_BROKER_URL}"
+    exit(1)
+  end
+
+  input_file = ARGV[0]
+
+  name = File.basename(input_file, '.*')
+  extension = File.extname(input_file)
+  output_file = name + "-out" + extension
+
+  broker_url = ARGV.length > 1 ? ARGV[1] : DEFAULT_BROKER_URL
+  return broker_url, input_file, output_file, options[:cleanup]
+end
+
+def configure_broker_endpoint(action, body, broker_url, row, status)
+  json_config = {
+    behaviors: {
+      action => {
+        default: {
+          status: status,
+          raw_body: body,
+          sleep_seconds: row['sleep seconds'].to_f
+        }
+      }
+    }
+  }
+
+  `curl -s #{broker_url}/config/reset -X POST`
+  `curl -s #{broker_url}/config -d '#{json_config.to_json}'`
+end
+
+def run_command(command, deferred_deletions, cleanup)
+  instance_name = "si-#{SecureRandom.uuid}"
+
+  command.setup(instance_name)
+  output = command.run(instance_name)
+  deferred_deletions << command.cleanup(instance_name) if cleanup
+  output
+end
+
+deferred_deletions = []
 rows = []
+
+broker_url, input_file, output_file, cleanup = parse_parameters
 
 report = Benchmark.measure do
   CSV.foreach(input_file, headers: true) do |row|
     rows << row
 
     action, status, body = row['action'], row['status'], row['body']
-
     next unless action
 
     command = action_to_cmd_mapping[action.to_sym]
-
     next unless command
 
-    json_config = {
-      behaviors: {
-        action => {
-          default: {
-            status: status,
-            raw_body: body,
-            sleep_seconds: row['sleep seconds'].to_f
-          }
-        }
-      }
-    }
+    configure_broker_endpoint(action, body, broker_url, row, status)
 
-    `curl -s #{broker_url}/config/reset -X POST`
-    `curl -s #{broker_url}/config -d '#{json_config.to_json}'`
-
-    instance_name = "si-#{SecureRandom.uuid}"
-
-    command.setup(instance_name)
-    output = command.run(instance_name)
-    deferred_deletions << command.cleanup(instance_name)
-
+    output = run_command(command, deferred_deletions, cleanup)
     row['output'] = output
     STDOUT.write('.')
     STDOUT.flush
@@ -140,19 +177,8 @@ report = Benchmark.measure do
 
   puts
 
-  CSV.open(output_file, 'w') do |csv|
-    csv << rows[0].headers
-    rows.each do |row|
-      csv << row
-    end
-  end
-
-  STDOUT.write("Cleaning up service instances... ")
-  STDOUT.flush
-  deferred_deletions.compact.each do |callback|
-    callback.call
-  end
-  puts "Done"
+  write_output_file(output_file, rows)
+  delete_leftover_instances(deferred_deletions)
 end
 
 puts "Took #{report.real} seconds"
