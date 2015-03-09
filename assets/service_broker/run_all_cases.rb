@@ -6,12 +6,32 @@ require 'benchmark'
 require 'securerandom'
 require 'optparse'
 
+def get_config
+  raw_config = File.read('data.json')
+  JSON.parse(raw_config)
+end
+
+def get_service
+  config = get_config
+  config['behaviors']['catalog']['body']['services'].first['name']
+end
+
+def get_plan
+  config = get_config
+  config['behaviors']['catalog']['body']['services'].first['plans'].first['name']
+end
+
+def get_second_plan
+  config = get_config
+  config['behaviors']['catalog']['body']['services'].first['plans'][1]['name']
+end
+
 class ProvisionCommand
   def setup(instance_name)
   end
 
   def run(instance_name)
-    `cf create-service fake-service fake-plan #{instance_name}`
+    `cf create-service #{get_service} #{get_plan} #{instance_name}`
   end
 
   def cleanup(instance_name)
@@ -20,11 +40,11 @@ end
 
 class UpdateCommand
   def setup(instance_name)
-    `cf create-service fake-service fake-plan #{instance_name}`
+    `cf create-service #{get_service} #{get_plan} #{instance_name}`
   end
 
   def run(instance_name)
-    `cf update-service #{instance_name} -p fake-async-plan`
+    `cf update-service #{instance_name} -p #{get_second_plan}`
   end
 
   def cleanup(instance_name)
@@ -33,7 +53,7 @@ end
 
 class DeprovisionCommand
   def setup(instance_name)
-    `cf create-service fake-service fake-plan #{instance_name}`
+    `cf create-service #{get_service} #{get_plan} #{instance_name}`
   end
 
   def run(instance_name)
