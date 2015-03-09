@@ -63,7 +63,6 @@ class DataSource
     @data['max_fetch_service_instance_requests'] || 1
   end
 
-  ### DB Actions
   def service_instance_by_id(cc_id)
     @data['service_instances'][cc_id]
   end
@@ -88,7 +87,6 @@ class DataSource
   def delete_service_binding(binding_id)
     @data['service_instances'].delete(binding_id)
   end
-  ####################################
 
   def merge!(data)
     data = data.dup
