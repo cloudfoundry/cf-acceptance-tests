@@ -167,15 +167,17 @@ class ServiceBroker < Sinatra::Base
     end
   end
 
+  before do
+    log(request)
+  end
+
   # fetch catalog
   get '/v2/catalog/?' do
-    log(request)
     respond_with_behavior($datasource.behavior_for_type(:catalog, nil))
   end
 
   # provision
   put '/v2/service_instances/:id/?' do |id|
-    log(request)
     json_body = JSON.parse(request.body.read)
     service_instance = $datasource.create_service_instance(id, json_body)
     respond_with_behavior($datasource.behavior_for_type(:provision, service_instance.plan_id))
@@ -183,7 +185,6 @@ class ServiceBroker < Sinatra::Base
 
   # fetch service instance
   get '/v2/service_instances/:id/?' do |id|
-    log(request)
     service_instance = $datasource.service_instance_by_id(id)
     if service_instance
       plan_id = service_instance.plan_id
@@ -216,7 +217,6 @@ class ServiceBroker < Sinatra::Base
 
   # update service instance
   patch '/v2/service_instances/:id/?' do |id|
-    log(request)
     json_body = JSON.parse(request.body.read)
     service_instance = $datasource.service_instance_by_id(id).update!(json_body)
     respond_with_behavior($datasource.behavior_for_type(:update, service_instance.plan_id))
@@ -224,7 +224,6 @@ class ServiceBroker < Sinatra::Base
 
   # deprovision
   delete '/v2/service_instances/:id/?' do |id|
-    log(request)
     service_instance = $datasource.service_instance_by_id(id)
     if service_instance
       service_instance.delete!
@@ -236,7 +235,6 @@ class ServiceBroker < Sinatra::Base
 
   # create service binding
   put '/v2/service_instances/:instance_id/service_bindings/:id' do |instance_id, binding_id|
-    log(request)
     content_type :json
     json_body = JSON.parse(request.body.read)
 
@@ -246,7 +244,6 @@ class ServiceBroker < Sinatra::Base
 
   # delete service binding
   delete '/v2/service_instances/:instance_id/service_bindings/:id' do |instance_id, binding_id|
-    log(request)
     content_type :json
 
     service_binding = $datasource.delete_service_binding(binding_id)
@@ -258,17 +255,14 @@ class ServiceBroker < Sinatra::Base
   end
 
   get '/config/all/?' do
-    log(request)
     JSON.pretty_generate($datasource.data)
   end
 
   get '/config/?' do
-    log(request)
     JSON.pretty_generate($datasource.without_instances_or_bindings)
   end
 
   post '/config/?' do
-    log(request)
 
     json_body = JSON.parse(request.body.read)
     $datasource.merge!(json_body)
@@ -276,7 +270,6 @@ class ServiceBroker < Sinatra::Base
   end
 
   post '/config/reset/?' do
-    log(request)
 
     $datasource = DataSource.new
     JSON.pretty_generate($datasource.without_instances_or_bindings)
