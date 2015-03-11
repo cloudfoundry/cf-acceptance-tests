@@ -5,8 +5,7 @@ require 'sinatra/base'
 require 'json'
 require 'pp'
 require 'logger'
-
-$log = Logger.new('service_broker.log','weekly')
+require 'colorize'
 
 require 'bundler'
 Bundler.require :default, ENV['RACK_ENV'].to_sym
@@ -136,34 +135,28 @@ class ServiceBroker < Sinatra::Base
   configure :production, :development, :test do
     $datasource = DataSource.new
     $log = Logger.new(STDOUT)
-  end
-
-  configure :test do
     $log.level = Logger::INFO
-    $log.info "log configured for test"
-  end
-
-  configure :production do
-    $log.level = Logger::WARN
-    $log.info "log configured for production"
-  end
-
-  configure :development do
-    $log.level = Logger::DEBUG
-    $log.info "log configured for development"
+    $log.formatter = proc do |severity, datetime, progname, msg|
+      "#{severity}: #{msg}\n"
+    end
   end
 
   def log(request)
-   $log.info "#{request.env['REQUEST_METHOD']} #{request.env['PATH_INFO']} #{request.env['QUERY_STRING']}"
+    $log.info "#{request.env['REQUEST_METHOD']} #{request.env['PATH_INFO']} #{request.env['QUERY_STRING']}".yellow
+  end
+
+  def log_response(status, body)
+    $log.info "Response: status=#{status}, body=#{body}".green
+    body
   end
 
   def respond_with_behavior(behavior)
     sleep behavior['sleep_seconds']
     status behavior['status']
     if behavior['body']
-      behavior['body'].to_json
+      log_response(status, behavior['body'].to_json)
     else
-      behavior['raw_body']
+      log_response(status, behavior['raw_body'])
     end
   end
 
@@ -200,18 +193,18 @@ class ServiceBroker < Sinatra::Base
       status behavior['status']
 
       if behavior['body']
-        behavior['body'].to_json
+        log_response(status, behavior['body'].to_json)
       else
-        behavior['raw_body']
+        log_response(status, behavior['raw_body'])
       end
     else
       status 200
-      {
+      log_response(status, {
         last_operation: {
           state: 'failed',
           description: "Broker could not find service instance by the given id #{id}",
         }
-      }.to_json
+      }.to_json)
     end
   end
 
@@ -255,37 +248,35 @@ class ServiceBroker < Sinatra::Base
   end
 
   get '/config/all/?' do
-    JSON.pretty_generate($datasource.data)
+    log_response(status, JSON.pretty_generate($datasource.data))
   end
 
   get '/config/?' do
-    JSON.pretty_generate($datasource.without_instances_or_bindings)
+    log_response(status, JSON.pretty_generate($datasource.without_instances_or_bindings))
   end
 
   post '/config/?' do
-
     json_body = JSON.parse(request.body.read)
     $datasource.merge!(json_body)
-    JSON.pretty_generate($datasource.without_instances_or_bindings)
+    log_response(status, JSON.pretty_generate($datasource.without_instances_or_bindings))
   end
 
   post '/config/reset/?' do
-
     $datasource = DataSource.new
-    JSON.pretty_generate($datasource.without_instances_or_bindings)
+    log_response(status, JSON.pretty_generate($datasource.without_instances_or_bindings))
   end
 
   error do
     status 500
     e = env['sinatra.error']
-    JSON.pretty_generate({
+    log_response(status, JSON.pretty_generate({
       error: true,
       message: e.message,
       path: request.url,
       timestamp: Time.new,
       type: '500',
       backtrace: e.backtrace
-    })
+    }))
   end
 
   run! if app_file == $0
