@@ -241,8 +241,21 @@ exit 1
 		webProcess := addProcess(appGuid, "web", spaceGuid)
 		workerProcess := addProcess(appGuid, "worker", spaceGuid)
 
-		// this is a gross hack, because routes don't yet exist in V3
-		Expect(cf.Cf("map-route", webProcess.Name, helpers.LoadConfig().AppsDomain, "-n", webProcess.Name).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("create-route", context.RegularUserContext().Space, helpers.LoadConfig().AppsDomain, "-n", webProcess.Name).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		getRoutePath := fmt.Sprintf("/v2/routes?q=host:%s", webProcess.Name)
+		routeBody := cf.Cf("curl", getRoutePath).Wait(DEFAULT_TIMEOUT).Out.Contents()
+		routeJSON := struct {
+			Resources []struct {
+				Metadata struct {
+					Guid string `json:"guid"`
+				} `json:"metadata"`
+			} `json:"resources"`
+		}{}
+		json.Unmarshal([]byte(routeBody), &routeJSON)
+		routeGuid := routeJSON.Resources[0].Metadata.Guid
+		addRoutePath := fmt.Sprintf("/v3/apps/%s/routes", appGuid)
+		addRouteBody := fmt.Sprintf(`{"route_guid":"%s"}`, routeGuid)
+		Expect(cf.Cf("curl", addRoutePath, "-X", "PUT", "-d", addRouteBody).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
 		appUpdatePath := fmt.Sprintf("/v3/apps/%s", appGuid)
 		appUpdateBody := fmt.Sprintf(`{"desired_droplet_guid":"%s"}`, dropletGuid)
