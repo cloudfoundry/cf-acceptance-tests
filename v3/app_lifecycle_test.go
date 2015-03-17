@@ -208,7 +208,7 @@ exit 1
 		})
 	})
 
-	It("Stages with a user specified admin buildpack", func() {
+	XIt("Stages with a user specified admin buildpack", func() {
 		dropletGuid := stagePackage(packageGuid, fmt.Sprintf(`{"buildpack_guid":"%s"}`, buildpackGuid))
 
 		logUrl := fmt.Sprintf("loggregator.%s/recent?app=%s", config.AppsDomain, dropletGuid)
@@ -219,7 +219,7 @@ exit 1
 		}, 1*time.Minute, 10*time.Second).Should(Say("STAGED WITH CUSTOM BUILDPACK"))
 	})
 
-	It("Stages with a user specified github buildpack", func() {
+	XIt("Stages with a user specified github buildpack", func() {
 		dropletGuid := stagePackage(packageGuid, `{"buildpack_git_url":"http://github.com/cloudfoundry/go-buildpack"}`)
 
 		logUrl := fmt.Sprintf("loggregator.%s/recent?app=%s", config.AppsDomain, dropletGuid)
