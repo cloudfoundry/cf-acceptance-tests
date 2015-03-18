@@ -14,6 +14,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -192,8 +193,12 @@ exit 1
 		// UPLOAD PACKAGE
 		bytes = runner.Run("bash", "-c", "cf oauth-token | tail -n +4").Wait(5).Out.Contents()
 		token = strings.TrimSpace(string(bytes))
+		doraZip := fmt.Sprintf(`bits=@"%s"`, assets.NewAssets().DoraZip)
 		uploadUrl := fmt.Sprintf("%s/v3/packages/%s/upload", config.ApiEndpoint, packageGuid)
-		bytes, _ = exec.Command("curl", "-v", "-s", uploadUrl, "-F", `bits=@"/Users/pivotal/workspace/cf-release/src/acceptance-tests/v3/dora.zip"`, "-H", fmt.Sprintf("Authorization: %s", token)).CombinedOutput()
+
+		_, err := exec.Command("curl", "-v", "-s", uploadUrl, "-F", doraZip, "-H", fmt.Sprintf("Authorization: %s", token)).CombinedOutput()
+		Expect(err).NotTo(HaveOccurred())
+
 		pkgUrl := fmt.Sprintf("/v3/packages/%s", packageGuid)
 		Eventually(func() *Session {
 			session = cf.Cf("curl", pkgUrl)

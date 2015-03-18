@@ -16,6 +16,7 @@ type Assets struct {
 	SecurityGroupBuildpack   string
 	Fuse                     string
 	RubySimple               string
+	DoraZip                  string
 }
 
 func NewAssets() Assets {
@@ -34,5 +35,6 @@ func NewAssets() Assets {
 		SecurityGroupBuildpack: "../assets/security_group_buildpack.zip",
 		Fuse:       "../assets/fuse-mount",
 		RubySimple: "../assets/ruby_simple",
+		DoraZip:    "../assets/dora.zip",
 	}
 }
