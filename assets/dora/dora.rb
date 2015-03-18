@@ -26,6 +26,10 @@ class Dora < Sinatra::Base
     "Hi, I'm Dora!"
   end
 
+  get '/ping/:address' do
+    `ping -c 4 #{params[:address]}`
+  end
+
   get '/lsb_release' do
     `lsb_release --all`
   end
