@@ -55,7 +55,7 @@ func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
 func stagePackage(packageGuid, stageBody string) string {
 	stageUrl := fmt.Sprintf("/v3/packages/%s/droplets", packageGuid)
 	session := cf.Cf("curl", stageUrl, "-X", "POST", "-d", stageBody)
-	bytes := session.Wait().Out.Contents()
+	bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
 	var droplet struct {
 		Guid string `json:"guid"`
 	}
@@ -74,7 +74,7 @@ type Process struct {
 func addProcess(appGuid, processType, spaceGuid string) Process {
 	processBody := fmt.Sprintf(`{"type":"%s","space_guid":"%s"}`, processType, spaceGuid)
 	session := cf.Cf("curl", "/v3/processes", "-X", "POST", "-d", processBody)
-	bytes := session.Wait().Out.Contents()
+	bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
 	var process Process
 	json.Unmarshal(bytes, &process)
 	addProcessURL := fmt.Sprintf("/v3/apps/%s/processes", appGuid)
@@ -148,7 +148,7 @@ exit 1
 		})
 
 		session := cf.Cf("curl", fmt.Sprintf("/v2/spaces?q=name:%s", context.RegularUserContext().Space))
-		bytes := session.Wait().Out.Contents()
+		bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
 		var space struct {
 			Resources []struct {
 				Metadata struct {
@@ -160,7 +160,7 @@ exit 1
 		spaceGuid = space.Resources[0].Metadata.Guid
 
 		session = cf.Cf("curl", fmt.Sprintf("/v2/buildpacks?q=name:%s", buildpackName))
-		bytes = session.Wait().Out.Contents()
+		bytes = session.Wait(DEFAULT_TIMEOUT).Out.Contents()
 		var buildpack struct {
 			Resources []struct {
 				Metadata struct {
@@ -173,7 +173,7 @@ exit 1
 
 		// CREATE APP
 		session = cf.Cf("curl", "/v3/apps", "-X", "POST", "-d", fmt.Sprintf(`{"name":"%s", "space_guid":"%s"}`, appName, spaceGuid))
-		bytes = session.Wait().Out.Contents()
+		bytes = session.Wait(DEFAULT_TIMEOUT).Out.Contents()
 		var app struct {
 			Guid string `json:"guid"`
 		}
@@ -183,7 +183,7 @@ exit 1
 		// CREATE PACKAGE
 		packageCreateUrl := fmt.Sprintf("/v3/apps/%s/packages", appGuid)
 		session = cf.Cf("curl", packageCreateUrl, "-X", "POST", "-d", fmt.Sprintf(`{"type":"bits"}`))
-		bytes = session.Wait().Out.Contents()
+		bytes = session.Wait(DEFAULT_TIMEOUT).Out.Contents()
 		var pac struct {
 			Guid string `json:"guid"`
 		}
@@ -191,7 +191,7 @@ exit 1
 		packageGuid = pac.Guid
 
 		// UPLOAD PACKAGE
-		bytes = runner.Run("bash", "-c", "cf oauth-token | tail -n +4").Wait(5).Out.Contents()
+		bytes = runner.Run("bash", "-c", "cf oauth-token | tail -n +4").Wait(DEFAULT_TIMEOUT).Out.Contents()
 		token = strings.TrimSpace(string(bytes))
 		doraZip := fmt.Sprintf(`bits=@"%s"`, assets.NewAssets().DoraZip)
 		uploadUrl := fmt.Sprintf("%s/v3/packages/%s/upload", config.ApiEndpoint, packageGuid)
