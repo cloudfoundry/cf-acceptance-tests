@@ -138,3 +138,24 @@ The script also takes parameters:
 - `broker_name`: Specifies the app name and route for the broker. Defaults to 'async-broker'.
 - `env`: Specifies the cf environment (used only for choosing an app domain). Allowed values are 'bosh-lite',
          'tabasco', and 'a1'. Defaults to 'bosh-lite'.
+
+
+### Running multiple cases ###
+--------------------------
+We often need to test how the CC handles many permutations of status code, body, and broker action. To make this simple, we've
+written a script called run_all_cases.rb. It requires one parameter, which is a path to a CSV file. It also optionally allows
+two additional paramters, a broker url and a --no-cleanup flag.
+
+The script reads the CSV file and produces a list of test cases. For each test case, the script configures the brokers to behave
+as specified, and then makes the corresponding cf cli command. The CLI output is stored in a new CSV file, which has the same
+name as the input file with a "-out" suffix. (For example, acceptance.csv becomes acceptance-out.csv)
+
+If the caller provides a broker URL, the script will use that address for its test cases, otherwise it will default to 
+async-broker.10.244.0.34.xip.io.
+
+The script also preforms setup and cleanup for each test it executes. e.g. performing an update requires a setup which
+creates an instance and cleanup which deletes it.
+
+If the user provides --no-cleanup the script will not perform a cleanup at the end of each test.
+
+

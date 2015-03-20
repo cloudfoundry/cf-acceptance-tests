@@ -130,7 +130,7 @@ def parse_parameters
   end.parse!
 
   if ARGV.length < 1
-    puts "Usage: #{$PROGRAM_NAME} CSV_FILE [BROKER_URL]"
+    puts "Usage: #{$PROGRAM_NAME} CSV_FILE [BROKER_URL] [--no-cleanup]"
     puts
     puts "Broker URL defaults to #{DEFAULT_BROKER_URL}"
     exit(1)
