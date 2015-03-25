@@ -30,6 +30,9 @@ type AppUsageEvent struct {
 		State         string `json:"state"`
 		BuildpackName string `json:"buildpack_name"`
 		BuildpackGuid string `json:"buildpack_guid"`
+		parentAppName string `json:"parent_app_name"`
+		parentAppGuid string `json:"parent_app_guid"`
+		processType   string `json:"process_type"`
 	} `json:"entity"`
 }
 
@@ -50,6 +53,23 @@ func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
 	}
 
 	return false, AppUsageEvent{}
+}
+
+func allAppUsageEvents(appName string) []AppUsageEvent {
+	var response AppUsageEvents
+	var appEvents []AppUsageEvent
+
+	cf.AsUser(context.AdminUserContect(), func() {
+		cf.ApiRequst("GET", "/v2/app_usage_events?order-direction=desc&page=1", &response)
+	})
+
+	for _, event := range response.Resources {
+		if event.Entity.parentAppNAme == appName {
+			append(appEvents, event)
+		}
+	}
+
+	return appEvents
 }
 
 func stagePackage(packageGuid, stageBody string) string {
@@ -275,6 +295,19 @@ exit 1
 
 		Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", webProcess.Name)))
 		Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", workerProcess.Name)))
+
+		usageEvent := allAppUsageEvents(appname)
+		Expect(len(usageEvent)).To(Equal(2))
+		Expect(usageEvent[0].name).
+		Expect(usageEvent[0].parent_app_name).To(Equal(appName))
+		Expect(usageEvent[1].parent_app_name).To(Equal(appName))
+		Expect(usageEvent[0].parent_app_guid).To(Equal(appGuid))
+		Expect(usageEvent[1].parent_app_guid).To(Equal(appGuid))
+		expectedPRocessTypes := map[string]int{ 'web' }
+
+
+		Expect(usageEvent.parent_app_guid).To(Equal(appGuid))
+		Expect(usageEvent.parent_app_name).To(Equal(appName))
 
 		stopApp(appGuid)
 
