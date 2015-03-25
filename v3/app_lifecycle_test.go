@@ -107,6 +107,7 @@ var _ = Describe("v3 app lifecycle", func() {
 				Body: `#!/usr/bin/env bash
 sleep 5
 echo "STAGED WITH CUSTOM BUILDPACK"
+env
 exit 1
 `,
 			},
@@ -222,6 +223,7 @@ exit 1
 			Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			return session
 		}, 1*time.Minute, 10*time.Second).Should(Say("STAGED WITH CUSTOM BUILDPACK"))
+		Expect("staging output").To(Say("SOME_ENV_VAR=foo"))
 	})
 
 	XIt("Stages with a user specified github buildpack", func() {
