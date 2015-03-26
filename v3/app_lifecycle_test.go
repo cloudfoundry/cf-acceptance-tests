@@ -159,13 +159,14 @@ exit 1
 	}
 
 	var (
-		appName       string
-		appGuid       string
-		buildpackName string
-		buildpackGuid string
-		packageGuid   string
-		spaceGuid     string
-		token         string
+		appName               string
+		appGuid               string
+		buildpackName         string
+		buildpackGuid         string
+		packageGuid           string
+		spaceGuid             string
+		token                 string
+		environment_variables string
 	)
 
 	BeforeEach(func() {
@@ -203,7 +204,8 @@ exit 1
 		buildpackGuid = buildpack.Resources[0].Metadata.Guid
 
 		// CREATE APP
-		session = cf.Cf("curl", "/v3/apps", "-X", "POST", "-d", fmt.Sprintf(`{"name":"%s", "space_guid":"%s"}`, appName, spaceGuid))
+		environment_variables = `{"foo":"bar"}`
+		session = cf.Cf("curl", "/v3/apps", "-X", "POST", "-d", fmt.Sprintf(`{"name":"%s", "space_guid":"%s", "environment_variables":%s}`, appName, spaceGuid, environment_variables))
 		bytes = session.Wait(DEFAULT_TIMEOUT).Out.Contents()
 		var app struct {
 			Guid string `json:"guid"`
@@ -302,6 +304,10 @@ exit 1
 		Eventually(func() string {
 			return helpers.CurlAppRoot(webProcess.Name)
 		}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
+
+		output := helpers.CurlApp(webProcess.Name, "/env")
+		Expect(output).To(ContainSubstring(fmt.Sprintf("application_name\\\":\\\"%s", appName)))
+		Expect(output).To(ContainSubstring(`"foo"=>"bar"`))
 
 		Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", webProcess.Name)))
 		Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", workerProcess.Name)))
