@@ -24,20 +24,37 @@ import (
 	archive_helpers "github.com/pivotal-golang/archiver/extractor/test_helper"
 )
 
+type Entity struct {
+	AppName       string `json:"app_name"`
+	AppGuid       string `json:"app_guid"`
+	State         string `json:"state"`
+	BuildpackName string `json:"buildpack_name"`
+	BuildpackGuid string `json:"buildpack_guid"`
+	ParentAppName string `json:"parent_app_name"`
+	ParentAppGuid string `json:"parent_app_guid"`
+	ProcessType   string `json:"process_type"`
+}
 type AppUsageEvent struct {
-	Entity struct {
-		AppName       string `json:"app_name"`
-		State         string `json:"state"`
-		BuildpackName string `json:"buildpack_name"`
-		BuildpackGuid string `json:"buildpack_guid"`
-		parentAppName string `json:"parent_app_name"`
-		parentAppGuid string `json:"parent_app_guid"`
-		processType   string `json:"process_type"`
-	} `json:"entity"`
+	Entity `json:"entity"`
 }
 
 type AppUsageEvents struct {
 	Resources []AppUsageEvent `struct:"resources"`
+}
+
+func eventsInclude(events []AppUsageEvent, event AppUsageEvent) bool {
+	found := false
+	for _, e := range events {
+		found = event.Entity.ParentAppName == e.Entity.ParentAppName &&
+			event.Entity.ParentAppGuid == e.Entity.ParentAppGuid &&
+			event.Entity.ProcessType == e.Entity.ProcessType &&
+			event.Entity.State == e.Entity.State &&
+			event.Entity.AppGuid == e.Entity.AppGuid
+		if found {
+			break
+		}
+	}
+	return found
 }
 
 func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
@@ -55,21 +72,14 @@ func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
 	return false, AppUsageEvent{}
 }
 
-func allAppUsageEvents(appName string) []AppUsageEvent {
+func lastPageUsageEvents(appName string) []AppUsageEvent {
 	var response AppUsageEvents
-	var appEvents []AppUsageEvent
 
-	cf.AsUser(context.AdminUserContect(), func() {
-		cf.ApiRequst("GET", "/v2/app_usage_events?order-direction=desc&page=1", &response)
+	cf.AsUser(context.AdminUserContext(), func() {
+		cf.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1", &response)
 	})
 
-	for _, event := range response.Resources {
-		if event.Entity.parentAppNAme == appName {
-			append(appEvents, event)
-		}
-	}
-
-	return appEvents
+	return response.Resources
 }
 
 func stagePackage(packageGuid, stageBody string) string {
@@ -296,18 +306,12 @@ exit 1
 		Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", webProcess.Name)))
 		Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", workerProcess.Name)))
 
-		usageEvent := allAppUsageEvents(appname)
-		Expect(len(usageEvent)).To(Equal(2))
-		Expect(usageEvent[0].name).
-		Expect(usageEvent[0].parent_app_name).To(Equal(appName))
-		Expect(usageEvent[1].parent_app_name).To(Equal(appName))
-		Expect(usageEvent[0].parent_app_guid).To(Equal(appGuid))
-		Expect(usageEvent[1].parent_app_guid).To(Equal(appGuid))
-		expectedPRocessTypes := map[string]int{ 'web' }
+		usageEvents := lastPageUsageEvents(appName)
 
-
-		Expect(usageEvent.parent_app_guid).To(Equal(appGuid))
-		Expect(usageEvent.parent_app_name).To(Equal(appName))
+		event1 := AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
+		event2 := AppUsageEvent{Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
+		Expect(eventsInclude(usageEvents, event1)).To(BeTrue())
+		Expect(eventsInclude(usageEvents, event2)).To(BeTrue())
 
 		stopApp(appGuid)
 
