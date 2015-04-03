@@ -59,8 +59,8 @@ func eventsInclude(events []AppUsageEvent, event AppUsageEvent) bool {
 
 func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
 	var response AppUsageEvents
-	cf.AsUser(context.AdminUserContext(), func() {
-		cf.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1", &response)
+	cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		cf.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1", &response, DEFAULT_TIMEOUT)
 	})
 
 	for _, event := range response.Resources {
@@ -75,8 +75,8 @@ func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
 func lastPageUsageEvents(appName string) []AppUsageEvent {
 	var response AppUsageEvents
 
-	cf.AsUser(context.AdminUserContext(), func() {
-		cf.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1", &response)
+	cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		cf.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1", &response, DEFAULT_TIMEOUT)
 	})
 
 	return response.Resources
@@ -175,7 +175,7 @@ exit 1
 		buildpackName = generator.RandomName()
 		buildpackZip := createBuildpack()
 
-		cf.AsUser(context.AdminUserContext(), func() {
+		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 
@@ -241,7 +241,7 @@ exit 1
 	})
 
 	AfterEach(func() {
-		cf.AsUser(context.AdminUserContext(), func() {
+		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 	})
