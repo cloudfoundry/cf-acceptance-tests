@@ -57,7 +57,7 @@ exit 1
 
 	BeforeEach(func() {
 		appName = generator.RandomName()
-		cf.AsUser(context.AdminUserContext(), func() {
+		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			session := cf.Cf("curl", "/v2/config/environment_variable_groups/running").Wait(DEFAULT_TIMEOUT)
 			Expect(session).To(Exit(0))
 			originalRunningEnv = string(session.Out.Contents())
@@ -69,7 +69,7 @@ exit 1
 	})
 
 	AfterEach(func() {
-		cf.AsUser(context.AdminUserContext(), func() {
+		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/staging", "-X", "PUT", "-d", originalStagingEnv).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/running", "-X", "PUT", "-d", originalRunningEnv).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
@@ -81,7 +81,7 @@ exit 1
 	})
 
 	It("Applies correct environment variables while running apps", func() {
-		cf.AsUser(context.AdminUserContext(), func() {
+		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("set-running-environment-variable-group", `{"CATS_RUNNING_TEST_VAR":"running_env_value"}`).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 
@@ -96,7 +96,7 @@ exit 1
 		buildpackName = generator.RandomName()
 		buildpackZip := createBuildpack()
 
-		cf.AsUser(context.AdminUserContext(), func() {
+		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("set-staging-environment-variable-group", `{"CATS_STAGING_TEST_VAR":"staging_env_value"}`).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})

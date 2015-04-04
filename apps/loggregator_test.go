@@ -102,7 +102,7 @@ type cfHomeConfig struct {
 func getCfHomeConfig() *cfHomeConfig {
 	myCfHomeConfig := &cfHomeConfig{}
 
-	cf.AsUser(context.AdminUserContext(), func() {
+	cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 		path := filepath.Join(os.Getenv("CF_HOME"), ".cf", "config.json")
 
 		configFile, err := os.Open(path)

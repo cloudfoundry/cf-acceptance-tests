@@ -100,7 +100,7 @@ var _ = Describe("Security Groups", func() {
 		rulesPath := file.Name()
 		securityGroupName = fmt.Sprintf("CATS-SG-%s", generator.RandomName())
 
-		cf.AsUser(context.AdminUserContext(), func() {
+		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("create-security-group", securityGroupName, rulesPath).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			Expect(
 				cf.Cf("bind-security-group",
@@ -109,7 +109,7 @@ var _ = Describe("Security Groups", func() {
 					context.RegularUserContext().Space).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 		defer func() {
-			cf.AsUser(context.AdminUserContext(), func() {
+			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				Expect(cf.Cf("delete-security-group", securityGroupName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 		}()
@@ -122,7 +122,7 @@ var _ = Describe("Security Groups", func() {
 		Expect(doraCurlResponse.ReturnCode).To(Equal(0))
 
 		// unapply security group
-		cf.AsUser(context.AdminUserContext(), func() {
+		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("unbind-security-group", securityGroupName, context.RegularUserContext().Org, context.RegularUserContext().Space).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 		Expect(cf.Cf("restart", clientAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
@@ -140,11 +140,11 @@ var _ = Describe("Security Groups", func() {
 
 		buildpackZip := assets.NewAssets().SecurityGroupBuildpack
 
-		cf.AsUser(context.AdminUserContext(), func() {
+		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("create-buildpack", buildpack, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 		defer func() {
-			cf.AsUser(context.AdminUserContext(), func() {
+			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				Expect(cf.Cf("delete-buildpack", buildpack, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 		}()

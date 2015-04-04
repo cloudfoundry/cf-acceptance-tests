@@ -34,7 +34,7 @@ var _ = Describe("Specifying a specific Stack", func() {
 	}
 
 	BeforeEach(func() {
-		AsUser(context.AdminUserContext(), func() {
+		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			BuildpackName = RandomName()
 			appName = RandomName()
 
@@ -102,7 +102,7 @@ EOF
 	})
 
 	AfterEach(func() {
-		AsUser(context.AdminUserContext(), func() {
+		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(Cf("delete-buildpack", BuildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 
