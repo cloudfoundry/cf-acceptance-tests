@@ -31,7 +31,7 @@ var _ = Describe("Admin Buildpacks", func() {
 	}
 
 	BeforeEach(func() {
-		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		AsUser(context.AdminUserContext(), func() {
 			BuildpackName = RandomName()
 			appName = RandomName()
 
@@ -102,7 +102,7 @@ EOF
 	})
 
 	AfterEach(func() {
-		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		AsUser(context.AdminUserContext(), func() {
 			Expect(Cf("delete-buildpack", BuildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 	})
@@ -130,7 +130,7 @@ EOF
 
 	Context("when the buildpack is deleted", func() {
 		BeforeEach(func() {
-			AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			AsUser(context.AdminUserContext(), func() {
 				Expect(Cf("delete-buildpack", BuildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 		})
@@ -144,10 +144,10 @@ EOF
 
 	Context("when the buildpack is disabled", func() {
 		BeforeEach(func() {
-			AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			AsUser(context.AdminUserContext(), func() {
 				var response QueryResponse
 
-				ApiRequest("GET", "/v2/buildpacks?q=name:"+BuildpackName, &response, DEFAULT_TIMEOUT)
+				ApiRequest("GET", "/v2/buildpacks?q=name:"+BuildpackName, &response)
 
 				Expect(response.Resources).To(HaveLen(1))
 
@@ -157,7 +157,6 @@ EOF
 					"PUT",
 					"/v2/buildpacks/"+buildpackGuid,
 					nil,
-					DEFAULT_TIMEOUT,
 					`{"enabled":false}`,
 				)
 			})

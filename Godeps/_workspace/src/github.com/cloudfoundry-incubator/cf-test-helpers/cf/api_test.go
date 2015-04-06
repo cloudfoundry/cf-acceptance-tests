@@ -2,7 +2,6 @@ package cf_test
 
 import (
 	"os/exec"
-	"time"
 
 	. "github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
@@ -22,7 +21,7 @@ var _ = Describe("ApiRequest", func() {
 		}
 
 		var response GenericResource
-		ApiRequest("GET", "/v2/info", &response, 1*time.Second, "some", "data")
+		ApiRequest("GET", "/v2/info", &response, "some", "data")
 
 		Expect(response.Metadata.Guid).To(Equal("abc"))
 	})

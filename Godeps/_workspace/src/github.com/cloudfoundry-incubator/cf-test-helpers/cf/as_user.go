@@ -4,25 +4,24 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"time"
 
 	ginkgoconfig "github.com/onsi/ginkgo/config"
-
-	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
+	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gexec"
 )
 
-var AsUser = func(userContext UserContext, timeout time.Duration, actions func()) {
-	originalCfHomeDir, currentCfHomeDir := InitiateUserContext(userContext, timeout)
+func AsUser(userContext UserContext, actions func()) {
+	originalCfHomeDir, currentCfHomeDir := InitiateUserContext(userContext)
 	defer func() {
-		RestoreUserContext(userContext, timeout, originalCfHomeDir, currentCfHomeDir)
+		RestoreUserContext(userContext, originalCfHomeDir, currentCfHomeDir)
 	}()
 
-	TargetSpace(userContext, timeout)
+	TargetSpace(userContext)
 
 	actions()
 }
 
-func InitiateUserContext(userContext UserContext, timeout time.Duration) (originalCfHomeDir, currentCfHomeDir string) {
+func InitiateUserContext(userContext UserContext) (originalCfHomeDir, currentCfHomeDir string) {
 	originalCfHomeDir = os.Getenv("CF_HOME")
 	currentCfHomeDir, err := ioutil.TempDir("", fmt.Sprintf("cf_home_%d", ginkgoconfig.GinkgoConfig.ParallelNode))
 
@@ -37,25 +36,25 @@ func InitiateUserContext(userContext UserContext, timeout time.Duration) (origin
 		cfSetApiArgs = append(cfSetApiArgs, "--skip-ssl-validation")
 	}
 
-	runner.NewCmdRunner(Cf(cfSetApiArgs...), timeout).Run()
+	Expect(Cf(cfSetApiArgs...).Wait(CF_API_TIMEOUT)).To(Exit(0))
 
-	runner.NewCmdRunner(Cf("auth", userContext.Username, userContext.Password), timeout).Run()
+	Expect(Cf("auth", userContext.Username, userContext.Password).Wait(CF_API_TIMEOUT)).To(Exit(0))
 
 	return
 }
 
-func TargetSpace(userContext UserContext, timeout time.Duration) {
+func TargetSpace(userContext UserContext) {
 	if userContext.Org != "" {
 		if userContext.Space != "" {
-			runner.NewCmdRunner(Cf("target", "-o", userContext.Org, "-s", userContext.Space), timeout).Run()
+			Expect(Cf("target", "-o", userContext.Org, "-s", userContext.Space).Wait(CF_API_TIMEOUT)).To(Exit(0))
 		} else {
-			runner.NewCmdRunner(Cf("target", "-o", userContext.Org), timeout).Run()
+			Expect(Cf("target", "-o", userContext.Org).Wait(CF_API_TIMEOUT)).To(Exit(0))
 		}
 	}
 }
 
-func RestoreUserContext(_ UserContext, timeout time.Duration, originalCfHomeDir, currentCfHomeDir string) {
-	runner.NewCmdRunner(Cf("logout"), timeout).Run()
+func RestoreUserContext(_ UserContext, originalCfHomeDir, currentCfHomeDir string) {
+	Expect(Cf("logout").Wait(CF_API_TIMEOUT)).To(Exit(0))
 	os.Setenv("CF_HOME", originalCfHomeDir)
 	os.RemoveAll(currentCfHomeDir)
 }

@@ -14,18 +14,12 @@ type Config struct {
 	AdminUser     string `json:"admin_user"`
 	AdminPassword string `json:"admin_password"`
 
-	UseExistingUser bool `json:"use_existing_user"`
-	ShouldKeepUser bool `json:"keep_user_at_suite_end"`
-	ExistingUser string `json:"existing_user"`
-	ExistingUserPassword string `json:"existing_user_password"`
-
 	PersistentAppHost      string `json:"persistent_app_host"`
 	PersistentAppSpace     string `json:"persistent_app_space"`
 	PersistentAppOrg       string `json:"persistent_app_org"`
 	PersistentAppQuotaName string `json:"persistent_app_quota_name"`
 
 	SkipSSLValidation bool `json:"skip_ssl_validation"`
-	UseDiego          bool `json:"use_diego"`
 
 	ArtifactsDirectory string `json:"artifacts_directory"`
 
@@ -34,16 +28,8 @@ type Config struct {
 	LongCurlTimeout    time.Duration `json:"long_curl_timeout"`
 	BrokerStartTimeout time.Duration `json:"broker_start_timeout"`
 
-	TimeoutScale float64 `json:"timeout_scale"`
-
 	SyslogDrainPort int    `json:"syslog_drain_port"`
 	SyslogIpAddress string `json:"syslog_ip_address"`
-
-	SecureAddress string `json:"secure_address"`
-}
-
-func (c Config) ScaledTimeout(timeout time.Duration) time.Duration {
-	return time.Duration(float64(timeout) * c.TimeoutScale)
 }
 
 var loadedConfig *Config
@@ -63,10 +49,6 @@ func LoadConfig() Config {
 
 	if loadedConfig.ApiEndpoint == "" {
 		panic("missing configuration 'admin_password'")
-	}
-
-	if loadedConfig.TimeoutScale <= 0 {
-		loadedConfig.TimeoutScale = 1.0
 	}
 
 	return *loadedConfig

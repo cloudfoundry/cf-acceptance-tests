@@ -36,7 +36,7 @@ var _ = Describe("Changing an app's start command", func() {
 
 		var response cf.QueryResponse
 
-		cf.ApiRequest("GET", "/v2/apps?q=name:"+appName, &response, DEFAULT_TIMEOUT)
+		cf.ApiRequest("GET", "/v2/apps?q=name:"+appName, &response)
 
 		Expect(response.Resources).To(HaveLen(1))
 
@@ -46,7 +46,6 @@ var _ = Describe("Changing an app's start command", func() {
 			"PUT",
 			"/v2/apps/"+appGuid,
 			nil,
-			DEFAULT_TIMEOUT,
 			`{"command":"FOO=bar bundle exec rackup config.ru -p $PORT"}`,
 		)
 
