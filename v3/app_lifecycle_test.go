@@ -135,22 +135,38 @@ var _ = Describe("v3 app lifecycle", func() {
 			{
 				Name: "bin/compile",
 				Body: `#!/usr/bin/env bash
-sleep 5
-echo "STAGED WITH CUSTOM BUILDPACK"
-env
-exit 1
+
+mkdir -p $1 $2
+if [ -f "$2/cached-file" ]; then
+	cp $2/cached-file $1/content
+else
+	echo "cache not found" > $1/content
+fi
+
+echo "here's a cache" > $2/cached-file
 `,
 			},
 			{
 				Name: "bin/detect",
 				Body: `#!/bin/bash
+echo no
 exit 1
 `,
 			},
 			{
 				Name: "bin/release",
 				Body: `#!/usr/bin/env bash
-exit 1
+
+content=$(cat $1/content)
+
+cat <<EOF
+---
+config_vars:
+  PATH: bin:/usr/local/bin:/usr/bin:/bin
+  FROM_BUILD_PACK: "yes"
+default_process_types:
+  web: while true; do { echo -e 'HTTP/1.1 200 OK\r\n'; echo "custom buildpack contents - $content"; } | nc -l \$PORT; done
+EOF
 `,
 			},
 		})
@@ -268,6 +284,36 @@ exit 1
 			fmt.Println(string(session.Out.Contents()))
 			return session
 		}, 3*time.Minute, 10*time.Second).Should(Say("Cloning into"))
+	})
+
+	It("uses buildpack cache for staging", func() {
+		firstDropletGuid := stagePackage(packageGuid, fmt.Sprintf(`{"buildpack_guid":"%s"}`, buildpackGuid))
+		dropletPath := fmt.Sprintf("/v3/droplets/%s", firstDropletGuid)
+		Eventually(func() *Session {
+			result := cf.Cf("curl", dropletPath).Wait(DEFAULT_TIMEOUT)
+			if strings.Contains(string(result.Out.Contents()), "FAILED") {
+				Fail("staging failed")
+			}
+			return result
+		}, CF_PUSH_TIMEOUT).Should(Say("custom buildpack contents - cache not found"))
+
+		// Wait for buildpack cache to be uploaded to blobstore.
+		time.Sleep(DEFAULT_TIMEOUT)
+
+		secondDropletGuid := stagePackage(packageGuid, fmt.Sprintf(`{"buildpack_guid":"%s"}`, buildpackGuid))
+		dropletPath = fmt.Sprintf("/v3/droplets/%s", secondDropletGuid)
+		Eventually(func() *Session {
+			result := cf.Cf("curl", dropletPath).Wait(DEFAULT_TIMEOUT)
+			if strings.Contains(string(result.Out.Contents()), "FAILED") {
+				Fail("staging failed")
+			}
+			if strings.Contains(string(result.Out.Contents()), "cache not found") {
+				Fail("cache was not found")
+			}
+			return result
+		}, CF_PUSH_TIMEOUT).Should(Say("custom buildpack contents - here's a cache"))
+
+		Expect(secondDropletGuid).NotTo(Equal(firstDropletGuid))
 	})
 
 	It("can run apps", func() {
