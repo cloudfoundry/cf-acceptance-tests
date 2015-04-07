@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"time"
 
 	. "github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	. "github.com/cloudfoundry-incubator/cf-test-helpers/generator"
@@ -120,6 +121,8 @@ EOF
 		Eventually(func() string {
 			return helpers.CurlAppRoot(appName)
 		}, DEFAULT_TIMEOUT).Should(ContainSubstring("custom buildpack contents - cache not found"))
+
+		time.Sleep(DEFAULT_TIMEOUT)
 
 		restage := Cf("restage", appName).Wait(CF_PUSH_TIMEOUT)
 		Expect(restage).To(Exit(0))
