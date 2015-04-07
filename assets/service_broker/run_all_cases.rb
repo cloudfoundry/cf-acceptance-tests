@@ -6,6 +6,8 @@ require 'benchmark'
 require 'securerandom'
 require 'optparse'
 
+DEFAULT_BROKER_URL = 'http://async-broker.10.244.0.34.xip.io'
+
 def get_config
   raw_config = File.read('data.json')
   JSON.parse(raw_config)
@@ -26,12 +28,16 @@ def get_second_plan
   config['behaviors']['catalog']['body']['services'].first['plans'][1]['name']
 end
 
+def execute(cmd)
+  `#{cmd}`
+end
+
 class ProvisionCommand
   def setup(instance_name)
   end
 
   def run(instance_name)
-    `cf create-service #{get_service} #{get_plan} #{instance_name}`
+    execute "cf create-service #{get_service} #{get_plan} #{instance_name}"
   end
 
   def cleanup(instance_name)
@@ -40,11 +46,11 @@ end
 
 class UpdateCommand
   def setup(instance_name)
-    `cf create-service #{get_service} #{get_plan} #{instance_name}`
+    execute "cf create-service #{get_service} #{get_plan} #{instance_name}"
   end
 
   def run(instance_name)
-    `cf update-service #{instance_name} -p #{get_second_plan}`
+    execute "cf update-service #{instance_name} -p #{get_second_plan}"
   end
 
   def cleanup(instance_name)
@@ -53,11 +59,11 @@ end
 
 class DeprovisionCommand
   def setup(instance_name)
-    `cf create-service #{get_service} #{get_plan} #{instance_name}`
+    execute "cf create-service #{get_service} #{get_plan} #{instance_name}"
   end
 
   def run(instance_name)
-    `cf delete-service #{instance_name} -f`
+    execute "cf delete-service #{instance_name} -f"
   end
 
   def cleanup(instance_name)
@@ -65,8 +71,9 @@ class DeprovisionCommand
 end
 
 class CleanupCommandWrapper
-  def initialize(command)
+  def initialize(command, broker_url)
     @command = command
+    @broker_url = broker_url
   end
 
   def setup(instance_name)
@@ -79,29 +86,20 @@ class CleanupCommandWrapper
 
   def cleanup(instance_name)
     @command.cleanup(instance_name)
-    if attempt_delete(instance_name)
-      -> {
-        until attempt_delete(instance_name)
-        end
-      }
-    end
+    -> {
+      execute "curl -s #{@broker_url}/config/reset -X POST"
+      until attempt_delete(instance_name)
+      end
+    }
   end
 
   private
 
   def attempt_delete(instance_name)
-    output = `cf delete-service #{instance_name} -f`
+    output = execute "cf delete-service #{instance_name} -f"
     !output.include?('Another operation for this service instance is in progress')
   end
 end
-
-action_to_cmd_mapping = {
-  provision: CleanupCommandWrapper.new(ProvisionCommand.new),
-  update: CleanupCommandWrapper.new(UpdateCommand.new),
-  deprovision: CleanupCommandWrapper.new(DeprovisionCommand.new),
-}
-
-DEFAULT_BROKER_URL = 'http://async-broker.10.244.0.34.xip.io'
 
 def write_output_file(output_file, rows)
   CSV.open(output_file, 'w') do |csv|
@@ -113,11 +111,17 @@ def write_output_file(output_file, rows)
 end
 
 def delete_leftover_instances(deferred_deletions)
-  STDOUT.write("Cleaning up service instances... ")
+  count = deferred_deletions.compact.count
+  STDOUT.write("Cleaning up service instances ... 0 / #{count}")
   STDOUT.flush
+  i = 0
   deferred_deletions.compact.each do |callback|
     callback.call
+    i += 1
+    STDOUT.write("\rCleaning up service instances ... #{i} / #{count}")
+    STDOUT.flush
   end
+  puts
   puts "Done"
 end
 
@@ -159,12 +163,12 @@ def configure_broker_endpoint(action, body, broker_url, row, status)
     }
   }
 
-  `curl -s #{broker_url}/config/reset -X POST`
-  `curl -s #{broker_url}/config -d '#{json_config.to_json}'`
+  execute "curl -s #{broker_url}/config/reset -X POST"
+  execute "curl -s #{broker_url}/config -d '#{json_config.to_json}'"
 end
 
-def run_command(command, deferred_deletions, cleanup)
-  instance_name = "si-#{SecureRandom.uuid}"
+def run_command(command, deferred_deletions, cleanup, line_number)
+  instance_name = "si-#{line_number}-#{SecureRandom.uuid}"
 
   command.setup(instance_name)
   output = command.run(instance_name)
@@ -177,8 +181,16 @@ rows = []
 
 broker_url, input_file, output_file, cleanup = parse_parameters
 
+action_to_cmd_mapping = {
+  provision: CleanupCommandWrapper.new(ProvisionCommand.new, broker_url),
+  update: CleanupCommandWrapper.new(UpdateCommand.new, broker_url),
+  deprovision: CleanupCommandWrapper.new(DeprovisionCommand.new, broker_url),
+}
+
 report = Benchmark.measure do
+  i = 0
   CSV.foreach(input_file, headers: true) do |row|
+    i += 1
     rows << row
 
     action, status, body = row['action'], row['status'], row['body']
@@ -189,7 +201,7 @@ report = Benchmark.measure do
 
     configure_broker_endpoint(action, body, broker_url, row, status)
 
-    output = run_command(command, deferred_deletions, cleanup)
+    output = run_command(command, deferred_deletions, cleanup, i)
     row['output'] = output
     STDOUT.write('.')
     STDOUT.flush
