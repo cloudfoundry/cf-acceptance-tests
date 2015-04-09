@@ -101,20 +101,12 @@
       "fake-async-plan-guid": {
         "sleep_seconds": 0,
         "status": 202,
-        "body": {
-          "last_operation": {
-            "state": "in progress"
-          }
-        }
+        "body": {}
       },
       "fake-async-plan-2-guid": {
         "sleep_seconds": 0,
         "status": 202,
-        "body": {
-          "last_operation": {
-            "state": "in progress"
-          }
-        }
+        "body": {}
       },
       "default": {
         "sleep_seconds": 0,
@@ -148,49 +140,29 @@
       "fake-async-plan-guid": {
         "sleep_seconds": 0,
         "status": 202,
-        "body": {
-          "last_operation": {
-            "state": "in progress"
-          }
-        }
+        "body": {}
       },
       "fake-async-plan-2-guid": {
         "sleep_seconds": 0,
         "status": 202,
-        "body": {
-          "last_operation": {
-            "state": "in progress"
-          }
-        }
+        "body": {}
       },
       "default": {
         "sleep_seconds": 0,
         "status": 200,
-        "body": {
-          "last_operation": {
-            "state": "succeeded"
-          }
-        }
+        "body": {}
       }
     },
     "deprovision": {
       "fake-async-plan-guid": {
         "sleep_seconds": 0,
         "status": 202,
-        "body": {
-          "last_operation": {
-            "state": "in progress"
-          }
-        }
+        "body": {}
       },
       "fake-async-plan-2-guid": {
         "sleep_seconds": 0,
         "status": 202,
-        "body": {
-          "last_operation": {
-            "state": "in progress"
-          }
-        }
+        "body": {}
       },
       "default": {
         "sleep_seconds": 0,
