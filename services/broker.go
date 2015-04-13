@@ -102,7 +102,16 @@ func NewServiceBroker(name string, path string, context helpers.SuiteContext) Se
 }
 
 func (b ServiceBroker) Push() {
-	Expect(cf.Cf("push", b.Name, "-p", b.Path).Wait(BROKER_START_TIMEOUT)).To(Exit(0))
+	Expect(cf.Cf("push", b.Name, "-p", b.Path, "--no-start").Wait(BROKER_START_TIMEOUT)).To(Exit(0))
+	if helpers.LoadConfig().UseDiego {
+		appGuid := strings.TrimSpace(string(cf.Cf("app", b.Name, "--guid").Wait(DEFAULT_TIMEOUT).Out.Contents()))
+		cf.Cf("curl",
+			fmt.Sprintf("/v2/apps/%s", appGuid),
+			"-X", "PUT",
+			"-d", "{\"diego\": true}",
+		).Wait(DEFAULT_TIMEOUT)
+	}
+	Expect(cf.Cf("start", b.Name).Wait(BROKER_START_TIMEOUT)).To(Exit(0))
 }
 
 func (b ServiceBroker) Configure() {
