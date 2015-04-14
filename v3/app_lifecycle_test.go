@@ -93,6 +93,10 @@ func stagePackage(packageGuid, stageBody string) string {
 	return droplet.Guid
 }
 
+type ProcessList struct {
+	Processes []Process `json:"resources"`
+}
+
 type Process struct {
 	Guid    string `json:"guid"`
 	Type    string `json:"type"`
@@ -101,17 +105,20 @@ type Process struct {
 	Name string `json:"-"`
 }
 
-func addProcess(appGuid, processType, spaceGuid string) Process {
-	processBody := fmt.Sprintf(`{"type":"%s","space_guid":"%s"}`, processType, spaceGuid)
-	session := cf.Cf("curl", "/v3/processes", "-X", "POST", "-d", processBody)
+func getProcess(appGuid, appName string) []Process {
+	processesURL := fmt.Sprintf("/v3/apps/%s/processes", appGuid)
+	session := cf.Cf("curl", processesURL)
 	bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
-	var process Process
-	json.Unmarshal(bytes, &process)
-	addProcessURL := fmt.Sprintf("/v3/apps/%s/processes", appGuid)
-	addProcessBody := fmt.Sprintf(`{"process_guid": "%s"}`, process.Guid)
-	Expect(cf.Cf("curl", addProcessURL, "-X", "PUT", "-d", addProcessBody).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-	process.Name = fmt.Sprintf("v3-proc-%s-%s", process.Type, process.Guid)
-	return process
+
+	processes := ProcessList{}
+	json.Unmarshal(bytes, &processes)
+
+	for i, process := range processes.Processes {
+//		processes.Processes[i].Name = fmt.Sprintf("v3-proc-%s-%s", process.Type, process.Guid)
+		processes.Processes[i].Name = fmt.Sprintf("v3-%s-%s", appName, process.Type)
+	}
+
+	return processes.Processes
 }
 
 func startApp(appGuid string) {
@@ -143,6 +150,9 @@ else
 	echo "cache not found" > $1/content
 fi
 
+content=$(cat $1/content)
+echo "web: while true; do { echo -e 'HTTP/1.1 200 OK\r\n'; echo "custom buildpack contents - $content"; } | nc -l \$PORT; done" > $1/Procfile
+
 echo "here's a cache" > $2/cached-file
 `,
 			},
@@ -157,7 +167,6 @@ exit 1
 				Name: "bin/release",
 				Body: `#!/usr/bin/env bash
 
-content=$(cat $1/content)
 
 cat <<EOF
 ---
@@ -323,8 +332,20 @@ EOF
 			return cf.Cf("curl", dropletPath).Wait(DEFAULT_TIMEOUT)
 		}, CF_PUSH_TIMEOUT).Should(Say("STAGED"))
 
-		webProcess := addProcess(appGuid, "web", spaceGuid)
-		workerProcess := addProcess(appGuid, "worker", spaceGuid)
+		appUpdatePath := fmt.Sprintf("/v3/apps/%s/current_droplet", appGuid)
+		appUpdateBody := fmt.Sprintf(`{"desired_droplet_guid":"%s"}`, dropletGuid)
+		Expect(cf.Cf("curl", appUpdatePath, "-X", "PUT", "-d", appUpdateBody).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
+		var webProcess Process
+		var workerProcess Process
+		processes := getProcess(appGuid, appName)
+		for _, process := range processes {
+			if process.Type == "web" {
+				webProcess = process
+			} else if process.Type == "worker" {
+				workerProcess = process
+			}
+		}
 
 		Expect(cf.Cf("create-route", context.RegularUserContext().Space, helpers.LoadConfig().AppsDomain, "-n", webProcess.Name).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		getRoutePath := fmt.Sprintf("/v2/routes?q=host:%s", webProcess.Name)
@@ -342,9 +363,6 @@ EOF
 		addRouteBody := fmt.Sprintf(`{"route_guid":"%s"}`, routeGuid)
 		Expect(cf.Cf("curl", addRoutePath, "-X", "PUT", "-d", addRouteBody).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
-		appUpdatePath := fmt.Sprintf("/v3/apps/%s", appGuid)
-		appUpdateBody := fmt.Sprintf(`{"desired_droplet_guid":"%s"}`, dropletGuid)
-		Expect(cf.Cf("curl", appUpdatePath, "-X", "PATCH", "-d", appUpdateBody).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		startApp(appGuid)
 
 		Eventually(func() string {
