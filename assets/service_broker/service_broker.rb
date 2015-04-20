@@ -177,7 +177,7 @@ class ServiceBroker < Sinatra::Base
   end
 
   # fetch service instance
-  get '/v2/service_instances/:id/?' do |id|
+  get '/v2/service_instances/:id/last_operation/?' do |id|
     service_instance = $datasource.service_instance_by_id(id)
     if service_instance
       plan_id = service_instance.plan_id

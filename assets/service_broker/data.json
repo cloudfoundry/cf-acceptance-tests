@@ -120,18 +120,14 @@
           "sleep_seconds": 0,
           "status": 200,
           "body": {
-            "last_operation": {
-              "state": "in progress"
-            }
+            "state": "in progress"
           }
         },
         "finished": {
           "sleep_seconds": 0,
           "status": 200,
           "body": {
-            "last_operation": {
-              "state": "succeeded"
-            }
+            "state": "succeeded"
           }
         }
       }
