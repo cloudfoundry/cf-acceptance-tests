@@ -200,10 +200,8 @@ class ServiceBroker < Sinatra::Base
     else
       status 200
       log_response(status, {
-        last_operation: {
-          state: 'failed',
-          description: "Broker could not find service instance by the given id #{id}",
-        }
+        state: 'failed',
+        description: "Broker could not find service instance by the given id #{id}",
       }.to_json)
     end
   end

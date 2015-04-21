@@ -111,18 +111,12 @@
         "sleep_seconds": 0,
         "status": 202,
         "body": {
-          "last_operation": {
-            "state": "in progress"
-          }
         }
       },
       "<fake-async-plan-2-guid>": {
         "sleep_seconds": 0,
         "status": 202,
         "body": {
-          "last_operation": {
-            "state": "in progress"
-          }
         }
       },
       "default": {
@@ -139,20 +133,16 @@
           "sleep_seconds": 0,
           "status": 200,
           "body": {
-            "last_operation": {
-              "state": "in progress",
-              "description": "not 100 percent done"
-            }
+            "state": "in progress",
+            "description": "not 100 percent done"
           }
         },
         "finished": {
           "sleep_seconds": 0,
           "status": 200,
           "body": {
-            "last_operation": {
-              "state": "succeeded",
-              "description": "100 percent done"
-            }
+            "state": "succeeded",
+            "description": "100 percent done"
           }
         }
       }
@@ -162,27 +152,18 @@
         "sleep_seconds": 0,
         "status": 202,
         "body": {
-          "last_operation": {
-            "state": "in progress"
-          }
         }
       },
       "<fake-async-plan-2-guid>": {
         "sleep_seconds": 0,
         "status": 202,
         "body": {
-          "last_operation": {
-            "state": "in progress"
-          }
         }
       },
       "default": {
         "sleep_seconds": 0,
         "status": 200,
         "body": {
-          "last_operation": {
-            "state": "succeeded"
-          }
         }
       }
     },
@@ -191,18 +172,12 @@
         "sleep_seconds": 0,
         "status": 202,
         "body": {
-          "last_operation": {
-            "state": "in progress"
-          }
         }
       },
       "<fake-async-plan-2-guid>": {
         "sleep_seconds": 0,
         "status": 202,
         "body": {
-          "last_operation": {
-            "state": "in progress"
-          }
         }
       },
       "default": {
