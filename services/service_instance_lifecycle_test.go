@@ -2,7 +2,6 @@ package services
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -190,10 +189,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 			Expect(appEnv).To(Exit(0), "failed get env for app")
 			Expect(appEnv.Out.Contents()).ToNot(ContainSubstring(fmt.Sprintf("credentials")))
 
-			guidRequest := cf.Cf("service", instanceName, "--guid").Wait(DEFAULT_TIMEOUT)
-			guid := strings.TrimSpace(string(guidRequest.Out.Contents()))
-
-			deleteService := cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s?accepts_incomplete=true", guid), "-X", "DELETE").Wait(DEFAULT_TIMEOUT)
+			deleteService := cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)
 			Expect(deleteService).To(Exit(0), "failed making delete request")
 
 			waitForAsyncDeletionToComplete(broker, instanceName)
