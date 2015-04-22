@@ -53,6 +53,8 @@ var _ = Describe("Buildpack Environment", func() {
 					Name: "bin/compile",
 					Body: `#!/usr/bin/env bash
 
+sleep 5
+
 echo RUBY_LOCATION=$(which ruby)
 echo RUBY_VERSION=$(ruby --version)
 

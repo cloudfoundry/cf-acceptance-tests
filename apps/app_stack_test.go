@@ -54,6 +54,8 @@ var _ = Describe("Specifying a specific Stack", func() {
 					Name: "bin/compile",
 					Body: `#!/usr/bin/env bash
 
+sleep 5
+
 cat /etc/lsb-release
 
 sleep 10
