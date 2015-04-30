@@ -10,12 +10,6 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 )
 
-var (
-	DEFAULT_TIMEOUT      = 30 * time.Second
-	CF_PUSH_TIMEOUT      = 2 * time.Minute
-	BROKER_START_TIMEOUT = 5 * time.Minute
-)
-
 var context helpers.SuiteContext
 
 func TestApplications(t *testing.T) {
