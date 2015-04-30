@@ -143,6 +143,9 @@ class ServiceBroker < Sinatra::Base
 
   def log(request)
     $log.info "#{request.env['REQUEST_METHOD']} #{request.env['PATH_INFO']} #{request.env['QUERY_STRING']}".yellow
+    request.body.rewind
+    $log.info "Request body: #{request.body.read}".yellow
+    request.body.rewind
   end
 
   def log_response(status, body)
