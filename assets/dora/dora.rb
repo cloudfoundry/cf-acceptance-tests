@@ -42,6 +42,11 @@ class Dora < Sinatra::Base
     "Available sigterms #{`man -k signal | grep list`}"
   end
 
+  get '/dpkg/:package' do
+    puts "Sending dpkg output for #{params[:package]}"
+    `dpkg -l #{params[:package]}`
+  end
+
   get '/delay/:seconds' do
     sleep params[:seconds].to_i
     "YAWN! Slept so well for #{params[:seconds].to_i} seconds"
