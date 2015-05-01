@@ -1,40 +1,41 @@
 package assets
 
 type Assets struct {
+	AsyncServiceBroker       string
 	Dora                     string
+	DoraZip                  string
+	Fuse                     string
+	Golang                   string
 	HelloWorld               string
+	Java                     string
+	LoggregatorLoadGenerator string
+	Python                   string
 	Node                     string
 	NodeWithProcfile         string
-	NodeWithWebsocket        string
-	Java                     string
-	Golang                   string
-	Python                   string
-	LoggregatorLoadGenerator string
-	ServiceBroker            string
-	AsyncServiceBroker       string
 	Php                      string
-	SecurityGroupBuildpack   string
-	Fuse                     string
 	RubySimple               string
-	DoraZip                  string
+	SecurityGroupBuildpack   string
+	ServiceBroker            string
+	Staticfile               string
 }
 
 func NewAssets() Assets {
 	return Assets{
-		Dora:             "../assets/dora",
-		HelloWorld:       "../assets/hello-world",
-		Node:             "../assets/node",
-		NodeWithProcfile: "../assets/node-with-procfile",
-		Java:             "../assets/java",
-		Golang:           "../assets/golang",
-		Python:           "../assets/python",
-		LoggregatorLoadGenerator: "../assets/loggregator-load-generator",
-		ServiceBroker:            "../assets/service_broker",
 		AsyncServiceBroker:       "../assets/service_broker",
+		Dora:             		  "../assets/dora",
+		DoraZip:    			  "../assets/dora.zip",
+		Fuse:       			  "../assets/fuse-mount",
+		Golang:          		  "../assets/golang",
+		HelloWorld:      		  "../assets/hello-world",
+		Java:            		  "../assets/java",
+		LoggregatorLoadGenerator: "../assets/loggregator-load-generator",
+		Node:             		  "../assets/node",
+		NodeWithProcfile: 		  "../assets/node-with-procfile",
 		Php:                      "../assets/php",
-		SecurityGroupBuildpack: "../assets/security_group_buildpack.zip",
-		Fuse:       "../assets/fuse-mount",
-		RubySimple: "../assets/ruby_simple",
-		DoraZip:    "../assets/dora.zip",
+		Python:           		  "../assets/python",
+		RubySimple: 			  "../assets/ruby_simple",
+		SecurityGroupBuildpack:   "../assets/security_group_buildpack.zip",
+		ServiceBroker:            "../assets/service_broker",
+		Staticfile:    			  "../assets/staticfile",
 	}
 }
