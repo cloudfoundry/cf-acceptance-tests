@@ -65,6 +65,26 @@
                 }
               },
               {
+                "name": "fake-plan-2",
+                "id": "fake-plan-2-guid",
+                "description": "Shared fake Server, 5tb persistent disk, 40 max concurrent connections",
+                "max_storage_tb": 5,
+                "metadata": {
+                  "cost": 0,
+                  "bullets": [
+                    {
+                      "content": "Shared fake server"
+                    },
+                    {
+                      "content": "5 TB storage"
+                    },
+                    {
+                      "content": "40 concurrent connections"
+                    }
+                  ]
+                }
+              },
+              {
                 "name": "fake-async-plan",
                 "id": "fake-async-plan-guid",
                 "description": "Shared fake Server, 5tb persistent disk, 40 max concurrent connections. 100 async",
