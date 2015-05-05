@@ -212,8 +212,10 @@ class ServiceBroker < Sinatra::Base
   # update service instance
   patch '/v2/service_instances/:id/?' do |id|
     json_body = JSON.parse(request.body.read)
-    service_instance = $datasource.service_instance_by_id(id).update!(json_body)
-    respond_with_behavior($datasource.behavior_for_type(:update, service_instance.plan_id))
+    service_instance = $datasource.service_instance_by_id(id)
+    service_instance.update!(json_body) if service_instance
+    plan_id = service_instance ? service_instance.plan_id : nil
+    respond_with_behavior($datasource.behavior_for_type(:update, plan_id))
   end
 
   # deprovision
