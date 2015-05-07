@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/cloudfoundry/cf-acceptance-tests",
-	"GoVersion": "go1.3.1",
+	"GoVersion": "go1.4.2",
 	"Packages": [
 		"./..."
 	],
@@ -11,19 +11,19 @@
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/cf",
-			"Rev": "c53011b18f6d54b09a4080be4bc1cd329722e23d"
+			"Rev": "6e55cc090d2364b514bcfcbc7ca1e6a36a069458"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/generator",
-			"Rev": "c53011b18f6d54b09a4080be4bc1cd329722e23d"
+			"Rev": "6e55cc090d2364b514bcfcbc7ca1e6a36a069458"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/helpers",
-			"Rev": "c53011b18f6d54b09a4080be4bc1cd329722e23d"
+			"Rev": "6e55cc090d2364b514bcfcbc7ca1e6a36a069458"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/runner",
-			"Rev": "c53011b18f6d54b09a4080be4bc1cd329722e23d"
+			"Rev": "6e55cc090d2364b514bcfcbc7ca1e6a36a069458"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/noaa",

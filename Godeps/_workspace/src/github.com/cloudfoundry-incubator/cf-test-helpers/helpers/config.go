@@ -8,15 +8,17 @@ import (
 )
 
 type Config struct {
-	ApiEndpoint string `json:"api"`
-	AppsDomain  string `json:"apps_domain"`
+	ApiEndpoint   string `json:"api"`
+	SystemDomain  string `json:"system_domain"`
+	OauthPassword string `json:"oauth_password"`
+	AppsDomain    string `json:"apps_domain"`
 
 	AdminUser     string `json:"admin_user"`
 	AdminPassword string `json:"admin_password"`
 
-	UseExistingUser bool `json:"use_existing_user"`
-	ShouldKeepUser bool `json:"keep_user_at_suite_end"`
-	ExistingUser string `json:"existing_user"`
+	UseExistingUser      bool   `json:"use_existing_user"`
+	ShouldKeepUser       bool   `json:"keep_user_at_suite_end"`
+	ExistingUser         string `json:"existing_user"`
 	ExistingUserPassword string `json:"existing_user_password"`
 
 	PersistentAppHost      string `json:"persistent_app_host"`
@@ -40,6 +42,10 @@ type Config struct {
 	SyslogIpAddress string `json:"syslog_ip_address"`
 
 	SecureAddress string `json:"secure_address"`
+
+	DockerExecutable      string   `json:"docker_executable"`
+	DockerParameters      []string `json:"docker_parameters"`
+	DockerRegistryAddress string   `json:"docker_registry_address"`
 }
 
 func (c Config) ScaledTimeout(timeout time.Duration) time.Duration {
