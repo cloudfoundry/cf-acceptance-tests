@@ -64,7 +64,7 @@ var _ = Describe("Application Lifecycle", func() {
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 
-		PDescribe("Context path", func() {
+		Describe("Context path", func() {
 			var app2 string
 			var path = "/imposter_dora"
 
