@@ -93,5 +93,9 @@ class Dora < Sinatra::Base
     `ip addr show  | grep w- | grep inet | awk '{print $2}'`
   end
 
+  get '/imposter_dora' do
+    "Hi, I'm an Imposter"
+  end
+
   run! if app_file == $0
 end

@@ -113,7 +113,7 @@ var _ = Describe("Application Lifecycle", func() {
 
 				Eventually(func() string {
 					return helpers.CurlApp(appName, path)
-				}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hello, world!"))
+				}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm an Imposter"))
 			})
 		})
 
