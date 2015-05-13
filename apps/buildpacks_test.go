@@ -89,6 +89,16 @@ var _ = Describe("Buildpacks", func() {
 		})
 	})
 
+	Describe("binary", func() {
+		It("makes the app reachable via its bound route", func() {
+			Expect(cf.Cf("push", appName, "-b", "binary_buildpack", "-p", assets.NewAssets().Binary).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+
+			Eventually(func() string {
+				return helpers.CurlAppRoot(appName)
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hello from a binary"))
+		})
+	})
+
 	Context("lucid64", func() {
 		Describe("node", func() {
 			It("makes the app reachable via its bound route", func() {
@@ -142,6 +152,26 @@ var _ = Describe("Buildpacks", func() {
 				Eventually(func() string {
 					return helpers.CurlAppRoot(appName)
 				}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hello from php"))
+			})
+		})
+
+		Describe("staticfile", func() {
+			It("makes the app reachable via its bound route", func() {
+				Expect(cf.Cf("push", appName, "-s", "lucid64", "-p", assets.NewAssets().Staticfile).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+
+				Eventually(func() string {
+					return helpers.CurlAppRoot(appName)
+				}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hello from a staticfile"))
+			})
+		})
+
+		Describe("binary", func() {
+			It("makes the app reachable via its bound route", func() {
+				Expect(cf.Cf("push", appName, "-s", "lucid64", "-b", "binary_buildpack", "-p", assets.NewAssets().Binary).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+
+				Eventually(func() string {
+					return helpers.CurlAppRoot(appName)
+				}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hello from a binary"))
 			})
 		})
 	})

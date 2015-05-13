@@ -17,6 +17,7 @@ type Assets struct {
 	SecurityGroupBuildpack   string
 	ServiceBroker            string
 	Staticfile               string
+	Binary                   string
 }
 
 func NewAssets() Assets {
@@ -37,5 +38,6 @@ func NewAssets() Assets {
 		SecurityGroupBuildpack:   "../assets/security_group_buildpack.zip",
 		ServiceBroker:            "../assets/service_broker",
 		Staticfile:    			  "../assets/staticfile",
+		Binary:     			  "../assets/binary",
 	}
 }
