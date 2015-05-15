@@ -6,6 +6,9 @@ import (
 	"os"
 	"path"
 
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/cli_version_check"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/cli_version_check/cli_version"
+
 	. "github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	. "github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	. "github.com/onsi/ginkgo"
@@ -24,7 +27,11 @@ var _ = Describe("Admin Buildpacks", func() {
 
 		buildpackPath        string
 		buildpackArchivePath string
+
+		cliUtils cli_version_check.CliVersionCheck
 	)
+
+	cliUtils = cli_version_check.NewCliVersionCheck(cli_version.NewCliVersion())
 
 	matchingFilename := func(appName string) string {
 		return fmt.Sprintf("simple-buildpack-please-match-%s", appName)
@@ -122,9 +129,15 @@ EOF
 		})
 
 		It("fails to stage", func() {
+			cliMinVersion := cliUtils.AtLeast("6.11.3")
+
 			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(1))
-			Expect(push).To(Say("An app was not successfully detected"))
+			if cliMinVersion {
+				Expect(push).To(Say("NoAppDetectedError"))
+			} else {
+				Expect(push).To(Say("An app was not successfully detected"))
+			}
 		})
 	})
 
@@ -136,9 +149,15 @@ EOF
 		})
 
 		It("fails to stage", func() {
+			cliMinVersion := cliUtils.AtLeast("6.11.3")
+
 			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(1))
-			Expect(push).To(Say("An app was not successfully detected"))
+			if cliMinVersion {
+				Expect(push).To(Say("NoAppDetectedError"))
+			} else {
+				Expect(push).To(Say("An app was not successfully detected"))
+			}
 		})
 	})
 
@@ -164,9 +183,15 @@ EOF
 		})
 
 		It("fails to stage", func() {
+			cliMinVersion := cliUtils.AtLeast("6.11.3")
+
 			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(1))
-			Expect(push).To(Say("An app was not successfully detected"))
+			if cliMinVersion {
+				Expect(push).To(Say("NoAppDetectedError"))
+			} else {
+				Expect(push).To(Say("An app was not successfully detected"))
+			}
 		})
 	})
 })
