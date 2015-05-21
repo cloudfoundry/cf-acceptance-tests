@@ -32,7 +32,7 @@ type AppUsageEvents struct {
 func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
 	var response AppUsageEvents
 	cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-		cf.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1", &response, DEFAULT_TIMEOUT)
+		cf.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1&results-per-page=150", &response, DEFAULT_TIMEOUT)
 	})
 
 	for _, event := range response.Resources {
