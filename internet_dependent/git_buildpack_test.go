@@ -18,7 +18,7 @@ var _ = Describe("GitBuildpack", func() {
 
 	It("uses a buildpack from a git url", func() {
 		appName = generator.RandomName()
-		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Node, "-c", "node app.js", "-b", "https://github.com/cloudfoundry/nodejs-buildpack.git").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Node, "-c", "node app.js", "-b", "https://github.com/cloudfoundry/nodejs-buildpack.git#v1.3.1").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(appName)
