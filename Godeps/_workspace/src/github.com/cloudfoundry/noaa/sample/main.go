@@ -3,16 +3,18 @@ package main
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/cloudfoundry/noaa"
 	"os"
+
+	"github.com/cloudfoundry/noaa"
+	"github.com/cloudfoundry/noaa/events"
 )
 
-var DopplerAddress = "wss://doppler.10.244.0.34.xip.io:443"
+var dopplerAddress = os.Getenv("DOPPLER_ADDR")
 var appGuid = os.Getenv("APP_GUID")
 var authToken = os.Getenv("CF_ACCESS_TOKEN")
 
 func main() {
-	connection := noaa.NewNoaa(DopplerAddress, &tls.Config{InsecureSkipVerify: true}, nil)
+	connection := noaa.NewConsumer(dopplerAddress, &tls.Config{InsecureSkipVerify: true}, nil)
 	connection.SetDebugPrinter(ConsoleDebugPrinter{})
 
 	messages, err := connection.RecentLogs(appGuid, authToken)
@@ -27,14 +29,19 @@ func main() {
 	}
 
 	fmt.Println("===== Streaming metrics")
-	msgChan, err := connection.Stream(appGuid, authToken)
+	msgChan := make(chan *events.Envelope)
+	go func() {
+		defer close(msgChan)
+		errorChan := make(chan error)
+		go connection.Stream(appGuid, authToken, msgChan, errorChan, nil)
 
-	if err != nil {
-		fmt.Printf("===== Error streaming: %v\n", err)
-	} else {
-		for msg := range msgChan {
-			fmt.Printf("%v \n", msg)
+		for err := range errorChan {
+			fmt.Fprintf(os.Stderr, "%v\n", err.Error())
 		}
+	}()
+
+	for msg := range msgChan {
+		fmt.Printf("%v \n", msg)
 	}
 }
 

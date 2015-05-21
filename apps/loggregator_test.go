@@ -15,6 +15,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/matchers"
 	"github.com/cloudfoundry/noaa"
+	"github.com/cloudfoundry/noaa/events"
 
 	"crypto/tls"
 	"strings"
@@ -81,9 +82,12 @@ var _ = Describe("loggregator", func() {
 		It("shows logs and metrics", func() {
 			config := helpers.LoadConfig()
 
-			noaaConnection := noaa.NewNoaa(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: config.SkipSSLValidation}, nil)
-			msgChan, err := noaaConnection.Firehose("firehose-a", getAdminUserAccessToken())
-			Expect(err).NotTo(HaveOccurred())
+			noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: config.SkipSSLValidation}, nil)
+			msgChan := make(chan *events.Envelope)
+			errorChan := make(chan error)
+			stopchan := make(chan struct{})
+			go noaaConnection.Firehose("firehose-a", getAdminUserAccessToken(), msgChan, errorChan, stopchan)
+			defer close(stopchan)
 
 			Eventually(func() string {
 				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", oneSecond))

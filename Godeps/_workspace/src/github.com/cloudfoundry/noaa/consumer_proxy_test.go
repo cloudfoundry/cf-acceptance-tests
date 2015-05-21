@@ -4,16 +4,18 @@ import (
 	"bytes"
 	"crypto/tls"
 	"errors"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"strings"
+	"time"
+
 	"github.com/cloudfoundry/loggregatorlib/loggertesthelper"
 	"github.com/cloudfoundry/loggregatorlib/server/handlers"
 	"github.com/cloudfoundry/noaa"
 	"github.com/cloudfoundry/noaa/events"
 	"github.com/elazarl/goproxy"
-	"log"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -21,7 +23,7 @@ import (
 
 var _ = Describe("Noaa behind a Proxy", func() {
 	var (
-		connection        noaa.Noaa
+		connection        *noaa.Consumer
 		endpoint          string
 		testServer        *httptest.Server
 		tlsSettings       *tls.Config
@@ -29,7 +31,7 @@ var _ = Describe("Noaa behind a Proxy", func() {
 
 		appGuid         string
 		authToken       string
-		incomingChan    <-chan *events.Envelope
+		incomingChan    chan *events.Envelope
 		messagesToSend  chan []byte
 		testProxyServer *httptest.Server
 		goProxyHandler  *goproxy.ProxyHttpServer
@@ -60,15 +62,28 @@ var _ = Describe("Noaa behind a Proxy", func() {
 		}
 	})
 
-	Describe("Stream", func() {
+	Describe("StreamWithoutReconnect", func() {
+		var errorChan chan error
+		var finishedChan chan struct{}
+
+		BeforeEach(func() {
+			errorChan = make(chan error, 10)
+			finishedChan = make(chan struct{})
+			incomingChan = make(chan *events.Envelope)
+		})
 
 		AfterEach(func() {
 			close(messagesToSend)
+			<-finishedChan
 		})
 
 		perform := func() {
-			connection = noaa.NewNoaa(endpoint, tlsSettings, consumerProxyFunc)
-			incomingChan, err = connection.Stream(appGuid, authToken)
+			connection = noaa.NewConsumer(endpoint, tlsSettings, consumerProxyFunc)
+
+			go func() {
+				errorChan <- connection.StreamWithoutReconnect(appGuid, authToken, incomingChan)
+				close(finishedChan)
+			}()
 		}
 
 		It("connects using valid URL to running consumerProxyFunc server", func() {
@@ -85,8 +100,16 @@ var _ = Describe("Noaa behind a Proxy", func() {
 
 			perform()
 
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("connection refused"))
+			for {
+				select {
+				case err := <-errorChan:
+					if strings.Contains(err.Error(), "connection refused") {
+						return
+					}
+				case <-time.After(time.Second):
+					Fail("never received an error")
+				}
+			}
 		})
 
 		It("connects using invalid URL", func() {
@@ -97,6 +120,8 @@ var _ = Describe("Noaa behind a Proxy", func() {
 
 			perform()
 
+			var err error
+			Eventually(errorChan).Should(Receive(&err))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(errMsg))
 		})
@@ -106,7 +131,10 @@ var _ = Describe("Noaa behind a Proxy", func() {
 
 			perform()
 
+			var err error
+			Eventually(errorChan).Should(Receive(&err))
 			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("Error dialing traffic controller server"))
 		})
 
 		It("connects to a non-consumerProxyFunc server", func() {
@@ -119,6 +147,8 @@ var _ = Describe("Noaa behind a Proxy", func() {
 
 			perform()
 
+			var err error
+			Eventually(errorChan).Should(Receive(&err))
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(http.StatusText(http.StatusBadRequest)))
 		})
@@ -126,11 +156,11 @@ var _ = Describe("Noaa behind a Proxy", func() {
 
 	Describe("RecentLogs", func() {
 		var httpTestServer *httptest.Server
-		var incomingMessages []*events.Envelope
+		var incomingMessages []*events.LogMessage
 
 		perform := func() {
 			close(messagesToSend)
-			connection = noaa.NewNoaa(endpoint, tlsSettings, consumerProxyFunc)
+			connection = noaa.NewConsumer(endpoint, tlsSettings, consumerProxyFunc)
 			incomingMessages, err = connection.RecentLogs(appGuid, authToken)
 		}
 
@@ -151,8 +181,8 @@ var _ = Describe("Noaa behind a Proxy", func() {
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(incomingMessages).To(HaveLen(2))
-			Expect(incomingMessages[0].GetLogMessage().GetMessage()).To(Equal([]byte("test-message-0")))
-			Expect(incomingMessages[1].GetLogMessage().GetMessage()).To(Equal([]byte("test-message-1")))
+			Expect(incomingMessages[0].GetMessage()).To(Equal([]byte("test-message-0")))
+			Expect(incomingMessages[1].GetMessage()).To(Equal([]byte("test-message-1")))
 		})
 
 		It("connects using failing proxyFunc", func() {
@@ -163,7 +193,7 @@ var _ = Describe("Noaa behind a Proxy", func() {
 
 			perform()
 
-			Expect(err).To(HaveOccurred())
+			Expect(err).To(HaveOccurred(), "THIS WILL FAIL ON GOLANG 1.3 - 1.3.3 DUE TO BUG IN STANDARD LIBRARY (see https://code.google.com/p/go/issues/detail?id=8755)")
 			Expect(err.Error()).To(ContainSubstring(errMsg))
 		})
 	})
