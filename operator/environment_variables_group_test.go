@@ -107,6 +107,6 @@ exit 1
 			appLogsSession := cf.Cf("logs", "--recent", appName)
 			Expect(appLogsSession.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			return appLogsSession
-		}, 5).Should(Say("staging_env_value"))
+		}, DEFAULT_TIMEOUT).Should(Say("staging_env_value"))
 	})
 })
