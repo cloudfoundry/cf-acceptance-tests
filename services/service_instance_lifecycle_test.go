@@ -149,6 +149,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 			instanceName := generator.RandomName()
 			createService := cf.Cf("create-service", broker.Service.Name, broker.AsyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
 			Expect(createService).To(Exit(0))
+			Expect(createService.Out.Contents()).To(ContainSubstring("Create in progress."))
 
 			waitForAsyncOperationToComplete(broker, instanceName)
 
@@ -159,6 +160,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 
 			updateService := cf.Cf("update-service", instanceName, "-p", broker.AsyncPlans[1].Name).Wait(DEFAULT_TIMEOUT)
 			Expect(updateService).To(Exit(0))
+			Expect(updateService.Out.Contents()).To(ContainSubstring("Update in progress."))
 
 			waitForAsyncOperationToComplete(broker, instanceName)
 
@@ -191,6 +193,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 
 			deleteService := cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)
 			Expect(deleteService).To(Exit(0), "failed making delete request")
+			Expect(deleteService.Out.Contents()).To(ContainSubstring("Delete in progress."))
 
 			waitForAsyncDeletionToComplete(broker, instanceName)
 		})
