@@ -3,195 +3,211 @@ package noaa
 import (
 	"bufio"
 	"bytes"
-	"code.google.com/p/gogoprotobuf/proto"
 	"crypto/tls"
 	"errors"
 	"fmt"
-	noaa_errors "github.com/cloudfoundry/noaa/errors"
-	"github.com/cloudfoundry/noaa/events"
-	"github.com/gorilla/websocket"
 	"io/ioutil"
 	"mime/multipart"
 	"net"
 	"net/http"
 	"net/url"
 	"regexp"
-	"sort"
 	"strings"
+	"sync"
 	"time"
+
+	noaa_errors "github.com/cloudfoundry/noaa/errors"
+	"github.com/cloudfoundry/noaa/events"
+	"github.com/gogo/protobuf/proto"
+	"github.com/gorilla/websocket"
 )
 
 var (
 	// KeepAlive sets the interval between keep-alive messages sent by the client to loggregator.
-	KeepAlive      = 25 * time.Second
-	boundaryRegexp = regexp.MustCompile("boundary=(.*)")
-	ErrNotFound    = errors.New("/recent path not found or has issues")
-	ErrBadResponse = errors.New("bad server response")
-	ErrBadRequest  = errors.New("bad client request")
+	KeepAlive         = 25 * time.Second
+	reconnectTimeout  = 500 * time.Millisecond
+	boundaryRegexp    = regexp.MustCompile("boundary=(.*)")
+	ErrNotOK          = errors.New("unknown issue when making HTTP request to Loggregator")
+	ErrNotFound       = ErrNotOK // NotFound isn't an accurate description of how this is used; please use ErrNotOK instead
+	ErrBadResponse    = errors.New("bad server response")
+	ErrBadRequest     = errors.New("bad client request")
+	ErrLostConnection = errors.New("remote server terminated connection unexpectedly")
 )
 
-/* Noaa represents the actions that can be performed against traffic controller.
- */
-type Noaa interface {
-
-	//	TailingLogs listens indefinitely for log messages. It returns two channels; the first is populated
-	//	with log messages, while the second contains errors (e.g. from parsing messages). It returns
-	//	immediately. Call Close() to terminate the connection when you are finished listening.
-	//
-	//	Messages are presented in the order received from the loggregator server. Chronological or
-	//	other ordering is not guaranteed. It is the responsibility of the consumer of these channels
-	//	to provide any desired sorting mechanism.
-	TailingLogs(appGuid string, authToken string) (<-chan *events.Envelope, error)
-
-	/*
-		Stream listens indefinitely for log and event messages. It returns two channels; the first is populated
-		with log and event messages, while the second contains errors (e.g. from parsing messages). It returns immediately.
-		Call Close() to terminate the connection when you are finished listening.
-
-		Messages are presented in the order received from the loggregator server. Chronological or other ordering
-		is not guaranteed. It is the responsibility of the consumer of these channels to provide any desired sorting
-		mechanism.
-	*/
-	Stream(appGuid string, authToken string) (<-chan *events.Envelope, error)
-
-	/*
-	   Firehose streams all data.
-	*/
-	Firehose(subscriptionId, authToken string) (<-chan *events.Envelope, error)
-
-	//	Recent connects to traffic controller via its 'recent' endpoint and returns a slice of recent messages.
-	//	It does not guarantee any order of the messages; they are in the order returned by traffic controller.
-	//
-	//	The SortRecent method is provided to sort the data returned by this method.
-	RecentLogs(appGuid string, authToken string) ([]*events.Envelope, error)
-
-	// Close terminates the websocket connection to traffic controller.
-	Close() error
-
-	// SetOnConnectCallback sets a callback function to be called with the websocket connection is established.
-	SetOnConnectCallback(func())
-
-	// SetDebugPrinter enables logging of the websocket handshake
-	SetDebugPrinter(DebugPrinter)
-}
-
-type DebugPrinter interface {
-	Print(title, dump string)
-}
-
-type nullDebugPrinter struct {
-}
-
-func (nullDebugPrinter) Print(title, body string) {
-}
-
-type consumer struct {
+// Consumer represents the actions that can be performed against traffic controller.
+type Consumer struct {
 	trafficControllerUrl string
 	tlsConfig            *tls.Config
 	ws                   *websocket.Conn
 	callback             func()
 	proxy                func(*http.Request) (*url.URL, error)
 	debugPrinter         DebugPrinter
+	sync.RWMutex
 }
 
-/* New creates a new consumer to a traffic controller.
- */
-func NewNoaa(trafficControllerUrl string, tlsConfig *tls.Config, proxy func(*http.Request) (*url.URL, error)) Noaa {
-	return &consumer{trafficControllerUrl: trafficControllerUrl, tlsConfig: tlsConfig, proxy: proxy, debugPrinter: nullDebugPrinter{}}
+// NewConsumer creates a new consumer to a traffic controller.
+func NewConsumer(trafficControllerUrl string, tlsConfig *tls.Config, proxy func(*http.Request) (*url.URL, error)) *Consumer {
+	return &Consumer{trafficControllerUrl: trafficControllerUrl, tlsConfig: tlsConfig, proxy: proxy, debugPrinter: nullDebugPrinter{}}
 }
 
-/* SetDebugPrinter enables logging of the websocket handshake
- */
-func (cnsmr *consumer) SetDebugPrinter(debugPrinter DebugPrinter) {
-	cnsmr.debugPrinter = debugPrinter
+// TailingLogs behaves exactly as TailingLogsWithoutReconnect, except that it retries 5 times if the connection
+// to the remote server is lost and returns all errors from each attempt on errorChan.
+func (cnsmr *Consumer) TailingLogs(appGuid string, authToken string, outputChan chan<- *events.LogMessage, errorChan chan<- error, stopChan chan struct{}) {
+	action := func() error {
+		return cnsmr.TailingLogsWithoutReconnect(appGuid, authToken, outputChan)
+	}
+
+	cnsmr.retryAction(action, errorChan, stopChan)
 }
 
-/*
-TailingLogs listens indefinitely for log messages. It returns two channels; the first is populated
-with log messages, while the second contains errors (e.g. from parsing messages). It returns immediately.
-Call Close() to terminate the connection when you are finished listening.
-
-Messages are presented in the order received from the traffic controller server. Chronological or other ordering
-is not guaranteed. It is the responsibility of the consumer of these channels to provide any desired sorting
-mechanism.
-*/
-func (cnsmr *consumer) TailingLogs(appGuid string, authToken string) (<-chan *events.Envelope, error) {
-	eventsWithoutMetrics := make(chan *events.Envelope)
+// TailingLogsWithoutReconnect listens indefinitely for log messages only; other event types are dropped.
+//
+// If you wish to be able to terminate the listen early, run TailingLogsWithoutReconnect in a Goroutine and
+// call Close() when you are finished listening.
+//
+// Messages are presented in the order received from the loggregator server. Chronological or
+// other ordering is not guaranteed. It is the responsibility of the consumer of these channels
+// to provide any desired sorting mechanism.
+func (cnsmr *Consumer) TailingLogsWithoutReconnect(appGuid string, authToken string, outputChan chan<- *events.LogMessage) error {
+	allEvents := make(chan *events.Envelope)
 
 	streamPath := fmt.Sprintf("/apps/%s/stream", appGuid)
-	eventsWithMetrics, err := cnsmr.stream(streamPath, authToken)
-
+	errChan := make(chan error)
 	go func() {
-		for event := range eventsWithMetrics {
-			if *event.EventType == events.Envelope_LogMessage {
-				eventsWithoutMetrics <- event
-			}
-		}
-
-		close(eventsWithoutMetrics)
+		err := cnsmr.stream(streamPath, authToken, allEvents)
+		errChan <- err
+		close(errChan)
 	}()
 
-	return eventsWithoutMetrics, err
+	go func() {
+		defer close(allEvents)
+
+		for event := range allEvents {
+			if *event.EventType == events.Envelope_LogMessage {
+				outputChan <- event.GetLogMessage()
+			}
+		}
+	}()
+
+	return <-errChan
 }
 
-/*
-Stream listens indefinitely for log and event messages. It returns two channels; the first is populated
-with log and event messages, while the second contains errors (e.g. from parsing messages). It returns immediately.
-Call Close() to terminate the connection when you are finished listening.
+// Stream behaves exactly as StreamWithoutReconnect, except that it retries 5 times if the connection
+// to the remote server is lost.
+func (cnsmr *Consumer) Stream(appGuid string, authToken string, outputChan chan<- *events.Envelope, errorChan chan<- error, stopChan chan struct{}) {
+	action := func() error {
+		return cnsmr.StreamWithoutReconnect(appGuid, authToken, outputChan)
+	}
 
-Messages are presented in the order received from the traffic controller server. Chronological or other ordering
-is not guaranteed. It is the responsibility of the consumer of these channels to provide any desired sorting
-mechanism.
-*/
-func (cnsmr *consumer) Stream(appGuid string, authToken string) (<-chan *events.Envelope, error) {
+	cnsmr.retryAction(action, errorChan, stopChan)
+}
+
+// StreamWithoutReconnect listens indefinitely for all log and event messages.
+//
+// If you wish to be able to terminate the listen early, run StreamWithoutReconnect in a Goroutine and
+// call Close() when you are finished listening.
+//
+// Messages are presented in the order received from the loggregator server. Chronological or other ordering
+// is not guaranteed. It is the responsibility of the consumer of these channels to provide any desired sorting
+// mechanism.
+func (cnsmr *Consumer) StreamWithoutReconnect(appGuid string, authToken string, outputChan chan<- *events.Envelope) error {
 	streamPath := fmt.Sprintf("/apps/%s/stream", appGuid)
-	return cnsmr.stream(streamPath, authToken)
+	return cnsmr.stream(streamPath, authToken, outputChan)
 }
 
-func (cnsmr *consumer) Firehose(subscriptionId, authToken string) (<-chan *events.Envelope, error) {
+// Firehose behaves exactly as FirehoseWithoutReconnect, except that it retries 5 times if the connection
+// to the remote server is lost.
+func (cnsmr *Consumer) Firehose(subscriptionId string, authToken string, outputChan chan<- *events.Envelope, errorChan chan<- error, stopChan chan struct{}) {
+	action := func() error {
+		return cnsmr.FirehoseWithoutReconnect(subscriptionId, authToken, outputChan)
+	}
+
+	cnsmr.retryAction(action, errorChan, stopChan)
+}
+
+// FirehoseWithoutReconnect streams all data. All clients with the same subscriptionId will receive a proportionate share of the
+// message stream. Each pool of clients will receive the entire stream.
+//
+// If you wish to be able to terminate the listen early, run FirehoseWithoutReconnect in a Goroutine and
+// call Close() when you are finished listening.
+//
+// Messages are presented in the order received from the loggregator server. Chronological or other ordering
+// is not guaranteed. It is the responsibility of the consumer of these channels to provide any desired sorting
+// mechanism.
+func (cnsmr *Consumer) FirehoseWithoutReconnect(subscriptionId string, authToken string, outputChan chan<- *events.Envelope) error {
 	streamPath := "/firehose/" + subscriptionId
-	return cnsmr.stream(streamPath, authToken)
+	return cnsmr.stream(streamPath, authToken, outputChan)
 }
 
-func (cnsmr *consumer) stream(streamPath string, authToken string) (<-chan *events.Envelope, error) {
-	incomingChan := make(chan *events.Envelope)
+func (cnsmr *Consumer) stream(streamPath string, authToken string, outputChan chan<- *events.Envelope) error {
 	var err error
 
+	cnsmr.Lock()
 	cnsmr.ws, err = cnsmr.establishWebsocketConnection(streamPath, authToken)
+	cnsmr.Unlock()
 
-	if err == nil {
-		go func() {
-			defer close(incomingChan)
-			cnsmr.listenForMessages(incomingChan)
-		}()
+	if err != nil {
+		return err
 	}
 
-	return incomingChan, err
+	return cnsmr.listenForMessages(outputChan)
 }
 
-/*
-RecentLogs connects to traffic controller via its 'recentlogs' http(s) endpoint and returns a slice of recent messages.
-If the new http 'recentlogs' endpoint isn't supported (ie you are connecting to an older traffic controller server),
-we will fallback to the old Websocket 'dump' endpoint.
-
-It does not guarantee any order of the messages; they are in the order returned by traffic controller.
-
-The SortRecent method is provided to sort the data returned by this method.
-*/
-func (cnsmr *consumer) RecentLogs(appGuid string, authToken string) ([]*events.Envelope, error) {
-	messages, err := cnsmr.httpRecentLogs(appGuid, authToken)
-	if err != ErrBadRequest {
-		return messages, err
-	} else {
-		return cnsmr.dump(appGuid, authToken)
+func makeError(err error, code int32) *events.Envelope {
+	return &events.Envelope{
+		EventType: events.Envelope_Error.Enum(),
+		Error: &events.Error{
+			Source:  proto.String("NOAA"),
+			Code:    &code,
+			Message: proto.String(err.Error()),
+		},
 	}
 }
 
-/*
-httpRecent connects to traffic controller via its 'recentlogs' http(s) endpoint and returns a slice of recent messages.
-It does not guarantee any order of the messages; they are in the order returned by traffic controller.
-*/
-func (cnsmr *consumer) httpRecentLogs(appGuid string, authToken string) ([]*events.Envelope, error) {
+// RecentLogs connects to traffic controller via its 'recentlogs' http(s) endpoint and returns a slice of recent messages.
+// It does not guarantee any order of the messages; they are in the order returned by traffic controller.
+//
+// The SortRecent method is provided to sort the data returned by this method.
+func (cnsmr *Consumer) RecentLogs(appGuid string, authToken string) ([]*events.LogMessage, error) {
+	envelopes, err := cnsmr.readEnvelopesFromTrafficController(appGuid, authToken, "recentlogs")
+
+	if err != nil {
+		return nil, err
+	}
+
+	messages := make([]*events.LogMessage, 0, 200)
+	for _, envelope := range envelopes {
+		messages = append(messages, envelope.GetLogMessage())
+	}
+
+	return messages, err
+}
+
+// ContainerMetrics connects to traffic controller via its 'containermetrics' http(s) endpoint and returns the most recent messages for an app.
+// The returned metrics will be sorted by InstanceIndex.
+func (cnsmr *Consumer) ContainerMetrics(appGuid string, authToken string) ([]*events.ContainerMetric, error) {
+	envelopes, err := cnsmr.readEnvelopesFromTrafficController(appGuid, authToken, "containermetrics")
+
+	if err != nil {
+		return nil, err
+	}
+
+	messages := make([]*events.ContainerMetric, 0, 200)
+
+	for _, envelope := range envelopes {
+		if envelope.GetEventType() == events.Envelope_LogMessage {
+			return []*events.ContainerMetric{}, errors.New(fmt.Sprintf("Upstream error: %s", envelope.GetLogMessage().GetMessage()))
+		}
+
+		messages = append(messages, envelope.GetContainerMetric())
+	}
+
+	SortContainerMetrics(messages)
+
+	return messages, err
+}
+
+func (cnsmr *Consumer) readEnvelopesFromTrafficController(appGuid string, authToken string, endpoint string) ([]*events.Envelope, error) {
 	trafficControllerUrl, err := url.ParseRequestURI(cnsmr.trafficControllerUrl)
 	if err != nil {
 		return nil, err
@@ -203,7 +219,7 @@ func (cnsmr *consumer) httpRecentLogs(appGuid string, authToken string) ([]*even
 		scheme = "http"
 	}
 
-	recentPath := fmt.Sprintf("%s://%s/apps/%s/recentlogs", scheme, trafficControllerUrl.Host, appGuid)
+	recentPath := fmt.Sprintf("%s://%s/apps/%s/%s", scheme, trafficControllerUrl.Host, appGuid, endpoint)
 	transport := &http.Transport{Proxy: cnsmr.proxy, TLSClientConfig: cnsmr.tlsConfig}
 	client := &http.Client{Transport: transport}
 
@@ -211,23 +227,60 @@ func (cnsmr *consumer) httpRecentLogs(appGuid string, authToken string) ([]*even
 	req.Header.Set("Authorization", authToken)
 
 	resp, err := client.Do(req)
+
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Error dialing traffic controller server: %s.\nPlease ask your Cloud Foundry Operator to check the platform configuration (traffic controller endpoint is %s).", err.Error(), cnsmr.trafficControllerUrl))
 	}
+
 	defer resp.Body.Close()
+
+	err = checkForErrors(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	reader, err := getMultipartReader(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	var envelopes []*events.Envelope
+	var buffer bytes.Buffer
+
+	for part, loopErr := reader.NextPart(); loopErr == nil; part, loopErr = reader.NextPart() {
+		buffer.Reset()
+
+		_, err := buffer.ReadFrom(part)
+		if err != nil {
+			break
+		}
+
+		envelope := new(events.Envelope)
+		proto.Unmarshal(buffer.Bytes(), envelope)
+
+		envelopes = append(envelopes, envelope)
+	}
+
+	return envelopes, nil
+}
+
+func checkForErrors(resp *http.Response) error {
 	if resp.StatusCode == http.StatusUnauthorized {
 		data, _ := ioutil.ReadAll(resp.Body)
-		return nil, noaa_errors.NewUnauthorizedError(string(data))
+		return noaa_errors.NewUnauthorizedError(string(data))
 	}
 
 	if resp.StatusCode == http.StatusBadRequest {
-		return nil, ErrBadRequest
+		return ErrBadRequest
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, ErrNotFound
+		return ErrNotOK
 	}
+	return nil
+}
 
+func getMultipartReader(resp *http.Response) (*multipart.Reader, error) {
 	contentType := resp.Header.Get("Content-Type")
 
 	if len(strings.TrimSpace(contentType)) == 0 {
@@ -239,106 +292,33 @@ func (cnsmr *consumer) httpRecentLogs(appGuid string, authToken string) ([]*even
 	if len(matches) != 2 || len(strings.TrimSpace(matches[1])) == 0 {
 		return nil, ErrBadResponse
 	}
-
 	reader := multipart.NewReader(resp.Body, matches[1])
-
-	var buffer bytes.Buffer
-	messages := make([]*events.Envelope, 0, 200)
-
-	for part, loopErr := reader.NextPart(); loopErr == nil; part, loopErr = reader.NextPart() {
-		buffer.Reset()
-
-		msg := new(events.Envelope)
-		_, err := buffer.ReadFrom(part)
-		if err != nil {
-			break
-		}
-		proto.Unmarshal(buffer.Bytes(), msg)
-		messages = append(messages, msg)
-	}
-
-	return messages, err
+	return reader, nil
 }
 
-/*
-dump connects to traffic controller via its 'dump' ws(s) endpoint and returns a slice of recent messages. It does not
-guarantee any order of the messages; they are in the order returned by traffic controller.
-
-The SortRecent method is provided to sort the data returned by this method.
-*/
-func (cnsmr *consumer) dump(appGuid string, authToken string) ([]*events.Envelope, error) {
-	var err error
-
-	dumpPath := fmt.Sprintf("/dump/?app=%s", appGuid)
-	cnsmr.ws, err = cnsmr.establishWebsocketConnection(dumpPath, authToken)
-
-	if err != nil {
-		return nil, err
-	}
-
-	messages := []*events.Envelope{}
-	messageChan := make(chan *events.Envelope)
-
-	go func() {
-		err = cnsmr.listenForMessages(messageChan)
-		close(messageChan)
-	}()
-
-drainLoop:
-	for {
-		select {
-		case msg, ok := <-messageChan:
-			if !ok {
-				break drainLoop
-			}
-
-			messages = append(messages, msg)
-		}
-	}
-
-	return messages, nil
-}
-
-/* Close terminates the websocket connection to traffic controller.
- */
-func (cnsmr *consumer) Close() error {
+// Close terminates the websocket connection to traffic controller.
+func (cnsmr *Consumer) Close() error {
+	cnsmr.Lock()
+	defer cnsmr.Unlock()
 	if cnsmr.ws == nil {
 		return errors.New("connection does not exist")
 	}
 
+	cnsmr.ws.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""), time.Time{})
 	return cnsmr.ws.Close()
 }
 
-func (cnsmr *consumer) SetOnConnectCallback(cb func()) {
+// SetOnConnectCallback sets a callback function to be called with the websocket connection is established.
+func (cnsmr *Consumer) SetOnConnectCallback(cb func()) {
 	cnsmr.callback = cb
 }
 
-/*
-SortRecent sorts a slice of LogMessages by timestamp. The sort is stable, so
-messages with the same timestamp are sorted in the order that they are received.
-
-The input slice is sorted; the return value is simply a pointer to the same slice.
-*/
-func SortRecent(messages []*events.Envelope) []*events.Envelope {
-	sort.Stable(logMessageSlice(messages))
-	return messages
+// SetDebugPrinter enables logging of the websocket handshake.
+func (cnsmr *Consumer) SetDebugPrinter(debugPrinter DebugPrinter) {
+	cnsmr.debugPrinter = debugPrinter
 }
 
-type logMessageSlice []*events.Envelope
-
-func (lms logMessageSlice) Len() int {
-	return len(lms)
-}
-
-func (lms logMessageSlice) Less(i, j int) bool {
-	return *(lms[i]).Timestamp < *(lms[j]).Timestamp
-}
-
-func (lms logMessageSlice) Swap(i, j int) {
-	lms[i], lms[j] = lms[j], lms[i]
-}
-
-func (cnsmr *consumer) listenForMessages(msgChan chan<- *events.Envelope) error {
+func (cnsmr *Consumer) listenForMessages(msgChan chan<- *events.Envelope) error {
 	defer cnsmr.ws.Close()
 
 	for {
@@ -365,7 +345,7 @@ func headersString(header http.Header) string {
 	return result
 }
 
-func (cnsmr *consumer) establishWebsocketConnection(path string, authToken string) (*websocket.Conn, error) {
+func (cnsmr *Consumer) establishWebsocketConnection(path string, authToken string) (*websocket.Conn, error) {
 	header := http.Header{"Origin": []string{"http://localhost"}, "Authorization": []string{authToken}}
 
 	dialer := websocket.Dialer{NetDial: cnsmr.proxyDial, TLSClientConfig: cnsmr.tlsConfig}
@@ -397,13 +377,14 @@ func (cnsmr *consumer) establishWebsocketConnection(path string, authToken strin
 	}
 
 	if err != nil {
+
 		return nil, errors.New(fmt.Sprintf("Error dialing traffic controller server: %s.\nPlease ask your Cloud Foundry Operator to check the platform configuration (traffic controller is %s).", err.Error(), cnsmr.trafficControllerUrl))
 	}
 
 	return ws, err
 }
 
-func (cnsmr *consumer) proxyDial(network, addr string) (net.Conn, error) {
+func (cnsmr *Consumer) proxyDial(network, addr string) (net.Conn, error) {
 	targetUrl, err := url.Parse("http://" + addr)
 	if err != nil {
 		return nil, err
@@ -447,4 +428,38 @@ func (cnsmr *consumer) proxyDial(network, addr string) (net.Conn, error) {
 	}
 
 	return proxyConn, nil
+}
+
+func (cnsmr *Consumer) retryAction(action func() error, errorChan chan<- error, stopChan chan struct{}) {
+	reconnectAttempts := 0
+
+	oldConnectCallback := cnsmr.callback
+	defer func() { cnsmr.callback = oldConnectCallback }()
+
+	defer close(errorChan)
+
+	cnsmr.callback = func() {
+		reconnectAttempts = 0
+		if oldConnectCallback != nil {
+			oldConnectCallback()
+		}
+	}
+
+	for ; reconnectAttempts < 5; reconnectAttempts++ {
+		errChan := make(chan error)
+		select {
+		case <-stopChan:
+			cnsmr.Close()
+			return
+		default:
+		}
+
+		go func() {
+			errChan <- action()
+		}()
+
+		err := <-errChan
+		errorChan <- err
+		time.Sleep(reconnectTimeout)
+	}
 }

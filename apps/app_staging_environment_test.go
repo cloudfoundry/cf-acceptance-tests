@@ -33,7 +33,7 @@ var _ = Describe("Buildpack Environment", func() {
 	}
 
 	BeforeEach(func() {
-		AsUser(context.AdminUserContext(), func() {
+		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			BuildpackName = RandomName()
 			appName = RandomName()
 
@@ -52,6 +52,8 @@ var _ = Describe("Buildpack Environment", func() {
 				{
 					Name: "bin/compile",
 					Body: `#!/usr/bin/env bash
+
+sleep 5
 
 echo RUBY_LOCATION=$(which ruby)
 echo RUBY_VERSION=$(ruby --version)
@@ -102,7 +104,7 @@ EOF
 	})
 
 	AfterEach(func() {
-		AsUser(context.AdminUserContext(), func() {
+		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(Cf("delete-buildpack", BuildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 

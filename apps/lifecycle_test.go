@@ -1,6 +1,10 @@
 package apps
 
 import (
+	"encoding/json"
+	"fmt"
+	"strings"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -27,8 +31,8 @@ type AppUsageEvents struct {
 
 func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
 	var response AppUsageEvents
-	cf.AsUser(context.AdminUserContext(), func() {
-		cf.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1", &response)
+	cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		cf.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1&results-per-page=150", &response, DEFAULT_TIMEOUT)
 	})
 
 	for _, event := range response.Resources {
@@ -58,6 +62,71 @@ var _ = Describe("Application Lifecycle", func() {
 			Eventually(func() string {
 				return helpers.CurlAppRoot(appName)
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
+		})
+
+		Describe("Context path", func() {
+			var app2 string
+			var path = "/imposter_dora"
+
+			BeforeEach(func() {
+				app2 = generator.RandomName()
+				Expect(cf.Cf("push", app2, "-p", assets.NewAssets().HelloWorld).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			})
+
+			AfterEach(func() {
+				Expect(cf.Cf("delete", app2, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			})
+
+			It("makes another app available via same host and domain, but different path", func() {
+				getRoutePath := fmt.Sprintf("/v2/routes?q=host:%s", appName)
+				routeBody := cf.Cf("curl", getRoutePath).Wait(DEFAULT_TIMEOUT).Out.Contents()
+				var routeJSON struct {
+					Resources []struct {
+						Entity struct {
+							SpaceGuid  string `json:"space_guid"`
+							DomainGuid string `json:"domain_guid"`
+						} `json:"entity"`
+					} `json:"resources"`
+				}
+				json.Unmarshal([]byte(routeBody), &routeJSON)
+
+				spaceGuid := routeJSON.Resources[0].Entity.SpaceGuid
+				domainGuid := routeJSON.Resources[0].Entity.DomainGuid
+				appGuid := cf.Cf("app", app2, "--guid").Wait(DEFAULT_TIMEOUT).Out.Contents()
+
+				jsonBody := "{\"host\":\"" + appName + "\", \"path\":\"" + path + "\", \"domain_guid\":\"" + domainGuid + "\",\"space_guid\":\"" + spaceGuid + "\"}"
+				routePostResponseBody := cf.Cf("curl", "/v2/routes", "-X", "POST", "-d", jsonBody).Wait(CF_PUSH_TIMEOUT).Out.Contents()
+
+				var routeResponseJSON struct {
+					Metadata struct {
+						Guid string `json:"guid"`
+					} `json:"metadata"`
+				}
+				json.Unmarshal([]byte(routePostResponseBody), &routeResponseJSON)
+				routeGuid := routeResponseJSON.Metadata.Guid
+
+				Expect(cf.Cf("curl", "/v2/apps/"+strings.TrimSpace(string(appGuid))+"/routes/"+string(routeGuid), "-X", "PUT").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+
+				Eventually(func() string {
+					return helpers.CurlAppRoot(appName)
+				}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
+
+				Eventually(func() string {
+					return helpers.CurlApp(appName, path)
+				}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hello, world!"))
+			})
+		})
+
+		It("makes system environment variables available", func() {
+			var envOutput string
+			Eventually(func() string {
+				envOutput = helpers.CurlApp(appName, "/env")
+				return envOutput
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring(`"CF_INSTANCE_INDEX"=>"0"`))
+			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_IP"=>"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"`))
+			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_PORT"=>"[0-9]+"`))
+			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_ADDR"=>"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+"`))
+			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_PORTS"=>"[{\\"external\\":[0-9]+,\\"internal\\":[0-9]+}]"`))
 		})
 
 		It("generates an app usage 'started' event", func() {

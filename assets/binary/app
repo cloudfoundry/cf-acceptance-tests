@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require 'webrick'
+
+server = WEBrick::HTTPServer.new :Port => ENV['PORT']
+
+server.mount_proc '/' do |request, response|
+  response.body = 'Hello from a binary'
+end
+
+trap 'INT' do server.shutdown end
+
+server.start

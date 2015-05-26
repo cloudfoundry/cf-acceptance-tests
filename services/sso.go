@@ -11,6 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 )
 
@@ -32,8 +33,12 @@ func ParseJsonResponse(response []byte) (resultMap map[string]interface{}) {
 }
 
 func SetOauthEndpoints(apiEndpoint string, config *OAuthConfig) {
-	url := fmt.Sprintf("%v/info", apiEndpoint)
-	curl := runner.Curl(url).Wait(DEFAULT_TIMEOUT)
+	args := []string{}
+	if helpers.LoadConfig().SkipSSLValidation {
+		args = append(args, "--insecure")
+	}
+	args = append(args, fmt.Sprintf("%v/info", apiEndpoint))
+	curl := runner.Curl(args...).Wait(DEFAULT_TIMEOUT)
 	Expect(curl).To(Exit(0))
 	apiResponse := curl.Out.Contents()
 	jsonResult := ParseJsonResponse(apiResponse)

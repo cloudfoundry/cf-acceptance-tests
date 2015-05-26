@@ -2,14 +2,8 @@ package noaa_test
 
 import (
 	"bytes"
-	"code.google.com/p/gogoprotobuf/proto"
 	"crypto/tls"
 	"fmt"
-	"github.com/cloudfoundry/loggregatorlib/loggertesthelper"
-	"github.com/cloudfoundry/loggregatorlib/server/handlers"
-	"github.com/cloudfoundry/noaa"
-	noaa_errors "github.com/cloudfoundry/noaa/errors"
-	"github.com/cloudfoundry/noaa/events"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -17,13 +11,20 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cloudfoundry/loggregatorlib/loggertesthelper"
+	"github.com/cloudfoundry/loggregatorlib/server/handlers"
+	"github.com/cloudfoundry/noaa"
+	noaa_errors "github.com/cloudfoundry/noaa/errors"
+	"github.com/cloudfoundry/noaa/events"
+	"github.com/gogo/protobuf/proto"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("Noaa", func() {
 	var (
-		connection           noaa.Noaa
+		connection           *noaa.Consumer
 		trafficControllerUrl string
 		testServer           *httptest.Server
 		fakeHandler          *FakeHandler
@@ -32,7 +33,6 @@ var _ = Describe("Noaa", func() {
 
 		appGuid        string
 		authToken      string
-		incomingChan   <-chan *events.Envelope
 		messagesToSend chan []byte
 
 		err error
@@ -64,9 +64,11 @@ var _ = Describe("Noaa", func() {
 			called := false
 			cb := func() { called = true }
 
-			connection = noaa.NewNoaa(trafficControllerUrl, tlsSettings, nil)
+			connection = noaa.NewConsumer(trafficControllerUrl, tlsSettings, nil)
 			connection.SetOnConnectCallback(cb)
-			connection.TailingLogs(appGuid, authToken)
+
+			logChan := make(chan *events.LogMessage, 100)
+			connection.TailingLogsWithoutReconnect(appGuid, authToken, logChan)
 
 			Eventually(func() bool { return called }).Should(BeTrue())
 		})
@@ -78,9 +80,10 @@ var _ = Describe("Noaa", func() {
 				called := false
 				cb := func() { called = true }
 
-				connection = noaa.NewNoaa(trafficControllerUrl, tlsSettings, nil)
+				connection = noaa.NewConsumer(trafficControllerUrl, tlsSettings, nil)
 				connection.SetOnConnectCallback(cb)
-				connection.TailingLogs(appGuid, authToken)
+				logChan := make(chan *events.LogMessage, 100)
+				connection.TailingLogsWithoutReconnect(appGuid, authToken, logChan)
 
 				Consistently(func() bool { return called }).Should(BeFalse())
 			})
@@ -100,9 +103,10 @@ var _ = Describe("Noaa", func() {
 				called := false
 				cb := func() { called = true }
 
-				connection = noaa.NewNoaa(trafficControllerUrl, tlsSettings, nil)
+				connection = noaa.NewConsumer(trafficControllerUrl, tlsSettings, nil)
 				connection.SetOnConnectCallback(cb)
-				connection.TailingLogs(appGuid, authToken)
+				logChan := make(chan *events.LogMessage, 100)
+				connection.TailingLogsWithoutReconnect(appGuid, authToken, logChan)
 
 				Consistently(func() bool { return called }).Should(BeFalse())
 			})
@@ -111,7 +115,13 @@ var _ = Describe("Noaa", func() {
 	})
 
 	var startFakeTrafficController = func() {
-		fakeHandler = &FakeHandler{innerHandler: handlers.NewWebsocketHandler(messagesToSend, 100*time.Millisecond, loggertesthelper.Logger())}
+		fakeHandler = &FakeHandler{
+			InputChan: make(chan []byte, 10),
+			GenerateHandler: func(input chan []byte) http.Handler {
+				return handlers.NewWebsocketHandler(input, 100*time.Millisecond, loggertesthelper.Logger())
+			},
+		}
+
 		testServer = httptest.NewServer(fakeHandler)
 		trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
 		appGuid = "app-guid"
@@ -124,69 +134,81 @@ var _ = Describe("Noaa", func() {
 			startFakeTrafficController()
 
 			debugPrinter = &fakeDebugPrinter{}
-			connection = noaa.NewNoaa(trafficControllerUrl, tlsSettings, consumerProxyFunc)
+			connection = noaa.NewConsumer(trafficControllerUrl, tlsSettings, consumerProxyFunc)
 			connection.SetDebugPrinter(debugPrinter)
 		})
 
 		It("includes websocket handshake", func() {
-			close(messagesToSend)
-			connection.TailingLogs(appGuid, authToken)
+			fakeHandler.Close()
 
+			logChan := make(chan *events.LogMessage, 100)
+			connection.TailingLogsWithoutReconnect(appGuid, authToken, logChan)
+
+			Eventually(func() int { return len(debugPrinter.Messages) }).Should(BeNumerically(">=", 1))
 			Expect(debugPrinter.Messages[0].Body).To(ContainSubstring("Sec-WebSocket-Version: 13"))
 		})
 
 		It("does not include messages sent or received", func() {
-			messagesToSend <- marshalMessage(createMessage("hello", 0))
+			fakeHandler.InputChan <- marshalMessage(createMessage("hello", 0))
 
-			close(messagesToSend)
-			connection.TailingLogs(appGuid, authToken)
+			fakeHandler.Close()
+			logChan := make(chan *events.LogMessage, 100)
+			connection.TailingLogsWithoutReconnect(appGuid, authToken, logChan)
 
+			Eventually(func() int { return len(debugPrinter.Messages) }).Should(BeNumerically(">=", 1))
 			Expect(debugPrinter.Messages[0].Body).ToNot(ContainSubstring("hello"))
 		})
 	})
 
-	Describe("TailingLogs", func() {
+	Describe("TailingLogsWithoutReconnect", func() {
+		var logMessageChan chan *events.LogMessage
+		var errorChan chan error
+		var finishedChan chan struct{}
+
 		perform := func() {
-			connection = noaa.NewNoaa(trafficControllerUrl, tlsSettings, consumerProxyFunc)
-			incomingChan, err = connection.TailingLogs(appGuid, authToken)
+			connection = noaa.NewConsumer(trafficControllerUrl, tlsSettings, consumerProxyFunc)
+
+			errorChan = make(chan error, 10)
+			logMessageChan = make(chan *events.LogMessage)
+			go func() {
+				errorChan <- connection.TailingLogsWithoutReconnect(appGuid, authToken, logMessageChan)
+				close(finishedChan)
+			}()
 		}
 
 		BeforeEach(func() {
+			finishedChan = make(chan struct{})
 			startFakeTrafficController()
+		})
+
+		AfterEach(func() {
+			connection.Close()
+			<-finishedChan
 		})
 
 		Context("when there is no TLS Config or consumerProxyFunc setting", func() {
 			Context("when the connection can be established", func() {
 				It("receives messages on the incoming channel", func(done Done) {
-					messagesToSend <- marshalMessage(createMessage("hello", 0))
+					fakeHandler.InputChan <- marshalMessage(createMessage("hello", 0))
 
 					perform()
-					message := <-incomingChan
+					message := <-logMessageChan
 
-					Expect(message.GetLogMessage().GetMessage()).To(Equal([]byte("hello")))
-					close(messagesToSend)
+					Expect(message.GetMessage()).To(Equal([]byte("hello")))
+					fakeHandler.Close()
 
 					close(done)
 				})
 
 				It("does not include metrics", func(done Done) {
-					messagesToSend <- marshalMessage(createHeartbeat(1, 2, 3, 4))
-					messagesToSend <- marshalMessage(createMessage("hello", 0))
+					fakeHandler.InputChan <- marshalMessage(createHeartbeat(1, 2, 3, 4))
+					fakeHandler.InputChan <- marshalMessage(createMessage("hello", 0))
 
 					perform()
-					message := <-incomingChan
+					message := <-logMessageChan
 
-					Expect(message.GetLogMessage().GetMessage()).To(Equal([]byte("hello")))
-					close(messagesToSend)
-
-					close(done)
-				})
-
-				It("closes the channel after the server closes the connection", func(done Done) {
-					perform()
-					close(messagesToSend)
-
-					Eventually(incomingChan).Should(BeClosed())
+					Expect(message.GetMessage()).To(Equal([]byte("hello")))
+					fakeHandler.Close()
 
 					close(done)
 				})
@@ -194,7 +216,7 @@ var _ = Describe("Noaa", func() {
 				It("sends messages for a specific app", func() {
 					appGuid = "the-app-guid"
 					perform()
-					close(messagesToSend)
+					fakeHandler.Close()
 
 					Eventually(fakeHandler.getLastURL).Should(ContainSubstring("/apps/the-app-guid/stream"))
 				})
@@ -202,17 +224,248 @@ var _ = Describe("Noaa", func() {
 				It("sends an Authorization header with an access token", func() {
 					authToken = "auth-token"
 					perform()
-					close(messagesToSend)
+					fakeHandler.Close()
+
+					Eventually(fakeHandler.getAuthHeader).Should(Equal("auth-token"))
+				})
+
+				Context("when remote connection dies unexpectedly", func() {
+					It("receives a message on the error channel", func(done Done) {
+						perform()
+						fakeHandler.Close()
+
+						var err error
+						Eventually(errorChan).Should(Receive(&err))
+						Expect(err.Error()).To(ContainSubstring("EOF"))
+
+						close(done)
+					})
+				})
+
+				Context("when the message fails to parse", func() {
+					It("skips that message but continues to read messages", func(done Done) {
+						fakeHandler.InputChan <- []byte{0}
+						fakeHandler.InputChan <- marshalMessage(createMessage("hello", 0))
+						perform()
+						fakeHandler.Close()
+
+						message := <-logMessageChan
+
+						Expect(message.GetMessage()).To(Equal([]byte("hello")))
+
+						close(done)
+					})
+				})
+			})
+
+			Context("when the connection cannot be established", func() {
+				BeforeEach(func() {
+					trafficControllerUrl = "!!!bad-url"
+				})
+
+				It("receives an error on errChan", func(done Done) {
+					perform()
+
+					var err error
+					Eventually(errorChan).Should(Receive(&err))
+					Expect(err.Error()).To(ContainSubstring("Please ask your Cloud Foundry Operator"))
+
+					close(done)
+				})
+			})
+
+			Context("when the authorization fails", func() {
+				var failer authFailer
+
+				BeforeEach(func() {
+					failer = authFailer{Message: "Helpful message"}
+					testServer = httptest.NewServer(failer)
+					trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
+				})
+
+				It("it returns a helpful error message", func() {
+					perform()
+
+					var err error
+					Eventually(errorChan).Should(Receive(&err))
+					Expect(err.Error()).To(ContainSubstring("You are not authorized. Helpful message"))
+				})
+			})
+		})
+
+		Context("when SSL settings are passed in", func() {
+			BeforeEach(func() {
+				testServer = httptest.NewTLSServer(handlers.NewWebsocketHandler(messagesToSend, 100*time.Millisecond, loggertesthelper.Logger()))
+				trafficControllerUrl = "wss://" + testServer.Listener.Addr().String()
+
+				tlsSettings = &tls.Config{InsecureSkipVerify: true}
+			})
+
+			It("connects using those settings", func() {
+				perform()
+				close(messagesToSend)
+
+				Expect(err).NotTo(HaveOccurred())
+			})
+		})
+
+		Context("when error source is not NOAA", func() {
+			It("does not pass on the error", func(done Done) {
+				fakeHandler.InputChan <- marshalMessage(createError("foreign error"))
+
+				perform()
+
+				Consistently(errorChan).Should(BeEmpty())
+				fakeHandler.Close()
+
+				close(done)
+			})
+
+			It("continues to process log messages", func() {
+				fakeHandler.InputChan <- marshalMessage(createError("foreign error"))
+				fakeHandler.InputChan <- marshalMessage(createMessage("hello", 0))
+
+				perform()
+				fakeHandler.Close()
+
+				Eventually(logMessageChan).Should(Receive())
+			})
+		})
+	})
+
+	Describe("TailingLogs", func() {
+		var logMessageChan chan *events.LogMessage
+		var errorChan chan error
+		var doneChan chan struct{}
+		var stopChan chan struct{}
+
+		perform := func() {
+			connection = noaa.NewConsumer(trafficControllerUrl, tlsSettings, consumerProxyFunc)
+			logMessageChan = make(chan *events.LogMessage)
+			errorChan = make(chan error, 10)
+			stopChan = make(chan struct{})
+			doneChan = make(chan struct{})
+			go func() {
+				connection.TailingLogs(appGuid, authToken, logMessageChan, errorChan, stopChan)
+				close(doneChan)
+			}()
+		}
+
+		BeforeEach(func() {
+			startFakeTrafficController()
+		})
+
+		It("attempts to connect five times", func() {
+			fakeHandler.fail = true
+			perform()
+
+			fakeHandler.Close()
+
+			Eventually(errorChan, 3).Should(HaveLen(5))
+			Eventually(doneChan, 10).Should(BeClosed())
+		})
+
+		It("waits 500ms before reconnecting", func() {
+			perform()
+
+			fakeHandler.Close()
+			start := time.Now()
+			Eventually(errorChan, 3).Should(HaveLen(5))
+			end := time.Now()
+			Expect(end).To(BeTemporally(">=", start.Add(4*500*time.Millisecond)))
+			close(stopChan)
+			Eventually(doneChan, 5).Should(BeClosed())
+		})
+
+		It("resets the attempt counter after a successful connection", func(done Done) {
+			perform()
+
+			fakeHandler.InputChan <- marshalMessage(createMessage("message 1", 0))
+			Eventually(logMessageChan).Should(Receive())
+
+			fakeHandler.Close()
+
+			expectedErrorCount := 4
+			Eventually(errorChan, 3*time.Second).Should(HaveLen(expectedErrorCount))
+			fakeHandler.Reset()
+
+			for i := 0; i < expectedErrorCount; i++ {
+				<-errorChan
+			}
+
+			fakeHandler.InputChan <- marshalMessage(createMessage("message 2", 0))
+
+			Eventually(logMessageChan).Should(Receive())
+			fakeHandler.Close()
+			Eventually(errorChan, 3).Should(HaveLen(5))
+
+			close(stopChan)
+			Eventually(doneChan, 5).Should(BeClosed())
+			close(done)
+		}, 10)
+	})
+
+	Describe("StreamWithoutReconnect", func() {
+		var incomingChan chan *events.Envelope
+		var streamErrorChan chan error
+		var finishedChan chan struct{}
+
+		perform := func() {
+			streamErrorChan = make(chan error, 10)
+			connection = noaa.NewConsumer(trafficControllerUrl, tlsSettings, consumerProxyFunc)
+			go func() {
+				streamErrorChan <- connection.StreamWithoutReconnect(appGuid, authToken, incomingChan)
+				close(finishedChan)
+			}()
+		}
+
+		BeforeEach(func() {
+			incomingChan = make(chan *events.Envelope)
+			finishedChan = make(chan struct{})
+			startFakeTrafficController()
+		})
+
+		AfterEach(func() {
+			connection.Close()
+			<-finishedChan
+		})
+
+		Context("when there is no TLS Config or consumerProxyFunc setting", func() {
+			Context("when the connection can be established", func() {
+				It("receives messages on the incoming channel", func(done Done) {
+					fakeHandler.InputChan <- marshalMessage(createMessage("hello", 0))
+
+					perform()
+					message := <-incomingChan
+
+					Expect(message.GetLogMessage().GetMessage()).To(Equal([]byte("hello")))
+					fakeHandler.Close()
+
+					close(done)
+				})
+
+				It("sends messages for a specific app", func() {
+					appGuid = "the-app-guid"
+					perform()
+					fakeHandler.Close()
+
+					Eventually(fakeHandler.getLastURL).Should(ContainSubstring("/apps/the-app-guid/stream"))
+				})
+
+				It("sends an Authorization header with an access token", func() {
+					authToken = "auth-token"
+					perform()
+					fakeHandler.Close()
 
 					Eventually(fakeHandler.getAuthHeader).Should(Equal("auth-token"))
 				})
 
 				Context("when the message fails to parse", func() {
 					It("skips that message but continues to read messages", func(done Done) {
-						messagesToSend <- []byte{0}
-						messagesToSend <- marshalMessage(createMessage("hello", 0))
+						fakeHandler.InputChan <- []byte{0}
+						fakeHandler.InputChan <- marshalMessage(createMessage("hello", 0))
 						perform()
-						close(messagesToSend)
+						fakeHandler.Close()
 
 						message := <-incomingChan
 
@@ -231,6 +484,8 @@ var _ = Describe("Noaa", func() {
 				It("returns an error", func(done Done) {
 					perform()
 
+					var err error
+					Eventually(streamErrorChan).Should(Receive(&err))
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(ContainSubstring("Please ask your Cloud Foundry Operator"))
 
@@ -250,16 +505,16 @@ var _ = Describe("Noaa", func() {
 				It("it returns a helpful error message", func() {
 					perform()
 
+					var err error
+					Eventually(streamErrorChan).Should(Receive(&err))
 					Expect(err).To(HaveOccurred())
 					Expect(err.Error()).To(ContainSubstring("You are not authorized. Helpful message"))
-					Expect(err).To(BeAssignableToTypeOf(&noaa_errors.UnauthorizedError{}))
 				})
 			})
 		})
 
 		Context("when SSL settings are passed in", func() {
 			BeforeEach(func() {
-				//				fakeHandler = &FakeHandler{innerHandler: }
 				testServer = httptest.NewTLSServer(handlers.NewWebsocketHandler(messagesToSend, 100*time.Millisecond, loggertesthelper.Logger()))
 				trafficControllerUrl = "wss://" + testServer.Listener.Addr().String()
 
@@ -276,132 +531,97 @@ var _ = Describe("Noaa", func() {
 	})
 
 	Describe("Stream", func() {
+		var envelopeChan chan *events.Envelope
+		var errorChan chan error
+		var doneChan chan struct{}
+		var stopChan chan struct{}
+
 		perform := func() {
-			connection = noaa.NewNoaa(trafficControllerUrl, tlsSettings, consumerProxyFunc)
-			incomingChan, err = connection.Stream(appGuid, authToken)
+			connection = noaa.NewConsumer(trafficControllerUrl, tlsSettings, consumerProxyFunc)
+			envelopeChan = make(chan *events.Envelope)
+			errorChan = make(chan error, 10)
+			stopChan = make(chan struct{})
+			doneChan = make(chan struct{})
+			go func() {
+				connection.Stream(appGuid, authToken, envelopeChan, errorChan, stopChan)
+				close(doneChan)
+			}()
 		}
 
 		BeforeEach(func() {
 			startFakeTrafficController()
 		})
 
-		Context("when there is no TLS Config or consumerProxyFunc setting", func() {
-			Context("when the connection can be established", func() {
-				It("receives messages on the incoming channel", func(done Done) {
-					messagesToSend <- marshalMessage(createMessage("hello", 0))
+		It("attempts to connect five times", func() {
+			fakeHandler.fail = true
+			perform()
 
-					perform()
-					message := <-incomingChan
+			fakeHandler.Close()
 
-					Expect(message.GetLogMessage().GetMessage()).To(Equal([]byte("hello")))
-					close(messagesToSend)
-
-					close(done)
-				})
-
-				It("closes the channel after the server closes the connection", func(done Done) {
-					perform()
-					close(messagesToSend)
-
-					Eventually(incomingChan).Should(BeClosed())
-
-					close(done)
-				})
-
-				It("sends messages for a specific app", func() {
-					appGuid = "the-app-guid"
-					perform()
-					close(messagesToSend)
-
-					Eventually(fakeHandler.getLastURL).Should(ContainSubstring("/apps/the-app-guid/stream"))
-				})
-
-				It("sends an Authorization header with an access token", func() {
-					authToken = "auth-token"
-					perform()
-					close(messagesToSend)
-
-					Eventually(fakeHandler.getAuthHeader).Should(Equal("auth-token"))
-				})
-
-				Context("when the message fails to parse", func() {
-					It("skips that message but continues to read messages", func(done Done) {
-						messagesToSend <- []byte{0}
-						messagesToSend <- marshalMessage(createMessage("hello", 0))
-						perform()
-						close(messagesToSend)
-
-						message := <-incomingChan
-
-						Expect(message.GetLogMessage().GetMessage()).To(Equal([]byte("hello")))
-
-						close(done)
-					})
-				})
-			})
-
-			Context("when the connection cannot be established", func() {
-				BeforeEach(func() {
-					trafficControllerUrl = "!!!bad-url"
-				})
-
-				It("returns an error", func(done Done) {
-					perform()
-
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("Please ask your Cloud Foundry Operator"))
-
-					close(done)
-				})
-			})
-
-			Context("when the authorization fails", func() {
-				var failer authFailer
-
-				BeforeEach(func() {
-					failer = authFailer{Message: "Helpful message"}
-					testServer = httptest.NewServer(failer)
-					trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
-				})
-
-				It("it returns a helpful error message", func() {
-					perform()
-
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("You are not authorized. Helpful message"))
-					Expect(err).To(BeAssignableToTypeOf(&noaa_errors.UnauthorizedError{}))
-				})
-			})
+			Eventually(errorChan, 3).Should(HaveLen(5))
+			Eventually(doneChan, 10).Should(BeClosed())
 		})
 
-		Context("when SSL settings are passed in", func() {
-			BeforeEach(func() {
-				//				fakeHandler = &FakeHandler{innerHandler: }
-				testServer = httptest.NewTLSServer(handlers.NewWebsocketHandler(messagesToSend, 100*time.Millisecond, loggertesthelper.Logger()))
-				trafficControllerUrl = "wss://" + testServer.Listener.Addr().String()
+		It("waits 500ms before reconnecting", func() {
+			perform()
 
-				tlsSettings = &tls.Config{InsecureSkipVerify: true}
-			})
-
-			It("connects using those settings", func() {
-				perform()
-				close(messagesToSend)
-
-				Expect(err).NotTo(HaveOccurred())
-			})
+			fakeHandler.Close()
+			start := time.Now()
+			Eventually(errorChan, 3).Should(HaveLen(5))
+			end := time.Now()
+			Expect(end).To(BeTemporally(">=", start.Add(4*500*time.Millisecond)))
+			close(stopChan)
+			Eventually(doneChan).Should(BeClosed())
 		})
+
+		It("resets the attempt counter after a successful connection", func(done Done) {
+			perform()
+
+			fakeHandler.InputChan <- marshalMessage(createMessage("message 1", 0))
+			Eventually(envelopeChan).Should(Receive())
+
+			fakeHandler.Close()
+
+			expectedErrorCount := 4
+			Eventually(errorChan, 3*time.Second).Should(HaveLen(expectedErrorCount))
+			fakeHandler.Reset()
+
+			for i := 0; i < expectedErrorCount; i++ {
+				<-errorChan
+			}
+
+			fakeHandler.InputChan <- marshalMessage(createMessage("message 2", 0))
+
+			Eventually(envelopeChan).Should(Receive())
+			fakeHandler.Close()
+			Eventually(errorChan, 3).Should(HaveLen(5))
+
+			close(stopChan)
+			Eventually(doneChan).Should(BeClosed())
+			close(done)
+		}, 10)
 	})
 
 	Describe("Close", func() {
+		var incomingChan chan *events.Envelope
+		var streamErrorChan chan error
+
+		perform := func() {
+			streamErrorChan = make(chan error, 10)
+			connection = noaa.NewConsumer(trafficControllerUrl, nil, nil)
+			go func() {
+				streamErrorChan <- connection.StreamWithoutReconnect(appGuid, authToken, incomingChan)
+			}()
+		}
+
 		BeforeEach(func() {
-			fakeHandler = &FakeHandler{innerHandler: handlers.NewWebsocketHandler(messagesToSend, 100*time.Millisecond, loggertesthelper.Logger())}
-			testServer = httptest.NewServer(fakeHandler)
-			trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
+			incomingChan = make(chan *events.Envelope)
+			startFakeTrafficController()
 		})
 
 		Context("when a connection is not open", func() {
 			It("returns an error", func() {
-				connection = noaa.NewNoaa(trafficControllerUrl, nil, nil)
+				connection = noaa.NewConsumer(trafficControllerUrl, nil, nil)
 				err := connection.Close()
 
 				Expect(err.Error()).To(Equal("connection does not exist"))
@@ -409,34 +629,34 @@ var _ = Describe("Noaa", func() {
 		})
 
 		Context("when a connection is open", func() {
-			It("closes any open channels", func(done Done) {
-				connection = noaa.NewNoaa(trafficControllerUrl, nil, nil)
-				incomingChan, err := connection.TailingLogs("app-guid", "auth-token")
-				close(messagesToSend)
+			It("terminates the blocking function call", func(done Done) {
+				perform()
+				fakeHandler.Close()
 
 				Eventually(fakeHandler.wasCalled).Should(BeTrue())
+				connErr := connection.Close()
+				Expect(connErr.Error()).To(ContainSubstring("use of closed network connection"))
 
-				connection.Close()
-
-				Expect(err).NotTo(HaveOccurred())
-				Eventually(incomingChan).Should(BeClosed())
+				var err error
+				Eventually(streamErrorChan).Should(Receive(&err))
+				Expect(err.Error()).To(ContainSubstring("EOF"))
 
 				close(done)
 			})
 		})
 	})
 
-	Describe("RecentLogs with http", func() {
+	Describe("RecentLogs", func() {
 		var (
 			appGuid             = "appGuid"
 			authToken           = "authToken"
-			receivedLogMessages []*events.Envelope
+			receivedLogMessages []*events.LogMessage
 			recentError         error
 		)
 
 		perform := func() {
 			close(messagesToSend)
-			connection = noaa.NewNoaa(trafficControllerUrl, nil, nil)
+			connection = noaa.NewConsumer(trafficControllerUrl, nil, nil)
 			receivedLogMessages, recentError = connection.RecentLogs(appGuid, authToken)
 		}
 
@@ -450,7 +670,6 @@ var _ = Describe("Noaa", func() {
 		})
 
 		Context("when the connection can be established", func() {
-
 			BeforeEach(func() {
 				testServer = httptest.NewServer(handlers.NewHttpHandler(messagesToSend, loggertesthelper.Logger()))
 				trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
@@ -464,14 +683,13 @@ var _ = Describe("Noaa", func() {
 
 				Expect(recentError).NotTo(HaveOccurred())
 				Expect(receivedLogMessages).To(HaveLen(2))
-				Expect(receivedLogMessages[0].GetLogMessage().GetMessage()).To(Equal([]byte("test-message-0")))
-				Expect(receivedLogMessages[1].GetLogMessage().GetMessage()).To(Equal([]byte("test-message-1")))
+				Expect(receivedLogMessages[0].GetMessage()).To(Equal([]byte("test-message-0")))
+				Expect(receivedLogMessages[1].GetMessage()).To(Equal([]byte("test-message-1")))
 			})
 		})
 
 		Context("when the content type is missing", func() {
 			BeforeEach(func() {
-
 				serverMux := http.NewServeMux()
 				serverMux.HandleFunc("/apps/appGuid/recentlogs", func(resp http.ResponseWriter, req *http.Request) {
 					resp.Header().Set("Content-Type", "")
@@ -481,24 +699,30 @@ var _ = Describe("Noaa", func() {
 				trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
 			})
 
-			It("it returns a bad reponse error message", func() {
+			It("returns a bad reponse error message", func() {
 				perform()
 
 				Expect(recentError).To(HaveOccurred())
 				Expect(recentError).To(Equal(noaa.ErrBadResponse))
 			})
-
 		})
 
 		Context("when the content length is unknown", func() {
 			BeforeEach(func() {
-				fakeHandler = &FakeHandler{contentLen: "-1", innerHandler: handlers.NewHttpHandler(messagesToSend, loggertesthelper.Logger())}
+				fakeHandler = &FakeHandler{
+					contentLen: "-1",
+					InputChan:  make(chan []byte, 10),
+					GenerateHandler: func(input chan []byte) http.Handler {
+						return handlers.NewHttpHandler(input, loggertesthelper.Logger())
+					},
+				}
 				testServer = httptest.NewServer(fakeHandler)
 				trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
 			})
 
-			It("it handles that without throwing an error", func() {
-				messagesToSend <- marshalMessage(createMessage("bad-content-length", 0))
+			It("does not throw an error", func() {
+				fakeHandler.InputChan <- marshalMessage(createMessage("bad-content-length", 0))
+				fakeHandler.Close()
 				perform()
 
 				Expect(recentError).NotTo(HaveOccurred())
@@ -518,7 +742,7 @@ var _ = Describe("Noaa", func() {
 				trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
 			})
 
-			It("it returns a bad reponse error message", func() {
+			It("returns a bad reponse error message", func() {
 				perform()
 
 				Expect(recentError).To(HaveOccurred())
@@ -539,7 +763,7 @@ var _ = Describe("Noaa", func() {
 				trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
 			})
 
-			It("it returns a bad reponse error message", func() {
+			It("returns a bad reponse error message", func() {
 				perform()
 
 				Expect(recentError).To(HaveOccurred())
@@ -559,7 +783,7 @@ var _ = Describe("Noaa", func() {
 				trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
 			})
 
-			It("it returns a not found reponse error message", func() {
+			It("returns a not found reponse error message", func() {
 				perform()
 
 				Expect(recentError).To(HaveOccurred())
@@ -579,7 +803,7 @@ var _ = Describe("Noaa", func() {
 				trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
 			})
 
-			It("it returns a helpful error message", func() {
+			It("returns a helpful error message", func() {
 				perform()
 
 				Expect(recentError).To(HaveOccurred())
@@ -587,145 +811,24 @@ var _ = Describe("Noaa", func() {
 				Expect(recentError).To(BeAssignableToTypeOf(&noaa_errors.UnauthorizedError{}))
 			})
 		})
-
-		Describe("Firehose", func() {
-			perform := func() {
-				connection = noaa.NewNoaa(trafficControllerUrl, tlsSettings, consumerProxyFunc)
-				incomingChan, err = connection.Firehose("subscription-id", authToken)
-			}
-
-			BeforeEach(func() {
-				startFakeTrafficController()
-			})
-
-			Context("when there is no TLS Config or consumerProxyFunc setting", func() {
-				Context("when the connection can be established", func() {
-					It("receives messages on the incoming channel", func(done Done) {
-						messagesToSend <- marshalMessage(createMessage("hello", 0))
-
-						perform()
-						message := <-incomingChan
-
-						Expect(message.GetLogMessage().GetMessage()).To(Equal([]byte("hello")))
-						close(messagesToSend)
-
-						close(done)
-					})
-
-					It("closes the channel after the server closes the connection", func(done Done) {
-						perform()
-						close(messagesToSend)
-
-						Eventually(incomingChan).Should(BeClosed())
-
-						close(done)
-					})
-
-					It("receives messages from the full firehose", func() {
-						perform()
-						close(messagesToSend)
-
-						Eventually(fakeHandler.getLastURL).Should(ContainSubstring("/firehose/subscription-id"))
-					})
-
-					It("sends an Authorization header with an access token", func() {
-						authToken = "auth-token"
-						perform()
-						close(messagesToSend)
-
-						Eventually(fakeHandler.getAuthHeader).Should(Equal("auth-token"))
-					})
-
-					Context("when the message fails to parse", func() {
-						It("skips that message but continues to read messages", func(done Done) {
-							messagesToSend <- []byte{0}
-							messagesToSend <- marshalMessage(createMessage("hello", 0))
-							perform()
-							close(messagesToSend)
-
-							message := <-incomingChan
-
-							Expect(message.GetLogMessage().GetMessage()).To(Equal([]byte("hello")))
-
-							close(done)
-						})
-					})
-				})
-
-				Context("when the connection cannot be established", func() {
-					BeforeEach(func() {
-						trafficControllerUrl = "!!!bad-url"
-					})
-
-					It("returns an error", func(done Done) {
-						perform()
-
-						Expect(err).To(HaveOccurred())
-						Expect(err.Error()).To(ContainSubstring("Please ask your Cloud Foundry Operator"))
-
-						close(done)
-					})
-				})
-
-				Context("when the authorization fails", func() {
-					var failer authFailer
-
-					BeforeEach(func() {
-						failer = authFailer{Message: "Helpful message"}
-						testServer = httptest.NewServer(failer)
-						trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
-					})
-
-					It("it returns a helpful error message", func() {
-						perform()
-
-						Expect(err).To(HaveOccurred())
-						Expect(err.Error()).To(ContainSubstring("You are not authorized. Helpful message"))
-						Expect(err).To(BeAssignableToTypeOf(&noaa_errors.UnauthorizedError{}))
-					})
-				})
-			})
-
-			Context("when SSL settings are passed in", func() {
-				BeforeEach(func() {
-					testServer = httptest.NewTLSServer(handlers.NewWebsocketHandler(messagesToSend, 100*time.Millisecond, loggertesthelper.Logger()))
-					trafficControllerUrl = "wss://" + testServer.Listener.Addr().String()
-
-					tlsSettings = &tls.Config{InsecureSkipVerify: true}
-				})
-
-				It("connects using those settings", func() {
-					perform()
-					close(messagesToSend)
-
-					Expect(err).NotTo(HaveOccurred())
-				})
-			})
-		})
 	})
 
-	Describe("RecentLogs", func() {
+	Describe("ContainerMetrics", func() {
 		var (
-			appGuid     string
-			authToken   string
-			logMessages []*events.Envelope
-			recentError error
+			appGuid                  = "appGuid"
+			authToken                = "authToken"
+			receivedContainerMetrics []*events.ContainerMetric
+			recentError              error
 		)
 
 		perform := func() {
 			close(messagesToSend)
-			connection = noaa.NewNoaa(trafficControllerUrl, nil, nil)
-			logMessages, recentError = connection.RecentLogs(appGuid, authToken)
+			connection = noaa.NewConsumer(trafficControllerUrl, nil, nil)
+			receivedContainerMetrics, recentError = connection.ContainerMetrics(appGuid, authToken)
 		}
 
-		BeforeEach(func() {
-			fakeHandler = &FakeHandler{innerHandler: handlers.NewWebsocketHandler(messagesToSend, 100*time.Millisecond, loggertesthelper.Logger())}
-			testServer = httptest.NewServer(fakeHandler)
-			trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
-		})
-
 		Context("when the connection cannot be established", func() {
-			It("returns an error", func() {
+			It("invalid urls return error", func() {
 				trafficControllerUrl = "invalid-url"
 				perform()
 
@@ -734,28 +837,140 @@ var _ = Describe("Noaa", func() {
 		})
 
 		Context("when the connection can be established", func() {
-			It("connects to the loggregator server", func() {
-				perform()
-
-				Expect(fakeHandler.wasCalled()).To(BeTrue())
+			BeforeEach(func() {
+				testServer = httptest.NewServer(handlers.NewHttpHandler(messagesToSend, loggertesthelper.Logger()))
+				trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
 			})
 
-			It("returns messages from the server", func() {
-				messagesToSend <- marshalMessage(createMessage("test-message-0", 0))
-				messagesToSend <- marshalMessage(createMessage("test-message-1", 0))
-				perform()
+			Context("with a successful connection", func() {
+				It("returns messages from the server", func() {
+					messagesToSend <- marshalMessage(createContainerMetric(2, 2000))
+					messagesToSend <- marshalMessage(createContainerMetric(1, 1000))
 
-				Expect(logMessages).To(HaveLen(2))
-				Expect(logMessages[0].GetLogMessage().GetMessage()).To(Equal([]byte("test-message-0")))
-				Expect(logMessages[1].GetLogMessage().GetMessage()).To(Equal([]byte("test-message-1")))
+					perform()
+
+					Expect(recentError).NotTo(HaveOccurred())
+					Expect(receivedContainerMetrics).To(HaveLen(2))
+					Expect(receivedContainerMetrics[0].GetInstanceIndex()).To(Equal(int32(1)))
+					Expect(receivedContainerMetrics[1].GetInstanceIndex()).To(Equal(int32(2)))
+				})
 			})
 
-			It("calls the right path on the traffic controller url", func() {
-				appGuid = "app-guid"
+			Context("when trafficcontroller returns an error as a log message", func() {
+				It("returns the error", func() {
+					messagesToSend <- marshalMessage(createContainerMetric(2, 2000))
+					messagesToSend <- marshalMessage(createMessage("an error occurred", 2000))
+
+					perform()
+
+					Expect(recentError).To(HaveOccurred())
+					Expect(recentError).To(MatchError("Upstream error: an error occurred"))
+				})
+			})
+		})
+
+		Context("when the content type is missing", func() {
+			BeforeEach(func() {
+				serverMux := http.NewServeMux()
+				serverMux.HandleFunc("/apps/appGuid/containermetrics", func(resp http.ResponseWriter, req *http.Request) {
+					resp.Header().Set("Content-Type", "")
+					resp.Write([]byte("OK"))
+				})
+				testServer = httptest.NewServer(serverMux)
+				trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
+			})
+
+			It("returns a bad reponse error message", func() {
 				perform()
 
-				Expect(fakeHandler.getLastURL()).To(ContainSubstring("/dump/?app=app-guid"))
+				Expect(recentError).To(HaveOccurred())
+				Expect(recentError).To(Equal(noaa.ErrBadResponse))
 			})
+		})
+
+		Context("when the content length is unknown", func() {
+			BeforeEach(func() {
+				fakeHandler = &FakeHandler{
+					contentLen: "-1",
+					InputChan:  make(chan []byte, 10),
+					GenerateHandler: func(input chan []byte) http.Handler {
+						return handlers.NewHttpHandler(input, loggertesthelper.Logger())
+					},
+				}
+				testServer = httptest.NewServer(fakeHandler)
+				trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
+			})
+
+			It("does not throw an error", func() {
+				fakeHandler.InputChan <- marshalMessage(createContainerMetric(2, 2000))
+				fakeHandler.Close()
+				perform()
+
+				Expect(recentError).NotTo(HaveOccurred())
+				Expect(receivedContainerMetrics).To(HaveLen(1))
+			})
+
+		})
+
+		Context("when the content type doesn't have a boundary", func() {
+			BeforeEach(func() {
+
+				serverMux := http.NewServeMux()
+				serverMux.HandleFunc("/apps/appGuid/containermetrics", func(resp http.ResponseWriter, req *http.Request) {
+					resp.Write([]byte("OK"))
+				})
+				testServer = httptest.NewServer(serverMux)
+				trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
+			})
+
+			It("returns a bad reponse error message", func() {
+				perform()
+
+				Expect(recentError).To(HaveOccurred())
+				Expect(recentError).To(Equal(noaa.ErrBadResponse))
+			})
+
+		})
+
+		Context("when the content type's boundary is blank", func() {
+			BeforeEach(func() {
+
+				serverMux := http.NewServeMux()
+				serverMux.HandleFunc("/apps/appGuid/containermetrics", func(resp http.ResponseWriter, req *http.Request) {
+					resp.Header().Set("Content-Type", "boundary=")
+					resp.Write([]byte("OK"))
+				})
+				testServer = httptest.NewServer(serverMux)
+				trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
+			})
+
+			It("returns a bad reponse error message", func() {
+				perform()
+
+				Expect(recentError).To(HaveOccurred())
+				Expect(recentError).To(Equal(noaa.ErrBadResponse))
+			})
+
+		})
+
+		Context("when the path is not found", func() {
+			BeforeEach(func() {
+
+				serverMux := http.NewServeMux()
+				serverMux.HandleFunc("/apps/appGuid/containermetrics", func(resp http.ResponseWriter, req *http.Request) {
+					resp.WriteHeader(http.StatusNotFound)
+				})
+				testServer = httptest.NewServer(serverMux)
+				trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
+			})
+
+			It("returns a not found reponse error message", func() {
+				perform()
+
+				Expect(recentError).To(HaveOccurred())
+				Expect(recentError).To(Equal(noaa.ErrNotFound))
+			})
+
 		})
 
 		Context("when the authorization fails", func() {
@@ -763,41 +978,214 @@ var _ = Describe("Noaa", func() {
 
 			BeforeEach(func() {
 				failer = authFailer{Message: "Helpful message"}
-				testServer = httptest.NewServer(failer)
+				serverMux := http.NewServeMux()
+				serverMux.Handle("/apps/appGuid/containermetrics", failer)
+				testServer = httptest.NewServer(serverMux)
 				trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
 			})
 
-			It("it returns a helpful error message", func() {
+			It("returns a helpful error message", func() {
 				perform()
 
 				Expect(recentError).To(HaveOccurred())
 				Expect(recentError.Error()).To(ContainSubstring("You are not authorized. Helpful message"))
+				Expect(recentError).To(BeAssignableToTypeOf(&noaa_errors.UnauthorizedError{}))
 			})
 		})
 	})
 
-	Describe("SortRecent", func() {
-		var messages []*events.Envelope
+	Describe("Firehose", func() {
+		var envelopeChan chan *events.Envelope
+		var errorChan chan error
+		var doneChan chan struct{}
+		var stopChan chan struct{}
+
+		perform := func() {
+			connection = noaa.NewConsumer(trafficControllerUrl, tlsSettings, consumerProxyFunc)
+			envelopeChan = make(chan *events.Envelope)
+			errorChan = make(chan error, 10)
+			stopChan = make(chan struct{})
+			doneChan = make(chan struct{})
+			go func() {
+				connection.Firehose("subscription-id", authToken, envelopeChan, errorChan, stopChan)
+				close(doneChan)
+			}()
+		}
 
 		BeforeEach(func() {
-			messages = []*events.Envelope{createMessage("hello", 2), createMessage("konnichiha", 1)}
+			startFakeTrafficController()
 		})
 
-		It("sorts messages", func() {
-			sortedMessages := noaa.SortRecent(messages)
+		It("attempts to connect five times", func() {
+			fakeHandler.fail = true
+			perform()
 
-			Expect(*sortedMessages[0].Timestamp).To(Equal(int64(1)))
-			Expect(*sortedMessages[1].Timestamp).To(Equal(int64(2)))
+			fakeHandler.Close()
+
+			Eventually(errorChan, 3).Should(HaveLen(5))
+			Eventually(doneChan, 10).Should(BeClosed())
 		})
 
-		It("sorts using a stable algorithm", func() {
-			messages = append(messages, createMessage("guten tag", 1))
+		It("waits 500ms before reconnecting", func() {
+			perform()
 
-			sortedMessages := noaa.SortRecent(messages)
+			fakeHandler.Close()
+			start := time.Now()
+			Eventually(errorChan, 3).Should(HaveLen(5))
+			end := time.Now()
+			Expect(end).To(BeTemporally(">=", start.Add(4*500*time.Millisecond)))
+			close(stopChan)
+			Eventually(doneChan).Should(BeClosed())
+		})
 
-			Expect(sortedMessages[0].GetLogMessage().GetMessage()).To(Equal([]byte("konnichiha")))
-			Expect(sortedMessages[1].GetLogMessage().GetMessage()).To(Equal([]byte("guten tag")))
-			Expect(sortedMessages[2].GetLogMessage().GetMessage()).To(Equal([]byte("hello")))
+		It("resets the attempt counter after a successful connection", func(done Done) {
+			perform()
+
+			fakeHandler.InputChan <- marshalMessage(createMessage("message 1", 0))
+			Eventually(envelopeChan).Should(Receive())
+
+			fakeHandler.Close()
+
+			expectedErrorCount := 4
+			Eventually(errorChan, 3*time.Second).Should(HaveLen(expectedErrorCount))
+			fakeHandler.Reset()
+
+			for i := 0; i < expectedErrorCount; i++ {
+				<-errorChan
+			}
+
+			fakeHandler.InputChan <- marshalMessage(createMessage("message 2", 0))
+
+			Eventually(envelopeChan).Should(Receive())
+			fakeHandler.Close()
+			Eventually(errorChan, 3).Should(HaveLen(5))
+
+			close(stopChan)
+			Eventually(doneChan).Should(BeClosed())
+			close(done)
+		}, 10)
+	})
+
+	Describe("FirehoseWithoutReconnect", func() {
+		var incomingChan chan *events.Envelope
+		var streamErrorChan chan error
+		var finishedChan chan struct{}
+
+		perform := func() {
+			streamErrorChan = make(chan error, 10)
+			connection = noaa.NewConsumer(trafficControllerUrl, tlsSettings, consumerProxyFunc)
+			go func() {
+				streamErrorChan <- connection.FirehoseWithoutReconnect("subscription-id", authToken, incomingChan)
+				close(finishedChan)
+			}()
+		}
+
+		BeforeEach(func() {
+			incomingChan = make(chan *events.Envelope)
+			finishedChan = make(chan struct{})
+			startFakeTrafficController()
+		})
+
+		AfterEach(func() {
+			<-finishedChan
+		})
+
+		Context("when there is no TLS Config or consumerProxyFunc setting", func() {
+			Context("when the connection can be established", func() {
+				It("receives messages on the incoming channel", func(done Done) {
+					fakeHandler.InputChan <- marshalMessage(createMessage("hello", 0))
+
+					perform()
+					message := <-incomingChan
+
+					Expect(message.GetLogMessage().GetMessage()).To(Equal([]byte("hello")))
+					fakeHandler.Close()
+
+					close(done)
+				})
+
+				It("receives messages from the full firehose", func() {
+					perform()
+					fakeHandler.Close()
+
+					Eventually(fakeHandler.getLastURL).Should(ContainSubstring("/firehose/subscription-id"))
+				})
+
+				It("sends an Authorization header with an access token", func() {
+					authToken = "auth-token"
+					perform()
+					fakeHandler.Close()
+
+					Eventually(fakeHandler.getAuthHeader).Should(Equal("auth-token"))
+				})
+
+				Context("when the message fails to parse", func() {
+					It("skips that message but continues to read messages", func(done Done) {
+						fakeHandler.InputChan <- []byte{0}
+						fakeHandler.InputChan <- marshalMessage(createMessage("hello", 0))
+						perform()
+						fakeHandler.Close()
+
+						message := <-incomingChan
+
+						Expect(message.GetLogMessage().GetMessage()).To(Equal([]byte("hello")))
+
+						close(done)
+					})
+				})
+			})
+
+			Context("when the connection cannot be established", func() {
+				BeforeEach(func() {
+					trafficControllerUrl = "!!!bad-url"
+				})
+
+				It("returns an error", func(done Done) {
+					perform()
+
+					var err error
+					Eventually(streamErrorChan).Should(Receive(&err))
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("Please ask your Cloud Foundry Operator"))
+
+					close(done)
+				})
+			})
+
+			Context("when the authorization fails", func() {
+				var failer authFailer
+
+				BeforeEach(func() {
+					failer = authFailer{Message: "Helpful message"}
+					testServer = httptest.NewServer(failer)
+					trafficControllerUrl = "ws://" + testServer.Listener.Addr().String()
+				})
+
+				It("it returns a helpful error message", func() {
+					perform()
+
+					var err error
+					Eventually(streamErrorChan).Should(Receive(&err))
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("You are not authorized. Helpful message"))
+				})
+			})
+		})
+
+		Context("when SSL settings are passed in", func() {
+			BeforeEach(func() {
+				testServer = httptest.NewTLSServer(handlers.NewWebsocketHandler(messagesToSend, 100*time.Millisecond, loggertesthelper.Logger()))
+				trafficControllerUrl = "wss://" + testServer.Listener.Addr().String()
+
+				tlsSettings = &tls.Config{InsecureSkipVerify: true}
+			})
+
+			It("connects using those settings", func() {
+				perform()
+				close(messagesToSend)
+
+				Expect(err).NotTo(HaveOccurred())
+			})
 		})
 	})
 })
@@ -807,21 +1195,61 @@ func createMessage(message string, timestamp int64) *events.Envelope {
 		timestamp = time.Now().UnixNano()
 	}
 
-	logMessageType := events.LogMessage_OUT
-	logMessage := &events.LogMessage{
+	logMessage := createLogMessage(message, timestamp)
+
+	return &events.Envelope{
+		LogMessage: logMessage,
+		EventType:  events.Envelope_LogMessage.Enum(),
+		Origin:     proto.String("fake-origin-1"),
+		Timestamp:  proto.Int64(timestamp),
+	}
+}
+
+func createContainerMetric(instanceIndex int32, timestamp int64) *events.Envelope {
+	if timestamp == 0 {
+		timestamp = time.Now().UnixNano()
+	}
+
+	cm := &events.ContainerMetric{
+		ApplicationId: proto.String("appId"),
+		InstanceIndex: proto.Int32(instanceIndex),
+		CpuPercentage: proto.Float64(1),
+		MemoryBytes: proto.Uint64(2),
+		DiskBytes: proto.Uint64(3),
+	}
+
+	return &events.Envelope{
+		ContainerMetric: cm,
+		EventType:       events.Envelope_ContainerMetric.Enum(),
+		Origin:          proto.String("fake-origin-1"),
+		Timestamp:       proto.Int64(timestamp),
+	}
+}
+
+func createError(message string) *events.Envelope {
+	timestamp := time.Now().UnixNano()
+
+	err := &events.Error{
+		Message: &message,
+		Source:  proto.String("foreign"),
+		Code:    proto.Int32(42),
+	}
+
+	return &events.Envelope{
+		Error:     err,
+		EventType: events.Envelope_Error.Enum(),
+		Origin:    proto.String("fake-origin-1"),
+		Timestamp: proto.Int64(timestamp),
+	}
+}
+
+func createLogMessage(message string, timestamp int64) *events.LogMessage {
+	return &events.LogMessage{
 		Message:     []byte(message),
-		MessageType: &logMessageType,
+		MessageType: events.LogMessage_OUT.Enum(),
 		AppId:       proto.String("my-app-guid"),
 		SourceType:  proto.String("DEA"),
 		Timestamp:   proto.Int64(timestamp),
-	}
-
-	eventType := events.Envelope_LogMessage
-	return &events.Envelope{
-		LogMessage: logMessage,
-		EventType:  &eventType,
-		Origin:     proto.String("fake-origin-1"),
-		Timestamp:  proto.Int64(timestamp),
 	}
 }
 
@@ -836,10 +1264,9 @@ func createHeartbeat(sentCount, receivedCount, errorCount uint64, timestamp int6
 		ErrorCount:    proto.Uint64(errorCount),
 	}
 
-	eventType := events.Envelope_Heartbeat
 	return &events.Envelope{
 		Heartbeat: heartbeat,
-		EventType: &eventType,
+		EventType: events.Envelope_Heartbeat.Enum(),
 		Origin:    proto.String("fake-origin-1"),
 		Timestamp: proto.Int64(timestamp),
 	}
@@ -848,7 +1275,7 @@ func createHeartbeat(sentCount, receivedCount, errorCount uint64, timestamp int6
 func marshalMessage(message *events.Envelope) []byte {
 	data, err := proto.Marshal(message)
 	if err != nil {
-		log.Println(err.Error())
+		println(err.Error())
 	}
 
 	return data
@@ -865,11 +1292,13 @@ func (failer authFailer) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 type FakeHandler struct {
-	innerHandler http.Handler
-	called       bool
-	lastURL      string
-	authHeader   string
-	contentLen   string
+	GenerateHandler func(chan []byte) http.Handler
+	InputChan       chan []byte
+	called          bool
+	lastURL         string
+	authHeader      string
+	contentLen      string
+	fail            bool
 	sync.RWMutex
 }
 
@@ -916,7 +1345,27 @@ func (fh *FakeHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	if len(fh.contentLen) > 0 {
 		rw.Header().Set("Content-Length", fh.contentLen)
 	}
-	fh.innerHandler.ServeHTTP(rw, r)
+
+	fh.Lock()
+	defer fh.Unlock()
+
+	if fh.fail {
+		return
+	}
+
+	handler := fh.GenerateHandler(fh.InputChan)
+	handler.ServeHTTP(rw, r)
+}
+
+func (fh *FakeHandler) Close() {
+	close(fh.InputChan)
+}
+
+func (fh *FakeHandler) Reset() {
+	fh.Lock()
+	defer fh.Unlock()
+
+	fh.InputChan = make(chan []byte)
 }
 
 type fakeDebugPrinter struct {

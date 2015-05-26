@@ -26,12 +26,25 @@ class Dora < Sinatra::Base
     "Hi, I'm Dora!"
   end
 
+  get '/ping/:address' do
+    `ping -c 4 #{params[:address]}`
+  end
+
+  get '/lsb_release' do
+    `lsb_release --all`
+  end
+
   get '/find/:filename' do
     `find / -name #{params[:filename]}`
   end
 
   get '/sigterm' do
     "Available sigterms #{`man -k signal | grep list`}"
+  end
+
+  get '/dpkg/:package' do
+    puts "Sending dpkg output for #{params[:package]}"
+    `dpkg -l #{params[:package]}`
   end
 
   get '/delay/:seconds' do
