@@ -83,6 +83,12 @@ You should replace `AVAILABLE_PORT_ON_LOCAL_MACHINE` with an integer
 for some available port, and `PUBLICLY_ACCESSIBLE_IP_ADDRESS_OF_LOCAL_MACHINE` with an IP address at
 which your deployment can access your machine.
 
+If you are running the routing api suite, add
+```
+  "system_domain": "SYSTEM_DOMAIN_FROM_BOSH_MANIFEST"
+  "oauth_password": "PASSWORD_USED_BY_GOROUTER_TO_ACCESS_ROUTING_API_ROUTES"
+```
+
 To override default timeouts, add
 
 ```
