@@ -183,11 +183,11 @@ describe ServiceBroker do
 
         post '/config', config
 
-        get '/v2/service_instances/fake-guid'
+        get '/v2/service_instances/fake-guid/last_operation'
         expect(last_response.status).to eq(200)
         expect(last_response.body).to eq('{}')
 
-        get '/v2/service_instances/fake-guid'
+        get '/v2/service_instances/fake-guid/last_operation'
         expect(last_response.status).to eq(400)
         expect(last_response.body).to eq({ foo: :bar }.to_json)
       end
@@ -215,11 +215,11 @@ describe ServiceBroker do
 
         post '/config', config
 
-        get '/v2/service_instances/fake-guid'
+        get '/v2/service_instances/fake-guid/last_operation'
         expect(last_response.status).to eq(200)
         expect(last_response.body).to eq 'cheese'
 
-        get '/v2/service_instances/fake-guid'
+        get '/v2/service_instances/fake-guid/last_operation'
         expect(last_response.status).to eq(400)
         expect(last_response.body).to eq 'cake'
       end
@@ -249,13 +249,13 @@ describe ServiceBroker do
 
         expect do
           Timeout::timeout(1) do
-            get '/v2/service_instances/fake-guid'
+            get '/v2/service_instances/fake-guid/last_operation'
           end
         end.to raise_error(TimeoutError)
 
         expect do
           Timeout::timeout(0.5) do
-            get '/v2/service_instances/fake-guid'
+            get '/v2/service_instances/fake-guid/last_operation'
           end
         end.to raise_error(TimeoutError)
       end
@@ -283,15 +283,15 @@ describe ServiceBroker do
 
         post '/config', config
 
-        get '/v2/service_instances/fake-guid'
+        get '/v2/service_instances/fake-guid/last_operation'
         expect(last_response.status).to eq(200)
         expect(last_response.body).to eq('{}')
 
-        get '/v2/service_instances/fake-guid'
+        get '/v2/service_instances/fake-guid/last_operation'
         expect(last_response.status).to eq(200)
         expect(last_response.body).to eq('{}')
 
-        get '/v2/service_instances/fake-guid'
+        get '/v2/service_instances/fake-guid/last_operation'
         expect(last_response.status).to eq(400)
         expect(last_response.body).to eq({ foo: :bar }.to_json)
       end
@@ -331,11 +331,11 @@ describe ServiceBroker do
 
         post '/config', config
 
-        get '/v2/service_instances/fake-guid'
+        get '/v2/service_instances/fake-guid/last_operation'
         expect(last_response.status).to eq(200)
         expect(last_response.body).to eq({ foo: 'bar' }.to_json)
 
-        get '/v2/service_instances/fake-guid'
+        get '/v2/service_instances/fake-guid/last_operation'
         expect(last_response.status).to eq(201)
         expect(last_response.body).to eq({ foo: 'baz' }.to_json)
       end
