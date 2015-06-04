@@ -153,8 +153,25 @@ class ServiceBroker < Sinatra::Base
     body
   end
 
-  def respond_with_behavior(behavior)
+  def respond_with_behavior(behavior, accepts_incomplete=false)
     sleep behavior['sleep_seconds']
+
+    if behavior['async_only'] && !accepts_incomplete
+      respond_async_required
+    else
+      respond_from_config(behavior)
+    end
+  end
+
+  def respond_async_required
+    status 422
+    log_response(status, {
+      'error' => 'AsyncRequired',
+      'description' => 'This service plan requires client support for asynchronous service operations.'
+     }.to_json)
+  end
+
+  def respond_from_config(behavior)
     status behavior['status']
     if behavior['body']
       log_response(status, behavior['body'].to_json)
@@ -176,7 +193,7 @@ class ServiceBroker < Sinatra::Base
   put '/v2/service_instances/:id/?' do |id|
     json_body = JSON.parse(request.body.read)
     service_instance = $datasource.create_service_instance(id, json_body)
-    respond_with_behavior($datasource.behavior_for_type(:provision, service_instance.plan_id))
+    respond_with_behavior($datasource.behavior_for_type(:provision, service_instance.plan_id), params['accepts_incomplete'])
   end
 
   # fetch service instance
@@ -220,7 +237,7 @@ class ServiceBroker < Sinatra::Base
       service_instance.update!(json_body) if service_instance
     end
 
-    respond_with_behavior(behavior)
+    respond_with_behavior(behavior, params['accepts_incomplete'])
   end
 
   # deprovision
@@ -228,9 +245,9 @@ class ServiceBroker < Sinatra::Base
     service_instance = $datasource.service_instance_by_id(id)
     if service_instance
       service_instance.delete!
-      respond_with_behavior($datasource.behavior_for_type(:deprovision, service_instance.plan_id))
+      respond_with_behavior($datasource.behavior_for_type(:deprovision, service_instance.plan_id), params[:accepts_incomplete])
     else
-      respond_with_behavior($datasource.behavior_for_type(:deprovision, nil))
+      respond_with_behavior($datasource.behavior_for_type(:deprovision, nil), params[:accepts_incomplete])
     end
   end
 

@@ -31,6 +31,160 @@ describe ServiceBroker do
       expect(last_response.status).to eq(200)
       expect(JSON.parse(last_response.body)).to be_empty
     end
+
+    context 'when the plan is configured as async_only' do
+      before do
+        config = {
+            max_fetch_service_instance_requests: 1,
+            behaviors: {
+                provision: {
+                    'fake-async-plan-guid' => {
+                        sleep_seconds: 0,
+                        async_only: true,
+                        status: 202,
+                        body: {}
+                    },
+                    default: {
+                        sleep_seconds: 0,
+                        status: 202,
+                        body: {}
+                    }
+                }
+            }
+        }.to_json
+
+        post '/config', config
+      end
+
+
+      context 'request is for an async plan' do
+        it 'returns as usual if it does include accepts_incomplete' do
+          put '/v2/service_instances/fake-guid?accepts_incomplete=true', {plan_id: 'fake-async-plan-guid'}.to_json
+
+          expect(last_response.status).to eq(202)
+        end
+
+        it 'rejects request if it does not include accepts_incomplete' do
+          put '/v2/service_instances/fake-guid', {plan_id: 'fake-async-plan-guid'}.to_json
+
+          expect(last_response.status).to eq(422)
+          expect(last_response.body).to eq(
+                                            {
+                                                'error' => 'AsyncRequired',
+                                                'description' => 'This service plan requires client support for asynchronous service operations.'
+                                            }.to_json
+                                        )
+        end
+      end
+
+    end
+  end
+
+  describe 'PATCH /v2/service_instance/:id' do
+    before do
+      put '/v2/service_instances/fake-guid?accepts_incomplete=true', {plan_id: 'fake-async-plan-guid'}.to_json
+      expect(last_response.status).to eq(202)
+    end
+
+    context 'when the plan is configured as async_only' do
+      before do
+        config = {
+            max_fetch_service_instance_requests: 1,
+            behaviors: {
+                update: {
+                    'fake-async-plan-guid' => {
+                        sleep_seconds: 0,
+                        async_only: true,
+                        status: 202,
+                        body: {}
+                    },
+                    default: {
+                        sleep_seconds: 0,
+                        status: 202,
+                        body: {}
+                    }
+                }
+            }
+        }.to_json
+
+        post '/config', config
+      end
+
+
+      context 'request is for an async plan' do
+        it 'returns as usual if it does include accepts_incomplete' do
+          patch '/v2/service_instances/fake-guid?accepts_incomplete=true', {}.to_json
+
+          expect(last_response.status).to eq(202)
+        end
+
+        it 'rejects request if it does not include accepts_incomplete' do
+          patch '/v2/service_instances/fake-guid', {}.to_json
+
+          expect(last_response.status).to eq(422)
+          expect(last_response.body).to eq(
+                                            {
+                                                'error' => 'AsyncRequired',
+                                                'description' => 'This service plan requires client support for asynchronous service operations.'
+                                            }.to_json
+                                        )
+        end
+      end
+
+    end
+  end
+
+  describe 'DELETE /v2/service_instances/:id' do
+    before do
+      put '/v2/service_instances/fake-guid?accepts_incomplete=true', {plan_id: 'fake-async-plan-guid'}.to_json
+      expect(last_response.status).to eq(202)
+    end
+
+    context 'when the plan is configured as async_only' do
+      before do
+        config = {
+            max_fetch_service_instance_requests: 1,
+            behaviors: {
+                deprovision: {
+                    'fake-async-plan-guid' => {
+                        sleep_seconds: 0,
+                        async_only: true,
+                        status: 202,
+                        body: {}
+                    },
+                    default: {
+                        sleep_seconds: 0,
+                        status: 202,
+                        body: {}
+                    }
+                }
+            }
+        }.to_json
+
+        post '/config', config
+      end
+
+
+      context 'request is for an async plan' do
+        it 'returns as usual if it does include accepts_incomplete' do
+          delete '/v2/service_instances/fake-guid?accepts_incomplete=true'
+
+          expect(last_response.status).to eq(202)
+        end
+
+        it 'rejects request if it does not include accepts_incomplete' do
+          delete '/v2/service_instances/fake-guid'
+
+          expect(last_response.status).to eq(422)
+          expect(last_response.body).to eq(
+              {
+                  'error' => 'AsyncRequired',
+                  'description' => 'This service plan requires client support for asynchronous service operations.'
+              }.to_json
+          )
+        end
+      end
+    end
   end
 
   describe 'configuration management' do

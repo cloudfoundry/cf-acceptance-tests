@@ -21,7 +21,7 @@ To update the configuration of the broker yourself:
 `curl <app_url>/config -X POST -d @data.json`
 
 To reset the broker to its original configuration:
-`curl <app_url>/config/reset -X POST
+`curl <app_url>/config/reset -X POST`
 
 
 ### The Configuration File ###
@@ -29,6 +29,7 @@ To reset the broker to its original configuration:
 data.json includes the basic configuration for the broker. You can update this config in many ways.
 
 The configuration of a broker endpoint has the following form:
+```json
 {
   "catalog": {
     "sleep_seconds": 0,
@@ -38,7 +39,7 @@ The configuration of a broker endpoint has the following form:
     }
   }
 }
-
+```
 
 This tells the broker to respond to a request by sleeping 0 seconds, then returning status code 200 with the JSON body
 '{"key": "value"}'.
@@ -47,6 +48,7 @@ For all endpoints but the /v2/catalog endpoint, we can make the configuration de
 in the request. This allows us to have different behavior for different situations. As an example, we might decide
 that the provision endpoint (PUT /v2/service_instances/:guid) should return synchronously for one request and asynchronous
 for another request. To achieve this, we configure the endpoint like this:
+```json
 {
   "provision": {
     "sync-plan-guid": {
@@ -65,8 +67,10 @@ for another request. To achieve this, we configure the endpoint like this:
     }
   }
 }
+```
 
 If we don't want to vary behavior by service plan, we can specify a default behavior:
+```json
 {
   "provision": {
     "default": {
@@ -76,9 +80,29 @@ If we don't want to vary behavior by service plan, we can specify a default beha
     }
   }
 }
+```
 
-In the case of fetching instance status (GET /v2/service_instances/:guid), we need to account for different behaviors
+These behaviors are all compiled in the top-level "behaviors" key of the JSON config:
+
+```json
+{
+  "behaviors": {
+    "provision": { ... }
+    "deprovision": { ... },
+    "bind": { ... },
+    "unbind": { ... },
+    "fetch": { ... }
+    ...
+  }
+}
+```
+
+##### Fetching Status #####
+
+In the case of fetching operation status (GET /v2/service_instances/:guid/last_operation), we need to account for different behaviors
 based on whether the instance operation is finished or in progress.
+
+```json
 {
   "fetch": {
     "default": {
@@ -103,22 +127,32 @@ based on whether the instance operation is finished or in progress.
     }
   }
 }
+```
 
 The broker will return the "in_progress" response for the endpoint until the instance's state has been requested more
 times than the top-level "max_fetch_service_instance_requests" parameter. At that point, all requests to fetch in the
 instance state will response with the "finished" response.
 
-These behaviors are all compiled in the top-level "behaviors" key of the JSON config:
+##### Asynchronous Only Behavior #####
+
+Some brokers/ plans can only respond asynchronously to some actions. To simulate this, we can configure a plan for an action
+to be 'async_only.'
+
+```json
 {
-  "behaviors": {
-    "provision": { ... }
-    "deprovision": { ... },
-    "bind": { ... },
-    "unbind": { ... },
-    "fetch": { ... }
-    ...
+  "provision": {
+    "async-plan-guid": {
+      "sleep_seconds": 0,
+      "async_only": true,
+      "status": 200,
+      "body": {}
+    }
   }
 }
+```
+
+If we try to provision a new service instance for the 'async-plan' without sending the 'accepts_incomplete' parameter,
+the broker will respond with a 422.
 
 
 ### Bootstrapping ###
@@ -144,7 +178,7 @@ The script also takes parameters:
 --------------------------
 We often need to test how the CC handles many permutations of status code, body, and broker action. To make this simple, we've
 written a script called run_all_cases.rb. It requires one parameter, which is a path to a CSV file. It also optionally allows
-two additional paramters, a broker url and a --no-cleanup flag.
+two additional parameters, a broker url and a --no-cleanup flag.
 
 The script reads the CSV file and produces a list of test cases. For each test case, the script configures the brokers to behave
 as specified, and then makes the corresponding cf cli command. The CLI output is stored in a new CSV file, which has the same
