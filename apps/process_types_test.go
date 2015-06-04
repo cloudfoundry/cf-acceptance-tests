@@ -33,7 +33,7 @@ var _ = Describe("Process Types", func() {
 
 		Describe("without a procfile", func() {
 			BeforeEach(func() {
-				Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Node, "-c", "node app.js").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+				Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Node, "-c", "node server.js --cool-arg").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 			})
 
 			AfterEach(func() {
@@ -45,7 +45,7 @@ var _ = Describe("Process Types", func() {
 				cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/apps?q=name:%s", appName)).Wait(DEFAULT_TIMEOUT).Out.Contents()
 				json.Unmarshal(cfResponse, &appsResponse)
 
-				Expect(appsResponse.Resources[0].Entity.DetectedStartCommand).To(Equal("node app.js"))
+				Expect(appsResponse.Resources[0].Entity.DetectedStartCommand).To(Equal("node server.js --cool-arg"))
 			})
 		})
 
