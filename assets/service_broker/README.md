@@ -1,4 +1,4 @@
-CATS Async Broker
+# CATS Async Broker
 
 This directory contains an easily configured service broker that can be pushed as a CF app.
 
@@ -60,7 +60,7 @@ for another request. To achieve this, we configure the endpoint like this:
       "sleep_seconds": 0,
       "status": 202,
       "body": {
-        "last_operation: {
+        "last_operation": {
           "state": "in progress"
         }
       }
@@ -87,11 +87,11 @@ These behaviors are all compiled in the top-level "behaviors" key of the JSON co
 ```json
 {
   "behaviors": {
-    "provision": { ... }
+    "provision": { ... },
     "deprovision": { ... },
     "bind": { ... },
     "unbind": { ... },
-    "fetch": { ... }
+    "fetch": { ... },
     ...
   }
 }
