@@ -114,7 +114,6 @@ func getProcess(appGuid, appName string) []Process {
 	json.Unmarshal(bytes, &processes)
 
 	for i, process := range processes.Processes {
-//		processes.Processes[i].Name = fmt.Sprintf("v3-proc-%s-%s", process.Type, process.Guid)
 		processes.Processes[i].Name = fmt.Sprintf("v3-%s-%s", appName, process.Type)
 	}
 
@@ -387,6 +386,12 @@ EOF
 
 		Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+stopped", webProcess.Name)))
 		Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+stopped", workerProcess.Name)))
+
+		usageEvents = lastPageUsageEvents(appName)
+		event1 = AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
+		event2 = AppUsageEvent{Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
+		Expect(eventsInclude(usageEvents, event1)).To(BeTrue())
+		Expect(eventsInclude(usageEvents, event2)).To(BeTrue())
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(webProcess.Name)
