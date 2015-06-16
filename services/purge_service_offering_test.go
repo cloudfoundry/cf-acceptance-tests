@@ -19,8 +19,10 @@ var _ = Describe("Purging service offerings", func() {
 		broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
 		broker.Push()
 		broker.Configure()
-		broker.Create()
-		broker.PublicizePlans()
+		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			broker.Create()
+			broker.PublicizePlans()
+		})
 	})
 
 	AfterEach(func() {
