@@ -30,16 +30,17 @@ var _ = Describe("SSO Lifecycle", func() {
 		config.RequestedScopes = `openid,cloud_controller_service_permissions.read`
 
 		SetOauthEndpoints(apiEndpoint, &config)
+
+		broker.Create()
 	})
 
 	AfterEach(func() {
 		broker.Destroy()
 	})
 
-	Context("When a service broker is created", func() {
-		It("can perform an operation on a user's behalf using sso", func() {
-			broker.Create()
+	Context("When a service broker is created with a dashboard client", func() {
 
+		It("can perform an operation on a user's behalf using sso", func() {
 			//create a service instance
 			broker.PublicizePlans()
 			serviceInstanceGuid := broker.CreateServiceInstance(generator.RandomName())
@@ -61,10 +62,8 @@ var _ = Describe("SSO Lifecycle", func() {
 		})
 	})
 
-	Context("When a service broker is updated", func() {
+	Context("When a service broker is updated with a new dashboard client", func() {
 		It("can perform an operation on a user's behalf using sso", func() {
-			broker.Create()
-
 			config.ClientId = generator.RandomName()
 			broker.Service.DashboardClient.ID = config.ClientId
 			broker.Configure()
@@ -94,8 +93,6 @@ var _ = Describe("SSO Lifecycle", func() {
 
 	Context("When a service broker is deleted", func() {
 		It("can no longer perform an operation on a user's behalf using sso", func() {
-			broker.Create()
-
 			broker.Delete()
 
 			// perform the OAuth lifecycle to obtain an access token
