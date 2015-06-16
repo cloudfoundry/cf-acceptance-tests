@@ -27,31 +27,45 @@ var _ = Describe("Purging service offerings", func() {
 		broker.Destroy()
 	})
 
-	It("removes all instances and plans of the service, then removes the service offering", func() {
-		instanceName := "purge-offering-instance"
+	Context("when there are several existing service entities", func() {
+		var appName, instanceName string
 
-		marketplace := cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
-		Expect(marketplace).To(Exit(0))
-		Expect(marketplace).To(Say(broker.Plans()[0].Name))
+		BeforeEach(func() {
+			appName = generator.RandomName()
+			instanceName = generator.RandomName()
 
-		broker.CreateServiceInstance(instanceName)
+			createApp := cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)
+			Expect(createApp).To(Exit(0), "failed creating app")
 
-		services := cf.Cf("services").Wait(DEFAULT_TIMEOUT)
-		Expect(marketplace).To(Exit(0))
-		Expect(services).To(Say(instanceName))
+			broker.CreateServiceInstance(instanceName)
 
-		Expect(cf.Cf("delete", broker.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			services := cf.Cf("services").Wait(DEFAULT_TIMEOUT)
+			Expect(services).To(Exit(0))
+			Expect(services).To(Say(instanceName))
 
-		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			Expect(cf.Cf("purge-service-offering", broker.Service.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			bindService := cf.Cf("bind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
+			Expect(bindService).To(Exit(0), "failed binding app to service")
 		})
 
-		services = cf.Cf("services").Wait(DEFAULT_TIMEOUT)
-		Expect(services).To(Exit(0))
-		Expect(services.Out.Contents()).NotTo(ContainSubstring(instanceName)) //TODO: Say?
+		It("removes all instances and plans of the service, then removes the service offering", func() {
+			marketplace := cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
+			Expect(marketplace).To(Exit(0))
+			Expect(marketplace).To(Say(broker.Plans()[0].Name))
 
-		marketplace = cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
-		Expect(marketplace).To(Exit(0))
-		Expect(marketplace.Out.Contents()).NotTo(ContainSubstring(broker.Service.Name)) //TODO: Say?
+			Expect(cf.Cf("delete", broker.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
+			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+				Expect(cf.Cf("purge-service-offering", broker.Service.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			})
+
+			services := cf.Cf("services").Wait(DEFAULT_TIMEOUT)
+			Expect(services).To(Exit(0))
+			Expect(services).NotTo(Say(instanceName))
+			Expect(services).NotTo(Say(appName))
+
+			marketplace = cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
+			Expect(marketplace).To(Exit(0))
+			Expect(marketplace).NotTo(Say(broker.Service.Name))
+		})
 	})
 })
