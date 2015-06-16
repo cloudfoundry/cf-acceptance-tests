@@ -27,7 +27,7 @@ import (
 
 var _ = Describe("loggregator", func() {
 	var appName string
-	const oneSecond = 1000000 // this app uses millionth of seconds
+	const hundredthOfOneSecond = 10000 // this app uses millionth of seconds
 
 	BeforeEach(func() {
 		appName = generator.RandomName()
@@ -57,7 +57,7 @@ var _ = Describe("loggregator", func() {
 			Eventually(logs, (DEFAULT_TIMEOUT + time.Minute)).Should(Say("Connected, tailing logs for app"))
 
 			Eventually(func() string {
-				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", oneSecond))
+				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Muahaha"))
 
 			Eventually(logs, (DEFAULT_TIMEOUT + time.Minute)).Should(Say("Muahaha"))
@@ -67,7 +67,7 @@ var _ = Describe("loggregator", func() {
 	Context("cf logs --recent", func() {
 		It("makes loggregator buffer and dump log messages", func() {
 			Eventually(func() string {
-				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", oneSecond))
+				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Muahaha"))
 
 			Eventually(func() *Session {
@@ -83,17 +83,29 @@ var _ = Describe("loggregator", func() {
 			config := helpers.LoadConfig()
 
 			noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: config.SkipSSLValidation}, nil)
-			msgChan := make(chan *events.Envelope)
+			msgChan := make(chan *events.Envelope, 100000)
 			errorChan := make(chan error)
 			stopchan := make(chan struct{})
-			go noaaConnection.Firehose("firehose-a", getAdminUserAccessToken(), msgChan, errorChan, stopchan)
+			go noaaConnection.Firehose(generator.RandomName(), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
 			defer close(stopchan)
 
 			Eventually(func() string {
-				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", oneSecond))
+				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Muahaha"))
 
-			Eventually(msgChan, DEFAULT_TIMEOUT).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
+			timeout := time.After(5 * time.Second)
+			messages := make([]*events.Envelope, 0, 100000)
+
+			for {
+				select {
+				case <-timeout:
+					return
+				case msg := <-msgChan:
+					messages = append(messages, msg)
+				}
+			}
+
+			Expect(messages).To(ContainElement(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
 		})
 	})
 })
