@@ -18,5 +18,5 @@ pushd $project_go_root
 project_gopath="$PWD"
 popd
 
-export GOPATH=$GOPATH:$project_gopath:$godep_gopath
-export PATH=$GOPATH/bin:$PATH
+export GOPATH=$godep_gopath:$project_gopath:$GOPATH
+export PATH=$godep_gopath/bin:$PATH
