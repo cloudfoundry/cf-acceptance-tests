@@ -99,7 +99,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 			})
 		})
 
-		Context("service instances with an app", func() {
+		Context("when there is an app", func() {
 			var instanceName, appName string
 			BeforeEach(func() {
 				appName = generator.RandomName()
@@ -129,7 +129,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 				Expect(appEnv.Out.Contents()).To(ContainSubstring(fmt.Sprintf("credentials")))
 			})
 
-			Context("when they are bound", func() {
+			Context("when there is an existing binding", func() {
 				BeforeEach(func() {
 					bindService := cf.Cf("bind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
 					Expect(bindService).To(Exit(0), "failed binding app to service")
@@ -176,7 +176,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 			Expect(serviceInfo.Out.Contents()).To(ContainSubstring("Message: 100 percent done"))
 		})
 
-		Context("when there is already a service instance", func() {
+		Context("when there is an existing service instance", func() {
 			var instanceName string
 			BeforeEach(func() {
 				instanceName = generator.RandomName()
@@ -229,7 +229,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 					Expect(appEnv.Out.Contents()).To(ContainSubstring(fmt.Sprintf("credentials")))
 				})
 
-				Context("when there is a bound instance", func() {
+				Context("when there is an existing binding", func() {
 					BeforeEach(func() {
 						bindService := cf.Cf("bind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
 						Expect(bindService).To(Exit(0), "failed binding app to service")
