@@ -1,4 +1,4 @@
-package services
+package services_test
 
 import (
 	"fmt"
@@ -10,6 +10,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 )
 
 var _ = Describe("Service Broker Lifecycle", func() {
