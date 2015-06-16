@@ -32,12 +32,14 @@ type Response struct {
 
 var _ = Describe("Service Instance Lifecycle", func() {
 	var broker ServiceBroker
+	var ASYNC_OPERATION_TIMEOUT = 2 * time.Minute
+	var ASYNC_OPERATION_POLL_INTERVAL = 5 * time.Second
 
 	waitForAsyncDeletionToComplete := func(broker ServiceBroker, instanceName string) {
 		Eventually(func() string {
 			serviceDetails := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
 			return string(serviceDetails.Out.Contents())
-		}, 5*time.Minute, 15*time.Second).Should(ContainSubstring("not found"))
+		}, ASYNC_OPERATION_TIMEOUT, ASYNC_OPERATION_POLL_INTERVAL).Should(ContainSubstring("not found"))
 	}
 
 	waitForAsyncOperationToComplete := func(broker ServiceBroker, instanceName string) {
@@ -45,7 +47,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 			serviceDetails := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
 			Expect(serviceDetails).To(Exit(0), "failed getting service instance details")
 			return string(serviceDetails.Out.Contents())
-		}, 5*time.Minute, 15*time.Second).Should(ContainSubstring("succeeded"))
+		}, ASYNC_OPERATION_TIMEOUT, ASYNC_OPERATION_POLL_INTERVAL).Should(ContainSubstring("succeeded"))
 	}
 
 	Context("Sync broker", func() {
