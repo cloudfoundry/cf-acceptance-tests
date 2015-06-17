@@ -1,7 +1,9 @@
 package services_test
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -66,12 +68,19 @@ var _ = Describe("Service Instance Lifecycle", func() {
 
 		Context("just service instances", func() {
 			It("can create a service instance", func() {
+				tags := "['tag1', 'tag2']"
+				type Params struct{ param1 string }
+				params, _ := json.Marshal(Params{param1: "value"})
+
 				instanceName := generator.RandomName()
-				createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
+				createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName, "-c", string(params), "-t", tags).Wait(DEFAULT_TIMEOUT)
 				Expect(createService).To(Exit(0))
 
+				os.Setenv("CF_TRACE", "true")
 				serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
 				Expect(serviceInfo).To(Say(fmt.Sprintf("Plan: %s", broker.SyncPlans[0].Name)))
+				Expect(serviceInfo.Out.Contents()).To(MatchRegexp(`"tags":\s*\[\n.*tag1.*\n.*tag2.*\n.*\]`))
+				os.Setenv("CF_TRACE", "false")
 			})
 
 			Context("when there is an existing service instance", func() {
@@ -82,20 +91,63 @@ var _ = Describe("Service Instance Lifecycle", func() {
 					Expect(createService).To(Exit(0), "failed creating service")
 				})
 
-				It("can update a service instance", func() {
-					updateService := cf.Cf("update-service", instanceName, "-p", broker.SyncPlans[1].Name).Wait(DEFAULT_TIMEOUT)
-					Expect(updateService).To(Exit(0))
-
-					serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
-					Expect(serviceInfo).To(Say(fmt.Sprintf("Plan: %s", broker.SyncPlans[1].Name)))
-				})
-
 				It("can delete a service instance", func() {
 					deleteService := cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)
 					Expect(deleteService).To(Exit(0))
 
 					serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
 					Expect(serviceInfo).To(Say("not found"))
+				})
+
+				Context("updating a service instance", func() {
+					tags := "['tag1', 'tag2']"
+					type Params struct{ param1 string }
+					params, _ := json.Marshal(Params{param1: "value"})
+
+					It("can rename a service", func() {
+						newname := "newname"
+						updateService := cf.Cf("rename-service", instanceName, newname).Wait(DEFAULT_TIMEOUT)
+						Expect(updateService).To(Exit(0))
+
+						serviceInfo := cf.Cf("service", newname).Wait(DEFAULT_TIMEOUT)
+						Expect(serviceInfo).To(Say(newname))
+
+						serviceInfo = cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
+						Expect(serviceInfo).To(Exit(1))
+					})
+					It("can update a service plan", func() {
+						updateService := cf.Cf("update-service", instanceName, "-p", broker.SyncPlans[1].Name).Wait(DEFAULT_TIMEOUT)
+						Expect(updateService).To(Exit(0))
+
+						serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
+						Expect(serviceInfo).To(Say(fmt.Sprintf("Plan: %s", broker.SyncPlans[1].Name)))
+					})
+					It("can update service tags", func() {
+						updateService := cf.Cf("update-service", instanceName, "-t", tags).Wait(DEFAULT_TIMEOUT)
+						Expect(updateService).To(Exit(0))
+
+						os.Setenv("CF_TRACE", "true")
+						serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
+						Expect(serviceInfo.Out.Contents()).To(MatchRegexp(`"tags":\s*\[\n.*tag1.*\n.*tag2.*\n.*\]`))
+						os.Setenv("CF_TRACE", "false")
+					})
+
+					It("can update arbitrary parameters", func() {
+						updateService := cf.Cf("update-service", instanceName, "-c", string(params)).Wait(DEFAULT_TIMEOUT)
+						Expect(updateService).To(Exit(0), "Failed updating service")
+						//Note: We don't necessarily get these back through a service instance lookup
+					})
+					It("can update all available parameters", func() {
+						updateService := cf.Cf("update-service", instanceName, "-p", broker.SyncPlans[1].Name, "-t", tags, "-c", string(params)).Wait(DEFAULT_TIMEOUT)
+						Expect(updateService).To(Exit(0))
+
+						os.Setenv("CF_TRACE", "true")
+						serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
+						Expect(serviceInfo).To(Say(fmt.Sprintf("Plan: %s", broker.SyncPlans[1].Name)))
+						Expect(serviceInfo.Out.Contents()).To(MatchRegexp(`"tags":\s*\[\n.*tag1.*\n.*tag2.*\n.*\]`))
+						os.Setenv("CF_TRACE", "false")
+					})
+
 				})
 			})
 		})
