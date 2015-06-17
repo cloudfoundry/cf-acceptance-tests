@@ -69,8 +69,8 @@ var _ = Describe("Service Instance Lifecycle", func() {
 		Context("just service instances", func() {
 			It("can create a service instance", func() {
 				tags := "['tag1', 'tag2']"
-				type Params struct{ param1 string }
-				params, _ := json.Marshal(Params{param1: "value"})
+				type Params struct{ Param1 string }
+				params, _ := json.Marshal(Params{Param1: "value"})
 
 				instanceName := generator.RandomName()
 				createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName, "-c", string(params), "-t", tags).Wait(DEFAULT_TIMEOUT)
@@ -101,8 +101,8 @@ var _ = Describe("Service Instance Lifecycle", func() {
 
 				Context("updating a service instance", func() {
 					tags := "['tag1', 'tag2']"
-					type Params struct{ param1 string }
-					params, _ := json.Marshal(Params{param1: "value"})
+					type Params struct{ Param1 string }
+					params, _ := json.Marshal(Params{Param1: "value"})
 
 					It("can rename a service", func() {
 						newname := "newname"
@@ -137,8 +137,12 @@ var _ = Describe("Service Instance Lifecycle", func() {
 						Expect(updateService).To(Exit(0), "Failed updating service")
 						//Note: We don't necessarily get these back through a service instance lookup
 					})
-					It("can update all available parameters", func() {
-						updateService := cf.Cf("update-service", instanceName, "-p", broker.SyncPlans[1].Name, "-t", tags, "-c", string(params)).Wait(DEFAULT_TIMEOUT)
+					It("can update all available parameters at once", func() {
+						updateService := cf.Cf(
+							"update-service", instanceName,
+							"-p", broker.SyncPlans[1].Name,
+							"-t", tags,
+							"-c", string(params)).Wait(DEFAULT_TIMEOUT)
 						Expect(updateService).To(Exit(0))
 
 						os.Setenv("CF_TRACE", "true")
@@ -154,6 +158,9 @@ var _ = Describe("Service Instance Lifecycle", func() {
 
 		Context("when there is an app", func() {
 			var instanceName, appName string
+			type Params struct{ Param1 string }
+			params, _ := json.Marshal(Params{Param1: "value"})
+
 			BeforeEach(func() {
 				appName = generator.PrefixedRandomName("CATS-APP-")
 				createApp := cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)
@@ -180,6 +187,11 @@ var _ = Describe("Service Instance Lifecycle", func() {
 				appEnv := cf.Cf("env", appName).Wait(DEFAULT_TIMEOUT)
 				Expect(appEnv).To(Exit(0), "failed get env for app")
 				Expect(appEnv).To(Say(fmt.Sprintf("credentials")))
+			})
+
+			It("can bind service to app and send arbitrary params", func() {
+				bindService := cf.Cf("bind-service", appName, instanceName, "-c", string(params)).Wait(DEFAULT_TIMEOUT)
+				Expect(bindService).To(Exit(0), "failed binding app to service")
 			})
 
 			Context("when there is an existing binding", func() {
@@ -216,20 +228,31 @@ var _ = Describe("Service Instance Lifecycle", func() {
 		})
 
 		It("can create a service instance", func() {
+			tags := "['tag1', 'tag2']"
+			type Params struct{ Param1 string }
+			params, _ := json.Marshal(Params{Param1: "value"})
+
 			instanceName := generator.RandomName()
-			createService := cf.Cf("create-service", broker.Service.Name, broker.AsyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
+			createService := cf.Cf("create-service", broker.Service.Name, broker.AsyncPlans[0].Name, instanceName, "-t", tags, "-c", string(params)).Wait(DEFAULT_TIMEOUT)
 			Expect(createService).To(Exit(0))
 			Expect(createService).To(Say("Create in progress."))
 
 			waitForAsyncOperationToComplete(broker, instanceName)
 
+			os.Setenv("CF_TRACE", "true")
 			serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
 			Expect(serviceInfo).To(Say(fmt.Sprintf("Plan: %s", broker.AsyncPlans[0].Name)))
 			Expect(serviceInfo).To(Say("Status: create succeeded"))
 			Expect(serviceInfo).To(Say("Message: 100 percent done"))
+			Expect(serviceInfo.Out.Contents()).To(MatchRegexp(`"tags":\s*\[\n.*tag1.*\n.*tag2.*\n.*\]`))
+			os.Setenv("CF_TRACE", "false")
 		})
 
 		Context("when there is an existing service instance", func() {
+			tags := "['tag1', 'tag2']"
+			type Params struct{ Param1 string }
+			params, _ := json.Marshal(Params{Param1: "value"})
+
 			var instanceName string
 			BeforeEach(func() {
 				instanceName = generator.RandomName()
@@ -240,7 +263,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 				waitForAsyncOperationToComplete(broker, instanceName)
 			})
 
-			It("can update a service instance", func() {
+			It("can update a service plan", func() {
 				updateService := cf.Cf("update-service", instanceName, "-p", broker.AsyncPlans[1].Name).Wait(DEFAULT_TIMEOUT)
 				Expect(updateService).To(Exit(0))
 				Expect(updateService).To(Say("Update in progress."))
@@ -255,6 +278,35 @@ var _ = Describe("Service Instance Lifecycle", func() {
 				Expect(serviceInfo).To(Exit(0), "failed getting service instance details")
 				Expect(serviceInfo).To(Say(fmt.Sprintf("Plan: %s", broker.AsyncPlans[1].Name)))
 			})
+
+			It("can update the arbitrary params", func() {
+				params, _ := json.Marshal(Params{Param1: "value"})
+				updateService := cf.Cf("update-service", instanceName, "-c", string(params)).Wait(DEFAULT_TIMEOUT)
+				Expect(updateService).To(Exit(0))
+				Expect(updateService).To(Say("Update in progress."))
+
+				waitForAsyncOperationToComplete(broker, instanceName)
+			})
+
+			It("can update all of the possible parameters at once", func() {
+				updateService := cf.Cf(
+					"update-service", instanceName,
+					"-t", tags,
+					"-c", string(params),
+					"-p", broker.AsyncPlans[1].Name).Wait(DEFAULT_TIMEOUT)
+				Expect(updateService).To(Exit(0))
+				Expect(updateService).To(Say("Update in progress."))
+
+				waitForAsyncOperationToComplete(broker, instanceName)
+
+				os.Setenv("CF_TRACE", "true")
+				serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
+				Expect(serviceInfo).To(Exit(0), "failed getting service instance details")
+				Expect(serviceInfo).To(Say(fmt.Sprintf("Plan: %s", broker.AsyncPlans[1].Name)))
+				Expect(serviceInfo.Out.Contents()).To(MatchRegexp(`"tags":\s*\[\n.*tag1.*\n.*tag2.*\n.*\]`))
+				os.Setenv("CF_TRACE", "false")
+			})
+
 			It("can delete a service instance", func() {
 				deleteService := cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)
 				Expect(deleteService).To(Exit(0), "failed making delete request")
@@ -284,6 +336,13 @@ var _ = Describe("Service Instance Lifecycle", func() {
 					appEnv := cf.Cf("env", appName).Wait(DEFAULT_TIMEOUT)
 					Expect(appEnv).To(Exit(0), "failed get env for app")
 					Expect(appEnv).To(Say(fmt.Sprintf("credentials")))
+				})
+
+				It("can bind service to app and send arbitrary params", func() {
+					bindService := cf.Cf("bind-service", appName, instanceName, "-c", string(params)).Wait(DEFAULT_TIMEOUT)
+					Expect(bindService).To(Exit(0), "failed binding app to service")
+
+					checkForEvents(appName, []string{"audit.app.update"})
 				})
 
 				Context("when there is an existing binding", func() {
