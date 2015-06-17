@@ -5,6 +5,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -41,11 +42,10 @@ var _ = Describe("Service Broker Lifecycle", func() {
 			// Confirming plans show up in the marketplace for regular user
 			plans := cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
 			Expect(plans).To(Exit(0))
-			output = plans.Out.Contents()
-			Expect(output).To(ContainSubstring(broker.Service.Name))
+			Expect(plans).To(Say(broker.Service.Name))
 
-			Expect(output).To(ContainSubstring(broker.SyncPlans[0].Name))
-			Expect(output).To(ContainSubstring(broker.SyncPlans[1].Name))
+			Expect(plans).To(Say(broker.SyncPlans[0].Name))
+			Expect(plans).To(Say(broker.SyncPlans[1].Name))
 
 			// Changing the catalog on the broker
 			oldServiceName = broker.Service.Name
@@ -58,11 +58,10 @@ var _ = Describe("Service Broker Lifecycle", func() {
 			// Confirming the changes to the broker show up in the marketplace
 			plans = cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
 			Expect(plans).To(Exit(0))
-			output = plans.Out.Contents()
-			Expect(output).NotTo(ContainSubstring(oldServiceName))
-			Expect(output).NotTo(ContainSubstring(oldPlanName))
-			Expect(output).To(ContainSubstring(broker.Service.Name))
-			Expect(output).To(ContainSubstring(broker.Plans()[0].Name))
+			Expect(plans).NotTo(Say(oldServiceName))
+			Expect(plans).NotTo(Say(oldPlanName))
+			Expect(plans).To(Say(broker.Service.Name))
+			Expect(plans).To(Say(broker.Plans()[0].Name))
 
 			// Deleting the service broker and confirming the plans no longer display
 			cf.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
@@ -71,11 +70,10 @@ var _ = Describe("Service Broker Lifecycle", func() {
 
 			plans = cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
 			Expect(plans).To(Exit(0))
-			output = plans.Out.Contents()
-			Expect(output).NotTo(ContainSubstring(oldServiceName))
-			Expect(output).NotTo(ContainSubstring(oldPlanName))
-			Expect(output).NotTo(ContainSubstring(broker.Service.Name))
-			Expect(output).NotTo(ContainSubstring(broker.Plans()[0].Name))
+			Expect(plans).NotTo(Say(oldServiceName))
+			Expect(plans).NotTo(Say(oldPlanName))
+			Expect(plans).NotTo(Say(broker.Service.Name))
+			Expect(plans).NotTo(Say(broker.Plans()[0].Name))
 		})
 	})
 
@@ -103,11 +101,10 @@ var _ = Describe("Service Broker Lifecycle", func() {
 
 				plans := cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
 				Expect(plans).To(Exit(0))
-				output = plans.Out.Contents()
-				Expect(output).To(ContainSubstring(broker.Service.Name))
+				Expect(plans).To(Say(broker.Service.Name))
 
-				Expect(output).To(ContainSubstring(globallyPublicPlan.Name))
-				Expect(output).To(ContainSubstring(orgPublicPlan.Name))
+				Expect(plans).To(Say(globallyPublicPlan.Name))
+				Expect(plans).To(Say(orgPublicPlan.Name))
 			})
 
 			It("is visible to an admin user", func() {
@@ -152,11 +149,10 @@ var _ = Describe("Service Broker Lifecycle", func() {
 
 				plans := cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
 				Expect(plans).To(Exit(0))
-				output = plans.Out.Contents()
-				Expect(output).NotTo(ContainSubstring(broker.Service.Name))
+				Expect(plans).NotTo(Say(broker.Service.Name))
 
-				Expect(output).NotTo(ContainSubstring(globallyPublicPlan.Name))
-				Expect(output).NotTo(ContainSubstring(orgPublicPlan.Name))
+				Expect(plans).NotTo(Say(globallyPublicPlan.Name))
+				Expect(plans).NotTo(Say(orgPublicPlan.Name))
 			})
 
 			It("is visible as having no access to an admin user", func() {

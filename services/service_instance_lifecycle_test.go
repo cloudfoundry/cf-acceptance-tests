@@ -11,6 +11,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 )
 
@@ -37,18 +38,17 @@ var _ = Describe("Service Instance Lifecycle", func() {
 	var ASYNC_OPERATION_POLL_INTERVAL = 5 * time.Second
 
 	waitForAsyncDeletionToComplete := func(broker ServiceBroker, instanceName string) {
-		Eventually(func() string {
-			serviceDetails := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
-			return string(serviceDetails.Out.Contents())
-		}, ASYNC_OPERATION_TIMEOUT, ASYNC_OPERATION_POLL_INTERVAL).Should(ContainSubstring("not found"))
+		Eventually(func() *Session {
+			return cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
+		}, ASYNC_OPERATION_TIMEOUT, ASYNC_OPERATION_POLL_INTERVAL).Should(Say("not found"))
 	}
 
 	waitForAsyncOperationToComplete := func(broker ServiceBroker, instanceName string) {
-		Eventually(func() string {
+		Eventually(func() *Session {
 			serviceDetails := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
 			Expect(serviceDetails).To(Exit(0), "failed getting service instance details")
-			return string(serviceDetails.Out.Contents())
-		}, ASYNC_OPERATION_TIMEOUT, ASYNC_OPERATION_POLL_INTERVAL).Should(ContainSubstring("succeeded"))
+			return serviceDetails
+		}, ASYNC_OPERATION_TIMEOUT, ASYNC_OPERATION_POLL_INTERVAL).Should(Say("succeeded"))
 	}
 
 	Context("Synchronous operations", func() {
@@ -71,7 +71,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 				Expect(createService).To(Exit(0))
 
 				serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
-				Expect(serviceInfo.Out.Contents()).To(ContainSubstring(fmt.Sprintf("Plan: %s", broker.SyncPlans[0].Name)))
+				Expect(serviceInfo).To(Say(fmt.Sprintf("Plan: %s", broker.SyncPlans[0].Name)))
 			})
 
 			Context("when there is an existing service instance", func() {
@@ -87,7 +87,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 					Expect(updateService).To(Exit(0))
 
 					serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
-					Expect(serviceInfo.Out.Contents()).To(ContainSubstring(fmt.Sprintf("Plan: %s", broker.SyncPlans[1].Name)))
+					Expect(serviceInfo).To(Say(fmt.Sprintf("Plan: %s", broker.SyncPlans[1].Name)))
 				})
 
 				It("can delete a service instance", func() {
@@ -95,7 +95,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 					Expect(deleteService).To(Exit(0))
 
 					serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
-					Expect(serviceInfo.Out.Contents()).To(ContainSubstring("not found"))
+					Expect(serviceInfo).To(Say("not found"))
 				})
 			})
 		})
@@ -127,7 +127,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 
 				appEnv := cf.Cf("env", appName).Wait(DEFAULT_TIMEOUT)
 				Expect(appEnv).To(Exit(0), "failed get env for app")
-				Expect(appEnv.Out.Contents()).To(ContainSubstring(fmt.Sprintf("credentials")))
+				Expect(appEnv).To(Say(fmt.Sprintf("credentials")))
 			})
 
 			Context("when there is an existing binding", func() {
@@ -144,7 +144,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 
 					appEnv := cf.Cf("env", appName).Wait(DEFAULT_TIMEOUT)
 					Expect(appEnv).To(Exit(0), "failed get env for app")
-					Expect(appEnv.Out.Contents()).ToNot(ContainSubstring(fmt.Sprintf("credentials")))
+					Expect(appEnv).ToNot(Say(fmt.Sprintf("credentials")))
 				})
 			})
 		})
@@ -167,14 +167,14 @@ var _ = Describe("Service Instance Lifecycle", func() {
 			instanceName := generator.RandomName()
 			createService := cf.Cf("create-service", broker.Service.Name, broker.AsyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
 			Expect(createService).To(Exit(0))
-			Expect(createService.Out.Contents()).To(ContainSubstring("Create in progress."))
+			Expect(createService).To(Say("Create in progress."))
 
 			waitForAsyncOperationToComplete(broker, instanceName)
 
 			serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
-			Expect(serviceInfo.Out.Contents()).To(ContainSubstring(fmt.Sprintf("Plan: %s", broker.AsyncPlans[0].Name)))
-			Expect(serviceInfo.Out.Contents()).To(ContainSubstring("Status: create succeeded"))
-			Expect(serviceInfo.Out.Contents()).To(ContainSubstring("Message: 100 percent done"))
+			Expect(serviceInfo).To(Say(fmt.Sprintf("Plan: %s", broker.AsyncPlans[0].Name)))
+			Expect(serviceInfo).To(Say("Status: create succeeded"))
+			Expect(serviceInfo).To(Say("Message: 100 percent done"))
 		})
 
 		Context("when there is an existing service instance", func() {
@@ -183,7 +183,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 				instanceName = generator.RandomName()
 				createService := cf.Cf("create-service", broker.Service.Name, broker.AsyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
 				Expect(createService).To(Exit(0))
-				Expect(createService.Out.Contents()).To(ContainSubstring("Create in progress."))
+				Expect(createService).To(Say("Create in progress."))
 
 				waitForAsyncOperationToComplete(broker, instanceName)
 			})
@@ -191,18 +191,18 @@ var _ = Describe("Service Instance Lifecycle", func() {
 			It("can update a service instance", func() {
 				updateService := cf.Cf("update-service", instanceName, "-p", broker.AsyncPlans[1].Name).Wait(DEFAULT_TIMEOUT)
 				Expect(updateService).To(Exit(0))
-				Expect(updateService.Out.Contents()).To(ContainSubstring("Update in progress."))
+				Expect(updateService).To(Say("Update in progress."))
 
 				waitForAsyncOperationToComplete(broker, instanceName)
 
 				serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
 				Expect(serviceInfo).To(Exit(0), "failed getting service instance details")
-				Expect(serviceInfo.Out.Contents()).To(ContainSubstring(fmt.Sprintf("Plan: %s", broker.AsyncPlans[1].Name)))
+				Expect(serviceInfo).To(Say(fmt.Sprintf("Plan: %s", broker.AsyncPlans[1].Name)))
 			})
 			It("can delete a service instance", func() {
 				deleteService := cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)
 				Expect(deleteService).To(Exit(0), "failed making delete request")
-				Expect(deleteService.Out.Contents()).To(ContainSubstring("Delete in progress."))
+				Expect(deleteService).To(Say("Delete in progress."))
 
 				waitForAsyncDeletionToComplete(broker, instanceName)
 			})
@@ -227,7 +227,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 
 					appEnv := cf.Cf("env", appName).Wait(DEFAULT_TIMEOUT)
 					Expect(appEnv).To(Exit(0), "failed get env for app")
-					Expect(appEnv.Out.Contents()).To(ContainSubstring(fmt.Sprintf("credentials")))
+					Expect(appEnv).To(Say(fmt.Sprintf("credentials")))
 				})
 
 				Context("when there is an existing binding", func() {
@@ -243,7 +243,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 
 						appEnv := cf.Cf("env", appName).Wait(DEFAULT_TIMEOUT)
 						Expect(appEnv).To(Exit(0), "failed get env for app")
-						Expect(appEnv.Out.Contents()).ToNot(ContainSubstring(fmt.Sprintf("credentials")))
+						Expect(appEnv).ToNot(Say(fmt.Sprintf("credentials")))
 					})
 				})
 			})
@@ -256,6 +256,6 @@ func checkForEvents(name string, eventNames []string) {
 	Expect(events).To(Exit(0), fmt.Sprintf("failed getting events for %s", name))
 
 	for _, eventName := range eventNames {
-		Expect(events.Out.Contents()).To(ContainSubstring(eventName), "failed to find event")
+		Expect(events).To(Say(eventName), "failed to find event")
 	}
 }
