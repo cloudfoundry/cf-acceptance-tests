@@ -53,6 +53,8 @@ var _ = Describe("Service Instance Lifecycle", func() {
 		}, ASYNC_OPERATION_TIMEOUT, ASYNC_OPERATION_POLL_INTERVAL).Should(Say("succeeded"))
 	}
 
+	type Params struct{ Param1 string }
+
 	Context("Synchronous operations", func() {
 		BeforeEach(func() {
 			broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context, true)
@@ -153,12 +155,52 @@ var _ = Describe("Service Instance Lifecycle", func() {
 					})
 
 				})
+				Describe("service keys", func() {
+					var keyName string
+					BeforeEach(func() {
+						keyName = generator.RandomName()
+					})
+					It("can create service keys", func() {
+						createKey := cf.Cf("create-service-key", instanceName, keyName).Wait(DEFAULT_TIMEOUT)
+						Expect(createKey).To(Exit(0), "failed to create key")
+
+						keyInfo := cf.Cf("service-key", instanceName, keyName).Wait(DEFAULT_TIMEOUT)
+						Expect(keyInfo).To(Exit(0), "failed key info")
+
+						Expect(keyInfo).To(Say(`"database": "fake-dbname"`))
+						Expect(keyInfo).To(Say(`"password": "fake-password"`))
+						Expect(keyInfo).To(Say(`"username": "fake-user"`))
+					})
+
+					It("can create service keys with arbitrary params", func() {
+						params, _ := json.Marshal(Params{Param1: "value"})
+						createKey := cf.Cf("create-service-key", instanceName, keyName, "-c", string(params)).Wait(DEFAULT_TIMEOUT)
+						Expect(createKey).To(Exit(0), "failed creating key with params")
+					})
+
+					Context("when there is an existing key", func() {
+						BeforeEach(func() {
+							createKey := cf.Cf("create-service-key", instanceName, keyName).Wait(DEFAULT_TIMEOUT)
+							Expect(createKey).To(Exit(0), "failed to create key")
+						})
+
+						It("can delete the key", func() {
+							deleteServiceKey := cf.Cf("delete-service-key", instanceName, keyName, "-f").Wait(DEFAULT_TIMEOUT)
+							Expect(deleteServiceKey).To(Exit(0), "failed deleting service key")
+
+							keyInfo := cf.Cf("service-key", instanceName, keyName).Wait(DEFAULT_TIMEOUT)
+							Expect(keyInfo).To(Exit(0), "failed key info")
+
+							errorMessage := fmt.Sprintf("No service key %s found for service instance %s", keyName, instanceName)
+							Expect(keyInfo).To(Say(errorMessage))
+						})
+					})
+				})
 			})
 		})
 
 		Context("when there is an app", func() {
 			var instanceName, appName string
-			type Params struct{ Param1 string }
 			params, _ := json.Marshal(Params{Param1: "value"})
 
 			BeforeEach(func() {
@@ -172,45 +214,47 @@ var _ = Describe("Service Instance Lifecycle", func() {
 				createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
 				Expect(createService).To(Exit(0), "failed creating service")
 			})
-
-			It("can bind service to app and check app env and events", func() {
-				bindService := cf.Cf("bind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
-				Expect(bindService).To(Exit(0), "failed binding app to service")
-
-				checkForEvents(appName, []string{"audit.app.update"})
-
-				restageApp := cf.Cf("restage", appName).Wait(CF_PUSH_TIMEOUT)
-				Expect(restageApp).To(Exit(0), "failed restaging app")
-
-				checkForEvents(appName, []string{"audit.app.restage"})
-
-				appEnv := cf.Cf("env", appName).Wait(DEFAULT_TIMEOUT)
-				Expect(appEnv).To(Exit(0), "failed get env for app")
-				Expect(appEnv).To(Say(fmt.Sprintf("credentials")))
-			})
-
-			It("can bind service to app and send arbitrary params", func() {
-				bindService := cf.Cf("bind-service", appName, instanceName, "-c", string(params)).Wait(DEFAULT_TIMEOUT)
-				Expect(bindService).To(Exit(0), "failed binding app to service")
-			})
-
-			Context("when there is an existing binding", func() {
-				BeforeEach(func() {
+			Describe("bindings", func() {
+				It("can bind service to app and check app env and events", func() {
 					bindService := cf.Cf("bind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
 					Expect(bindService).To(Exit(0), "failed binding app to service")
-				})
-
-				It("can unbind service to app and check app env and events", func() {
-					unbindService := cf.Cf("unbind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
-					Expect(unbindService).To(Exit(0), "failed unbinding app to service")
 
 					checkForEvents(appName, []string{"audit.app.update"})
 
+					restageApp := cf.Cf("restage", appName).Wait(CF_PUSH_TIMEOUT)
+					Expect(restageApp).To(Exit(0), "failed restaging app")
+
+					checkForEvents(appName, []string{"audit.app.restage"})
+
 					appEnv := cf.Cf("env", appName).Wait(DEFAULT_TIMEOUT)
 					Expect(appEnv).To(Exit(0), "failed get env for app")
-					Expect(appEnv).ToNot(Say(fmt.Sprintf("credentials")))
+					Expect(appEnv).To(Say(fmt.Sprintf("credentials")))
+				})
+
+				It("can bind service to app and send arbitrary params", func() {
+					bindService := cf.Cf("bind-service", appName, instanceName, "-c", string(params)).Wait(DEFAULT_TIMEOUT)
+					Expect(bindService).To(Exit(0), "failed binding app to service")
+				})
+
+				Context("when there is an existing binding", func() {
+					BeforeEach(func() {
+						bindService := cf.Cf("bind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
+						Expect(bindService).To(Exit(0), "failed binding app to service")
+					})
+
+					It("can unbind service to app and check app env and events", func() {
+						unbindService := cf.Cf("unbind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
+						Expect(unbindService).To(Exit(0), "failed unbinding app to service")
+
+						checkForEvents(appName, []string{"audit.app.update"})
+
+						appEnv := cf.Cf("env", appName).Wait(DEFAULT_TIMEOUT)
+						Expect(appEnv).To(Exit(0), "failed get env for app")
+						Expect(appEnv).ToNot(Say(fmt.Sprintf("credentials")))
+					})
 				})
 			})
+
 		})
 	})
 
