@@ -2,6 +2,10 @@ require 'spec_helper'
 require 'json'
 
 describe ServiceBroker do
+  before do
+    post '/config/reset'
+  end
+
   describe 'GET /v2/catalog' do
     it 'returns a non-empty catalog' do
       get '/v2/catalog'
@@ -81,9 +85,18 @@ describe ServiceBroker do
   end
 
   describe 'PATCH /v2/service_instance/:id' do
-    before do
-      put '/v2/service_instances/fake-guid?accepts_incomplete=true', {plan_id: 'fake-async-plan-guid'}.to_json
-      expect(last_response.status).to eq(202)
+    context 'when updating to an async plan' do
+      it 'returns a 202' do
+        patch '/v2/service_instances/fake-guid?accepts_incomplete=true', {plan_id: 'fake-async-plan-guid'}.to_json
+        expect(last_response.status).to eq(202)
+      end
+    end
+
+    context 'when updating to a sync plan' do
+      it 'returns a 200' do
+        patch '/v2/service_instances/fake-guid?accepts_incomplete=true', {plan_id: 'fake-plan-guid'}.to_json
+        expect(last_response.status).to eq(200)
+      end
     end
 
     context 'when the plan is configured as async_only' do
@@ -113,21 +126,21 @@ describe ServiceBroker do
 
       context 'request is for an async plan' do
         it 'returns as usual if it does include accepts_incomplete' do
-          patch '/v2/service_instances/fake-guid?accepts_incomplete=true', {}.to_json
+          patch '/v2/service_instances/fake-guid?accepts_incomplete=true', {plan_id: 'fake-async-plan-guid'}.to_json
 
           expect(last_response.status).to eq(202)
         end
 
         it 'rejects request if it does not include accepts_incomplete' do
-          patch '/v2/service_instances/fake-guid', {}.to_json
+          patch '/v2/service_instances/fake-guid', {plan_id: 'fake-async-plan-guid'}.to_json
 
           expect(last_response.status).to eq(422)
           expect(last_response.body).to eq(
-                                            {
-                                                'error' => 'AsyncRequired',
-                                                'description' => 'This service plan requires client support for asynchronous service operations.'
-                                            }.to_json
-                                        )
+              {
+                  'error' => 'AsyncRequired',
+                  'description' => 'This service plan requires client support for asynchronous service operations.'
+              }.to_json
+          )
         end
       end
 

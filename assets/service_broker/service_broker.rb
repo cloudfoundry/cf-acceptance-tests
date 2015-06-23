@@ -236,7 +236,7 @@ class ServiceBroker < Sinatra::Base
   patch '/v2/service_instances/:id/?' do |id|
     json_body = JSON.parse(request.body.read)
     service_instance = $datasource.service_instance_by_id(id)
-    plan_id = service_instance.plan_id if service_instance
+    plan_id = json_body['plan_id']
 
     behavior = $datasource.behavior_for_type(:update, plan_id)
     if [200, 202].include?(behavior['status'])
