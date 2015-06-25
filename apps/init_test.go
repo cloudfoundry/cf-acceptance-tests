@@ -14,6 +14,7 @@ var (
 	DEFAULT_TIMEOUT   = 30 * time.Second
 	CF_PUSH_TIMEOUT   = 2 * time.Minute
 	LONG_CURL_TIMEOUT = 2 * time.Minute
+	CF_JAVA_TIMEOUT   = 5 * time.Minute
 )
 
 var context helpers.SuiteContext
