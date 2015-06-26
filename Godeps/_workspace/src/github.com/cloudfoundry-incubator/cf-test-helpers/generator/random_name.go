@@ -10,5 +10,5 @@ func RandomName() string {
 		panic(err)
 	}
 
-	return guid.String()
+	return "CATS-APP-" + guid.String()
 }
