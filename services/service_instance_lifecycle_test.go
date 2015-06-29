@@ -103,7 +103,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 		Context("when there is an app", func() {
 			var instanceName, appName string
 			BeforeEach(func() {
-				appName = generator.RandomName()
+				appName = generator.PrefixedRandomName("CATS-APP-")
 				createApp := cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)
 				Expect(createApp).To(Exit(0), "failed creating app")
 
@@ -210,7 +210,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 			Context("when there is an app", func() {
 				var appName string
 				BeforeEach(func() {
-					appName = generator.RandomName()
+					appName = generator.PrefixedRandomName("CATS-APP-")
 					createApp := cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)
 					Expect(createApp).To(Exit(0), "failed creating app")
 				})

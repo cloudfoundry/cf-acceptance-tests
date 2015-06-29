@@ -47,7 +47,7 @@ var _ = Describe("Security Groups", func() {
 	var privatePort int
 
 	BeforeEach(func() {
-		serverAppName = generator.RandomName()
+		serverAppName = generator.PrefixedRandomName("CATS-APP-")
 		Expect(cf.Cf("push", serverAppName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 		// gather app url
@@ -73,7 +73,7 @@ var _ = Describe("Security Groups", func() {
 	// the test takes advantage of the fact that the DEA ip address and internal container ip address
 	//  are discoverable via the cc api and dora's myip endpoint
 	It("allows previously-blocked ip traffic after applying a security group, and re-blocks it when the group is removed", func() {
-		clientAppName := generator.RandomName()
+		clientAppName := generator.PrefixedRandomName("CATS-APP-")
 		Expect(cf.Cf("push", clientAppName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		defer func() { cf.Cf("delete", clientAppName, "-f").Wait(CF_PUSH_TIMEOUT) }()
 
@@ -135,7 +135,7 @@ var _ = Describe("Security Groups", func() {
 
 	It("allows external and denies internal traffic during staging based on default staging security rules", func() {
 		buildpack := fmt.Sprintf("CATS-SGBP-%s", generator.RandomName())
-		testAppName := generator.RandomName()
+		testAppName := generator.PrefixedRandomName("CATS-APP-")
 		privateUri := fmt.Sprintf("%s:%d", privateHost, privatePort)
 
 		buildpackZip := assets.NewAssets().SecurityGroupBuildpack

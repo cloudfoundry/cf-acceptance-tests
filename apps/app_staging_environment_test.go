@@ -35,7 +35,7 @@ var _ = Describe("Buildpack Environment", func() {
 	BeforeEach(func() {
 		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			BuildpackName = RandomName()
-			appName = RandomName()
+			appName = PrefixedRandomName("CATS-APP-")
 
 			var err error
 			tmpdir, err = ioutil.TempDir("", "buildpack_env")

@@ -194,7 +194,7 @@ EOF
 	)
 
 	BeforeEach(func() {
-		appName = generator.RandomName()
+		appName = generator.PrefixedRandomName("CATS-APP-")
 
 		buildpackName = generator.RandomName()
 		buildpackZip := createBuildpack()

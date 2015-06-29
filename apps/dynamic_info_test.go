@@ -16,7 +16,7 @@ var _ = Describe("A running application", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = generator.RandomName()
+		appName = generator.PrefixedRandomName("CATS-APP-")
 
 		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})

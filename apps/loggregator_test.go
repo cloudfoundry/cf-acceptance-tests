@@ -30,7 +30,7 @@ var _ = Describe("loggregator", func() {
 	const hundredthOfOneSecond = 10000 // this app uses millionth of seconds
 
 	BeforeEach(func() {
-		appName = generator.RandomName()
+		appName = generator.PrefixedRandomName("CATS-APP-")
 
 		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().LoggregatorLoadGenerator).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})

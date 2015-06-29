@@ -48,7 +48,7 @@ var _ = Describe("Application Lifecycle", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = generator.RandomName()
+		appName = generator.PrefixedRandomName("CATS-APP-")
 
 		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
@@ -69,7 +69,7 @@ var _ = Describe("Application Lifecycle", func() {
 			var path = "/imposter_dora"
 
 			BeforeEach(func() {
-				app2 = generator.RandomName()
+				app2 = generator.PrefixedRandomName("CATS-APP-")
 				Expect(cf.Cf("push", app2, "-p", assets.NewAssets().HelloWorld).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 			})
 

@@ -15,7 +15,7 @@ var _ = Describe("Changing an app's start command", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = generator.RandomName()
+		appName = generator.PrefixedRandomName("CATS-APP-")
 
 		Expect(cf.Cf(
 			"push", appName,

@@ -23,7 +23,7 @@ var _ = Describe("Downloading droplets", func() {
 	var out bytes.Buffer
 
 	BeforeEach(func() {
-		helloWorldAppName = generator.RandomName()
+		helloWorldAppName = generator.PrefixedRandomName("CATS-APP-")
 
 		Expect(cf.Cf("push", helloWorldAppName, "-p", assets.NewAssets().HelloWorld).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})

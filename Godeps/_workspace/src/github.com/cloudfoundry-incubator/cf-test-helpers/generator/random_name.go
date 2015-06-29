@@ -10,5 +10,9 @@ func RandomName() string {
 		panic(err)
 	}
 
-	return "CATS-APP-" + guid.String()
+	return guid.String()
+}
+
+func PrefixedRandomName(namePrefix string) string {
+	return namePrefix + RandomName()
 }

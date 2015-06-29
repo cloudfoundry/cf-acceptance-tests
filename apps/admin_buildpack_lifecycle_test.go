@@ -33,7 +33,7 @@ var _ = Describe("Admin Buildpacks", func() {
 	BeforeEach(func() {
 		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			BuildpackName = RandomName()
-			appName = RandomName()
+			appName = PrefixedRandomName("CATS-APP-")
 
 			tmpdir, err := ioutil.TempDir(os.TempDir(), "matching-app")
 			Expect(err).ToNot(HaveOccurred())

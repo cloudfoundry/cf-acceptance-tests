@@ -36,10 +36,10 @@ var _ = Describe("Wildcard Routes", func() {
 			Expect(cf.Cf("create-shared-domain", domainName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		})
 
-		appNameDora = generator.RandomName()
+		appNameDora = generator.PrefixedRandomName("CATS-APP-")
 		Expect(cf.Cf("push", appNameDora, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
-		appNameSimple = generator.RandomName()
+		appNameSimple = generator.PrefixedRandomName("CATS-APP-")
 		Expect(cf.Cf("push", appNameSimple, "-p", assets.NewAssets().HelloWorld).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 

@@ -28,7 +28,7 @@ var _ = Describe("Process Types", func() {
 		var appName string
 
 		BeforeEach(func() {
-			appName = generator.RandomName()
+			appName = generator.PrefixedRandomName("CATS-APP-")
 		})
 
 		Describe("without a procfile", func() {

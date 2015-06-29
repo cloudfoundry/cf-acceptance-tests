@@ -33,7 +33,7 @@ var _ = Describe("Purging service offerings", func() {
 		var appName, instanceName string
 
 		BeforeEach(func() {
-			appName = generator.RandomName()
+			appName = generator.PrefixedRandomName("CATS-APP-")
 			instanceName = generator.RandomName()
 
 			createApp := cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)

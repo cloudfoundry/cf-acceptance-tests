@@ -56,7 +56,7 @@ exit 1
 	var buildpackName string
 
 	BeforeEach(func() {
-		appName = generator.RandomName()
+		appName = generator.PrefixedRandomName("CATS-APP-")
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			session := cf.Cf("curl", "/v2/config/environment_variable_groups/running").Wait(DEFAULT_TIMEOUT)
 			Expect(session).To(Exit(0))

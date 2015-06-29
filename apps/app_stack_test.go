@@ -36,7 +36,7 @@ var _ = Describe("Specifying a specific Stack", func() {
 	BeforeEach(func() {
 		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			BuildpackName = RandomName()
-			appName = RandomName()
+			appName = PrefixedRandomName("CATS-APP-")
 
 			var err error
 			tmpdir, err = ioutil.TempDir("", "stack")

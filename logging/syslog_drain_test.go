@@ -35,7 +35,7 @@ var _ = Describe("Logging", func() {
 
 			testThatDrainIsReachable(syslogDrainAddress, drainListener)
 
-			appName = generator.RandomName()
+			appName = generator.PrefixedRandomName("CATS-APP-")
 			appURL = appName + "." + testConfig.AppsDomain
 
 			Eventually(cf.Cf("push", appName, "-p", assets.NewAssets().RubySimple), CF_PUSH_TIMEOUT).Should(Exit(0), "Failed to push app")
