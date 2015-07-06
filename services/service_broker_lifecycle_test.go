@@ -189,6 +189,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 			broker := NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
 			cf.TargetSpace(context.RegularUserContext(), context.ShortTimeout())
 			broker.Push()
+			broker.Configure()
 
 			cf.AsUser(context.RegularUserContext(), context.ShortTimeout(), func() {
 				spaceCmd := cf.Cf("space", context.RegularUserContext().Space, "--guid").Wait(DEFAULT_TIMEOUT)
