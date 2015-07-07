@@ -18,8 +18,9 @@ import (
 )
 
 var _ = Describe("Service Broker Lifecycle", func() {
+	var broker ServiceBroker
+
 	Describe("public brokers", func() {
-		var broker ServiceBroker
 		var acls *Session
 		var output []byte
 		var oldServiceName string
@@ -185,12 +186,18 @@ var _ = Describe("Service Broker Lifecycle", func() {
 	})
 
 	Describe("private brokers", func() {
-		It("can be created by SpaceDevelopers", func() {
-			broker := NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
+		BeforeEach(func() {
+			broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
 			cf.TargetSpace(context.RegularUserContext(), context.ShortTimeout())
 			broker.Push()
 			broker.Configure()
+		})
 
+		AfterEach(func() {
+			broker.Delete()
+		})
+
+		It("can be created and viewed (in list) by SpaceDevelopers", func() {
 			cf.AsUser(context.RegularUserContext(), context.ShortTimeout(), func() {
 				spaceCmd := cf.Cf("space", context.RegularUserContext().Space, "--guid").Wait(DEFAULT_TIMEOUT)
 				spaceGuid := string(spaceCmd.Out.Contents())
@@ -206,14 +213,10 @@ var _ = Describe("Service Broker Lifecycle", func() {
 
 				createBrokerCommand := cf.Cf("curl", "/v2/service_brokers", "-X", "POST", "-d", string(jsonBody)).Wait(DEFAULT_TIMEOUT)
 				Expect(createBrokerCommand).To(Exit(0))
-			})
 
-			cf.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
 				serviceBrokersCommand := cf.Cf("service-brokers").Wait(DEFAULT_TIMEOUT)
 				Expect(serviceBrokersCommand).To(Exit(0))
 				Expect(serviceBrokersCommand.Out.Contents()).To(ContainSubstring(broker.Name))
-
-				broker.Delete()
 			})
 		})
 	})
