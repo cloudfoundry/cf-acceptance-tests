@@ -332,7 +332,7 @@ EOF
 		}, CF_PUSH_TIMEOUT).Should(Say("STAGED"))
 
 		appUpdatePath := fmt.Sprintf("/v3/apps/%s/current_droplet", appGuid)
-		appUpdateBody := fmt.Sprintf(`{"desired_droplet_guid":"%s"}`, dropletGuid)
+		appUpdateBody := fmt.Sprintf(`{"droplet_guid":"%s"}`, dropletGuid)
 		Expect(cf.Cf("curl", appUpdatePath, "-X", "PUT", "-d", appUpdateBody).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
 		var webProcess Process
