@@ -30,5 +30,5 @@ func TestApplications(t *testing.T) {
 
 var _ = BeforeSuite(func() {
 	Expect(config.SystemDomain).ToNot(Equal(""), "Must provide a system domain for the routing api suite")
-	Expect(config.OauthPassword).ToNot(Equal(""), "Must provide an oauth password for the routing api suite")
+	Expect(config.ClientSecret).ToNot(Equal(""), "Must provide a client secret for the routing api suite")
 })

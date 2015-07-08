@@ -24,7 +24,7 @@ var _ = Describe("Registration", func() {
 
 	BeforeEach(func() {
 		systemDomain = config.SystemDomain
-		oauthPassword = config.OauthPassword
+		oauthPassword = config.ClientSecret
 		oauthUrl = "http://uaa." + systemDomain
 		routingApiEndpoint = "http://routing-api." + systemDomain
 
@@ -34,22 +34,22 @@ var _ = Describe("Registration", func() {
 
 	Describe("the routing API is enabled", func() {
 		It("can register, list and unregister routes", func() {
-			args := []string{"register", routeJSON, "--api", routingApiEndpoint, "--oauth-name", "gorouter", "--oauth-password", oauthPassword, "--oauth-url", oauthUrl}
+			args := []string{"register", routeJSON, "--api", routingApiEndpoint, "--client-id", "gorouter", "--client-secret", oauthPassword, "--oauth-url", oauthUrl}
 			session := Rtr(args...)
 
 			Eventually(session.Out).Should(Say("Successfully registered routes"))
 
-			args = []string{"list", "--api", routingApiEndpoint, "--oauth-name", "gorouter", "--oauth-password", oauthPassword, "--oauth-url", oauthUrl}
+			args = []string{"list", "--api", routingApiEndpoint, "--client-id", "gorouter", "--client-secret", oauthPassword, "--oauth-url", oauthUrl}
 			session = Rtr(args...)
 
 			Eventually(session.Out).Should(Say(route))
 
-			args = []string{"unregister", routeJSON, "--api", routingApiEndpoint, "--oauth-name", "gorouter", "--oauth-password", oauthPassword, "--oauth-url", oauthUrl}
+			args = []string{"unregister", routeJSON, "--api", routingApiEndpoint, "--client-id", "gorouter", "--client-secret", oauthPassword, "--oauth-url", oauthUrl}
 			session = Rtr(args...)
 
 			Eventually(session.Out).Should(Say("Successfully unregistered routes"))
 
-			args = []string{"list", "--api", routingApiEndpoint, "--oauth-name", "gorouter", "--oauth-password", oauthPassword, "--oauth-url", oauthUrl}
+			args = []string{"list", "--api", routingApiEndpoint, "--client-id", "gorouter", "--client-secret", oauthPassword, "--oauth-url", oauthUrl}
 			session = Rtr(args...)
 
 			Eventually(session.Out).ShouldNot(Say(route))

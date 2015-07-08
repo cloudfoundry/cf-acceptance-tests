@@ -8,10 +8,10 @@ import (
 )
 
 type Config struct {
-	ApiEndpoint   string `json:"api"`
-	SystemDomain  string `json:"system_domain"`
-	OauthPassword string `json:"oauth_password"`
-	AppsDomain    string `json:"apps_domain"`
+	ApiEndpoint  string `json:"api"`
+	SystemDomain string `json:"system_domain"`
+	ClientSecret string `json:"client_secret"`
+	AppsDomain   string `json:"apps_domain"`
 
 	AdminUser     string `json:"admin_user"`
 	AdminPassword string `json:"admin_password"`

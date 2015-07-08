@@ -7,19 +7,19 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/cf",
-			"Rev": "6eb40501259e9b6bb784328189202b5e32c4b9c3"
+			"Rev": "b05e7028ae395fedb07ace068eb934a9b7ba07ed"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/generator",
-			"Rev": "6eb40501259e9b6bb784328189202b5e32c4b9c3"
+			"Rev": "b05e7028ae395fedb07ace068eb934a9b7ba07ed"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/helpers",
-			"Rev": "6eb40501259e9b6bb784328189202b5e32c4b9c3"
+			"Rev": "b05e7028ae395fedb07ace068eb934a9b7ba07ed"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/runner",
-			"Rev": "6eb40501259e9b6bb784328189202b5e32c4b9c3"
+			"Rev": "b05e7028ae395fedb07ace068eb934a9b7ba07ed"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/noaa",
