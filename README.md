@@ -135,6 +135,20 @@ For example, to execute tests in parallel across four processes one would run:
 
 Be careful with this number, as it's effectively "how many apps to push at once", as nearly every example pushes an app.
 
+
+
+#### Running tests for a specific package
+
+To execute the acceptance tests for a specific package, run the following script providing the package name.
+
+For example: routing
+
+```bash
+bin/test_via_ginko routing
+```
+
+
+
 #### Seeing command-line output
 
 To see verbose output from `cf`, use [ginkgo](https://github.com/onsi/ginkgo)'s `-v` flag.

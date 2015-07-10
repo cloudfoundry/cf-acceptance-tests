@@ -1,4 +1,4 @@
-package routing_api
+package routing
 
 import (
 	"os/exec"

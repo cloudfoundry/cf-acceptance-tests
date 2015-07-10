@@ -1,22 +1,21 @@
-package routing_api
+package routing
 
 import (
-	"testing"
-
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"testing"
 )
 
 var config helpers.Config
 
-func TestApplications(t *testing.T) {
+func TestRouting(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	config = helpers.LoadConfig()
 
-	componentName := "routing_api"
+	componentName := "Routing Suite"
 
 	rs := []Reporter{}
 
@@ -29,6 +28,6 @@ func TestApplications(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
-	Expect(config.SystemDomain).ToNot(Equal(""), "Must provide a system domain for the routing api suite")
+	Expect(config.SystemDomain).ToNot(Equal(""), "Must provide a system domain for the routing suite")
 	Expect(config.ClientSecret).ToNot(Equal(""), "Must provide a client secret for the routing api suite")
 })

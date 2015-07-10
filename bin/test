@@ -1,3 +1,3 @@
 #!/bin/bash
 
-$(dirname $0)/test_via_ginkgo -slowSpecThreshold=120 -skipPackage='helpers,operator,logging,v3,services,routing_api' $@
+$(dirname $0)/test_via_ginkgo -slowSpecThreshold=120 -skipPackage='helpers,operator,logging,v3,services,routing' $@
