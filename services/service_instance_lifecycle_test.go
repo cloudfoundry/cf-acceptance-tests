@@ -53,7 +53,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 
 	Context("Synchronous operations", func() {
 		BeforeEach(func() {
-			broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
+			broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context, true)
 			broker.Push()
 			broker.Configure()
 			broker.Create()
@@ -152,7 +152,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 
 	Context("Asynchronous operations", func() {
 		BeforeEach(func() {
-			broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
+			broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context, true)
 			broker.Push()
 			broker.Configure()
 			broker.Create()

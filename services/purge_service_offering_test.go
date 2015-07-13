@@ -16,7 +16,7 @@ var _ = Describe("Purging service offerings", func() {
 	var broker ServiceBroker
 
 	BeforeEach(func() {
-		broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
+		broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context, true)
 		broker.Push()
 		broker.Configure()
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
