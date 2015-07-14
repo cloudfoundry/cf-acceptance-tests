@@ -1,9 +1,11 @@
 package v3
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 	"time"
@@ -396,5 +398,21 @@ EOF
 		Eventually(func() string {
 			return helpers.CurlAppRoot(webProcess.Name)
 		}, DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
+	})
+
+	It("can download package bits", func() {
+		var out bytes.Buffer
+
+		tmpdir, err := ioutil.TempDir(os.TempDir(), "package-download")
+		app_package_path := path.Join(tmpdir, appName)
+
+		cf.Cf("curl", fmt.Sprintf("/v3/packages/%s/download", packageGuid), "--output", app_package_path).Wait(DEFAULT_TIMEOUT)
+
+		cmd := exec.Command("tar", "-ztf", app_package_path)
+		cmd.Stdout = &out
+		err = cmd.Run()
+		Expect(err).ToNot(HaveOccurred())
+
+		Expect(out.String()).To(ContainSubstring("dora.rb"))
 	})
 })
