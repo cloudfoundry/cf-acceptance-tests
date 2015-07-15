@@ -272,6 +272,97 @@ EOF
 		})
 	})
 
+	Context("terminating an instance", func() {
+		type ProcessStats struct {
+			Instance struct {
+				State string `json:"state"`
+			} `json:"0"`
+		}
+
+		index := 0
+		processType := "web"
+		var webProcess Process
+
+		BeforeEach(func() {
+			dropletGuid := stagePackage(packageGuid, "{}")
+			dropletPath := fmt.Sprintf("/v3/droplets/%s", dropletGuid)
+			Eventually(func() *Session {
+				return cf.Cf("curl", dropletPath).Wait(DEFAULT_TIMEOUT)
+			}, CF_PUSH_TIMEOUT).Should(Say("STAGED"))
+
+			appUpdatePath := fmt.Sprintf("/v3/apps/%s/current_droplet", appGuid)
+			appUpdateBody := fmt.Sprintf(`{"droplet_guid":"%s"}`, dropletGuid)
+			Expect(cf.Cf("curl", appUpdatePath, "-X", "PUT", "-d", appUpdateBody).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
+			processes := getProcess(appGuid, appName)
+			for _, process := range processes {
+				if process.Type == "web" {
+					webProcess = process
+				}
+			}
+
+			Expect(cf.Cf("create-route", context.RegularUserContext().Space, helpers.LoadConfig().AppsDomain, "-n", webProcess.Name).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			getRoutePath := fmt.Sprintf("/v2/routes?q=host:%s", webProcess.Name)
+			routeBody := cf.Cf("curl", getRoutePath).Wait(DEFAULT_TIMEOUT).Out.Contents()
+			routeJSON := struct {
+				Resources []struct {
+					Metadata struct {
+						Guid string `json:"guid"`
+					} `json:"metadata"`
+				} `json:"resources"`
+			}{}
+			json.Unmarshal(routeBody, &routeJSON)
+			routeGuid := routeJSON.Resources[0].Metadata.Guid
+			addRoutePath := fmt.Sprintf("/v3/apps/%s/routes", appGuid)
+			addRouteBody := fmt.Sprintf(`{"route_guid":"%s"}`, routeGuid)
+			Expect(cf.Cf("curl", addRoutePath, "-X", "PUT", "-d", addRouteBody).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
+			startApp(appGuid)
+
+			Eventually(func() string {
+				return helpers.CurlAppRoot(webProcess.Name)
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
+
+			Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", webProcess.Name)))
+		})
+
+		It("/v3/apps/:guid/processes/:guid/instances/:index", func() {
+			statsUrl := fmt.Sprintf("/v2/apps/%s/stats", webProcess.Guid)
+			statsBody := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
+			statsJSON := ProcessStats{}
+			json.Unmarshal(statsBody, &statsJSON)
+
+			Expect(statsJSON.Instance.State).To(Equal("RUNNING"))
+
+			terminateUrl := fmt.Sprintf("/v3/apps/%s/processes/%s/instances/%d", appGuid, processType, index)
+			cf.Cf("curl", terminateUrl, "-X", "DELETE").Wait(DEFAULT_TIMEOUT)
+
+			Eventually(func() string {
+				statsBodyAfter := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
+				json.Unmarshal(statsBodyAfter, &statsJSON)
+				return statsJSON.Instance.State
+			}).Should(Equal("DOWN"))
+		})
+
+		It("/v3/processes/:guid/instances/:index", func() {
+			statsUrl := fmt.Sprintf("/v2/apps/%s/stats", webProcess.Guid)
+			statsBody := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
+			statsJSON := ProcessStats{}
+			json.Unmarshal(statsBody, &statsJSON)
+
+			Expect(statsJSON.Instance.State).To(Equal("RUNNING"))
+
+			terminateUrl := fmt.Sprintf("/v3/processes/%s/instances/%d", webProcess.Guid, index)
+			cf.Cf("curl", terminateUrl, "-X", "DELETE").Wait(DEFAULT_TIMEOUT)
+
+			Eventually(func() string {
+				statsBodyAfter := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
+				json.Unmarshal(statsBodyAfter, &statsJSON)
+				return statsJSON.Instance.State
+			}).Should(Equal("DOWN"))
+		})
+	})
+
 	XIt("Stages with a user specified admin buildpack", func() {
 		dropletGuid := stagePackage(packageGuid, fmt.Sprintf(`{"buildpack":"%s"}`, buildpackName))
 
