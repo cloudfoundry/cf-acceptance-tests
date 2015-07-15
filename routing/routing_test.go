@@ -39,9 +39,7 @@ var _ = Describe("Routing", func() {
 			app2     string
 			app2Path = "/app2"
 			app3     string
-			app3Path = "/app3"
-			app4     string
-			app4Path = "/app4/long/sub/path"
+			app3Path = "/app3/long/sub/path"
 			domain   string
 		)
 
@@ -49,19 +47,15 @@ var _ = Describe("Routing", func() {
 			domain = app1
 			app2 = pushApp(helloRoutingAsset)
 			app3 = pushApp(helloRoutingAsset)
-			app4 = pushApp(helloRoutingAsset)
 
 			mapRouteToApp(domain, app2Path, app2)
 			mapRouteToApp(domain, app3Path, app3)
-			mapRouteToApp(domain, app4Path, app4)
-
 		})
 
 		AfterEach(func() {
 			deleteApp(app1)
 			deleteApp(app2)
 			deleteApp(app3)
-			deleteApp(app4)
 		})
 
 		Context("when another app has a route with a context path", func() {
@@ -77,18 +71,8 @@ var _ = Describe("Routing", func() {
 				Eventually(func() string {
 					return helpers.CurlApp(domain, app3Path)
 				}, DEFAULT_TIMEOUT).Should(ContainSubstring(app3))
-
-				Eventually(func() string {
-					return helpers.CurlApp(domain, app4Path)
-				}, DEFAULT_TIMEOUT).Should(ContainSubstring(app4))
 			})
 		})
-
-		// Context("when an app sets the JSESSION cookie", func() {
-		// 	It("returns a VCAP_ID cookie with the path set to the context path of a route", func() {
-
-		// 	})
-		// })
 	})
 })
 
