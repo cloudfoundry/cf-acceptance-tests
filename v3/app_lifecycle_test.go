@@ -404,11 +404,14 @@ EOF
 		var out bytes.Buffer
 
 		tmpdir, err := ioutil.TempDir(os.TempDir(), "package-download")
+		Expect(err).ToNot(HaveOccurred())
+
 		app_package_path := path.Join(tmpdir, appName)
 
-		cf.Cf("curl", fmt.Sprintf("/v3/packages/%s/download", packageGuid), "--output", app_package_path).Wait(DEFAULT_TIMEOUT * 2)
+		session := cf.Cf("curl", fmt.Sprintf("/v3/packages/%s/download", packageGuid), "--output", app_package_path).Wait(DEFAULT_TIMEOUT)
+		Expect(session).To(Exit(0))
 
-		cmd := exec.Command("tar", "-ztf", app_package_path)
+		cmd := exec.Command("unzip", app_package_path)
 		cmd.Stdout = &out
 		err = cmd.Run()
 		Expect(err).ToNot(HaveOccurred())
