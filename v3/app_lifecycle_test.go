@@ -406,7 +406,7 @@ EOF
 		tmpdir, err := ioutil.TempDir(os.TempDir(), "package-download")
 		app_package_path := path.Join(tmpdir, appName)
 
-		cf.Cf("curl", fmt.Sprintf("/v3/packages/%s/download", packageGuid), "--output", app_package_path).Wait(DEFAULT_TIMEOUT)
+		cf.Cf("curl", fmt.Sprintf("/v3/packages/%s/download", packageGuid), "--output", app_package_path).Wait(DEFAULT_TIMEOUT * 2)
 
 		cmd := exec.Command("tar", "-ztf", app_package_path)
 		cmd.Stdout = &out
