@@ -32,7 +32,7 @@ var _ = Describe("Downloading droplets", func() {
 		Expect(cf.Cf("delete", helloWorldAppName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 
-	It("Downloads the droplet for the app", func() {
+	XIt("Downloads the droplet for the app", func() {
 		guid := cf.Cf("app", helloWorldAppName, "--guid").Wait(DEFAULT_TIMEOUT).Out.Contents()
 		appGuid := strings.TrimSpace(string(guid))
 
