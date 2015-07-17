@@ -70,3 +70,14 @@ func UploadPackage(uploadUrl, packageZipPath, token string) {
 	_, err := exec.Command("curl", "-v", "-s", uploadUrl, "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).CombinedOutput()
 	Expect(err).NotTo(HaveOccurred())
 }
+
+func StagePackage(packageGuid, stageBody string) string {
+	stageUrl := fmt.Sprintf("/v3/packages/%s/droplets", packageGuid)
+	session := cf.Cf("curl", stageUrl, "-X", "POST", "-d", stageBody)
+	bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
+	var droplet struct {
+		Guid string `json:"guid"`
+	}
+	json.Unmarshal(bytes, &droplet)
+	return droplet.Guid
+}
