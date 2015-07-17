@@ -7,13 +7,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-)
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 
-var (
-	DEFAULT_TIMEOUT   = 30 * time.Second
-	CF_PUSH_TIMEOUT   = 2 * time.Minute
-	LONG_CURL_TIMEOUT = 2 * time.Minute
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 )
 
 var context helpers.SuiteContext
