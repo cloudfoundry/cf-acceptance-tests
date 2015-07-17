@@ -400,7 +400,7 @@ EOF
 		}, DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
 	})
 
-	It("can download package bits", func() {
+	XIt("can download package bits", func() {
 		var out bytes.Buffer
 
 		tmpdir, err := ioutil.TempDir(os.TempDir(), "package-download")
