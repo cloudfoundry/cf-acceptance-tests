@@ -43,6 +43,13 @@ func WaitForPackageToBeReady(packageGuid string) {
 	}, LONG_CURL_TIMEOUT).Should(Say("READY"))
 }
 
+func WaitForDropletToStage(dropletGuid string) {
+	dropletPath := fmt.Sprintf("/v3/droplets/%s", dropletGuid)
+	Eventually(func() *Session {
+		return cf.Cf("curl", dropletPath).Wait(DEFAULT_TIMEOUT)
+	}, CF_PUSH_TIMEOUT).Should(Say("STAGED"))
+}
+
 func CreatePackage(appGuid string) string {
 	packageCreateUrl := fmt.Sprintf("/v3/apps/%s/packages", appGuid)
 	session := cf.Cf("curl", packageCreateUrl, "-X", "POST", "-d", fmt.Sprintf(`{"type":"bits"}`))
@@ -80,4 +87,28 @@ func StagePackage(packageGuid, stageBody string) string {
 	}
 	json.Unmarshal(bytes, &droplet)
 	return droplet.Guid
+}
+
+func CreateAndMapRoute(appGuid, space, domain, host string) {
+	Expect(cf.Cf("create-route", space, domain, "-n", host).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	getRoutePath := fmt.Sprintf("/v2/routes?q=host:%s", host)
+	routeBody := cf.Cf("curl", getRoutePath).Wait(DEFAULT_TIMEOUT).Out.Contents()
+	routeJSON := struct {
+		Resources []struct {
+			Metadata struct {
+				Guid string `json:"guid"`
+			} `json:"metadata"`
+		} `json:"resources"`
+	}{}
+	json.Unmarshal([]byte(routeBody), &routeJSON)
+	routeGuid := routeJSON.Resources[0].Metadata.Guid
+	addRoutePath := fmt.Sprintf("/v3/apps/%s/routes", appGuid)
+	addRouteBody := fmt.Sprintf(`{"route_guid":"%s"}`, routeGuid)
+	Expect(cf.Cf("curl", addRoutePath, "-X", "PUT", "-d", addRouteBody).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+}
+
+func AssignDropletToApp(appGuid, dropletGuid string) {
+	appUpdatePath := fmt.Sprintf("/v3/apps/%s/current_droplet", appGuid)
+	appUpdateBody := fmt.Sprintf(`{"droplet_guid":"%s"}`, dropletGuid)
+	Expect(cf.Cf("curl", appUpdatePath, "-X", "PUT", "-d", appUpdateBody).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 }
