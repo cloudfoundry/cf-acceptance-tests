@@ -10,7 +10,7 @@ app = lambda do |env|
   [ 200,
     { "Content-Type" => "text/plain",
       "Content-Length" => body.length.to_s,
-      "JESSIONID" => "12345"
+      "Set-Cookie" => "JSESSIONID=12345",
     },
     [body]
   ]
