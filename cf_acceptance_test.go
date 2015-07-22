@@ -1,8 +1,6 @@
 package cf_acceptance_tests_test
 
 import (
-	"time"
-
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/cli_version_check"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/cli_version_check/cli_version"
 
@@ -15,10 +13,9 @@ const minCliVersion = "6.11.3"
 var _ = Describe("CATs", func() {
 
 	It("fails if minimum cli version is not met", func() {
-		var cliUtils CliVersionCheck
-		time.Sleep(1 * time.Second)
-		cliUtils = NewCliVersionCheck(NewCliVersion())
+		installedVersion := NewInstalledCliVersion().GetVersion()
+		cliUtils := NewCliVersionCheck(installedVersion)
 
-		Expect(cliUtils.AtLeast(minCliVersion)).To(BeTrue(), "CLI version "+minCliVersion+" is required")
+		Expect(cliUtils.AtLeast(NewCliVersionCheck(minCliVersion))).To(BeTrue(), "CLI version "+minCliVersion+" is required")
 	})
 })
