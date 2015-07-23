@@ -9,5 +9,5 @@ import (
 
 func TestCfAcceptanceTests(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "CfAcceptanceTests Suite")
+	RunSpecs(t, "cf CLI Compatibility Suite")
 }

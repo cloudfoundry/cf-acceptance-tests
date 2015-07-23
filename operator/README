@@ -1,3 +1,0 @@
-Tests in this package are only intended to be run in non-prod environments.
-
-They may not clean up after themselves and may affect global CF state.

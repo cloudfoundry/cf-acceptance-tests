@@ -1,3 +1,11 @@
 #!/bin/bash
 
-$(dirname $0)/test_via_ginkgo -slowSpecThreshold=120 -skipPackage='helpers,operator,logging,v3,services,routing' $@
+set -e -x
+
+cats_dir=$(cd $(dirname $0)/.. && pwd)
+godep_gopath=$cats_dir/Godeps/_workspace
+
+export GOPATH=$godep_gopath:$GOPATH
+export PATH=$godep_gopath/bin:$PATH
+
+ginkgo $@

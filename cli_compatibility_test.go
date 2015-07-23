@@ -12,9 +12,8 @@ import (
 
 const minCliVersion = "6.11.3"
 
-var _ = Describe("CATs", func() {
-
-	It("fails if minimum cli version is not met", func() {
+var _ = Describe("cf CLI version", func() {
+	It("meets the minimum required CLI version for the CATs", func() {
 		var cliUtils CliVersionCheck
 		time.Sleep(1 * time.Second)
 		cliUtils = NewCliVersionCheck(NewCliVersion())
