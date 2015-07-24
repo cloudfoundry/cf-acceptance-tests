@@ -11,9 +11,9 @@ such as basic CRUD of an object in the Cloud Controller. These tests belong with
 NOTE: Because we want to parallelize execution, tests should be written in such a way as to be runnable individually. This means that tests should not depend on state in other tests,
 and should not modify the CF state in such a way as to impact other tests.
 
-1. [Test Setup](#test-setup)
-	a. [Install Required Dependencies](#install-required-dependencies)
-	a. [Test Configuration](#test-configuration)
+1. [Test Setup](#test-setup)  
+    1. [Install Required Dependencies](#install-required-dependencies)  
+    1. [Test Configuration](#test-configuration)
 1. [Test Execution](#test-execution)
 1. [Explanation of Test Suites](#explanation-of-test-suites)
 1. [Contributing](#contributing)
@@ -69,6 +69,7 @@ cat > integration_config.json <<EOF
 }
 EOF
 export CONFIG=$PWD/integration_config.json
+```
 
 The full set of config parameters is explained below:
 
