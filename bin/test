@@ -14,4 +14,6 @@ popd
 export GOPATH=$godep_gopath:$project_gopath:$GOPATH
 export PATH=$godep_gopath/bin:$PATH
 
+go install -v github.com/onsi/ginkgo/ginkgo
+
 ginkgo $@
