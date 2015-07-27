@@ -42,12 +42,6 @@ The recommended way to do this is to run `go get -d github.com/cloudfoundry/cf-a
 
 All `go` dependencies required by CATs are vendored in `cf-acceptance-tests/Godeps`. The test script itself, [bin/test](https://github.com/cloudfoundry/cf-acceptance-tests/blob/master/bin/test), ensures that the vendored dependencies are available when executing the tests by prepending this directory to `$GOPATH`.
 
-Install [ginkgo](http://onsi.github.io/ginkgo/); this executable is used to actually run the tests.  It is best if you install the vendored version of `ginkgo`:
-
-```
-GOPATH=Godeps/_workspace go get github.com/onsi/ginkgo/ginkgo
-```
-
 You will also of course need a running Cloud Foundry deployment to run these acceptance tess against.
 
 ### Test Configuration
