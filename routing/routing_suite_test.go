@@ -1,11 +1,18 @@
 package routing
 
 import (
+	"time"
+
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
 	"testing"
+)
+
+var (
+	DEFAULT_TIMEOUT = 30 * time.Second
+	CF_PUSH_TIMEOUT = 2 * time.Minute
 )
 
 var config helpers.Config

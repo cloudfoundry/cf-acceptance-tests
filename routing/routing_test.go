@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
@@ -13,11 +12,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
-)
-
-var (
-	DEFAULT_TIMEOUT = 30 * time.Second
-	CF_PUSH_TIMEOUT = 2 * time.Minute
 )
 
 var _ = Describe("Routing", func() {
