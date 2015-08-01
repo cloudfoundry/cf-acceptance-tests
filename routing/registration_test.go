@@ -1,12 +1,9 @@
 package routing
 
 import (
-	"os/exec"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
-	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 )
@@ -56,10 +53,3 @@ var _ = Describe("Registration", func() {
 		})
 	})
 })
-
-func Rtr(args ...string) *Session {
-	session, err := Start(exec.Command("rtr", args...), GinkgoWriter, GinkgoWriter)
-	Expect(err).NotTo(HaveOccurred())
-
-	return session
-}
