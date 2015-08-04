@@ -41,9 +41,10 @@ var _ = Describe("Route Services", func() {
 			oauthUrl := "http://uaa." + systemDomain
 			routingApiEndpoint := "http://routing-api." + systemDomain
 
-			routeServiceRoute := "https://" + routeServiceName + "." + systemDomain
+			appsDomain := config.AppsDomain
+			routeServiceRoute := "https://" + routeServiceName + "." + appsDomain
 			appRoute = generator.RandomName()
-			route := appRoute + "." + systemDomain
+			route := appRoute + "." + appsDomain
 			routeJSON := `[{"route":"` + route + `","port":` + appPort + `,"ip":"` + appIp + `","ttl":60, "route_service_url":"` + routeServiceRoute + `"}]`
 
 			args := []string{"register", routeJSON, "--api", routingApiEndpoint, "--client-id", "gorouter", "--client-secret", oauthPassword, "--oauth-url", oauthUrl}
