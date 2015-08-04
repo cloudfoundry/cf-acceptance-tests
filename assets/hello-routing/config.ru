@@ -5,7 +5,7 @@ app = lambda do |env|
  
   vcapApp = JSON.parse(json)
 
-  body = "Hello, " + vcapApp['name'] + "!"
+  body = "Hello, " + vcapApp['name'] + " at index: " + ENV['CF_INSTANCE_INDEX'] + "!"
 
   [ 200,
     { "Content-Type" => "text/plain",
