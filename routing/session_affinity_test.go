@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
@@ -58,9 +59,9 @@ var _ = Describe("Session Affinity", func() {
 
 					index := parseInstanceIndex(body)
 
-					Eventually(func() string {
+					Consistently(func() string {
 						return curlAppWithCookies(appName, "/", cookieStorePath)
-					}, DEFAULT_TIMEOUT).Should(ContainSubstring(fmt.Sprintf("Hello, %s at index: %d", appName, index)))
+					}, 3*time.Second).Should(ContainSubstring(fmt.Sprintf("Hello, %s at index: %d", appName, index)))
 				})
 			})
 		})
@@ -97,13 +98,11 @@ var _ = Describe("Session Affinity", func() {
 
 					indexPre := parseInstanceIndex(body)
 
-					Eventually(func() string {
-						body = helpers.CurlAppRoot(appName)
-						return body
-					}, DEFAULT_TIMEOUT).Should(ContainSubstring(fmt.Sprintf("Hello, %s", appName)))
-
-					index := parseInstanceIndex(body)
-					Expect(index).ToNot(Equal(indexPre))
+					Eventually(func() int {
+						body := helpers.CurlAppRoot(appName)
+						index := parseInstanceIndex(body)
+						return index
+					}, DEFAULT_TIMEOUT).ShouldNot(Equal(indexPre))
 				})
 			})
 		})
