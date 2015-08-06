@@ -1,34 +1,75 @@
 package cli_version_check
 
 import (
+	"errors"
+	"os/exec"
 	"regexp"
-
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/cli_version_check/cli_version"
+	"strconv"
+	"strings"
 )
 
 type CliVersionCheck struct {
-	cliVersion cli_version.CliVersion
+	BuildFromSource bool
+	Revisions       []int
 }
 
-func NewCliVersionCheck(c cli_version.CliVersion) CliVersionCheck {
-	return CliVersionCheck{
-		cliVersion: c,
+func GetInstalledCliVersionString() (string, error) {
+	rawVersion, err := exec.Command("cf", "-v").Output()
+	if err != nil {
+		return "", errors.New("Error trying to determine CF CLI version:" + err.Error())
 	}
+
+	return string(rawVersion), nil
 }
 
-func (c CliVersionCheck) AtLeast(min_version string) bool {
-	return min_version <= c.GetCliVersion()
-}
-
-func (c CliVersionCheck) GetCliVersion() string {
-	output := c.cliVersion.GetVersion()
+func ParseRawCliVersionString(rawVersion string) CliVersionCheck {
+	if strings.Contains(rawVersion, "BUILT_FROM_SOURCE") {
+		return CliVersionCheck{Revisions: []int{}, BuildFromSource: true}
+	}
 
 	re := regexp.MustCompile(`[0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?`)
-	result := re.FindStringSubmatch(output)
+	result := re.FindStringSubmatch(rawVersion)
 
 	if len(result) == 0 {
-		return output
+		return CliVersionCheck{Revisions: []int{}}
 	}
 
-	return result[0]
+	return CliVersionCheck{Revisions: parseRevisions(result[0])}
+}
+
+func (c CliVersionCheck) AtLeast(min_version CliVersionCheck) bool {
+	if c.BuildFromSource {
+		return true
+	}
+
+	if len(c.Revisions) > 0 && len(min_version.Revisions) == 0 {
+		return true
+	} else if len(min_version.Revisions) > 0 && len(c.Revisions) == 0 {
+		for _, v := range min_version.Revisions {
+			if v != 0 {
+				return false
+			}
+		}
+		return true
+	}
+
+	if c.Revisions[0] < min_version.Revisions[0] {
+		return false
+	} else if (len(c.Revisions) > 1 || len(min_version.Revisions) > 1) && c.Revisions[0] == min_version.Revisions[0] {
+		return CliVersionCheck{false, c.Revisions[1:]}.AtLeast(CliVersionCheck{false, min_version.Revisions[1:]})
+	}
+
+	return true
+}
+
+func parseRevisions(extractedVersionStr string) []int {
+	var revisions []int
+	split := strings.Split(extractedVersionStr, ".")
+
+	for _, v := range split {
+		parsed, _ := strconv.Atoi(v)
+		revisions = append(revisions, parsed)
+	}
+
+	return revisions
 }
