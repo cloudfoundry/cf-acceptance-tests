@@ -17,12 +17,15 @@ var (
 	CF_JAVA_TIMEOUT   = 10 * time.Minute
 )
 
-var context helpers.SuiteContext
+var (
+	context helpers.SuiteContext
+	config  helpers.Config
+)
 
 func TestApplications(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	config := helpers.LoadConfig()
+	config = helpers.LoadConfig()
 
 	if config.DefaultTimeout > 0 {
 		DEFAULT_TIMEOUT = config.DefaultTimeout * time.Second

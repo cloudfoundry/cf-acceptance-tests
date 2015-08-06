@@ -118,11 +118,11 @@ func GetAppInfo(appName string) (host, port string) {
 func RegisterRoute(appRoute string, ip string, port string, routeServiceName string) {
 	systemDomain := config.SystemDomain
 	oauthPassword := config.ClientSecret
-	oauthUrl := "http://uaa." + systemDomain
-	routingApiEndpoint := "http://routing-api." + systemDomain
+	oauthUrl := config.Protocol() + "uaa." + systemDomain
+	routingApiEndpoint := config.Protocol() + "routing-api." + systemDomain
 
 	appsDomain := config.AppsDomain
-	routeServiceRoute := "https://" + routeServiceName + "." + appsDomain
+	routeServiceRoute := config.Protocol() + routeServiceName + "." + appsDomain
 	route := appRoute + "." + appsDomain
 	routeJSON := `[{"route":"` + route + `","port":` + port + `,"ip":"` + ip + `","ttl":60, "route_service_url":"` + routeServiceRoute + `"}]`
 

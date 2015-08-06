@@ -22,8 +22,8 @@ var _ = Describe("Registration", func() {
 	BeforeEach(func() {
 		systemDomain = config.SystemDomain
 		oauthPassword = config.ClientSecret
-		oauthUrl = "http://uaa." + systemDomain
-		routingApiEndpoint = "http://routing-api." + systemDomain
+		oauthUrl = config.Protocol() + "uaa." + systemDomain
+		routingApiEndpoint = config.Protocol() + "routing-api." + systemDomain
 
 		route = generator.RandomName()
 		routeJSON = `[{"route":"` + route + `","port":65340,"ip":"1.2.3.4","ttl":60}]`

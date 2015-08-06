@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net"
-	"net/http"
 	"strings"
 	"sync"
 
@@ -24,7 +23,6 @@ var _ = Describe("Logging", func() {
 	Describe("Syslog drains", func() {
 		var drainListener *syslogDrainListener
 		var serviceName string
-		var appURL string
 
 		BeforeEach(func() {
 			syslogDrainAddress := fmt.Sprintf("%s:%d", testConfig.SyslogIpAddress, testConfig.SyslogDrainPort)
@@ -36,7 +34,6 @@ var _ = Describe("Logging", func() {
 			testThatDrainIsReachable(syslogDrainAddress, drainListener)
 
 			appName = generator.PrefixedRandomName("CATS-APP-")
-			appURL = appName + "." + testConfig.AppsDomain
 
 			Eventually(cf.Cf("push", appName, "-p", assets.NewAssets().RubySimple), CF_PUSH_TIMEOUT).Should(Exit(0), "Failed to push app")
 
@@ -62,7 +59,7 @@ var _ = Describe("Logging", func() {
 			randomMessage := "random-message-" + generator.RandomName()
 
 			Eventually(func() bool {
-				http.Get("http://" + appURL + "/log/" + randomMessage)
+				helpers.CurlAppWithTimeout(appName, "/log/"+randomMessage, DEFAULT_TIMEOUT)
 				return drainListener.DidReceive(randomMessage)
 			}, 90, 1).Should(BeTrue(), "Never received "+randomMessage+" on syslog drain listener")
 		})

@@ -20,8 +20,15 @@ var _ = Describe("Wildcard Routes", func() {
 	var spaceName string
 
 	curlRoute := func(hostName string, path string) string {
-		uri := "http://" + hostName + "." + domainName + path
-		curlCmd := runner.Curl(uri)
+		uri := config.Protocol() + hostName + "." + domainName + path
+
+		var curlCmd *Session
+		if config.SkipSSLValidation {
+			curlCmd = runner.Curl("-k", uri)
+		} else {
+			curlCmd = runner.Curl(uri)
+		}
+
 		runner.NewCmdRunner(curlCmd, DEFAULT_TIMEOUT).Run()
 		Expect(string(curlCmd.Err.Contents())).To(HaveLen(0))
 		return string(curlCmd.Out.Contents())
