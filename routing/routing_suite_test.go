@@ -122,7 +122,7 @@ func RegisterRoute(appRoute string, ip string, port string, routeServiceName str
 	routingApiEndpoint := config.Protocol() + "routing-api." + systemDomain
 
 	appsDomain := config.AppsDomain
-	routeServiceRoute := config.Protocol() + routeServiceName + "." + appsDomain
+	routeServiceRoute := "https://" + routeServiceName + "." + appsDomain
 	route := appRoute + "." + appsDomain
 	routeJSON := `[{"route":"` + route + `","port":` + port + `,"ip":"` + ip + `","ttl":60, "route_service_url":"` + routeServiceRoute + `"}]`
 
