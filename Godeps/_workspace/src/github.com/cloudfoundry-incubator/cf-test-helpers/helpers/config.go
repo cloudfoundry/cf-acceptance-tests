@@ -12,7 +12,7 @@ type Config struct {
 	SystemDomain string `json:"system_domain"`
 	ClientSecret string `json:"client_secret"`
 	AppsDomain   string `json:"apps_domain"`
-	HttpDisabled bool   `json:"http_disabled"`
+	UseHttp      bool   `json:"use_http"`
 
 	AdminUser     string `json:"admin_user"`
 	AdminPassword string `json:"admin_password"`
@@ -84,10 +84,10 @@ func LoadConfig() Config {
 }
 
 func (c Config) Protocol() string {
-	if c.HttpDisabled {
-		return "https://"
-	} else {
+	if c.UseHttp {
 		return "http://"
+	} else {
+		return "https://"
 	}
 }
 
