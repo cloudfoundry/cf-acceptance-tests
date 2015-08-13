@@ -7,6 +7,10 @@ app = lambda do |env|
 
   body = "Hello, " + vcapApp['name'] + " at index: " + ENV['CF_INSTANCE_INDEX'] + "!"
 
+  # log headers
+  puts JSON.pretty_generate(env)
+  $stdout.flush
+
   [ 200,
     { "Content-Type" => "text/plain",
       "Content-Length" => body.length.to_s,
