@@ -11,12 +11,15 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 )
 
-var context helpers.SuiteContext
+var (
+	context helpers.SuiteContext
+	config  helpers.Config
+)
 
 func TestApplications(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	config := helpers.LoadConfig()
+	config = helpers.LoadConfig()
 
 	if config.DefaultTimeout > 0 {
 		DEFAULT_TIMEOUT = config.DefaultTimeout * time.Second
