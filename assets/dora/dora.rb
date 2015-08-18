@@ -90,7 +90,7 @@ class Dora < Sinatra::Base
   end
 
   get '/myip' do
-    `ip addr show  | grep w- | grep inet | awk '{print $2}'`
+    ENV["CF_INSTANCE_IP"]
   end
 
   run! if app_file == $0
