@@ -126,7 +126,7 @@ var _ = Describe("Application Lifecycle", func() {
 			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_IP"=>"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"`))
 			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_PORT"=>"[0-9]+"`))
 			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_ADDR"=>"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+"`))
-			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_PORTS"=>"[{\\"external\\":[0-9]+,\\"internal\\":[0-9]+}]"`))
+			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_PORTS"=>"\[(\{\\"external\\":[0-9]+,\\"internal\\":[0-9]+\},?)+\]"`))
 		})
 
 		It("generates an app usage 'started' event", func() {
