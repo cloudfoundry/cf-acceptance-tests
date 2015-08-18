@@ -3,8 +3,8 @@ var url = require('url');
 
 HOST = null;
 
-var host = process.env.VCAP_APP_HOST || 'localhost';
-var port = process.env.VCAP_APP_PORT || 3000
+var host = "0.0.0.0";
+var port = process.env.PORT || 3000;
 
 http.createServer(function (req, res) {
     res.writeHead(200, {'Content-Type': 'text/html'});
