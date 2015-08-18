@@ -45,7 +45,7 @@ var _ = Describe("A running application", func() {
 
 		Eventually(func() string {
 			return string(cf.Cf("events", appName).Wait(DEFAULT_TIMEOUT).Out.Contents())
-		}, DEFAULT_TIMEOUT).Should(ContainSubstring("exited"))
+		}, DEFAULT_TIMEOUT).Should(MatchRegexp("[eE]xited"))
 	})
 
 	Context("with multiple instances", func() {
