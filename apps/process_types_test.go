@@ -33,7 +33,7 @@ var _ = Describe("Process Types", func() {
 
 		Describe("without a procfile", func() {
 			BeforeEach(func() {
-				Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Node, "-c", "node server.js --cool-arg").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+				Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Node, "-c", "node server.js --cool-arg", "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 			})
 
 			AfterEach(func() {
@@ -51,7 +51,7 @@ var _ = Describe("Process Types", func() {
 
 		Describe("with a procfile", func() {
 			BeforeEach(func() {
-				Expect(cf.Cf("push", appName, "-p", assets.NewAssets().NodeWithProcfile).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+				Expect(cf.Cf("push", appName, "-p", assets.NewAssets().NodeWithProcfile, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 			})
 
 			AfterEach(func() {

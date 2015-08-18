@@ -205,7 +205,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 
 			BeforeEach(func() {
 				appName = generator.PrefixedRandomName("CATS-APP-")
-				createApp := cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)
+				createApp := cf.Cf("push", appName, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 				Expect(createApp).To(Exit(0), "failed creating app")
 
 				checkForEvents(appName, []string{"audit.app.create"})
@@ -363,7 +363,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 				var appName string
 				BeforeEach(func() {
 					appName = generator.PrefixedRandomName("CATS-APP-")
-					createApp := cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)
+					createApp := cf.Cf("push", appName, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 					Expect(createApp).To(Exit(0), "failed creating app")
 				})
 				It("can bind a service instance", func() {

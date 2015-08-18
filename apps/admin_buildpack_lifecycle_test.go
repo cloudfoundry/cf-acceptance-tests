@@ -122,7 +122,7 @@ EOF
 		})
 
 		It("fails to stage", func() {
-			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
+			push := Cf("push", appName, "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(1))
 			Expect(push).To(Say("NoAppDetectedError"))
 		})
@@ -164,7 +164,7 @@ EOF
 		})
 
 		It("fails to stage", func() {
-			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
+			push := Cf("push", appName, "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(1))
 			Expect(push).To(Say("NoAppDetectedError"))
 		})

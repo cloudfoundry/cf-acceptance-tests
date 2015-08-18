@@ -50,7 +50,7 @@ var _ = Describe("Application Lifecycle", func() {
 	BeforeEach(func() {
 		appName = generator.PrefixedRandomName("CATS-APP-")
 
-		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 
 	AfterEach(func() {
@@ -70,7 +70,7 @@ var _ = Describe("Application Lifecycle", func() {
 
 			BeforeEach(func() {
 				app2 = generator.PrefixedRandomName("CATS-APP-")
-				Expect(cf.Cf("push", app2, "-p", assets.NewAssets().HelloWorld).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+				Expect(cf.Cf("push", app2, "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 			})
 
 			AfterEach(func() {
@@ -178,7 +178,7 @@ var _ = Describe("Application Lifecycle", func() {
 				return helpers.CurlAppRoot(appName)
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
 
-			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().HelloWorld).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(appName)

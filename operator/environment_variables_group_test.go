@@ -85,7 +85,7 @@ exit 1
 			Expect(cf.Cf("set-running-environment-variable-group", `{"CATS_RUNNING_TEST_VAR":"running_env_value"}`).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 
-		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 		env := helpers.CurlApp(appName, "/env")
 
@@ -101,7 +101,7 @@ exit 1
 			Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 
-		Expect(cf.Cf("push", appName, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld).Wait(CF_PUSH_TIMEOUT)).To(Exit(1))
+		Expect(cf.Cf("push", appName, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(1))
 
 		Eventually(func() *Session {
 			appLogsSession := cf.Cf("logs", "--recent", appName)

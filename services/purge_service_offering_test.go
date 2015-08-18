@@ -36,7 +36,7 @@ var _ = Describe("Purging service offerings", func() {
 			appName = generator.PrefixedRandomName("CATS-APP-")
 			instanceName = generator.RandomName()
 
-			createApp := cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)
+			createApp := cf.Cf("push", appName, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 			Expect(createApp).To(Exit(0), "failed creating app")
 
 			broker.CreateServiceInstance(instanceName)

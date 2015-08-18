@@ -44,10 +44,10 @@ var _ = Describe("Wildcard Routes", func() {
 		})
 
 		appNameDora = generator.PrefixedRandomName("CATS-APP-")
-		Expect(cf.Cf("push", appNameDora, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appNameDora, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 		appNameSimple = generator.PrefixedRandomName("CATS-APP-")
-		Expect(cf.Cf("push", appNameSimple, "-p", assets.NewAssets().HelloWorld).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appNameSimple, "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 
 	AfterEach(func() {

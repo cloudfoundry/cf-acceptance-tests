@@ -37,7 +37,7 @@ type StatsResponse map[string]Stat
 
 func PushApp(asset string) string {
 	app := generator.PrefixedRandomName("RATS-APP-")
-	Expect(cf.Cf("push", app, "-p", asset).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+	Expect(cf.Cf("push", app, "-p", asset, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	return app
 }
 

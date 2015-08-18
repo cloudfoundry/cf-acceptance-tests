@@ -17,7 +17,7 @@ var _ = Describe("Delete Route", func() {
 	BeforeEach(func() {
 		appName = generator.PrefixedRandomName("CATS-APP-")
 
-		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Dora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		Eventually(func() string {
 			return helpers.CurlAppRoot(appName)
 		}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
