@@ -26,17 +26,17 @@
               },
               "displayName": "The Fake Broker"
             },
-            "<dashboard-client-key>": {
+            "dashboard_client": {
               "id": "<sso-test>",
               "secret": "<sso-secret>",
-              "redirect_uri": "http://www.purple.com"
+              "redirect_uri": "http://example.com"
             },
             "plan_updateable": true,
             "plans": [
               {
                 "name": "<fake-plan>",
                 "id": "<fake-plan-guid>",
-                "description": "Synchronous plan",
+                "description": "Shared fake Server, 5tb persistent disk, 40 max concurrent connections",
                 "max_storage_tb": 5,
                 "metadata": {
                   "cost": 0,
@@ -56,7 +56,7 @@
               {
                 "name": "<fake-plan-2>",
                 "id": "<fake-plan-2-guid>",
-                "description": "Synchronous plan 2",
+                "description": "Shared fake Server, 5tb persistent disk, 40 max concurrent connections",
                 "max_storage_tb": 5,
                 "metadata": {
                   "cost": 0,
@@ -76,7 +76,7 @@
               {
                 "name": "<fake-async-plan>",
                 "id": "<fake-async-plan-guid>",
-                "description": "Asynchronous plan",
+                "description": "Shared fake Server, 5tb persistent disk, 40 max concurrent connections. 100 async",
                 "max_storage_tb": 5,
                 "metadata": {
                   "cost": 0,
@@ -90,21 +90,7 @@
               {
                 "name": "<fake-async-plan-2>",
                 "id": "<fake-async-plan-2-guid>",
-                "description": "Asynchronous plan",
-                "max_storage_tb": 5,
-                "metadata": {
-                  "cost": 0,
-                  "bullets": [
-                    {
-                      "content": "40 concurrent connections"
-                    }
-                  ]
-                }
-              },
-              {
-                "name": "<fake-sso-plan>",
-                "id": "<fake-sso-plan-guid>",
-                "description": "SSO plan",
+                "description": "Shared fake Server, 5tb persistent disk, 40 max concurrent connections. 100 async",
                 "max_storage_tb": 5,
                 "metadata": {
                   "cost": 0,
@@ -133,22 +119,12 @@
         "body": {
         }
       },
-      "<fake-sso-plan-guid>": {
-        "sleep_seconds": 0,
-        "status": 200,
-        "body": {
-          "dashboard_client": {
-              "id": "<sso-plan-client-id>",
-              "secret": "<sso-plan-secret>",
-              "redirect_uri": "http://www.purple.com"
-          },
-          "dashboard_url": "http://www.purple.com"
-        }
-      },
       "default": {
         "sleep_seconds": 0,
         "status": 200,
-        "body": {}
+        "body": {
+          "dashboard_url": "http://example.com"
+        }
       }
     },
     "fetch": {

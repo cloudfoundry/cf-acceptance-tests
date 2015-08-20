@@ -19,6 +19,7 @@ import (
 
 var _ = Describe("Service Broker Lifecycle", func() {
 	var broker ServiceBroker
+
 	Describe("public brokers", func() {
 		var acls *Session
 		var output []byte
@@ -26,7 +27,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 		var oldPlanName string
 
 		BeforeEach(func() {
-			broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context, false)
+			broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
 			cf.TargetSpace(context.RegularUserContext(), context.ShortTimeout())
 			broker.Push()
 			broker.Configure()
@@ -186,7 +187,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 
 	Describe("private brokers", func() {
 		BeforeEach(func() {
-			broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context, false)
+			broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
 			cf.TargetSpace(context.RegularUserContext(), context.ShortTimeout())
 			broker.Push()
 			broker.Configure()
