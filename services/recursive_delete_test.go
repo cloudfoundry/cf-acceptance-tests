@@ -19,7 +19,7 @@ var _ = Describe("Recursive Delete", func() {
 	var quotaName string
 
 	BeforeEach(func() {
-		broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context, false)
+		broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
 		broker.Push()
 		broker.Configure()
 		broker.Create()

@@ -4,18 +4,18 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
-	"io/ioutil"
-	"os"
 
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 
+	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 )
 
 type OAuthConfig struct {
@@ -54,7 +54,7 @@ func SetOauthEndpoints(apiEndpoint string, config *OAuthConfig) {
 func AuthenticateUser(authorizationEndpoint string, username string, password string) (cookie string) {
 	loginCsrfUri := fmt.Sprintf("%v/login", authorizationEndpoint)
 
-	cookieFile, err := ioutil.TempFile("", "cats-csrf-cookie" + generator.RandomName())
+	cookieFile, err := ioutil.TempFile("", "cats-csrf-cookie"+generator.RandomName())
 	Expect(err).ToNot(HaveOccurred())
 	cookiePath := cookieFile.Name()
 	defer func() {
@@ -64,7 +64,6 @@ func AuthenticateUser(authorizationEndpoint string, username string, password st
 
 	curl := runner.Curl(loginCsrfUri, `--insecure`, `-i`, `-v`, `-c`, cookiePath).Wait(DEFAULT_TIMEOUT)
 	apiResponse := string(curl.Out.Contents())
-
 	csrfRegEx, _ := regexp.Compile(`name="X-Uaa-Csrf" value="(.*)"`)
 	csrfToken := csrfRegEx.FindStringSubmatch(apiResponse)[1]
 
