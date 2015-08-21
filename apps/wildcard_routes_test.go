@@ -21,13 +21,7 @@ var _ = Describe("Wildcard Routes", func() {
 
 	curlRoute := func(hostName string, path string) string {
 		uri := config.Protocol() + hostName + "." + domainName + path
-
-		var curlCmd *Session
-		if config.SkipSSLValidation {
-			curlCmd = runner.Curl("-k", uri)
-		} else {
-			curlCmd = runner.Curl(uri)
-		}
+		curlCmd := runner.Curl(uri)
 
 		runner.NewCmdRunner(curlCmd, DEFAULT_TIMEOUT).Run()
 		Expect(string(curlCmd.Err.Contents())).To(HaveLen(0))

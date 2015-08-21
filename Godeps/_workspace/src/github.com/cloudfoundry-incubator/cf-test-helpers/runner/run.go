@@ -19,6 +19,7 @@ const timeFormat = "2006-01-02 15:04:05.00 (MST)"
 var CommandInterceptor = func(cmd *exec.Cmd) *exec.Cmd {
 	return cmd
 }
+var SkipSSLValidation bool
 
 func Run(executable string, args ...string) *gexec.Session {
 	cmd := exec.Command(executable, args...)
@@ -36,8 +37,11 @@ func innerRun(cmd *exec.Cmd) *gexec.Session {
 }
 
 func Curl(args ...string) *gexec.Session {
-	args = append([]string{"-s"}, args...)
-	return Run("curl", args...)
+	curlArgs := append([]string{"-s"}, args...)
+	if SkipSSLValidation {
+		curlArgs = append([]string{"-k"}, curlArgs...)
+	}
+	return Run("curl", curlArgs...)
 }
 
 func sayCommandWillRun(startTime time.Time, cmd *exec.Cmd) {
