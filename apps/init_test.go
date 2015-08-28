@@ -17,6 +17,8 @@ var (
 	CF_JAVA_TIMEOUT   = 10 * time.Minute
 )
 
+const diegoUnsupportedTag = "{NO_DIEGO_SUPPORT} "
+
 var (
 	context helpers.SuiteContext
 	config  helpers.Config

@@ -40,7 +40,7 @@ var _ = Describe("Process Types", func() {
 				Expect(cf.Cf("delete", appName, "-f").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 			})
 
-			It("detects the use of the start command supplied on the command line", func() {
+			It(diegoUnsupportedTag+"detects the use of the start command supplied on the command line", func() {
 				var appsResponse AppsResponse
 				cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/apps?q=name:%s", appName)).Wait(DEFAULT_TIMEOUT).Out.Contents()
 				json.Unmarshal(cfResponse, &appsResponse)

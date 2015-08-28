@@ -25,7 +25,7 @@ var _ = Describe("A running application", func() {
 		Expect(cf.Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 
-	It("can have its files inspected", func() {
+	It(diegoUnsupportedTag+"can have its files inspected", func() {
 		// Currently cannot work with multiple instances since CF always checks instance 0
 		files := cf.Cf("files", appName).Wait(DEFAULT_TIMEOUT)
 		Expect(files).To(Exit(0))
@@ -45,7 +45,7 @@ var _ = Describe("A running application", func() {
 
 		Eventually(func() string {
 			return string(cf.Cf("events", appName).Wait(DEFAULT_TIMEOUT).Out.Contents())
-		}, DEFAULT_TIMEOUT).Should(ContainSubstring("exited"))
+		}, DEFAULT_TIMEOUT).Should(MatchRegexp("[eE]xited"))
 	})
 
 	Context("with multiple instances", func() {

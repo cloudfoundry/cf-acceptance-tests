@@ -49,6 +49,7 @@ var _ = Describe("Downloading droplets", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		Expect(out.String()).To(ContainSubstring("./app/config.ru"))
-		Expect(out.String()).To(ContainSubstring("./logs/staging_task.log"))
+		Expect(out.String()).To(ContainSubstring("./tmp"))
+		Expect(out.String()).To(ContainSubstring("./logs"))
 	})
 })
