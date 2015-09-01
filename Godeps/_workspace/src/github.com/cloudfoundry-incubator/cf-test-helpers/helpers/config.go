@@ -24,6 +24,8 @@ type Config struct {
 	ExistingUser         string `json:"existing_user"`
 	ExistingUserPassword string `json:"existing_user_password"`
 
+	ConfigurableTestPassword string `json:"test_password"`
+
 	PersistentAppHost      string `json:"persistent_app_host"`
 	PersistentAppSpace     string `json:"persistent_app_space"`
 	PersistentAppOrg       string `json:"persistent_app_org"`
