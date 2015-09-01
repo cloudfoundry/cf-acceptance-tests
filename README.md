@@ -89,6 +89,7 @@ The full set of config parameters is explained below:
 * `cf_push_timeout` (optional): Default time (in seconds) to wait for `cf push` commands to succeed.
 * `long_curl_timeout` (optional): Default time (in seconds) to wait for assertions that `curl` slow endpoints of test applications.
 * `broker_start_timeout` (optional, only relevant for `services` suite): Time (in seconds) to wait for service broker test app to start.
+* `test_password` (optional): Used to set the password for the test user. This may be needed if your CF installation has password policies.
 * `timeout_scale` (optional): Used primarily to scale default timeouts for test setup and teardown actions (e.g. creating an org) as opposed to main test actions (e.g. pushing an app).
 * `syslog_ip_address` (only required for `logging` suite): This must be a publically accessible IP address of your local machine, accessible by applications within your CF deployment.
 * `syslog_drain_port` (only required for `logging` suite): This must be an available port on your local machine.
