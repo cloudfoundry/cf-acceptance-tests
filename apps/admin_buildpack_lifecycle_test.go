@@ -121,7 +121,7 @@ EOF
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It(diegoUnsupportedTag+"fails to stage", func() { // diego doesn't support the particular error value
+		It("fails to stage", func() { // diego doesn't support the particular error value
 			push := Cf("push", appName, "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(1))
 			Expect(push).To(Say("NoAppDetectedError"))
@@ -135,7 +135,7 @@ EOF
 			})
 		})
 
-		It(diegoUnsupportedTag+"fails to stage", func() { // diego doesn't support the particular error value
+		It("fails to stage", func() { // diego doesn't support the particular error value
 			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(1))
 			Expect(push).To(Say("NoAppDetectedError"))
@@ -163,7 +163,7 @@ EOF
 			})
 		})
 
-		It(diegoUnsupportedTag+"fails to stage", func() { // diego doesn't support the particular error value
+		It("fails to stage", func() { // diego doesn't support the particular error value
 			push := Cf("push", appName, "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(1))
 			Expect(push).To(Say("NoAppDetectedError"))
