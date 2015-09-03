@@ -98,6 +98,24 @@ The full set of config parameters is explained below:
 #### Persistent App Test Setup
 The tests in `one_push_many_restarts_test.go` operate on an app that is supposed to persist between runs of the CF Acceptance tests. If these tests are run, they will create an org, space, and quota and push the app to this space. The test config will provide default names for these entities, but to configure them, set values for `persistent_app_host`, `persistent_app_space`, `persistent_app_org`, and `persistent_app_quota_name`.
 
+#### Routing Test Suite Setup
+
+The `routing` suite pushes applications which must be able to reach the load balancer of your Cloud Foundry deployment. This requires configuring application security groups to support this. Your deployment manifest should include the following data if you are running the `routing` suite:
+
+```yaml
+...
+properties:
+  ...
+  cc:
+    ...
+    security_group_definitions:
+      - name: load_balancer
+        rules:
+        - protocol: all
+          destination: IP_OF_YOUR_LOAD_BALANCER # (e.g. 10.244.0.34 for a standard deployment of Cloud Foundry on BOSH-Lite)
+    default_running_security_groups: ["load_balancer"]
+```
+
 #### Capturing Test Output
 If you set a value for `artifacts_directory` in your `$CONFIG` file, then you will be able to capture `cf` trace output from failed test runs.  When a test fails, look for the node id and suite name ("*Applications*" and "*2*" in the example below) in the test output:
 
