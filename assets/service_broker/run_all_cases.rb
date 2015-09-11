@@ -6,7 +6,7 @@ require 'benchmark'
 require 'securerandom'
 require 'optparse'
 
-DEFAULT_BROKER_URL = 'http://async-broker.10.244.0.34.xip.io'
+DEFAULT_BROKER_URL = 'http://async-broker.bosh-lite.com'
 
 def get_config
   raw_config = File.read('data.json')

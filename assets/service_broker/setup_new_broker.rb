@@ -11,7 +11,7 @@ env ||= 'bosh-lite'
 puts "Setting up broker `#{broker_name}` on #{env}"
 
 env_to_domain_mapping = {
-  'bosh-lite' => '10.244.0.34.xip.io',
+  'bosh-lite' => 'bosh-lite.com',
   'a1' => 'a1-app.cf-app.com',
   'tabasco' => 'tabasco-app.cf-app.com'
 }
