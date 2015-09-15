@@ -109,7 +109,7 @@ EOF
 
 	Context("when the buildpack is detected", func() {
 		It("is used for the app", func() {
-			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
+			push := Cf("push", appName, "-m", "128M", "-p", appPath).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(0))
 			Expect(push).To(Say("Staging with Simple Buildpack"))
 		})
@@ -122,7 +122,7 @@ EOF
 		})
 
 		It("fails to stage", func() { // diego doesn't support the particular error value
-			push := Cf("push", appName, "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
+			push := Cf("push", appName, "-m", "128M", "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(1))
 			Expect(push).To(Say("NoAppDetectedError"))
 		})
@@ -136,7 +136,7 @@ EOF
 		})
 
 		It("fails to stage", func() { // diego doesn't support the particular error value
-			push := Cf("push", appName, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
+			push := Cf("push", appName, "-m", "128M", "-p", appPath).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(1))
 			Expect(push).To(Say("NoAppDetectedError"))
 		})
@@ -164,7 +164,7 @@ EOF
 		})
 
 		It("fails to stage", func() { // diego doesn't support the particular error value
-			push := Cf("push", appName, "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
+			push := Cf("push", appName, "-m", "128M", "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 			Expect(push).To(Exit(1))
 			Expect(push).To(Say("NoAppDetectedError"))
 		})

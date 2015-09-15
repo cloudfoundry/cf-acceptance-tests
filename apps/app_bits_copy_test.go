@@ -19,8 +19,8 @@ var _ = Describe("Copy app bits", func() {
 		golangAppName = generator.PrefixedRandomName("CATS-APP-")
 		helloWorldAppName = generator.PrefixedRandomName("CATS-APP-")
 
-		Expect(cf.Cf("push", golangAppName, "-p", assets.NewAssets().Golang, "--no-start", "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-		Expect(cf.Cf("push", helloWorldAppName, "-p", assets.NewAssets().HelloWorld, "--no-start", "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", golangAppName, "-m", "128M", "-p", assets.NewAssets().Golang, "--no-start", "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", helloWorldAppName, "-m", "128M", "-p", assets.NewAssets().HelloWorld, "--no-start", "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 
 	AfterEach(func() {

@@ -115,7 +115,7 @@ EOF
 		stackName := "cflinuxfs2"
 		expected_lsb_release := "DISTRIB_CODENAME=trusty"
 
-		push := Cf("push", appName, "-p", appPath, "-s", stackName, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
+		push := Cf("push", appName, "-m", "128M", "-p", appPath, "-s", stackName, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 		Expect(push).To(Exit(0))
 		Expect(push).To(Say(expected_lsb_release))
 		Expect(push).To(Say(""))

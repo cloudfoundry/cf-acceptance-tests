@@ -26,7 +26,7 @@ var _ = Describe("Buildpacks", func() {
 
 	Describe("node", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Node, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-m", "128M", "-p", assets.NewAssets().Node, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(appName)
@@ -48,7 +48,7 @@ var _ = Describe("Buildpacks", func() {
 
 	Describe("golang", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Golang, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-m", "128M", "-p", assets.NewAssets().Golang, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(appName)
@@ -58,7 +58,7 @@ var _ = Describe("Buildpacks", func() {
 
 	Describe("python", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Python, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-m", "128M", "-p", assets.NewAssets().Python, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(appName)
@@ -71,7 +71,7 @@ var _ = Describe("Buildpacks", func() {
 		var phpPushTimeout = CF_PUSH_TIMEOUT + 6*time.Minute
 
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Php, "-d", config.AppsDomain).Wait(phpPushTimeout)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-m", "128M", "-p", assets.NewAssets().Php, "-d", config.AppsDomain).Wait(phpPushTimeout)).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(appName)
@@ -81,7 +81,7 @@ var _ = Describe("Buildpacks", func() {
 
 	Describe("staticfile", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().Staticfile, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-m", "128M", "-p", assets.NewAssets().Staticfile, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(appName)
@@ -91,7 +91,7 @@ var _ = Describe("Buildpacks", func() {
 
 	Describe("binary", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "-b", "binary_buildpack", "-p", assets.NewAssets().Binary, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-m", "128M", "-b", "binary_buildpack", "-p", assets.NewAssets().Binary, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(appName)

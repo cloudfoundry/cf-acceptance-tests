@@ -112,7 +112,7 @@ EOF
 	})
 
 	It("uses ruby 1.9.3-p547 for staging", func() {
-		push := Cf("push", appName, "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
+		push := Cf("push", appName, "-m", "128M", "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 		Expect(push).To(Exit(0))
 		Expect(push).To(Say("RUBY_LOCATION=/usr/bin/ruby"))
 		Expect(push).To(Say("RUBY_VERSION=ruby 1.9.3p547"))

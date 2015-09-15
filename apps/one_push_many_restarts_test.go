@@ -46,7 +46,7 @@ var _ = Describe("An application that's already been pushed", func() {
 		output := string(appQuery.Out.Contents())
 
 		if appQuery.ExitCode() == 1 && strings.Contains(output, "not found") {
-			pushCommand := cf.Cf("push", appName, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
+			pushCommand := cf.Cf("push", appName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 			if pushCommand.ExitCode() != 0 {
 				Expect(cf.Cf("delete", "-f", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 				Fail("persistent app failed to stage")

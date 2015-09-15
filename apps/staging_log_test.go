@@ -23,7 +23,7 @@ var _ = Describe("An application being staged", func() {
 	})
 
 	It("has its staging log streamed during a push", func() {
-		push := cf.Cf("push", appName, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
+		push := cf.Cf("push", appName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 
 		output := string(push.Buffer().Contents())
 		expected := []string{"Installing dependencies", "Uploading droplet", "App started"}

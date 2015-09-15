@@ -46,7 +46,7 @@ var _ = Describe("Recursive Delete", func() {
 			target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(CF_PUSH_TIMEOUT)
 			Expect(target).To(Exit(0), "failed targeting")
 
-			createApp := cf.Cf("push", appName, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
+			createApp := cf.Cf("push", appName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 			Expect(createApp).To(Exit(0), "failed creating app")
 
 			createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
