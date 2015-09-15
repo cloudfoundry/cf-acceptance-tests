@@ -64,7 +64,7 @@ func AuthenticateUser(authorizationEndpoint string, username string, password st
 func RequestScopes(cookie string, config OAuthConfig) (authCode string, httpCode string) {
 	authCode = `initialized`
 
-	requestScopesUri := fmt.Sprintf("%v/oauth/authorize?client_id=%v&response_type=code+id_token&redirect_uri=%v&scope=%v",
+	requestScopesUri := fmt.Sprintf("%v/oauth/authorize?client_id=%v&response_type=code&redirect_uri=%v&scope=%v",
 		config.AuthorizationEndpoint,
 		url.QueryEscape(config.ClientId),
 		config.RedirectUri,
