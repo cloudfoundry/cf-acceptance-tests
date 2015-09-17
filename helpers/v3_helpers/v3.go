@@ -25,7 +25,7 @@ func StopApp(appGuid string) {
 }
 
 func CreateApp(appName, spaceGuid, environmentVariables string) string {
-	session := cf.Cf("curl", "/v3/apps", "-X", "POST", "-d", fmt.Sprintf(`{"name":"%s", "space_guid":"%s", "environment_variables":%s}`, appName, spaceGuid, environmentVariables))
+	session := cf.Cf("curl", "/v3/apps", "-X", "POST", "-d", fmt.Sprintf(`{"name":"%s", "relationships": {"space": {"guid": "%s"}}, "environment_variables":%s}`, appName, spaceGuid, environmentVariables))
 	bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
 	var app struct {
 		Guid string `json:"guid"`
