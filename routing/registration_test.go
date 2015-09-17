@@ -23,7 +23,7 @@ var _ = Describe("Registration", func() {
 		systemDomain = config.SystemDomain
 		oauthPassword = config.ClientSecret
 		oauthUrl = config.Protocol() + "uaa." + systemDomain
-		routingApiEndpoint = config.Protocol() + "routing-api." + systemDomain
+		routingApiEndpoint = config.Protocol() + "api." + systemDomain + "/routing"
 
 		route = generator.RandomName()
 		routeJSON = `[{"route":"` + route + `","port":65340,"ip":"1.2.3.4","ttl":60}]`
