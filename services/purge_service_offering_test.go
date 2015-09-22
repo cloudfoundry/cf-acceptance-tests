@@ -30,11 +30,12 @@ var _ = Describe("Purging service offerings", func() {
 	})
 
 	Context("when there are several existing service entities", func() {
-		var appName, instanceName string
+		var appName, instanceName, asyncInstanceName string
 
 		BeforeEach(func() {
 			appName = generator.PrefixedRandomName("CATS-APP-")
 			instanceName = generator.RandomName()
+			asyncInstanceName = generator.RandomName()
 
 			createApp := cf.Cf("push", appName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 			Expect(createApp).To(Exit(0), "failed creating app")
@@ -47,6 +48,9 @@ var _ = Describe("Purging service offerings", func() {
 
 			bindService := cf.Cf("bind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
 			Expect(bindService).To(Exit(0), "failed binding app to service")
+
+			Expect(cf.Cf("create-service", broker.Service.Name, broker.AsyncPlans[0].Name, asyncInstanceName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("service", asyncInstanceName).Wait(DEFAULT_TIMEOUT)).To(Say("create in progress"))
 		})
 
 		It("removes all instances and plans of the service, then removes the service offering", func() {
