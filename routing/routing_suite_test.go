@@ -119,7 +119,7 @@ func RegisterRoute(appRoute string, ip string, port string, routeServiceName str
 	systemDomain := config.SystemDomain
 	oauthPassword := config.ClientSecret
 	oauthUrl := config.Protocol() + "uaa." + systemDomain
-	routingApiEndpoint := config.Protocol() + "api." + systemDomain + "/routing"
+	routingApiEndpoint := config.Protocol() + "api." + systemDomain
 
 	appsDomain := config.AppsDomain
 	routeServiceRoute := "https://" + routeServiceName + "." + appsDomain

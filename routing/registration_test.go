@@ -23,7 +23,7 @@ var _ = Describe("Registration", func() {
 		systemDomain = config.SystemDomain
 		oauthPassword = config.ClientSecret
 		oauthUrl = config.Protocol() + "uaa." + systemDomain
-		routingApiEndpoint = config.Protocol() + "api." + systemDomain + "/routing"
+		routingApiEndpoint = config.Protocol() + "api." + systemDomain
 
 		route = generator.RandomName()
 		routeJSON = `[{"route":"` + route + `","port":65340,"ip":"1.2.3.4","ttl":60}]`
@@ -33,7 +33,6 @@ var _ = Describe("Registration", func() {
 		It("can register, list and unregister routes", func() {
 			args := []string{"register", routeJSON, "--api", routingApiEndpoint, "--client-id", "gorouter", "--client-secret", oauthPassword, "--oauth-url", oauthUrl}
 			session := Rtr(args...)
-
 			Eventually(session.Out).Should(Say("Successfully registered routes"))
 
 			args = []string{"list", "--api", routingApiEndpoint, "--client-id", "gorouter", "--client-secret", oauthPassword, "--oauth-url", oauthUrl}
