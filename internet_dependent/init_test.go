@@ -16,12 +16,15 @@ var (
 	LONG_CURL_TIMEOUT = 2 * time.Minute
 )
 
-var context helpers.SuiteContext
+var (
+	context helpers.SuiteContext
+	config  helpers.Config
+)
 
 func TestApplications(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	config := helpers.LoadConfig()
+	config = helpers.LoadConfig()
 
 	if config.DefaultTimeout > 0 {
 		DEFAULT_TIMEOUT = config.DefaultTimeout * time.Second
