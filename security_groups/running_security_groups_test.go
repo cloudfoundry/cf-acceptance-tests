@@ -71,23 +71,24 @@ var _ = Describe("Security Groups", func() {
 
 	// this test assumes the default running security groups block access to the DEAs
 	// the test takes advantage of the fact that the DEA ip address and internal container ip address
-	//  are discoverable via the cc api and dora's myip endpoint
+	// are discoverable via the cc api and dora's myip endpoint
 	It("allows previously-blocked ip traffic after applying a security group, and re-blocks it when the group is removed", func() {
+
 		clientAppName := generator.PrefixedRandomName("CATS-APP-")
 		Expect(cf.Cf("push", clientAppName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		defer func() { cf.Cf("delete", clientAppName, "-f").Wait(CF_PUSH_TIMEOUT) }()
 
-		// gather container ip
+		By("Gathering container ip")
 		curlResponse := helpers.CurlApp(serverAppName, "/myip")
 		containerIp := strings.TrimSpace(curlResponse)
 
-		// test app egress rules
+		By("Testing app egress rules")
 		var doraCurlResponse DoraCurlResponse
 		curlResponse = helpers.CurlApp(clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort))
 		json.Unmarshal([]byte(curlResponse), &doraCurlResponse)
 		Expect(doraCurlResponse.ReturnCode).ToNot(Equal(0))
 
-		// apply security group
+		By("Applying security group")
 		rules := fmt.Sprintf(
 			`[{"destination":"%s","ports":"%d","protocol":"tcp"},
         {"destination":"%s","ports":"%d","protocol":"tcp"}]`,
@@ -116,18 +117,18 @@ var _ = Describe("Security Groups", func() {
 
 		Expect(cf.Cf("restart", clientAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
-		// test app egress rules
+		By("Testing app egress rules")
 		curlResponse = helpers.CurlApp(clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort))
 		json.Unmarshal([]byte(curlResponse), &doraCurlResponse)
 		Expect(doraCurlResponse.ReturnCode).To(Equal(0))
 
-		// unapply security group
+		By("Unapplying security group")
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("unbind-security-group", securityGroupName, context.RegularUserContext().Org, context.RegularUserContext().Space).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 		Expect(cf.Cf("restart", clientAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
-		// test app egress rules
+		By("Testing app egress rules")
 		curlResponse = helpers.CurlApp(clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort))
 		json.Unmarshal([]byte(curlResponse), &doraCurlResponse)
 		Expect(doraCurlResponse.ReturnCode).ToNot(Equal(0))
