@@ -11,6 +11,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -154,6 +155,12 @@ const (
 
 var config helpers.Config
 
+var (
+	brokerName          string
+	brokerAppName       string
+	serviceInstanceName string
+)
+
 func TestRouting(t *testing.T) {
 	RegisterFailHandler(Fail)
 
@@ -170,10 +177,18 @@ func TestRouting(t *testing.T) {
 		Expect(config.SystemDomain).ToNot(Equal(""), "Must provide a system domain for the routing suite")
 		Expect(config.ClientSecret).ToNot(Equal(""), "Must provide a client secret for the routing suite")
 		environment.Setup()
+
+		brokerName, brokerAppName = createServiceBroker()
+		serviceInstanceName = createServiceInstance()
 	})
 
 	AfterSuite(func() {
 		environment.Teardown()
+
+		cf.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
+			responseBuffer := cf.Cf("delete-service-broker", brokerName, "-f")
+			Expect(responseBuffer.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		})
 	})
 
 	if config.ArtifactsDirectory != "" {
@@ -182,4 +197,29 @@ func TestRouting(t *testing.T) {
 	}
 
 	RunSpecsWithDefaultAndCustomReporters(t, componentName, rs)
+}
+
+func createServiceBroker() (string, string) {
+	serviceBrokerAsset := assets.NewAssets().ServiceBroker
+	serviceBrokerAppName := PushApp(serviceBrokerAsset)
+
+	brokerName := generator.PrefixedRandomName("RATS-BROKER-")
+	brokerUrl := helpers.AppUri(serviceBrokerAppName, "")
+
+	config = helpers.LoadConfig()
+	context := helpers.NewContext(config)
+	cf.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
+		// registerAsBroker
+		// cf create-service-broker name user password url
+		session := cf.Cf("create-service-broker", brokerName, "user", "password", brokerUrl)
+		Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
+		// public service access
+		// cf enable-service-access name
+		session = cf.Cf("enable-service-access", "fake-service")
+		Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
+	})
+
+	return brokerName, serviceBrokerAppName
 }
