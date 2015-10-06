@@ -16,34 +16,13 @@ import (
 )
 
 var _ = Describe("Route Services", func() {
-	Context("when a route binds a service", func() {
-		Context("when service broker does not return a route service url", func() {
-			var (
-				appName     string
-				golangAsset = assets.NewAssets().Golang
-			)
-
-			BeforeEach(func() {
-				appName := PushApp(golangAsset, config.GoBuildpackName)
-				EnableDiego(appName)
-
-				routeServiceName = PushApp(loggingRouteServiceAsset, config.GoBuildpackName)
-
-				configureBroker(brokerAppName, "")
-
-				bindRouteToService(appName, serviceInstanceName)
-				RestartApp(appName)
-			})
-
-			It("routes to an app", func() {
-				Eventually(func() string {
-					return helpers.CurlAppRoot(appName)
-				}, DEFAULT_TIMEOUT).Should(ContainSubstring("go, world"))
-			})
-		})
+	Context("when a route binds to a service", func() {
 
 		Context("when service broker returns a route service url", func() {
 			var (
+				brokerName               string
+				brokerAppName            string
+				serviceInstanceName      string
 				appName                  string
 				routeServiceName         string
 				golangAsset              = assets.NewAssets().Golang
@@ -51,10 +30,14 @@ var _ = Describe("Route Services", func() {
 			)
 
 			BeforeEach(func() {
-				appName = PushApp(golangAsset)
+				var serviceName string
+				brokerName, brokerAppName, serviceName = createServiceBroker()
+				serviceInstanceName = createServiceInstance(serviceName)
+
+				appName = PushApp(golangAsset, config.GoBuildpackName)
 				EnableDiego(appName)
 
-				routeServiceName = PushApp(loggingRouteServiceAsset)
+				routeServiceName = PushApp(loggingRouteServiceAsset, config.GoBuildpackName)
 				configureBroker(brokerAppName, routeServiceName)
 
 				bindRouteToService(appName, serviceInstanceName)
@@ -62,18 +45,9 @@ var _ = Describe("Route Services", func() {
 			})
 
 			AfterEach(func() {
-				route_guid := getRouteGuid(appName)
-				guid := getServiceInstanceGuid(serviceInstanceName)
-				cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", guid, route_guid), "-X", "DELETE")
-
-				Eventually(func() string {
-					response := cf.Cf("curl", fmt.Sprintf("/v2/routes/%s", route_guid))
-					Expect(response.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-
-					contents := response.Out.Contents()
-					return string(contents)
-				}, DEFAULT_TIMEOUT, "1s").Should(ContainSubstring(`"service_instance_guid": null`))
-
+				unbindRouteFromService(appName, serviceInstanceName)
+				deleteServiceInstance(serviceInstanceName)
+				deleteServiceBroker(brokerName)
 			})
 
 			It("a request to the app is routed through the route service", func() {
@@ -88,6 +62,42 @@ var _ = Describe("Route Services", func() {
 				}, DEFAULT_TIMEOUT).Should(Say("Response Body: go, world"))
 			})
 		})
+
+		Context("when service broker does not return a route service url", func() {
+			var (
+				brokerName          string
+				brokerAppName       string
+				serviceInstanceName string
+				appName             string
+				golangAsset         = assets.NewAssets().Golang
+			)
+
+			BeforeEach(func() {
+				var serviceName string
+				brokerName, brokerAppName, serviceName = createServiceBroker()
+				serviceInstanceName = createServiceInstance(serviceName)
+				appName = PushApp(golangAsset, config.GoBuildpackName)
+				EnableDiego(appName)
+
+				configureBroker(brokerAppName, "")
+
+				bindRouteToService(appName, serviceInstanceName)
+				RestartApp(appName)
+			})
+
+			AfterEach(func() {
+				unbindRouteFromService(appName, serviceInstanceName)
+				deleteServiceInstance(serviceInstanceName)
+				deleteServiceBroker(brokerName)
+			})
+
+			It("routes to an app", func() {
+				Eventually(func() string {
+					return helpers.CurlAppRoot(appName)
+				}, DEFAULT_TIMEOUT).Should(ContainSubstring("go, world"))
+			})
+		})
+
 	})
 })
 
@@ -97,7 +107,7 @@ func (c customMap) key(key string) customMap {
 	return c[key].(map[string]interface{})
 }
 
-func bindRouteToService(routeName string, serviceInstanceName string) {
+func bindRouteToService(routeName, serviceInstanceName string) {
 	routeGuid := getRouteGuid(routeName)
 	serviceInstanceGuid := getServiceInstanceGuid(serviceInstanceName)
 	cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", serviceInstanceGuid, routeGuid), "-X", "PUT")
@@ -109,6 +119,40 @@ func bindRouteToService(routeName string, serviceInstanceName string) {
 		contents := response.Out.Contents()
 		return string(contents)
 	}, DEFAULT_TIMEOUT, "1s").ShouldNot(ContainSubstring(`"service_instance_guid": null`))
+}
+
+func deleteServiceBroker(brokerName string) {
+	config = helpers.LoadConfig()
+	context := helpers.NewContext(config)
+	cf.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
+		responseBuffer := cf.Cf("delete-service-broker", brokerName, "-f")
+		Expect(responseBuffer.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	})
+}
+
+func deleteServiceInstance(serviceInstanceName string) {
+	guid := getServiceInstanceGuid(serviceInstanceName)
+	Eventually(func() string {
+		response := cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s", guid), "-X", "DELETE")
+		Expect(response.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
+		contents := response.Out.Contents()
+		return string(contents)
+	}, DEFAULT_TIMEOUT, "1s").Should(ContainSubstring("CF-ServiceInstanceNotFound"))
+}
+
+func unbindRouteFromService(routeName, serviceInstanceName string) {
+	route_guid := getRouteGuid(routeName)
+	guid := getServiceInstanceGuid(serviceInstanceName)
+	cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", guid, route_guid), "-X", "DELETE")
+
+	Eventually(func() string {
+		response := cf.Cf("curl", fmt.Sprintf("/v2/routes/%s", route_guid))
+		Expect(response.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
+		contents := response.Out.Contents()
+		return string(contents)
+	}, DEFAULT_TIMEOUT, "1s").Should(ContainSubstring(`"service_instance_guid": null`))
 }
 
 func getRouteGuid(hostname string) string {
@@ -147,11 +191,11 @@ func getServiceInstanceGuid(serviceInstanceName string) string {
 	return serviceInstanceMap.Resources[0].Metadata.Guid
 }
 
-func createServiceInstance() string {
+func createServiceInstance(serviceName string) string {
 	serviceInstanceName := generator.PrefixedRandomName("RATS-SERVICE-")
 
 	// create service instance
-	session := cf.Cf("create-service", "fake-service", "fake-plan", serviceInstanceName)
+	session := cf.Cf("create-service", serviceName, "fake-plan", serviceInstanceName)
 	Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
 	return serviceInstanceName
@@ -184,4 +228,64 @@ func configureBroker(serviceBrokerAppName, routeServiceName string) {
 
 	// uploadNewServiceBrokerConfig
 	helpers.CurlApp(serviceBrokerAppName, "/config", "-X", "POST", "-d", string(changedJson))
+}
+
+func createServiceBroker() (string, string, string) {
+	serviceBrokerAsset := assets.NewAssets().ServiceBroker
+	serviceBrokerAppName := PushApp(serviceBrokerAsset, config.RubyBuildpackName)
+
+	serviceName := initiateBrokerConfig(serviceBrokerAppName)
+
+	brokerName := generator.PrefixedRandomName("RATS-BROKER-")
+	brokerUrl := helpers.AppUri(serviceBrokerAppName, "")
+
+	config = helpers.LoadConfig()
+	context := helpers.NewContext(config)
+	cf.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
+		// registerAsBroker
+		// cf create-service-broker name user password url
+		session := cf.Cf("create-service-broker", brokerName, "user", "password", brokerUrl)
+		Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
+		// public service access
+		// cf enable-service-access name
+		session = cf.Cf("enable-service-access", serviceName)
+		Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
+	})
+
+	return brokerName, serviceBrokerAppName, serviceName
+}
+
+func initiateBrokerConfig(serviceBrokerAppName string) string {
+	brokerConfigJson := helpers.CurlApp(serviceBrokerAppName, "/config")
+
+	var brokerConfigMap customMap
+
+	err := json.Unmarshal([]byte(brokerConfigJson), &brokerConfigMap)
+	Expect(err).NotTo(HaveOccurred())
+
+	dashboardClientId := generator.PrefixedRandomName("RATS-DASHBOARD-ID-")
+	serviceName := generator.PrefixedRandomName("RATS-SERVICE-")
+	serviceId := generator.PrefixedRandomName("RATS-SERVICE-ID-")
+
+	services := brokerConfigMap.key("behaviors").key("catalog").key("body")["services"].([]interface{})
+	service := services[0].(map[string]interface{})
+	service["dashboard_client"].(map[string]interface{})["id"] = dashboardClientId
+	service["name"] = serviceName
+	service["id"] = serviceId
+
+	plans := service["plans"].([]interface{})
+
+	for i, plan := range plans {
+		servicePlanId := generator.PrefixedRandomName(fmt.Sprintf("RATS-SERVICE-PLAN-ID-%d-", i))
+		plan.(map[string]interface{})["id"] = servicePlanId
+	}
+
+	changedJson, err := json.Marshal(brokerConfigMap)
+	Expect(err).NotTo(HaveOccurred())
+
+	helpers.CurlApp(serviceBrokerAppName, "/config", "-X", "POST", "-d", string(changedJson))
+
+	return serviceName
 }
