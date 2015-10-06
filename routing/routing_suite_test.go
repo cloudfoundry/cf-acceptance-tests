@@ -35,6 +35,15 @@ type Stat struct {
 }
 type StatsResponse map[string]Stat
 
+func EnableDiego(appName string) {
+	appGuid := GetAppGuid(appName)
+	Expect(cf.Cf("curl", fmt.Sprintf("/v2/apps/%s", appGuid), "-d", `{"diego": true}`, "-X", "PUT").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+}
+
+func RestartApp(app string) {
+	Expect(cf.Cf("restart", app).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+}
+
 func PushApp(asset, buildpackName string) string {
 	app := generator.PrefixedRandomName("RATS-APP-")
 	Expect(cf.Cf("push", app, "-b", buildpackName, "-m", "128M", "-p", asset, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
