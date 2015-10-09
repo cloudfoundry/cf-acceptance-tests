@@ -38,10 +38,10 @@ var _ = Describe("Wildcard Routes", func() {
 		})
 
 		appNameDora = generator.PrefixedRandomName("CATS-APP-")
-		Expect(cf.Cf("push", appNameDora, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appNameDora, "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 		appNameSimple = generator.PrefixedRandomName("CATS-APP-")
-		Expect(cf.Cf("push", appNameSimple, "-m", "128M", "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appNameSimple, "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 
 	AfterEach(func() {

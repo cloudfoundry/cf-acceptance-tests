@@ -19,6 +19,7 @@ var _ = Describe("Changing an app's start command", func() {
 
 		Expect(cf.Cf(
 			"push", appName,
+			"-b", config.RubyBuildpackName,
 			"-m", "128M",
 			"-p", assets.NewAssets().Dora,
 			"-d", helpers.LoadConfig().AppsDomain,

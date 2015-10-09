@@ -115,7 +115,7 @@ EOF
 	})
 
 	It("uses the buildpack cache after first staging", func() {
-		push := Cf("push", appName, "-m", "128M", "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
+		push := Cf("push", appName, "-b", BuildpackName, "-m", "128M", "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 		Expect(push).To(Exit(0))
 
 		Eventually(func() string {

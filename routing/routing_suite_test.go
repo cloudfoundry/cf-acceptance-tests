@@ -35,9 +35,9 @@ type Stat struct {
 }
 type StatsResponse map[string]Stat
 
-func PushApp(asset string) string {
+func PushApp(asset, buildpackName string) string {
 	app := generator.PrefixedRandomName("RATS-APP-")
-	Expect(cf.Cf("push", app, "-m", "128M", "-p", asset, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+	Expect(cf.Cf("push", app, "-b", buildpackName, "-m", "128M", "-p", asset, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	return app
 }
 

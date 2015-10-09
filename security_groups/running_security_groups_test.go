@@ -48,7 +48,7 @@ var _ = Describe("Security Groups", func() {
 
 	BeforeEach(func() {
 		serverAppName = generator.PrefixedRandomName("CATS-APP-")
-		Expect(cf.Cf("push", serverAppName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", serverAppName, "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 		// gather app url
 		var appsResponse AppsResponse
@@ -75,7 +75,7 @@ var _ = Describe("Security Groups", func() {
 	It("allows previously-blocked ip traffic after applying a security group, and re-blocks it when the group is removed", func() {
 
 		clientAppName := generator.PrefixedRandomName("CATS-APP-")
-		Expect(cf.Cf("push", clientAppName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", clientAppName, "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		defer func() { cf.Cf("delete", clientAppName, "-f").Wait(CF_PUSH_TIMEOUT) }()
 
 		By("Gathering container ip")
@@ -150,7 +150,7 @@ var _ = Describe("Security Groups", func() {
 			})
 		}()
 
-		Expect(cf.Cf("push", testAppName, "-m", "128M", "-b", buildpack, "-p", assets.NewAssets().HelloWorld, "--no-start", "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", testAppName, "-b", config.RubyBuildpackName, "-m", "128M", "-b", buildpack, "-p", assets.NewAssets().HelloWorld, "--no-start", "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		defer func() { cf.Cf("delete", testAppName, "-f").Wait(CF_PUSH_TIMEOUT) }()
 
 		Expect(cf.Cf("set-env", testAppName, "TESTURI", "www.google.com").Wait(DEFAULT_TIMEOUT)).To(Exit(0))

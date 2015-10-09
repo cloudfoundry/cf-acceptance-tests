@@ -24,9 +24,9 @@ func AppRootUri(appName string) string {
 }
 
 // Curls an app's endpoint and exit successfully before the specified timeout
-func CurlAppWithTimeout(appName, path string, timeout time.Duration) string {
+func CurlAppWithTimeout(appName, path string, timeout time.Duration, args ...string) string {
 	uri := AppUri(appName, path)
-	curlCmd := runner.Curl(uri)
+	curlCmd := runner.Curl(append([]string{uri}, args...)...)
 
 	runner.NewCmdRunner(curlCmd, timeout).Run()
 	Expect(string(curlCmd.Err.Contents())).To(HaveLen(0))
@@ -34,8 +34,8 @@ func CurlAppWithTimeout(appName, path string, timeout time.Duration) string {
 }
 
 // Curls an app's endpoint and exit successfully before the default timeout
-func CurlApp(appName, path string) string {
-	return CurlAppWithTimeout(appName, path, CURL_TIMEOUT)
+func CurlApp(appName, path string, args ...string) string {
+	return CurlAppWithTimeout(appName, path, CURL_TIMEOUT, args...)
 }
 
 // Curls an app's root endpoint and exit successfully before the default timeout

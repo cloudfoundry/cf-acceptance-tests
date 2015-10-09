@@ -32,7 +32,7 @@ var _ = Describe("loggregator", func() {
 	BeforeEach(func() {
 		appName = generator.PrefixedRandomName("CATS-APP-")
 
-		Expect(cf.Cf("push", appName, "-m", "128M", "-p", assets.NewAssets().LoggregatorLoadGenerator, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().LoggregatorLoadGenerator, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 
 	AfterEach(func() {

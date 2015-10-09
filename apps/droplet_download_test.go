@@ -25,7 +25,7 @@ var _ = Describe("Downloading droplets", func() {
 	BeforeEach(func() {
 		helloWorldAppName = generator.PrefixedRandomName("CATS-APP-")
 
-		Expect(cf.Cf("push", helloWorldAppName, "-m", "128M", "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", helloWorldAppName, "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 
 	AfterEach(func() {

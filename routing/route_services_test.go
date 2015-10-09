@@ -22,9 +22,9 @@ var _ = Describe("Route Services", func() {
 
 		BeforeEach(func() {
 			// push app
-			appName := PushApp(golangAsset)
+			appName := PushApp(golangAsset, config.GoBuildpackName)
 
-			routeServiceName = PushApp(loggingRouteServiceAsset)
+			routeServiceName = PushApp(loggingRouteServiceAsset, config.GoBuildpackName)
 			// push routing service
 
 			// get app info

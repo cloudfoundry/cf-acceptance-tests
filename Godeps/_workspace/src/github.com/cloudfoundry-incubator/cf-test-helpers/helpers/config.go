@@ -55,6 +55,15 @@ type Config struct {
 	DockerUser            string   `json:"docker_user"`
 	DockerPassword        string   `json:"docker_password"`
 	DockerEmail           string   `json:"docker_email"`
+
+	StaticFileBuildpackName string `json:"staticfile_buildpack_name"`
+	JavaBuildpackName       string `json:"java_buildpack_name"`
+	RubyBuildpackName       string `json:"ruby_buildpack_name"`
+	NodejsBuildpackName     string `json:"nodejs_buildpack_name"`
+	GoBuildpackName         string `json:"go_buildpack_name"`
+	PythonBuildpackName     string `json:"python_buildpack_name"`
+	PhpBuildpackName        string `json:"php_buildpack_name"`
+	BinaryBuildpackName     string `json:"binary_buildpack_name"`
 }
 
 func (c Config) ScaledTimeout(timeout time.Duration) time.Duration {
@@ -103,6 +112,15 @@ func loadConfigJsonFromPath() *Config {
 		PersistentAppSpace:     "CATS-persistent-space",
 		PersistentAppOrg:       "CATS-persistent-org",
 		PersistentAppQuotaName: "CATS-persistent-quota",
+
+		StaticFileBuildpackName: "staticfile_buildpack",
+		JavaBuildpackName:       "java_buildpack",
+		RubyBuildpackName:       "ruby_buildpack",
+		NodejsBuildpackName:     "nodejs_buildpack",
+		GoBuildpackName:         "go_buildpack",
+		PythonBuildpackName:     "python_buildpack",
+		PhpBuildpackName:        "php_buildpack",
+		BinaryBuildpackName:     "binary_buildpack",
 
 		ArtifactsDirectory: filepath.Join("..", "results"),
 	}

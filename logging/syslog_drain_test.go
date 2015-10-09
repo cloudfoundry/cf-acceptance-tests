@@ -35,7 +35,7 @@ var _ = Describe("Logging", func() {
 
 			appName = generator.PrefixedRandomName("CATS-APP-")
 
-			Eventually(cf.Cf("push", appName, "-m", "128M", "-p", assets.NewAssets().RubySimple, "-d", config.AppsDomain), CF_PUSH_TIMEOUT).Should(Exit(0), "Failed to push app")
+			Eventually(cf.Cf("push", appName, "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().RubySimple, "-d", config.AppsDomain), CF_PUSH_TIMEOUT).Should(Exit(0), "Failed to push app")
 
 			syslogDrainURL := "syslog://" + syslogDrainAddress
 			serviceName = "service-" + generator.RandomName()

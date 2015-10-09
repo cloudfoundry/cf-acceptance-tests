@@ -37,7 +37,7 @@ var _ = Describe("Purging service offerings", func() {
 			instanceName = generator.RandomName()
 			asyncInstanceName = generator.RandomName()
 
-			createApp := cf.Cf("push", appName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
+			createApp := cf.Cf("push", appName, "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 			Expect(createApp).To(Exit(0), "failed creating app")
 
 			broker.CreateServiceInstance(instanceName)
