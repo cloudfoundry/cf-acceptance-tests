@@ -37,6 +37,7 @@ type Config struct {
 	ArtifactsDirectory string `json:"artifacts_directory"`
 
 	DefaultTimeout     time.Duration `json:"default_timeout"`
+	DetectTimeout      time.Duration `json:"detect_timeout"`
 	CfPushTimeout      time.Duration `json:"cf_push_timeout"`
 	LongCurlTimeout    time.Duration `json:"long_curl_timeout"`
 	BrokerStartTimeout time.Duration `json:"broker_start_timeout"`

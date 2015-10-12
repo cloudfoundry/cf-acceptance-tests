@@ -30,7 +30,7 @@ var _ = Describe("Admin Buildpacks", func() {
 		return fmt.Sprintf("simple-buildpack-please-match-%s", appName)
 	}
 
-	BeforeEach(func() {
+	setupBuildpack := func() {
 		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			BuildpackName = RandomName()
 			appName = PrefixedRandomName("CATS-APP-")
@@ -99,74 +99,82 @@ EOF
 			Expect(createBuildpack).Should(Say("Uploading"))
 			Expect(createBuildpack).Should(Say("OK"))
 		})
-	})
+	}
 
-	AfterEach(func() {
+	deleteBuildpack := func() {
 		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(Cf("delete-buildpack", BuildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
-	})
+	}
 
-	Context("when the buildpack is detected", func() {
-		It("is used for the app", func() {
-			push := Cf("push", appName, "-m", "128M", "-p", appPath).Wait(CF_PUSH_TIMEOUT)
-			Expect(push).To(Exit(0))
-			Expect(push).To(Say("Staging with Simple Buildpack"))
-		})
-	})
+	itIsUsedForTheApp := func() {
+		push := Cf("push", appName, "-m", "128M", "-p", appPath).Wait(CF_PUSH_TIMEOUT)
+		Expect(push).To(Exit(0))
+		Expect(push).To(Say("Staging with Simple Buildpack"))
+	}
 
-	Context("when the buildpack fails to detect", func() {
-		BeforeEach(func() {
-			err := os.Remove(path.Join(appPath, matchingFilename(appName)))
-			Expect(err).ToNot(HaveOccurred())
-		})
+	itDoesNotDetectForEmptyApp := func() {
+		err := os.Remove(path.Join(appPath, matchingFilename(appName)))
+		Expect(err).ToNot(HaveOccurred())
 
-		It("fails to stage", func() { // diego doesn't support the particular error value
-			push := Cf("push", appName, "-m", "128M", "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
-			Expect(push).To(Exit(1))
-			Expect(push).To(Say("NoAppDetectedError"))
-		})
-	})
+		push := Cf("push", appName, "-m", "128M", "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
+		Expect(push).To(Exit(1))
+		Expect(push).To(Say("NoAppDetectedError"))
+	}
 
-	Context("when the buildpack is deleted", func() {
-		BeforeEach(func() {
-			AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-				Expect(Cf("delete-buildpack", BuildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-			})
-		})
+	itDoesNotDetectWhenBuildpackDisabled := func() {
+		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			var response QueryResponse
 
-		It("fails to stage", func() { // diego doesn't support the particular error value
-			push := Cf("push", appName, "-m", "128M", "-p", appPath).Wait(CF_PUSH_TIMEOUT)
-			Expect(push).To(Exit(1))
-			Expect(push).To(Say("NoAppDetectedError"))
-		})
-	})
+			ApiRequest("GET", "/v2/buildpacks?q=name:"+BuildpackName, &response, DEFAULT_TIMEOUT)
 
-	Context("when the buildpack is disabled", func() {
-		BeforeEach(func() {
-			AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-				var response QueryResponse
+			Expect(response.Resources).To(HaveLen(1))
 
-				ApiRequest("GET", "/v2/buildpacks?q=name:"+BuildpackName, &response, DEFAULT_TIMEOUT)
+			buildpackGuid := response.Resources[0].Metadata.Guid
 
-				Expect(response.Resources).To(HaveLen(1))
-
-				buildpackGuid := response.Resources[0].Metadata.Guid
-
-				ApiRequest(
-					"PUT",
-					"/v2/buildpacks/"+buildpackGuid,
-					nil,
-					DEFAULT_TIMEOUT,
-					`{"enabled":false}`,
-				)
-			})
+			ApiRequest(
+				"PUT",
+				"/v2/buildpacks/"+buildpackGuid,
+				nil,
+				DEFAULT_TIMEOUT,
+				`{"enabled":false}`,
+			)
 		})
 
-		It("fails to stage", func() { // diego doesn't support the particular error value
-			push := Cf("push", appName, "-m", "128M", "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
-			Expect(push).To(Exit(1))
-			Expect(push).To(Say("NoAppDetectedError"))
+		push := Cf("push", appName, "-m", "128M", "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
+		Expect(push).To(Exit(1))
+		Expect(push).To(Say("NoAppDetectedError"))
+	}
+
+	itDoesNotDetectWhenBuildpackDeleted := func() {
+		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			Expect(Cf("delete-buildpack", BuildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		})
+		push := Cf("push", appName, "-m", "128M", "-p", appPath).Wait(CF_PUSH_TIMEOUT)
+		Expect(push).To(Exit(1))
+		Expect(push).To(Say("NoAppDetectedError"))
+	}
+
+	Context("when the buildpack is not specified", func() {
+		It("runs the app only if the buildpack is detected", func() {
+			// Tests that rely on buildpack detection must be run in serial,
+			// but ginkgo doesn't allow specific blocks to be marked as serial-only
+			// so we manually mimic setup/teardown pattern here
+			setupBuildpack()
+			itIsUsedForTheApp()
+			deleteBuildpack()
+
+			setupBuildpack()
+			itDoesNotDetectForEmptyApp()
+			deleteBuildpack()
+
+			setupBuildpack()
+			itDoesNotDetectWhenBuildpackDisabled()
+			deleteBuildpack()
+
+			setupBuildpack()
+			itDoesNotDetectWhenBuildpackDeleted()
+			deleteBuildpack()
 		})
 	})
 })
