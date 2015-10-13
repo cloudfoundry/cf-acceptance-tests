@@ -102,8 +102,9 @@ func NewServiceBroker(name string, path string, context helpers.SuiteContext) Se
 }
 
 func (b ServiceBroker) Push() {
+	config := helpers.LoadConfig()
 	Expect(cf.Cf("push", b.Name, "-b", config.RubyBuildpackName, "-m", "128M", "-p", b.Path, "--no-start").Wait(BROKER_START_TIMEOUT)).To(Exit(0))
-	if helpers.LoadConfig().UseDiego {
+	if config.UseDiego {
 		appGuid := strings.TrimSpace(string(cf.Cf("app", b.Name, "--guid").Wait(DEFAULT_TIMEOUT).Out.Contents()))
 		cf.Cf("curl",
 			fmt.Sprintf("/v2/apps/%s", appGuid),
