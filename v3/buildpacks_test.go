@@ -91,7 +91,7 @@ var _ = Describe("buildpack", func() {
 	})
 
 	It("uses buildpack cache for staging", func() {
-		firstDropletGuid := StagePackage(packageGuid, fmt.Sprintf(`{"buildpack":"%s"}`, buildpackName))
+		firstDropletGuid := StagePackage(packageGuid, fmt.Sprintf(`{"lifecycle":{ "type" : "buildpack", "data" : { "buildpack": "%s" } }}`, buildpackName))
 		dropletPath := fmt.Sprintf("/v3/droplets/%s", firstDropletGuid)
 		Eventually(func() *Session {
 			result := cf.Cf("curl", dropletPath).Wait(DEFAULT_TIMEOUT)
@@ -104,7 +104,7 @@ var _ = Describe("buildpack", func() {
 		// Wait for buildpack cache to be uploaded to blobstore.
 		time.Sleep(DEFAULT_TIMEOUT)
 
-		secondDropletGuid := StagePackage(packageGuid, fmt.Sprintf(`{"buildpack":"%s"}`, buildpackName))
+		secondDropletGuid := StagePackage(packageGuid, fmt.Sprintf(`{"lifecycle":{ "type" : "buildpack", "data" : { "buildpack": "%s" } }}`, buildpackName))
 		dropletPath = fmt.Sprintf("/v3/droplets/%s", secondDropletGuid)
 		Eventually(func() *Session {
 			result := cf.Cf("curl", dropletPath).Wait(DEFAULT_TIMEOUT)
