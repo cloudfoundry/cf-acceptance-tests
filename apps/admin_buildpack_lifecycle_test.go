@@ -30,7 +30,11 @@ var _ = Describe("Admin Buildpacks", func() {
 		return fmt.Sprintf("simple-buildpack-please-match-%s", appName)
 	}
 
-	setupBuildpack := func() {
+	type appConfig struct {
+		Empty bool
+	}
+
+	setupBuildpack := func(appConfig appConfig) {
 		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			BuildpackName = RandomName()
 			appName = PrefixedRandomName("CATS-APP-")
@@ -86,8 +90,10 @@ EOF
 				},
 			})
 
-			_, err = os.Create(path.Join(appPath, matchingFilename(appName)))
-			Expect(err).ToNot(HaveOccurred())
+			if !appConfig.Empty {
+				_, err = os.Create(path.Join(appPath, matchingFilename(appName)))
+				Expect(err).ToNot(HaveOccurred())
+			}
 
 			_, err = os.Create(path.Join(appPath, "some-file"))
 			Expect(err).ToNot(HaveOccurred())
@@ -114,9 +120,6 @@ EOF
 	}
 
 	itDoesNotDetectForEmptyApp := func() {
-		err := os.Remove(path.Join(appPath, matchingFilename(appName)))
-		Expect(err).ToNot(HaveOccurred())
-
 		push := Cf("push", appName, "-m", "128M", "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 		Expect(push).To(Exit(1))
 		Expect(push).To(Say("NoAppDetectedError"))
@@ -160,19 +163,20 @@ EOF
 			// Tests that rely on buildpack detection must be run in serial,
 			// but ginkgo doesn't allow specific blocks to be marked as serial-only
 			// so we manually mimic setup/teardown pattern here
-			setupBuildpack()
+
+			setupBuildpack(appConfig{Empty: false})
 			itIsUsedForTheApp()
 			deleteBuildpack()
 
-			setupBuildpack()
+			setupBuildpack(appConfig{Empty: true})
 			itDoesNotDetectForEmptyApp()
 			deleteBuildpack()
 
-			setupBuildpack()
+			setupBuildpack(appConfig{Empty: false})
 			itDoesNotDetectWhenBuildpackDisabled()
 			deleteBuildpack()
 
-			setupBuildpack()
+			setupBuildpack(appConfig{Empty: false})
 			itDoesNotDetectWhenBuildpackDeleted()
 			deleteBuildpack()
 		})
