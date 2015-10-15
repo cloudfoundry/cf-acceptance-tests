@@ -83,7 +83,7 @@ The full set of config parameters is explained below:
 * `persistent_app_space` (optional): [See below](#persistent-app-test-setup).
 * `persistent_app_org` (optional): [See below](#persistent-app-test-setup).
 * `persistent_app_quota_name` (optional): [See below](#persistent-app-test-setup).
-* `use_diego` (only required for `services` suite and CF deployments with Diego): Set to `true` if running `services` suite against a CF deployment with Diego.
+* `use_diego` (only required for `services` suite, certain `routing` tests and CF deployments with Diego): Set to `true` if running `services` suite or route services tests against a CF deployment with Diego.
 * `artifacts_directory` (optional): If set, `cf` CLI trace output from test runs will be captured in files and placed in this directory. [See below](#capturing-test-output) for more.
 * `default_timeout` (optional): Default time (in seconds) to wait for polling assertions that wait for asynchronous results.
 * `cf_push_timeout` (optional): Default time (in seconds) to wait for `cf push` commands to succeed.

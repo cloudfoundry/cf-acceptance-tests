@@ -16,89 +16,90 @@ import (
 )
 
 var _ = Describe("Route Services", func() {
-	Context("when a route binds to a service", func() {
+	config := helpers.LoadConfig()
+	if config.UseDiego {
+		Context("when a route binds to a service", func() {
+			Context("when service broker returns a route service url", func() {
+				var (
+					brokerName               string
+					brokerAppName            string
+					serviceInstanceName      string
+					appName                  string
+					routeServiceName         string
+					golangAsset              = assets.NewAssets().Golang
+					loggingRouteServiceAsset = assets.NewAssets().LoggingRouteServiceZip
+				)
 
-		Context("when service broker returns a route service url", func() {
-			var (
-				brokerName               string
-				brokerAppName            string
-				serviceInstanceName      string
-				appName                  string
-				routeServiceName         string
-				golangAsset              = assets.NewAssets().Golang
-				loggingRouteServiceAsset = assets.NewAssets().LoggingRouteServiceZip
-			)
+				BeforeEach(func() {
+					var serviceName string
+					brokerName, brokerAppName, serviceName = createServiceBroker()
+					serviceInstanceName = createServiceInstance(serviceName)
 
-			BeforeEach(func() {
-				var serviceName string
-				brokerName, brokerAppName, serviceName = createServiceBroker()
-				serviceInstanceName = createServiceInstance(serviceName)
+					appName = PushApp(golangAsset, config.GoBuildpackName)
+					EnableDiego(appName)
 
-				appName = PushApp(golangAsset, config.GoBuildpackName)
-				EnableDiego(appName)
+					routeServiceName = PushApp(loggingRouteServiceAsset, config.GoBuildpackName)
+					configureBroker(brokerAppName, routeServiceName)
 
-				routeServiceName = PushApp(loggingRouteServiceAsset, config.GoBuildpackName)
-				configureBroker(brokerAppName, routeServiceName)
+					bindRouteToService(appName, serviceInstanceName)
+					RestartApp(appName)
+				})
 
-				bindRouteToService(appName, serviceInstanceName)
-				RestartApp(appName)
+				AfterEach(func() {
+					unbindRouteFromService(appName, serviceInstanceName)
+					deleteServiceInstance(serviceInstanceName)
+					deleteServiceBroker(brokerName)
+				})
+
+				It("a request to the app is routed through the route service", func() {
+					Eventually(func() string {
+						return helpers.CurlAppRoot(appName)
+					}, DEFAULT_TIMEOUT).Should(ContainSubstring("go, world"))
+
+					Eventually(func() *Session {
+						logs := cf.Cf("logs", "--recent", routeServiceName)
+						Expect(logs.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+						return logs
+					}, DEFAULT_TIMEOUT).Should(Say("Response Body: go, world"))
+				})
 			})
 
-			AfterEach(func() {
-				unbindRouteFromService(appName, serviceInstanceName)
-				deleteServiceInstance(serviceInstanceName)
-				deleteServiceBroker(brokerName)
-			})
+			Context("when service broker does not return a route service url", func() {
+				var (
+					brokerName          string
+					brokerAppName       string
+					serviceInstanceName string
+					appName             string
+					golangAsset         = assets.NewAssets().Golang
+				)
 
-			It("a request to the app is routed through the route service", func() {
-				Eventually(func() string {
-					return helpers.CurlAppRoot(appName)
-				}, DEFAULT_TIMEOUT).Should(ContainSubstring("go, world"))
+				BeforeEach(func() {
+					var serviceName string
+					brokerName, brokerAppName, serviceName = createServiceBroker()
+					serviceInstanceName = createServiceInstance(serviceName)
+					appName = PushApp(golangAsset, config.GoBuildpackName)
+					EnableDiego(appName)
 
-				Eventually(func() *Session {
-					logs := cf.Cf("logs", "--recent", routeServiceName)
-					Expect(logs.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-					return logs
-				}, DEFAULT_TIMEOUT).Should(Say("Response Body: go, world"))
+					configureBroker(brokerAppName, "")
+
+					bindRouteToService(appName, serviceInstanceName)
+					RestartApp(appName)
+				})
+
+				AfterEach(func() {
+					unbindRouteFromService(appName, serviceInstanceName)
+					deleteServiceInstance(serviceInstanceName)
+					deleteServiceBroker(brokerName)
+				})
+
+				It("routes to an app", func() {
+					Eventually(func() string {
+						return helpers.CurlAppRoot(appName)
+					}, DEFAULT_TIMEOUT).Should(ContainSubstring("go, world"))
+				})
 			})
 		})
-
-		Context("when service broker does not return a route service url", func() {
-			var (
-				brokerName          string
-				brokerAppName       string
-				serviceInstanceName string
-				appName             string
-				golangAsset         = assets.NewAssets().Golang
-			)
-
-			BeforeEach(func() {
-				var serviceName string
-				brokerName, brokerAppName, serviceName = createServiceBroker()
-				serviceInstanceName = createServiceInstance(serviceName)
-				appName = PushApp(golangAsset, config.GoBuildpackName)
-				EnableDiego(appName)
-
-				configureBroker(brokerAppName, "")
-
-				bindRouteToService(appName, serviceInstanceName)
-				RestartApp(appName)
-			})
-
-			AfterEach(func() {
-				unbindRouteFromService(appName, serviceInstanceName)
-				deleteServiceInstance(serviceInstanceName)
-				deleteServiceBroker(brokerName)
-			})
-
-			It("routes to an app", func() {
-				Eventually(func() string {
-					return helpers.CurlAppRoot(appName)
-				}, DEFAULT_TIMEOUT).Should(ContainSubstring("go, world"))
-			})
-		})
-
-	})
+	}
 })
 
 type customMap map[string]interface{}
