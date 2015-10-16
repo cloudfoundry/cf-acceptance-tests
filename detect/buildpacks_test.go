@@ -21,6 +21,7 @@ var _ = Describe("Buildpacks", func() {
 	})
 
 	AfterEach(func() {
+		Eventually(cf.Cf("logs", appName, "--recent")).Should(Exit())
 		Expect(cf.Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 
