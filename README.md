@@ -94,9 +94,28 @@ The full set of config parameters is explained below:
 * `syslog_ip_address` (only required for `logging` suite): This must be a publically accessible IP address of your local machine, accessible by applications within your CF deployment.
 * `syslog_drain_port` (only required for `logging` suite): This must be an available port on your local machine.
 * `use_http` (optional): Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (defualt is HTTPS)
-
+* `staticfile_buildpack_name` (optional) [See below](#buildpack-names).
+* `java_buildpack_name` (optional) [See below](#buildpack-names).
+* `ruby_buildpack_name` (optional) [See below](#buildpack-names).
+* `nodejs_buildpack_name` (optional) [See below](#buildpack-names).
+* `go_buildpack_name` (optional) [See below](#buildpack-names).
+* `python_buildpack_name` (optional) [See below](#buildpack-names).
+* `php_buildpack_name` (optional) [See below](#buildpack-names).
+* `binary_buildpack_name` (optional) [See below](#buildpack-names).
 #### Persistent App Test Setup
 The tests in `one_push_many_restarts_test.go` operate on an app that is supposed to persist between runs of the CF Acceptance tests. If these tests are run, they will create an org, space, and quota and push the app to this space. The test config will provide default names for these entities, but to configure them, set values for `persistent_app_host`, `persistent_app_space`, `persistent_app_org`, and `persistent_app_quota_name`.
+
+#### Buildpack Names
+Many tests specify a buildpack when pushing an app, so that on diego the app staging process completes in less time. The default names for the buildpacks are as follows; if you have buildpacks with different names, you can override them by setting different names:
+
+* `staticfile_buildpack_name: staticfile_buildpack`
+* `java_buildpack_name: java_buildpack`
+* `ruby_buildpack_name: ruby_buildpack`
+* `nodejs_buildpack_name: nodejs_buildpack`
+* `go_buildpack_name: go_buildpack`
+* `python_buildpack_name: python_buildpack`
+* `php_buildpack_name: php_buildpack`
+* `binary_buildpack_name: binary_buildpack`
 
 #### Routing Test Suite Setup
 
