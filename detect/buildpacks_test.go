@@ -71,7 +71,7 @@ var _ = Describe("Buildpacks", func() {
 		var phpPushTimeout = DETECT_TIMEOUT + 6*time.Minute
 
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "-m", "128M", "-p", assets.NewAssets().Php, "-d", config.AppsDomain).Wait(phpPushTimeout)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-m", "256M", "-p", assets.NewAssets().Php, "-d", config.AppsDomain).Wait(phpPushTimeout)).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(appName)
