@@ -42,7 +42,6 @@ var _ = Describe("Route Services", func() {
 					configureBroker(brokerAppName, routeServiceName)
 
 					bindRouteToService(appName, serviceInstanceName)
-					RestartApp(appName)
 				})
 
 				AfterEach(func() {
@@ -52,11 +51,8 @@ var _ = Describe("Route Services", func() {
 				})
 
 				It("a request to the app is routed through the route service", func() {
-					Eventually(func() string {
-						return helpers.CurlAppRoot(appName)
-					}, DEFAULT_TIMEOUT).Should(ContainSubstring("go, world"))
-
 					Eventually(func() *Session {
+						helpers.CurlAppRoot(appName)
 						logs := cf.Cf("logs", "--recent", routeServiceName)
 						Expect(logs.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 						return logs
@@ -83,7 +79,6 @@ var _ = Describe("Route Services", func() {
 					configureBroker(brokerAppName, "")
 
 					bindRouteToService(appName, serviceInstanceName)
-					RestartApp(appName)
 				})
 
 				AfterEach(func() {
