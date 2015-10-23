@@ -11,6 +11,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 )
 
@@ -85,7 +86,9 @@ var _ = Describe("Changing an app's start command", func() {
 		}
 
 		BeforeEach(func() {
-			Expect(cf.Cf("push", appName, "-b", config.NodejsBuildpackName, "-m", "128M", "-p", assets.NewAssets().NodeWithProcfile, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-b", config.NodejsBuildpackName, "-m", "128M", "-p", assets.NewAssets().NodeWithProcfile, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			app_helpers.ConditionallyEnableDiego(appName)
+			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		})
 
 		AfterEach(func() {

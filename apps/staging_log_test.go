@@ -5,9 +5,11 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 )
 
@@ -23,9 +25,11 @@ var _ = Describe("An application being staged", func() {
 	})
 
 	It("has its staging log streamed during a push", func() {
-		push := cf.Cf("push", appName, "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
+		Eventually(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain), DEFAULT_TIMEOUT).Should(Exit(0))
+		app_helpers.ConditionallyEnableDiego(appName)
+		start := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)
 
-		output := string(push.Buffer().Contents())
+		output := string(start.Buffer().Contents())
 		expected := []string{"Installing dependencies", "Uploading droplet", "App started"}
 		found := false
 		for _, value := range expected {

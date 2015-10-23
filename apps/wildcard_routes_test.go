@@ -9,6 +9,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 )
 
@@ -38,10 +39,14 @@ var _ = Describe("Wildcard Routes", func() {
 		})
 
 		appNameDora = generator.PrefixedRandomName("CATS-APP-")
-		Expect(cf.Cf("push", appNameDora, "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appNameDora, "--no-start", "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		app_helpers.ConditionallyEnableDiego(appNameDora)
+		Expect(cf.Cf("start", appNameDora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 		appNameSimple = generator.PrefixedRandomName("CATS-APP-")
-		Expect(cf.Cf("push", appNameSimple, "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appNameSimple, "--no-start", "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		app_helpers.ConditionallyEnableDiego(appNameSimple)
+		Expect(cf.Cf("start", appNameSimple).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 
 	AfterEach(func() {

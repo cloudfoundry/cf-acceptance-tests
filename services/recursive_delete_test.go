@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -46,8 +47,10 @@ var _ = Describe("Recursive Delete", func() {
 			target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(CF_PUSH_TIMEOUT)
 			Expect(target).To(Exit(0), "failed targeting")
 
-			createApp := cf.Cf("push", appName, "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
+			createApp := cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)
 			Expect(createApp).To(Exit(0), "failed creating app")
+			app_helpers.ConditionallyEnableDiego(appName)
+			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
 			Expect(createService).To(Exit(0), "failed creating service")

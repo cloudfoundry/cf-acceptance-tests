@@ -10,6 +10,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -35,7 +36,9 @@ var _ = Describe("Logging", func() {
 
 			appName = generator.PrefixedRandomName("CATS-APP-")
 
-			Eventually(cf.Cf("push", appName, "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().RubySimple, "-d", config.AppsDomain), CF_PUSH_TIMEOUT).Should(Exit(0), "Failed to push app")
+			Eventually(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().RubySimple, "-d", config.AppsDomain), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to push app")
+			app_helpers.ConditionallyEnableDiego(appName)
+			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			syslogDrainURL := "syslog://" + syslogDrainAddress
 			serviceName = "service-" + generator.RandomName()

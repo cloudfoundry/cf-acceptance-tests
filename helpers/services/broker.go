@@ -15,6 +15,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 )
 
@@ -103,15 +104,8 @@ func NewServiceBroker(name string, path string, context helpers.SuiteContext) Se
 
 func (b ServiceBroker) Push() {
 	config := helpers.LoadConfig()
-	Expect(cf.Cf("push", b.Name, "-b", config.RubyBuildpackName, "-m", "128M", "-p", b.Path, "--no-start").Wait(BROKER_START_TIMEOUT)).To(Exit(0))
-	if config.UseDiego {
-		appGuid := strings.TrimSpace(string(cf.Cf("app", b.Name, "--guid").Wait(DEFAULT_TIMEOUT).Out.Contents()))
-		cf.Cf("curl",
-			fmt.Sprintf("/v2/apps/%s", appGuid),
-			"-X", "PUT",
-			"-d", "{\"diego\": true}",
-		).Wait(DEFAULT_TIMEOUT)
-	}
+	Expect(cf.Cf("push", b.Name, "--no-start", "-b", config.RubyBuildpackName, "-m", "128M", "-p", b.Path).Wait(BROKER_START_TIMEOUT)).To(Exit(0))
+	app_helpers.ConditionallyEnableDiego(b.Name)
 	Expect(cf.Cf("start", b.Name).Wait(BROKER_START_TIMEOUT)).To(Exit(0))
 }
 

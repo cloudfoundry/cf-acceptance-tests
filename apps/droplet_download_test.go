@@ -15,6 +15,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 )
 
@@ -25,7 +26,9 @@ var _ = Describe("Downloading droplets", func() {
 	BeforeEach(func() {
 		helloWorldAppName = generator.PrefixedRandomName("CATS-APP-")
 
-		Expect(cf.Cf("push", helloWorldAppName, "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", helloWorldAppName, "--no-start", "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		app_helpers.ConditionallyEnableDiego(helloWorldAppName)
+		Expect(cf.Cf("start", helloWorldAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 
 	AfterEach(func() {

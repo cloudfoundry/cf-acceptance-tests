@@ -20,6 +20,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 )
 
@@ -46,8 +47,14 @@ var _ = Describe("An application that's already been pushed", func() {
 		output := string(appQuery.Out.Contents())
 
 		if appQuery.ExitCode() == 1 && strings.Contains(output, "not found") {
-			pushCommand := cf.Cf("push", appName, "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
+			pushCommand := cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)
 			if pushCommand.ExitCode() != 0 {
+				Expect(cf.Cf("delete", "-f", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				Fail("failed to create app")
+			}
+			app_helpers.ConditionallyEnableDiego(appName)
+			startCommand := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)
+			if startCommand.ExitCode() != 0 {
 				Expect(cf.Cf("delete", "-f", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 				Fail("persistent app failed to stage")
 			}
