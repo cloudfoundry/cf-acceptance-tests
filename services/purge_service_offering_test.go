@@ -26,6 +26,8 @@ var _ = Describe("Purging service offerings", func() {
 	})
 
 	AfterEach(func() {
+		app_helpers.AppReport(broker.Name, DEFAULT_TIMEOUT)
+
 		broker.Destroy()
 	})
 

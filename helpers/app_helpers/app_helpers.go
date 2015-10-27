@@ -2,6 +2,7 @@ package app_helpers
 
 import (
 	"strings"
+	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
@@ -24,4 +25,9 @@ func ConditionallyEnableDiego(appName string) {
 		guid := guidForAppName(appName)
 		Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": true}`)).Should(Exit(0))
 	}
+}
+
+func AppReport(appName string, timeout time.Duration) {
+	Eventually(cf.Cf("app", appName, "--guid"), timeout).Should(Exit())
+	Eventually(cf.Cf("logs", appName, "--recent"), timeout).Should(Exit())
 }

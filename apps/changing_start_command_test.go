@@ -92,6 +92,8 @@ var _ = Describe("Changing an app's start command", func() {
 		})
 
 		AfterEach(func() {
+			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+
 			Expect(cf.Cf("delete", appName, "-f").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		})
 

@@ -200,6 +200,9 @@ var _ = Describe("Session Affinity", func() {
 		})
 
 		AfterEach(func() {
+			app_helpers.AppReport(app1, DEFAULT_TIMEOUT)
+			app_helpers.AppReport(app2, DEFAULT_TIMEOUT)
+
 			DeleteApp(app1)
 			DeleteApp(app2)
 

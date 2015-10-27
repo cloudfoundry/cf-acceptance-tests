@@ -69,6 +69,8 @@ var _ = Describe("Security Groups", func() {
 	})
 
 	AfterEach(func() {
+		app_helpers.AppReport(serverAppName, DEFAULT_TIMEOUT)
+
 		Expect(cf.Cf("delete", serverAppName, "-f").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 

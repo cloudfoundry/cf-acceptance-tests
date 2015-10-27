@@ -36,6 +36,8 @@ var _ = Describe("An application that's already been pushed", func() {
 	})
 
 	AfterEach(func() {
+		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+
 		environment.Teardown()
 	})
 

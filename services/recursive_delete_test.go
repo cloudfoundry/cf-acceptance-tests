@@ -58,6 +58,8 @@ var _ = Describe("Recursive Delete", func() {
 	})
 
 	AfterEach(func() {
+		app_helpers.AppReport(broker.Name, DEFAULT_TIMEOUT)
+
 		broker.Destroy()
 		runner.NewCmdRunner(cf.Cf("delete-quota", quotaName), context.ShortTimeout()).Run()
 	})

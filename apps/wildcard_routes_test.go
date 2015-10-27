@@ -50,6 +50,9 @@ var _ = Describe("Wildcard Routes", func() {
 	})
 
 	AfterEach(func() {
+		app_helpers.AppReport(appNameDora, DEFAULT_TIMEOUT)
+		app_helpers.AppReport(appNameSimple, DEFAULT_TIMEOUT)
+
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("target", "-o", orgName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			Expect(cf.Cf("delete-shared-domain", domainName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
