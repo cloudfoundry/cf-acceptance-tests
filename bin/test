@@ -16,4 +16,6 @@ export PATH=$godep_gopath/bin:$PATH
 
 go install -v github.com/onsi/ginkgo/ginkgo
 
+go list github.com/cloudfoundry/cf-acceptance-tests/... | xargs -I {} go test -c {}
+
 ginkgo $@
