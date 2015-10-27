@@ -2,6 +2,7 @@ package routing
 
 import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
