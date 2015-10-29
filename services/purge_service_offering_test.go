@@ -77,5 +77,9 @@ var _ = Describe("Purging service offerings", func() {
 			Expect(marketplace).To(Exit(0))
 			Expect(marketplace).NotTo(Say(broker.Service.Name))
 		})
+
+		AfterEach(func() {
+			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+		})
 	})
 })

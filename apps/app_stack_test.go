@@ -9,6 +9,7 @@ import (
 	. "github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	. "github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -104,6 +105,8 @@ EOF
 	})
 
 	AfterEach(func() {
+		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+
 		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(Cf("delete-buildpack", BuildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})

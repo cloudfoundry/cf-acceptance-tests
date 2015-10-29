@@ -38,6 +38,8 @@ var _ = Describe("Session Affinity", func() {
 		})
 
 		AfterEach(func() {
+			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+
 			DeleteApp(appName)
 
 			err := os.Remove(cookieStorePath)

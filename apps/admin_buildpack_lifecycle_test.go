@@ -8,6 +8,7 @@ import (
 
 	. "github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	. "github.com/cloudfoundry-incubator/cf-test-helpers/generator"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -29,6 +30,10 @@ var _ = Describe("Admin Buildpacks", func() {
 	matchingFilename := func(appName string) string {
 		return fmt.Sprintf("simple-buildpack-please-match-%s", appName)
 	}
+
+	AfterEach(func() {
+		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+	})
 
 	setupBuildpack := func() {
 		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {

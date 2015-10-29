@@ -85,6 +85,8 @@ var _ = Describe("Route Services", func() {
 				})
 
 				AfterEach(func() {
+					app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+
 					unbindRouteFromService(appName, serviceInstanceName)
 					deleteServiceInstance(serviceInstanceName)
 					deleteServiceBroker(brokerName)

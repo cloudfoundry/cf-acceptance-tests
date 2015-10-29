@@ -219,6 +219,11 @@ var _ = Describe("Service Instance Lifecycle", func() {
 				createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
 				Expect(createService).To(Exit(0), "failed creating service")
 			})
+
+			AfterEach(func() {
+				app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+			})
+
 			Describe("bindings", func() {
 				It("can bind service to app and check app env and events", func() {
 					bindService := cf.Cf("bind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)

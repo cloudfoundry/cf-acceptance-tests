@@ -23,6 +23,8 @@ var _ = Describe("Changing an app's start command", func() {
 	})
 
 	AfterEach(func() {
+		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+
 		Expect(cf.Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 
@@ -89,12 +91,6 @@ var _ = Describe("Changing an app's start command", func() {
 			Expect(cf.Cf("push", appName, "--no-start", "-b", config.NodejsBuildpackName, "-m", "128M", "-p", assets.NewAssets().NodeWithProcfile, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			app_helpers.ConditionallyEnableDiego(appName)
 			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
-		})
-
-		AfterEach(func() {
-			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
-
-			Expect(cf.Cf("delete", appName, "-f").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		})
 
 		It("detects the use of the start command in the 'web' process type", func() {
