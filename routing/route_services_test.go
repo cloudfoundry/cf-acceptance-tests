@@ -18,7 +18,7 @@ import (
 
 var _ = Describe("Route Services", func() {
 	config := helpers.LoadConfig()
-	if config.UseDiego {
+	if config.IncludeRouteServices {
 		Context("when a route binds to a service", func() {
 			Context("when service broker returns a route service url", func() {
 				var (
@@ -195,7 +195,6 @@ func getServiceInstanceGuid(serviceInstanceName string) string {
 func createServiceInstance(serviceName string) string {
 	serviceInstanceName := generator.PrefixedRandomName("RATS-SERVICE-")
 
-	// create service instance
 	session := cf.Cf("create-service", serviceName, "fake-plan", serviceInstanceName)
 	Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
@@ -203,7 +202,6 @@ func createServiceInstance(serviceName string) string {
 }
 
 func configureBroker(serviceBrokerAppName, routeServiceName string) {
-	// downloadServiceBrokerJsonConfig
 	brokerConfigJson := helpers.CurlApp(serviceBrokerAppName, "/config")
 
 	var brokerConfigMap customMap
@@ -211,7 +209,6 @@ func configureBroker(serviceBrokerAppName, routeServiceName string) {
 	err := json.Unmarshal([]byte(brokerConfigJson), &brokerConfigMap)
 	Expect(err).NotTo(HaveOccurred())
 
-	// updateConfigWithOurCustomRoute
 	if routeServiceName != "" {
 		routeServiceUrl := helpers.AppUri(routeServiceName, "/")
 		url, err := url.Parse(routeServiceUrl)
@@ -227,7 +224,6 @@ func configureBroker(serviceBrokerAppName, routeServiceName string) {
 	changedJson, err := json.Marshal(brokerConfigMap)
 	Expect(err).NotTo(HaveOccurred())
 
-	// uploadNewServiceBrokerConfig
 	helpers.CurlApp(serviceBrokerAppName, "/config", "-X", "POST", "-d", string(changedJson))
 }
 
@@ -243,13 +239,9 @@ func createServiceBroker() (string, string, string) {
 	config = helpers.LoadConfig()
 	context := helpers.NewContext(config)
 	cf.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
-		// registerAsBroker
-		// cf create-service-broker name user password url
 		session := cf.Cf("create-service-broker", brokerName, "user", "password", brokerUrl)
 		Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
-		// public service access
-		// cf enable-service-access name
 		session = cf.Cf("enable-service-access", serviceName)
 		Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
