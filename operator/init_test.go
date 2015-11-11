@@ -11,9 +11,10 @@ import (
 )
 
 var (
-	DEFAULT_TIMEOUT   = 30 * time.Second
-	CF_PUSH_TIMEOUT   = 2 * time.Minute
-	LONG_CURL_TIMEOUT = 2 * time.Minute
+	DEFAULT_TIMEOUT      = 30 * time.Second
+	CF_PUSH_TIMEOUT      = 2 * time.Minute
+	LONG_CURL_TIMEOUT    = 2 * time.Minute
+	DEFAULT_MEMORY_LIMIT = "256M"
 )
 
 var (

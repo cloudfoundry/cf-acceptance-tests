@@ -47,7 +47,7 @@ func RestartApp(app string) {
 
 func PushApp(asset, buildpackName string) string {
 	app := generator.PrefixedRandomName("RATS-APP-")
-	Expect(cf.Cf("push", app, "-b", buildpackName, "--no-start", "-m", "128M", "-p", asset, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	Expect(cf.Cf("push", app, "-b", buildpackName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", asset, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	app_helpers.ConditionallyEnableDiego(app)
 	Expect(cf.Cf("start", app).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	return app
@@ -151,8 +151,9 @@ func Rtr(args ...string) *Session {
 }
 
 const (
-	DEFAULT_TIMEOUT = 30 * time.Second
-	CF_PUSH_TIMEOUT = 2 * time.Minute
+	DEFAULT_TIMEOUT      = 30 * time.Second
+	CF_PUSH_TIMEOUT      = 2 * time.Minute
+	DEFAULT_MEMORY_LIMIT = "256M"
 )
 
 var config helpers.Config

@@ -19,7 +19,7 @@ var _ = Describe("GitBuildpack", func() {
 
 	It("uses a buildpack from a git url", func() {
 		appName = generator.PrefixedRandomName("CATS-APP-")
-		Expect(cf.Cf("push", appName, "--no-start", "-m", "128M", "-p", assets.NewAssets().Node, "-b", "https://github.com/cloudfoundry/nodejs-buildpack.git#v1.3.1", "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Node, "-b", "https://github.com/cloudfoundry/nodejs-buildpack.git#v1.3.1", "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		app_helpers.ConditionallyEnableDiego(appName)
 		Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 

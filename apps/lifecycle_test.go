@@ -51,7 +51,7 @@ var _ = Describe("Application Lifecycle", func() {
 	BeforeEach(func() {
 		appName = generator.PrefixedRandomName("CATS-APP-")
 
-		Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		app_helpers.ConditionallyEnableDiego(appName)
 		Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
@@ -75,7 +75,7 @@ var _ = Describe("Application Lifecycle", func() {
 
 			BeforeEach(func() {
 				app2 = generator.PrefixedRandomName("CATS-APP-")
-				Expect(cf.Cf("push", app2, "--no-start", "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				Expect(cf.Cf("push", app2, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 				app_helpers.ConditionallyEnableDiego(app2)
 				Expect(cf.Cf("start", app2).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 			})
@@ -185,7 +185,7 @@ var _ = Describe("Application Lifecycle", func() {
 				return helpers.CurlAppRoot(appName)
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
 
-			Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			app_helpers.ConditionallyEnableDiego(appName)
 			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 

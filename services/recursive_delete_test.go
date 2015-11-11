@@ -47,7 +47,7 @@ var _ = Describe("Recursive Delete", func() {
 			target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(CF_PUSH_TIMEOUT)
 			Expect(target).To(Exit(0), "failed targeting")
 
-			createApp := cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)
+			createApp := cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)
 			Expect(createApp).To(Exit(0), "failed creating app")
 			app_helpers.ConditionallyEnableDiego(appName)
 			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))

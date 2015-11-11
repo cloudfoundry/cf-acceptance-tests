@@ -11,10 +11,11 @@ import (
 )
 
 var (
-	DEFAULT_TIMEOUT   = 30 * time.Second
-	CF_PUSH_TIMEOUT   = 2 * time.Minute
-	LONG_CURL_TIMEOUT = 2 * time.Minute
-	CF_JAVA_TIMEOUT   = 10 * time.Minute
+	DEFAULT_TIMEOUT      = 30 * time.Second
+	CF_PUSH_TIMEOUT      = 2 * time.Minute
+	LONG_CURL_TIMEOUT    = 2 * time.Minute
+	CF_JAVA_TIMEOUT      = 10 * time.Minute
+	DEFAULT_MEMORY_LIMIT = "256M"
 )
 
 const diegoUnsupportedTag = "{NO_DIEGO_SUPPORT} "

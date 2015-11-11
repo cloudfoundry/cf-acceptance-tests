@@ -11,9 +11,10 @@ import (
 )
 
 var (
-	CF_JAVA_TIMEOUT = 10 * time.Minute
-	DEFAULT_TIMEOUT = 30 * time.Second
-	DETECT_TIMEOUT  = 5 * time.Minute
+	CF_JAVA_TIMEOUT      = 10 * time.Minute
+	DEFAULT_TIMEOUT      = 30 * time.Second
+	DETECT_TIMEOUT       = 5 * time.Minute
+	DEFAULT_MEMORY_LIMIT = "256M"
 )
 
 var (

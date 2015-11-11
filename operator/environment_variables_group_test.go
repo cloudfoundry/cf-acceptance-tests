@@ -88,7 +88,7 @@ exit 1
 				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 
-			Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", "128M", "-b", buildpackName, "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			app_helpers.ConditionallyEnableDiego(appName)
 			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(1))
 
@@ -132,7 +132,7 @@ exit 1
 				Expect(cf.Cf("set-running-environment-variable-group", `{"CATS_RUNNING_TEST_VAR":"running_env_value"}`).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 
-			Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", "128M", "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			app_helpers.ConditionallyEnableDiego(appName)
 			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 

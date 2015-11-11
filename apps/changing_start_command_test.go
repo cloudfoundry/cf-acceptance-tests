@@ -34,7 +34,7 @@ var _ = Describe("Changing an app's start command", func() {
 			Expect(cf.Cf(
 				"push", appName,
 				"-b", config.RubyBuildpackName,
-				"-m", "128M",
+				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Dora,
 				"-d", helpers.LoadConfig().AppsDomain,
 				"-c", "FOO=foo bundle exec rackup config.ru -p $PORT",
@@ -88,7 +88,7 @@ var _ = Describe("Changing an app's start command", func() {
 		}
 
 		BeforeEach(func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-b", config.NodejsBuildpackName, "-m", "128M", "-p", assets.NewAssets().NodeWithProcfile, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-b", config.NodejsBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().NodeWithProcfile, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			app_helpers.ConditionallyEnableDiego(appName)
 			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		})

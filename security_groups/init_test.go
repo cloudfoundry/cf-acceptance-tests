@@ -17,8 +17,9 @@ var (
 )
 
 var (
-	context helpers.SuiteContext
-	config  helpers.Config
+	context              helpers.SuiteContext
+	config               helpers.Config
+	DEFAULT_MEMORY_LIMIT = "256M"
 )
 
 func TestApplications(t *testing.T) {

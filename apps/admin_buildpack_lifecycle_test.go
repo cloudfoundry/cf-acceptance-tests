@@ -119,13 +119,13 @@ EOF
 	}
 
 	itIsUsedForTheApp := func() {
-		push := Cf("push", appName, "-m", "128M", "-p", appPath).Wait(CF_PUSH_TIMEOUT)
+		push := Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
 		Expect(push).To(Exit(0))
 		Expect(push).To(Say("Staging with Simple Buildpack"))
 	}
 
 	itDoesNotDetectForEmptyApp := func() {
-		push := Cf("push", appName, "-m", "128M", "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
+		push := Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 		Expect(push).To(Exit(1))
 		Expect(push).To(Say("NoAppDetectedError"))
 	}
@@ -149,7 +149,7 @@ EOF
 			)
 		})
 
-		push := Cf("push", appName, "-m", "128M", "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
+		push := Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 		Expect(push).To(Exit(1))
 		Expect(push).To(Say("NoAppDetectedError"))
 	}
@@ -158,7 +158,7 @@ EOF
 		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(Cf("delete-buildpack", BuildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
-		push := Cf("push", appName, "-m", "128M", "-p", appPath).Wait(CF_PUSH_TIMEOUT)
+		push := Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
 		Expect(push).To(Exit(1))
 		Expect(push).To(Say("NoAppDetectedError"))
 	}

@@ -29,7 +29,7 @@ var _ = Describe("Buildpacks", func() {
 
 	Describe("node", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-m", "128M", "-p", assets.NewAssets().Node, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Node, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			app_helpers.ConditionallyEnableDiego(appName)
 			Expect(cf.Cf("start", appName).Wait(DETECT_TIMEOUT)).To(Exit(0))
 
@@ -54,7 +54,7 @@ var _ = Describe("Buildpacks", func() {
 
 	Describe("golang", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-m", "128M", "-p", assets.NewAssets().Golang, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Golang, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			app_helpers.ConditionallyEnableDiego(appName)
 			Expect(cf.Cf("start", appName).Wait(DETECT_TIMEOUT)).To(Exit(0))
 
@@ -66,7 +66,7 @@ var _ = Describe("Buildpacks", func() {
 
 	Describe("python", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-m", "128M", "-p", assets.NewAssets().Python, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Python, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			app_helpers.ConditionallyEnableDiego(appName)
 			Expect(cf.Cf("start", appName).Wait(DETECT_TIMEOUT)).To(Exit(0))
 
@@ -81,7 +81,7 @@ var _ = Describe("Buildpacks", func() {
 		var phpPushTimeout = DETECT_TIMEOUT + 6*time.Minute
 
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-m", "128M", "-p", assets.NewAssets().Php, "-d", config.AppsDomain).Wait(phpPushTimeout)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Php, "-d", config.AppsDomain).Wait(phpPushTimeout)).To(Exit(0))
 			app_helpers.ConditionallyEnableDiego(appName)
 			Expect(cf.Cf("start", appName).Wait(DETECT_TIMEOUT)).To(Exit(0))
 
@@ -93,7 +93,7 @@ var _ = Describe("Buildpacks", func() {
 
 	Describe("staticfile", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-m", "128M", "-p", assets.NewAssets().Staticfile, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Staticfile, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			app_helpers.ConditionallyEnableDiego(appName)
 			Expect(cf.Cf("start", appName).Wait(DETECT_TIMEOUT)).To(Exit(0))
 
@@ -105,7 +105,7 @@ var _ = Describe("Buildpacks", func() {
 
 	Describe("binary", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-b", config.BinaryBuildpackName, "-m", "128M", "-p", assets.NewAssets().Binary, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-b", config.BinaryBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Binary, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			app_helpers.ConditionallyEnableDiego(appName)
 			Expect(cf.Cf("start", appName).Wait(DETECT_TIMEOUT)).To(Exit(0))
 
