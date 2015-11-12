@@ -68,6 +68,7 @@ var _ = Describe("buildpack", func() {
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
+		DeleteApp(appGuid)
 	})
 
 	XIt("Stages with a user specified admin buildpack", func() {

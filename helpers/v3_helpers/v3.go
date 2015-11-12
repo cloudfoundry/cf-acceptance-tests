@@ -34,6 +34,12 @@ func CreateApp(appName, spaceGuid, environmentVariables string) string {
 	return app.Guid
 }
 
+func DeleteApp(appGuid string) {
+	session := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s", appGuid), "-X", "DELETE", "-v")
+	bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
+	Expect(bytes).To(ContainSubstring("204 No Content"))
+}
+
 func WaitForPackageToBeReady(packageGuid string) {
 	pkgUrl := fmt.Sprintf("/v3/packages/%s", packageGuid)
 	Eventually(func() *Session {

@@ -22,10 +22,11 @@ import (
 
 var _ = Describe("package features", func() {
 	var (
-		appName     string
-		appGuid     string
-		packageGuid string
-		spaceGuid   string
+		appName            string
+		appGuid            string
+		packageGuid        string
+		spaceGuid          string
+		destinationAppGuid string
 	)
 
 	BeforeEach(func() {
@@ -41,11 +42,15 @@ var _ = Describe("package features", func() {
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+		DeleteApp(appGuid)
+		if destinationAppGuid != "" {
+			DeleteApp(destinationAppGuid)
+		}
 	})
 
 	It("can copy package bits to another app and download the package", func() {
 		destinationAppName := generator.PrefixedRandomName("CATS-APP-")
-		destinationAppGuid := CreateApp(destinationAppName, spaceGuid, "{}")
+		destinationAppGuid = CreateApp(destinationAppName, spaceGuid, "{}")
 
 		// COPY
 		copyUrl := fmt.Sprintf("/v3/apps/%s/packages?source_package_guid=%s", destinationAppGuid, packageGuid)

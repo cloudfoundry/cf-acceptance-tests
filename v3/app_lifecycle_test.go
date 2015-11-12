@@ -39,6 +39,7 @@ var _ = Describe("v3 app lifecycle", func() {
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+		DeleteApp(appGuid)
 	})
 
 	It("can run apps", func() {

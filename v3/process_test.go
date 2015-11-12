@@ -42,6 +42,7 @@ var _ = Describe("process", func() {
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+		DeleteApp(appGuid)
 	})
 
 	Describe("terminating an instance", func() {

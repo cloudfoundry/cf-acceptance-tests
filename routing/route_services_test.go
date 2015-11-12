@@ -51,6 +51,7 @@ var _ = Describe("Route Services", func() {
 					unbindRouteFromService(appName, serviceInstanceName)
 					deleteServiceInstance(serviceInstanceName)
 					deleteServiceBroker(brokerName)
+					DeleteApp(appName)
 				})
 
 				It("a request to the app is routed through the route service", func() {
@@ -90,6 +91,7 @@ var _ = Describe("Route Services", func() {
 					unbindRouteFromService(appName, serviceInstanceName)
 					deleteServiceInstance(serviceInstanceName)
 					deleteServiceBroker(brokerName)
+					DeleteApp(appName)
 				})
 
 				It("routes to an app", func() {

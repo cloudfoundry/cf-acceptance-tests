@@ -222,6 +222,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 
 			AfterEach(func() {
 				app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+				Expect(cf.Cf("delete", appName, "-f").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 			})
 
 			Describe("bindings", func() {

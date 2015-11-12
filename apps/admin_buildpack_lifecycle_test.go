@@ -118,6 +118,12 @@ EOF
 		})
 	}
 
+	deleteApp := func() {
+		command := Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)
+		Expect(command).To(Exit(0))
+		Expect(command).To(Say(fmt.Sprintf("Deleting app %s", appName)))
+	}
+
 	itIsUsedForTheApp := func() {
 		push := Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath).Wait(CF_PUSH_TIMEOUT)
 		Expect(push).To(Exit(0))
@@ -171,18 +177,22 @@ EOF
 
 			setupBuildpack(appConfig{Empty: false})
 			itIsUsedForTheApp()
+			deleteApp()
 			deleteBuildpack()
 
 			setupBuildpack(appConfig{Empty: true})
 			itDoesNotDetectForEmptyApp()
+			deleteApp()
 			deleteBuildpack()
 
 			setupBuildpack(appConfig{Empty: false})
 			itDoesNotDetectWhenBuildpackDisabled()
+			deleteApp()
 			deleteBuildpack()
 
 			setupBuildpack(appConfig{Empty: false})
 			itDoesNotDetectWhenBuildpackDeleted()
+			deleteApp()
 			deleteBuildpack()
 		})
 	})
