@@ -93,5 +93,15 @@ class Dora < Sinatra::Base
     `ip addr show  | grep 'scope global w' | grep inet | awk '{print $2}'`
   end
 
+  get '/largetext/:kbytes' do
+    fiveMB = 5 * 1024
+    numKB = params[:kbytes].to_i
+    ktext="1" * 1024
+    text=""
+    size = numKB > fiveMB ? fiveMB : numKB
+    size.times {text+=ktext}
+    text
+  end
+
   run! if app_file == $0
 end
