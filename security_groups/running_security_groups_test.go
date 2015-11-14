@@ -89,6 +89,13 @@ var _ = Describe("Security Groups", func() {
 		curlResponse := helpers.CurlApp(serverAppName, "/myip")
 		containerIp := strings.TrimSpace(curlResponse)
 
+		By("Gathering container port")
+		curlResponse = helpers.CurlApp(serverAppName, "/env/VCAP_APPLICATION")
+		var env map[string]interface{}
+		err := json.Unmarshal([]byte(curlResponse), &env)
+		Expect(err).NotTo(HaveOccurred())
+		containerPort := int(env["port"].(float64))
+
 		By("Testing app egress rules")
 		var doraCurlResponse DoraCurlResponse
 		curlResponse = helpers.CurlApp(clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort))
@@ -98,8 +105,8 @@ var _ = Describe("Security Groups", func() {
 		By("Applying security group")
 		rules := fmt.Sprintf(
 			`[{"destination":"%s","ports":"%d","protocol":"tcp"},
-        {"destination":"%s","ports":"%d","protocol":"tcp"}]`,
-			privateHost, privatePort, containerIp, privatePort)
+			{"destination":"%s","ports":"%d","protocol":"tcp"}]`,
+			privateHost, privatePort, containerIp, containerPort)
 
 		file, _ := ioutil.TempFile(os.TempDir(), "CATS-sg-rules")
 		defer os.Remove(file.Name())
