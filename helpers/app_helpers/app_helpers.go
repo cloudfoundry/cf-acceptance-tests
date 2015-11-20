@@ -21,9 +21,12 @@ func guidForAppName(appName string) string {
 
 func ConditionallyEnableDiego(appName string) {
 	config := helpers.LoadConfig()
-	if config.UseDiego {
+	if config.Backend == "diego" {
 		guid := guidForAppName(appName)
 		Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": true}`)).Should(Exit(0))
+	} else if config.Backend == "dea" {
+		guid := guidForAppName(appName)
+		Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": false}`)).Should(Exit(0))
 	}
 }
 
