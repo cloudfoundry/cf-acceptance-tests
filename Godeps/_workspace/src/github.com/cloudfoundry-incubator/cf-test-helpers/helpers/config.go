@@ -31,9 +31,9 @@ type Config struct {
 	PersistentAppOrg       string `json:"persistent_app_org"`
 	PersistentAppQuotaName string `json:"persistent_app_quota_name"`
 
-	SkipSSLValidation    bool `json:"skip_ssl_validation"`
-	UseDiego             bool `json:"use_diego"`
-	IncludeRouteServices bool `json:"include_route_services"`
+	SkipSSLValidation    bool   `json:"skip_ssl_validation"`
+	Backend              string `json:"backend"`
+	IncludeRouteServices bool   `json:"include_route_services"`
 
 	ArtifactsDirectory string `json:"artifacts_directory"`
 
