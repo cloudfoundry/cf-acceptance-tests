@@ -22,7 +22,7 @@ var _ = Describe("Wildcard Routes", func() {
 
 	curlRoute := func(hostName string, path string) string {
 		uri := config.Protocol() + hostName + "." + domainName + path
-		curlCmd := runner.Curl(uri)
+		curlCmd := runner.CurlSkipSSL(true, uri)
 
 		runner.NewCmdRunner(curlCmd, DEFAULT_TIMEOUT).Run()
 		Expect(string(curlCmd.Err.Contents())).To(HaveLen(0))
@@ -82,6 +82,10 @@ var _ = Describe("Wildcard Routes", func() {
 
 			Eventually(func() string {
 				return curlRoute("foo", "/")
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
+
+			Eventually(func() string {
+				return curlRoute("foo.baz", "/")
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 	})
