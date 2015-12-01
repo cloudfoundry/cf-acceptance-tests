@@ -45,11 +45,20 @@ func RestartApp(app string) {
 	Expect(cf.Cf("restart", app).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 }
 
+func StartApp(app string) {
+	Expect(cf.Cf("start", app).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+}
+
 func PushApp(asset, buildpackName string) string {
-	app := generator.PrefixedRandomName("RATS-APP-")
-	Expect(cf.Cf("push", app, "-b", buildpackName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", asset, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	app := PushAppNoStart(asset, buildpackName)
 	app_helpers.ConditionallyEnableDiego(app)
 	Expect(cf.Cf("start", app).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+	return app
+}
+
+func PushAppNoStart(asset, buildpackName string) string {
+	app := generator.PrefixedRandomName("RATS-APP-")
+	Expect(cf.Cf("push", app, "-b", buildpackName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", asset, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	return app
 }
 

@@ -36,8 +36,9 @@ var _ = Describe("Route Services", func() {
 					brokerName, brokerAppName, serviceName = createServiceBroker()
 					serviceInstanceName = createServiceInstance(serviceName)
 
-					appName = PushApp(golangAsset, config.GoBuildpackName)
+					appName = PushAppNoStart(golangAsset, config.GoBuildpackName)
 					EnableDiego(appName)
+					StartApp(appName)
 
 					routeServiceName = PushApp(loggingRouteServiceAsset, config.GoBuildpackName)
 					configureBroker(brokerAppName, routeServiceName)
@@ -77,8 +78,9 @@ var _ = Describe("Route Services", func() {
 					var serviceName string
 					brokerName, brokerAppName, serviceName = createServiceBroker()
 					serviceInstanceName = createServiceInstance(serviceName)
-					appName = PushApp(golangAsset, config.GoBuildpackName)
+					appName = PushAppNoStart(golangAsset, config.GoBuildpackName)
 					EnableDiego(appName)
+					StartApp(appName)
 
 					configureBroker(brokerAppName, "")
 
