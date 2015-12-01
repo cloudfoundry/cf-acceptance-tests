@@ -23,7 +23,7 @@ var _ = Describe("An application being staged", func() {
 	AfterEach(func() {
 		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 
-		cf.Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)
+		cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)
 	})
 
 	It("has its staging log streamed during a push", func() {

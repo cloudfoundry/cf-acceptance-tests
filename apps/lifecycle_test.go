@@ -59,7 +59,7 @@ var _ = Describe("Application Lifecycle", func() {
 	AfterEach(func() {
 		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 
-		Expect(cf.Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 
 	Describe("pushing", func() {
@@ -81,7 +81,7 @@ var _ = Describe("Application Lifecycle", func() {
 			})
 
 			AfterEach(func() {
-				Expect(cf.Cf("delete", app2, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				Expect(cf.Cf("delete", app2, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 
 			It("makes another app available via same host and domain, but different path", func() {
@@ -197,7 +197,7 @@ var _ = Describe("Application Lifecycle", func() {
 
 	Describe("deleting", func() {
 		BeforeEach(func() {
-			Expect(cf.Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 
 		It("removes the application", func() {

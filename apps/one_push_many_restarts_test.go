@@ -51,13 +51,13 @@ var _ = Describe("An application that's already been pushed", func() {
 		if appQuery.ExitCode() == 1 && strings.Contains(output, "not found") {
 			pushCommand := cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)
 			if pushCommand.ExitCode() != 0 {
-				Expect(cf.Cf("delete", "-f", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				Expect(cf.Cf("delete", "-f", "-r", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 				Fail("failed to create app")
 			}
 			app_helpers.ConditionallyEnableDiego(appName)
 			startCommand := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)
 			if startCommand.ExitCode() != 0 {
-				Expect(cf.Cf("delete", "-f", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				Expect(cf.Cf("delete", "-f", "-r", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 				Fail("persistent app failed to stage")
 			}
 		}

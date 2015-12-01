@@ -28,7 +28,7 @@ var _ = Describe("An application printing a bunch of output", func() {
 	AfterEach(func() {
 		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 
-		Expect(cf.Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)).Should(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).Should(Exit(0))
 	})
 
 	It("doesn't die when printing 32MB", func() {

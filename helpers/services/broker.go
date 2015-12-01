@@ -145,7 +145,7 @@ func (b ServiceBroker) Destroy() {
 		Expect(cf.Cf("purge-service-offering", b.Service.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 	b.Delete()
-	Expect(cf.Cf("delete", b.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	Expect(cf.Cf("delete", b.Name, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 }
 
 func (b ServiceBroker) ToJSON() string {

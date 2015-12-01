@@ -28,8 +28,8 @@ var _ = Describe("Copy app bits", func() {
 		app_helpers.AppReport(golangAppName, DEFAULT_TIMEOUT)
 		app_helpers.AppReport(helloWorldAppName, DEFAULT_TIMEOUT)
 
-		Expect(cf.Cf("delete", golangAppName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-		Expect(cf.Cf("delete", helloWorldAppName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("delete", golangAppName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("delete", helloWorldAppName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 
 	It("Copies over the package from the source app to the destination app", func() {

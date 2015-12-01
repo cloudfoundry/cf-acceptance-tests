@@ -34,7 +34,7 @@ var _ = Describe("Downloading droplets", func() {
 	AfterEach(func() {
 		app_helpers.AppReport(helloWorldAppName, DEFAULT_TIMEOUT)
 
-		Expect(cf.Cf("delete", helloWorldAppName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("delete", helloWorldAppName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 
 	It("Downloads the droplet for the app", func() {

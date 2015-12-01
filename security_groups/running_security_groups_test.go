@@ -71,7 +71,7 @@ var _ = Describe("Security Groups", func() {
 	AfterEach(func() {
 		app_helpers.AppReport(serverAppName, DEFAULT_TIMEOUT)
 
-		Expect(cf.Cf("delete", serverAppName, "-f").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("delete", serverAppName, "-f", "-r").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 
 	// this test assumes the default running security groups block access to the DEAs
@@ -83,7 +83,7 @@ var _ = Describe("Security Groups", func() {
 		Expect(cf.Cf("push", clientAppName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		app_helpers.ConditionallyEnableDiego(clientAppName)
 		Expect(cf.Cf("start", clientAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
-		defer func() { cf.Cf("delete", clientAppName, "-f").Wait(CF_PUSH_TIMEOUT) }()
+		defer func() { cf.Cf("delete", clientAppName, "-f", "-r").Wait(CF_PUSH_TIMEOUT) }()
 
 		By("Gathering container ip")
 		curlResponse := helpers.CurlApp(serverAppName, "/myip")
@@ -166,7 +166,7 @@ var _ = Describe("Security Groups", func() {
 
 		Expect(cf.Cf("push", testAppName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpack, "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		app_helpers.ConditionallyEnableDiego(testAppName)
-		defer func() { cf.Cf("delete", testAppName, "-f").Wait(CF_PUSH_TIMEOUT) }()
+		defer func() { cf.Cf("delete", testAppName, "-f", "-r").Wait(CF_PUSH_TIMEOUT) }()
 
 		Expect(cf.Cf("set-env", testAppName, "TESTURI", "www.google.com").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		Expect(cf.Cf("start", testAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(1))

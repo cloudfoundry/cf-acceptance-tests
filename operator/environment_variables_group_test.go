@@ -76,7 +76,7 @@ exit 1
 				}
 			})
 
-			Expect(cf.Cf("delete", appName, "-f").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		})
 
 		It("Applies environment variables while staging apps", func() {
@@ -124,7 +124,7 @@ exit 1
 				}
 			})
 
-			Expect(cf.Cf("delete", appName, "-f").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		})
 
 		It("Applies correct environment variables while running apps", func() {

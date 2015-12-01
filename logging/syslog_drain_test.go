@@ -50,7 +50,7 @@ var _ = Describe("Logging", func() {
 		AfterEach(func() {
 			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 
-			Eventually(cf.Cf("delete", appName, "-f"), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to delete app")
+			Eventually(cf.Cf("delete", appName, "-f", "-r"), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to delete app")
 			if serviceName != "" {
 				Eventually(cf.Cf("delete-service", serviceName, "-f"), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to delete service")
 			}

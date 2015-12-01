@@ -71,7 +71,7 @@ func ScaleAppInstances(appName string, instances int) {
 }
 
 func DeleteApp(appName string) {
-	Expect(cf.Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 }
 
 func GetAppGuid(appName string) string {

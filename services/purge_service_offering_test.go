@@ -62,7 +62,7 @@ var _ = Describe("Purging service offerings", func() {
 			Expect(marketplace).To(Exit(0))
 			Expect(marketplace).To(Say(broker.Plans()[0].Name))
 
-			Expect(cf.Cf("delete", broker.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("delete", broker.Name, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
 			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				Expect(cf.Cf("purge-service-offering", broker.Service.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))

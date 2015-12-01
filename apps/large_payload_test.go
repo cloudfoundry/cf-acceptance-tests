@@ -20,7 +20,7 @@ var _ = Describe("Large_payload", func() {
 	AfterEach(func() {
 		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 
-		Expect(cf.Cf("delete", appName, "-f").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 	It("should be able to curl for a large response body", func() {
 		appName = generator.PrefixedRandomName("CATS-APPS-")
