@@ -10,6 +10,8 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
+var DEFAULT_TIMEOUT = 30 * time.Second
+
 func guidForAppName(appName string) string {
 	cfApp := cf.Cf("app", appName, "--guid")
 	Expect(cfApp.Wait()).To(Exit(0))
@@ -23,10 +25,10 @@ func ConditionallyEnableDiego(appName string) {
 	config := helpers.LoadConfig()
 	if config.Backend == "diego" {
 		guid := guidForAppName(appName)
-		Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": true}`)).Should(Exit(0))
+		Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": true}`), DEFAULT_TIMEOUT).Should(Exit(0))
 	} else if config.Backend == "dea" {
 		guid := guidForAppName(appName)
-		Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": false}`)).Should(Exit(0))
+		Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": false}`), DEFAULT_TIMEOUT).Should(Exit(0))
 	}
 }
 
