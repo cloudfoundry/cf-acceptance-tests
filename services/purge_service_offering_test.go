@@ -80,6 +80,8 @@ var _ = Describe("Purging service offerings", func() {
 
 		AfterEach(func() {
 			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 	})
 })
