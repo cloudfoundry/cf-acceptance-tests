@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	. "github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	. "github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	. "github.com/onsi/ginkgo"
@@ -34,7 +34,7 @@ var _ = Describe("Buildpack Environment", func() {
 	}
 
 	BeforeEach(func() {
-		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			BuildpackName = RandomName()
 			appName = PrefixedRandomName("CATS-APP-")
 
@@ -95,7 +95,7 @@ EOF
 			_, err = os.Create(path.Join(appPath, "some-file"))
 			Expect(err).ToNot(HaveOccurred())
 
-			createBuildpack := Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0").Wait(DEFAULT_TIMEOUT)
+			createBuildpack := cf.Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0").Wait(DEFAULT_TIMEOUT)
 			Expect(createBuildpack).Should(Exit(0))
 			Expect(createBuildpack).Should(Say("Creating"))
 			Expect(createBuildpack).Should(Say("OK"))
@@ -107,17 +107,17 @@ EOF
 	AfterEach(func() {
 		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 
-		Expect(Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
-		AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			Expect(Cf("delete-buildpack", BuildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			Expect(cf.Cf("delete-buildpack", BuildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 
 		os.RemoveAll(tmpdir)
 	})
 
 	It("uses ruby 1.9.3-p547 for staging", func() {
-		push := Cf("push", appName, "-b", BuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
+		push := cf.Cf("push", appName, "-b", BuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
 		Expect(push).To(Exit(0))
 		Expect(push).To(Say("RUBY_LOCATION=/usr/bin/ruby"))
 		Expect(push).To(Say("RUBY_VERSION=ruby 1.9.3p547"))
