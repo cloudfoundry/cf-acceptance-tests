@@ -37,7 +37,7 @@ var _ = Describe("Logging", func() {
 			appName = generator.PrefixedRandomName("CATS-APP-")
 
 			Eventually(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().RubySimple, "-d", config.AppsDomain), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to push app")
-			app_helpers.ConditionallyEnableDiego(appName)
+			app_helpers.SetBackend(appName)
 			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			syslogDrainURL := "syslog://" + syslogDrainAddress

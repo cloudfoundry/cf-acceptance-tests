@@ -105,7 +105,7 @@ func NewServiceBroker(name string, path string, context helpers.SuiteContext) Se
 func (b ServiceBroker) Push() {
 	config := helpers.LoadConfig()
 	Expect(cf.Cf("push", b.Name, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", b.Path).Wait(BROKER_START_TIMEOUT)).To(Exit(0))
-	app_helpers.ConditionallyEnableDiego(b.Name)
+	app_helpers.SetBackend(b.Name)
 	Expect(cf.Cf("start", b.Name).Wait(BROKER_START_TIMEOUT)).To(Exit(0))
 }
 

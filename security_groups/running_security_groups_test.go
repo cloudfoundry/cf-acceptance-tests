@@ -50,7 +50,7 @@ var _ = Describe("Security Groups", func() {
 	BeforeEach(func() {
 		serverAppName = generator.PrefixedRandomName("CATS-APP-")
 		Expect(cf.Cf("push", serverAppName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-		app_helpers.ConditionallyEnableDiego(serverAppName)
+		app_helpers.SetBackend(serverAppName)
 		Expect(cf.Cf("start", serverAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 		// gather app url
@@ -81,7 +81,7 @@ var _ = Describe("Security Groups", func() {
 
 		clientAppName := generator.PrefixedRandomName("CATS-APP-")
 		Expect(cf.Cf("push", clientAppName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-		app_helpers.ConditionallyEnableDiego(clientAppName)
+		app_helpers.SetBackend(clientAppName)
 		Expect(cf.Cf("start", clientAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		defer func() { cf.Cf("delete", clientAppName, "-f", "-r").Wait(CF_PUSH_TIMEOUT) }()
 
@@ -165,7 +165,7 @@ var _ = Describe("Security Groups", func() {
 		}()
 
 		Expect(cf.Cf("push", testAppName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpack, "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
-		app_helpers.ConditionallyEnableDiego(testAppName)
+		app_helpers.SetBackend(testAppName)
 		defer func() { cf.Cf("delete", testAppName, "-f", "-r").Wait(CF_PUSH_TIMEOUT) }()
 
 		Expect(cf.Cf("set-env", testAppName, "TESTURI", "www.google.com").Wait(DEFAULT_TIMEOUT)).To(Exit(0))

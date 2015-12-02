@@ -27,7 +27,7 @@ var _ = Describe("Downloading droplets", func() {
 		helloWorldAppName = generator.PrefixedRandomName("CATS-APP-")
 
 		Expect(cf.Cf("push", helloWorldAppName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-		app_helpers.ConditionallyEnableDiego(helloWorldAppName)
+		app_helpers.SetBackend(helloWorldAppName)
 		Expect(cf.Cf("start", helloWorldAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 

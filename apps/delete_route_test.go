@@ -19,7 +19,7 @@ var _ = Describe("Delete Route", func() {
 		appName = generator.PrefixedRandomName("CATS-APP-")
 
 		Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-		app_helpers.ConditionallyEnableDiego(appName)
+		app_helpers.SetBackend(appName)
 		Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		Eventually(func() string {
 			return helpers.CurlAppRoot(appName)

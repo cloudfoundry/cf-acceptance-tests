@@ -27,7 +27,7 @@ var _ = Describe("FUSE", func() {
 
 	It("Can mount a fuse endpoint", func() {
 		Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Fuse, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-		app_helpers.ConditionallyEnableDiego(appName)
+		app_helpers.SetBackend(appName)
 		Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 		Eventually(func() string {

@@ -49,7 +49,7 @@ var _ = Describe("Recursive Delete", func() {
 
 			createApp := cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)
 			Expect(createApp).To(Exit(0), "failed creating app")
-			app_helpers.ConditionallyEnableDiego(appName)
+			app_helpers.SetBackend(appName)
 			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)

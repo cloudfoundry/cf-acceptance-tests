@@ -54,7 +54,7 @@ var _ = Describe("An application that's already been pushed", func() {
 				Expect(cf.Cf("delete", "-f", "-r", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 				Fail("failed to create app")
 			}
-			app_helpers.ConditionallyEnableDiego(appName)
+			app_helpers.SetBackend(appName)
 			startCommand := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)
 			if startCommand.ExitCode() != 0 {
 				Expect(cf.Cf("delete", "-f", "-r", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))

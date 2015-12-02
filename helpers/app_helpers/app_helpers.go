@@ -21,7 +21,7 @@ func guidForAppName(appName string) string {
 	return appGuid
 }
 
-func ConditionallyEnableDiego(appName string) {
+func SetBackend(appName string) {
 	config := helpers.LoadConfig()
 	if config.Backend == "diego" {
 		guid := guidForAppName(appName)

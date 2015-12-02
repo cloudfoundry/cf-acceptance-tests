@@ -28,7 +28,7 @@ var _ = Describe("An application being staged", func() {
 
 	It("has its staging log streamed during a push", func() {
 		Eventually(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain), DEFAULT_TIMEOUT).Should(Exit(0))
-		app_helpers.ConditionallyEnableDiego(appName)
+		app_helpers.SetBackend(appName)
 		start := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)
 
 		output := string(start.Buffer().Contents())

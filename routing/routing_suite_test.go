@@ -51,7 +51,7 @@ func StartApp(app string) {
 
 func PushApp(asset, buildpackName string) string {
 	app := PushAppNoStart(asset, buildpackName)
-	app_helpers.ConditionallyEnableDiego(app)
+	app_helpers.SetBackend(app)
 	Expect(cf.Cf("start", app).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	return app
 }
