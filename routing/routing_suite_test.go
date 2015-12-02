@@ -112,7 +112,9 @@ func GetSpaceAndDomainGuids(app string) (string, string) {
 			} `json:"entity"`
 		} `json:"resources"`
 	}
-	json.Unmarshal([]byte(routeBody), &routeJSON)
+
+	err := json.Unmarshal([]byte(routeBody), &routeJSON)
+	Expect(err).NotTo(HaveOccurred())
 
 	spaceGuid := routeJSON.Resources[0].Entity.SpaceGuid
 	domainGuid := routeJSON.Resources[0].Entity.DomainGuid
