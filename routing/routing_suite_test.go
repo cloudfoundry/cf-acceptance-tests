@@ -46,13 +46,13 @@ func RestartApp(app string) {
 }
 
 func StartApp(app string) {
+	app_helpers.SetBackend(app)
 	Expect(cf.Cf("start", app).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 }
 
 func PushApp(asset, buildpackName string) string {
 	app := PushAppNoStart(asset, buildpackName)
-	app_helpers.SetBackend(app)
-	Expect(cf.Cf("start", app).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+	StartApp(app)
 	return app
 }
 
