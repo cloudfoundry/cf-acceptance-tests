@@ -3,7 +3,6 @@ package routing
 import (
 	"encoding/json"
 	"fmt"
-	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -14,7 +13,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 
 	"testing"
@@ -138,29 +136,6 @@ func GetAppInfo(appName string) (host, port string) {
 	return appIp, appPort
 }
 
-func RegisterRoute(appRoute string, ip string, port string, routeServiceName string) {
-	systemDomain := config.SystemDomain
-	oauthPassword := config.ClientSecret
-	oauthUrl := config.Protocol() + "uaa." + systemDomain
-	routingApiEndpoint := config.Protocol() + "api." + systemDomain
-
-	appsDomain := config.AppsDomain
-	routeServiceRoute := "https://" + routeServiceName + "." + appsDomain
-	route := appRoute + "." + appsDomain
-	routeJSON := `[{"route":"` + route + `","port":` + port + `,"ip":"` + ip + `","ttl":60, "route_service_url":"` + routeServiceRoute + `"}]`
-
-	args := []string{"register", routeJSON, "--api", routingApiEndpoint, "--client-id", "gorouter", "--client-secret", oauthPassword, "--oauth-url", oauthUrl}
-	session := Rtr(args...)
-	Eventually(session.Out).Should(Say("Successfully registered routes"))
-}
-
-func Rtr(args ...string) *Session {
-	session, err := Start(exec.Command("rtr", args...), GinkgoWriter, GinkgoWriter)
-	Expect(err).NotTo(HaveOccurred())
-
-	return session
-}
-
 const (
 	DEFAULT_TIMEOUT      = 30 * time.Second
 	CF_PUSH_TIMEOUT      = 2 * time.Minute
@@ -182,8 +157,6 @@ func TestRouting(t *testing.T) {
 	environment := helpers.NewEnvironment(context)
 
 	BeforeSuite(func() {
-		Expect(config.SystemDomain).ToNot(Equal(""), "Must provide a system domain for the routing suite")
-		Expect(config.ClientSecret).ToNot(Equal(""), "Must provide a client secret for the routing suite")
 		environment.Setup()
 	})
 
