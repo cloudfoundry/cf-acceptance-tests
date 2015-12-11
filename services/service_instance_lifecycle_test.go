@@ -380,6 +380,11 @@ var _ = Describe("Service Instance Lifecycle", func() {
 					Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 				})
 
+				AfterEach(func() {
+					app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+					Expect(cf.Cf("delete", appName, "-f", "-r").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+				})
+
 				It("can bind a service instance", func() {
 					bindService := cf.Cf("bind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
 					Expect(bindService).To(Exit(0), "failed binding app to service")
