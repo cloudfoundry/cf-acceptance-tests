@@ -66,15 +66,13 @@ EOF
 export CONFIG=$PWD/integration_config.json
 ```
 
-The full set of config parameters is explained below:
+Most config parameters supported by `integration_config.json` are listed here. See setup instructions for specific test suites below for suite-specific parameters.
 
 * `api` (required): Cloud Controller API endpoint.
 * `admin_user` (required): Name of a user in your CF instance with admin credentials.  This admin user must have the `doppler.firehose` scope if running the `logging` firehose tests.
 * `admin_password` (required): Password of the admin user above.
 * `apps_domain` (required): A shared domain that tests can use to create subdomains that will route to applications also craeted in the tests.
 * `skip_ssl_validation`: Set to true if using an invalid (e.g. self-signed) cert for traffic routed to your CF instance; this is generally always true for BOSH-Lite deployments of CF.
-* `system_domain` (only required for `routing` suite): Used to construct addresses for internal CF components, namely UAA and the Routing API, which are expected to live at `uaa.SYSTEM_DOMAIN` and `routing-api.SYSTEM_DOMAIN`.
-* `client_secret` (only required for `routing` suite): Password used by gorouter to access the Routing API routes.
 * `use_existing_user` (optional): The admin user configured above will normally be used to create a temporary user (with lesser permissions) to perform actions (such as push applications) during tests, and then delete said user after the tests have run; set this to `true` if you want to use an existing user, configured via the following properties.
 * `keep_user_at_suite_end` (optional): If using an existing user (see above), set this to `true` unless you are okay having your existing user being deleted at the end. You can also set this to `true` when not using an existing user if you want to leave the temporary user around for debugging purposes after the test teardown.
 * `existing_user` (optional): Name of the existing user to use.
@@ -84,7 +82,6 @@ The full set of config parameters is explained below:
 * `persistent_app_org` (optional): [See below](#persistent-app-test-setup).
 * `persistent_app_quota_name` (optional): [See below](#persistent-app-test-setup).
 * `backend` (optional): Set to 'diego' or 'dea' to determine the backend used. If unspecified the default backend will be used.
-* `include_route_services` (optional): If true, the route services tests will be run. These require a Diego deployment.
 * `artifacts_directory` (optional): If set, `cf` CLI trace output from test runs will be captured in files and placed in this directory. [See below](#capturing-test-output) for more.
 * `default_timeout` (optional): Default time (in seconds) to wait for polling assertions that wait for asynchronous results.
 * `cf_push_timeout` (optional): Default time (in seconds) to wait for `cf push` commands to succeed.
@@ -121,6 +118,11 @@ Many tests specify a buildpack when pushing an app, so that on diego the app sta
 
 #### Routing Test Suite Setup
 
+Configuration parameters for `integration_config.json` (see [Test Configuration](#test-configuration) above):
+* **Required** `system_domain`: Used to construct addresses for internal CF components, namely UAA and the Routing API, which are expected to live at `uaa.SYSTEM_DOMAIN` and `routing-api.SYSTEM_DOMAIN`.
+* **Required** `client_secret`: Password used by gorouter to access the Routing API routes.
+* `include_route_services`: If true, the route services tests will be run. These tests require a Diego deployment.
+
 The `routing` suite pushes applications which must be able to reach the load balancer of your Cloud Foundry deployment. This requires configuring application security groups to support this. Your deployment manifest should include the following data if you are running the `routing` suite:
 
 ```yaml
@@ -136,6 +138,8 @@ properties:
           destination: IP_OF_YOUR_LOAD_BALANCER # (e.g. 10.244.0.34 for a standard deployment of Cloud Foundry on BOSH-Lite)
     default_running_security_groups: ["load_balancer"]
 ```
+
+
 
 #### Capturing Test Output
 If you set a value for `artifacts_directory` in your `$CONFIG` file, then you will be able to capture `cf` trace output from failed test runs.  When a test fails, look for the node id and suite name ("*Applications*" and "*2*" in the example below) in the test output:
