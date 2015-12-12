@@ -215,6 +215,56 @@ messages.  Tests in this package are only intended to be run on machines that ar
 
 This repository uses [godep](https://github.com/tools/godep) to manage `go` dependencies.
 
-All `go` packages required to run these tests are vendored into the `cf-acceptance-tests/Godeps` directory.
+All `go` packages required to run these tests are vendored into the
+`cf-acceptance-tests/Godeps` directory.
 
-When making changes to the test suite that bring in additional `go` packages, you should use the workflow described in the [Add or Update a Dependency](https://github.com/tools/godep#add-a-dependency) section of the godep documentation.
+When making changes to the test suite that bring in additional `go` packages,
+you should use the workflow described in the
+[Add or Update a Dependency](https://github.com/tools/godep#add-a-dependency)
+section of the godep documentation.
+
+### Code Conventions
+
+There are a number of conventions we recommend developers of CF acceptance tests
+adopt:
+
+1. Print app guid and recent application logs during cleanup of each test.
+There is a helper method `AppReport` provided in the `app_helpers` package for this purpose.
+
+    ```go
+    AfterEach(func() {
+      app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+    })
+    ```
+1. Target whichever backend (i.e. diego,dea) is currently configured.
+There is a helper method `SetBackend` provided in the `app_helpers` package for this purpose.
+
+    ```go
+    BeforeEach(func() {
+      Expect(cf.Cf("push", appName, "--no-start").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
+      //use the config-file specified backend when starting this app
+      app_helpers.SetBackend(appName)
+
+      Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+    })
+    ```
+1. Explicitly specify buildpack for each app you push using the `-b` CF CLI flag.
+
+    ```go
+    Expect(cf.Cf("push", app, "-b", buildpackName, "--no-start").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+    ```
+1. Specify a default memory constant in your suite.
+This constant should be used for each app that is pushed with the `-m` CF CLI flag.
+All app pushes should use this constant unless there's a specific test that has a reason not to do so.
+
+    ```go
+    const (
+      DEFAULT_MEMORY_LIMIT = "256M"
+    )
+    Expect(cf.Cf("push", app, "-m", DEFAULT_MEMORY_LIMIT).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+    ```
+1. Document the purpose of your test suite in this repo's README.md.
+This is especially important when changing the explicit behavior of exisiting suites
+or adding new suites.
+1. Document all changes to the config object in this repo's README.md
