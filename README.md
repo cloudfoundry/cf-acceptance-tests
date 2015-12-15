@@ -74,7 +74,7 @@ The full set of config parameters is explained below:
 * `apps_domain` (required): A shared domain that tests can use to create subdomains that will route to applications also craeted in the tests.
 * `skip_ssl_validation`: Set to true if using an invalid (e.g. self-signed) cert for traffic routed to your CF instance; this is generally always true for BOSH-Lite deployments of CF.
 * `system_domain` (only required for `routing` suite): Used to construct addresses for internal CF components, namely UAA and the Routing API, which are expected to live at `uaa.SYSTEM_DOMAIN` and `routing-api.SYSTEM_DOMAIN`.
-* `client_secret` (only required for `routing` suite): Password used by gorouter to access the Routing API routes.
+* `client_secret` (only required for `routing` suite): Password used by the tcp-emitter to access the Routing API routes.
 * `use_existing_user` (optional): The admin user configured above will normally be used to create a temporary user (with lesser permissions) to perform actions (such as push applications) during tests, and then delete said user after the tests have run; set this to `true` if you want to use an existing user, configured via the following properties.
 * `keep_user_at_suite_end` (optional): If using an existing user (see above), set this to `true` unless you are okay having your existing user being deleted at the end. You can also set this to `true` when not using an existing user if you want to leave the temporary user around for debugging purposes after the test teardown.
 * `existing_user` (optional): Name of the existing user to use.
@@ -202,7 +202,9 @@ messages.  Tests in this package are only intended to be run on machines that ar
 
 * `operator`: Tests in this package are only intended to be run in non-production environments.  They may not clean up after themselves and may affect global CF state.  They test some miscellaneous features; read the tests for more details.
 
-* `routing`: This package contains routing specific acceptance tests, for example: Routing API (register, unregister, list, server-sent events), Route Services, and GoRouter (Context path, wildcard, SSL termination, sticky sessions).  At the time of this writing, many of the routing features are works in progress.
+* `routing`: This package contains routing specific acceptance tests, Route Services, and GoRouter (Context path, wildcard, SSL termination, sticky sessions).  At the time of this writing, many of the routing features are works in progress.
+
+* `routing_api`: This package contains Routing API specific acceptance tests.
 
 * `security_groups`: This suite tests the security groups feature of Cloud Foundry that lets you apply rules-based controls to network traffic in and out of your containers.  These should pass for most recent Cloud Foundry installations.  `cf-release` versions `v200` and up should have support for most security group specs to pass.
 

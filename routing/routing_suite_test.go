@@ -73,7 +73,9 @@ func DeleteApp(appName string) {
 }
 
 func GetAppGuid(appName string) string {
-	appGuid := cf.Cf("app", appName, "--guid").Wait(DEFAULT_TIMEOUT).Out.Contents()
+	session := cf.Cf("app", appName, "--guid").Wait(DEFAULT_TIMEOUT)
+	Expect(session).To(Exit(0))
+	appGuid := session.Out.Contents()
 	return strings.TrimSpace(string(appGuid))
 }
 
@@ -88,14 +90,16 @@ func MapRouteToApp(domain, path, app string) {
 
 func CreateRoute(domainName, contextPath, spaceGuid, domainGuid string) string {
 	jsonBody := "{\"host\":\"" + domainName + "\", \"path\":\"" + contextPath + "\", \"domain_guid\":\"" + domainGuid + "\",\"space_guid\":\"" + spaceGuid + "\"}"
-	routePostResponseBody := cf.Cf("curl", "/v2/routes", "-X", "POST", "-d", jsonBody).Wait(CF_PUSH_TIMEOUT).Out.Contents()
+	session := cf.Cf("curl", "/v2/routes", "-X", "POST", "-d", jsonBody).Wait(CF_PUSH_TIMEOUT)
+	routePostResponseBody := session.Out.Contents()
 
 	var routeResponseJSON struct {
 		Metadata struct {
 			Guid string `json:"guid"`
 		} `json:"metadata"`
 	}
-	json.Unmarshal([]byte(routePostResponseBody), &routeResponseJSON)
+	err := json.Unmarshal([]byte(routePostResponseBody), &routeResponseJSON)
+	Expect(err).NotTo(HaveOccurred())
 	return routeResponseJSON.Metadata.Guid
 }
 
@@ -125,11 +129,13 @@ func GetAppInfo(appName string) (host, port string) {
 	var statsResponse StatsResponse
 
 	cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/apps?q=name:%s", appName)).Wait(DEFAULT_TIMEOUT).Out.Contents()
-	json.Unmarshal(cfResponse, &appsResponse)
+	err := json.Unmarshal(cfResponse, &appsResponse)
+	Expect(err).NotTo(HaveOccurred())
 	serverAppUrl := appsResponse.Resources[0].Metadata.Url
 
 	cfResponse = cf.Cf("curl", fmt.Sprintf("%s/stats", serverAppUrl)).Wait(DEFAULT_TIMEOUT).Out.Contents()
-	json.Unmarshal(cfResponse, &statsResponse)
+	err = json.Unmarshal(cfResponse, &statsResponse)
+	Expect(err).NotTo(HaveOccurred())
 
 	appIp := statsResponse["0"].Stats.Host
 	appPort := fmt.Sprintf("%d", statsResponse["0"].Stats.Port)

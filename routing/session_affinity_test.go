@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
@@ -117,7 +118,7 @@ var _ = Describe("Session Affinity", func() {
 			app2Path        = "/app2"
 			app1            string
 			app2            string
-			domain          string
+			hostname        string
 			cookieStorePath string
 		)
 
@@ -127,10 +128,10 @@ var _ = Describe("Session Affinity", func() {
 
 			ScaleAppInstances(app1, 2)
 			ScaleAppInstances(app2, 2)
-			domain = "some-domain"
+			hostname = generator.PrefixedRandomName("RATS-HOSTNAME-")
 
-			MapRouteToApp(domain, app1Path, app1)
-			MapRouteToApp(domain, app2Path, app2)
+			MapRouteToApp(hostname, app1Path, app1)
+			MapRouteToApp(hostname, app2Path, app2)
 
 			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
 			Expect(err).ToNot(HaveOccurred())
@@ -151,7 +152,7 @@ var _ = Describe("Session Affinity", func() {
 
 			// Hit the APP1
 			Eventually(func() string {
-				body = curlAppWithCookies(domain, app1Path, cookieStorePath)
+				body = curlAppWithCookies(hostname, app1Path, cookieStorePath)
 				return body
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring(fmt.Sprintf("Hello, %s", app1)))
 
@@ -159,7 +160,7 @@ var _ = Describe("Session Affinity", func() {
 
 			// Hit the APP2
 			Eventually(func() string {
-				body = curlAppWithCookies(domain, app2Path, cookieStorePath)
+				body = curlAppWithCookies(hostname, app2Path, cookieStorePath)
 				return body
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring(fmt.Sprintf("Hello, %s", app2)))
 
@@ -167,12 +168,12 @@ var _ = Describe("Session Affinity", func() {
 
 			// Hit the APP1 again to verify that the session is stick to the right instance.
 			Eventually(func() string {
-				return curlAppWithCookies(domain, app1Path, cookieStorePath)
+				return curlAppWithCookies(hostname, app1Path, cookieStorePath)
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring(fmt.Sprintf("Hello, %s at index: %d", app1, index1)))
 
 			// Hit the APP2 again to verify that the session is stick to the right instance.
 			Eventually(func() string {
-				return curlAppWithCookies(domain, app2Path, cookieStorePath)
+				return curlAppWithCookies(hostname, app2Path, cookieStorePath)
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring(fmt.Sprintf("Hello, %s at index: %d", app2, index2)))
 		})
 	})
@@ -182,7 +183,7 @@ var _ = Describe("Session Affinity", func() {
 			app2Path        = "/app2"
 			app1            string
 			app2            string
-			domain          string
+			hostname        string
 			cookieStorePath string
 		)
 
@@ -192,9 +193,9 @@ var _ = Describe("Session Affinity", func() {
 
 			ScaleAppInstances(app1, 2)
 			ScaleAppInstances(app2, 2)
-			domain = app1
+			hostname = app1
 
-			MapRouteToApp(domain, app2Path, app2)
+			MapRouteToApp(hostname, app2Path, app2)
 
 			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
 			Expect(err).ToNot(HaveOccurred())
@@ -219,7 +220,7 @@ var _ = Describe("Session Affinity", func() {
 			// 1: Hit the APP1: the root app. We can set the cookie of the root path.
 			// Path: /
 			Eventually(func() string {
-				body = curlAppWithCookies(domain, "/", cookieStorePath)
+				body = curlAppWithCookies(hostname, "/", cookieStorePath)
 				return body
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring(fmt.Sprintf("Hello, %s", app1)))
 
@@ -228,7 +229,7 @@ var _ = Describe("Session Affinity", func() {
 			// 2: Hit the APP2. App2 has a path. We can set the cookie of the APP2 path.
 			// Path: /app2
 			Eventually(func() string {
-				body = curlAppWithCookies(domain, app2Path, cookieStorePath)
+				body = curlAppWithCookies(hostname, app2Path, cookieStorePath)
 				return body
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring(fmt.Sprintf("Hello, %s", app2)))
 
@@ -238,14 +239,14 @@ var _ = Describe("Session Affinity", func() {
 			// 3. Hit the APP1 (root APP) again, to ensure that the instance ID is
 			// stick correctly. Only send the first session ID.
 			Eventually(func() string {
-				return curlAppWithCookies(domain, "/", cookieStorePath)
+				return curlAppWithCookies(hostname, "/", cookieStorePath)
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring(fmt.Sprintf("Hello, %s at index: %d", app1, index1)))
 
 			// 4. Hit the APP2 (path APP) again, to ensure that the instance ID is
 			// stick correctly. In this case, both the two cookies will be sent to
 			// the server. The curl would store them.
 			Eventually(func() string {
-				return curlAppWithCookies(domain, app2Path, cookieStorePath)
+				return curlAppWithCookies(hostname, app2Path, cookieStorePath)
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring(fmt.Sprintf("Hello, %s at index: %d", app2, index2)))
 		})
 	})
