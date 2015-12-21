@@ -34,6 +34,7 @@ type Config struct {
 	SkipSSLValidation    bool   `json:"skip_ssl_validation"`
 	Backend              string `json:"backend"`
 	IncludeRouteServices bool   `json:"include_route_services"`
+	IncludeDiegoDocker   bool   `json:"include_diego_docker"`
 
 	ArtifactsDirectory string `json:"artifacts_directory"`
 

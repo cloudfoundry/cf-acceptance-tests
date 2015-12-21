@@ -16,7 +16,7 @@ import (
 	. "github.com/onsi/gomega/gbytes"
 )
 
-var _ = Describe("v3 app lifecycle", func() {
+var _ = Describe("v3 buildpack app lifecycle", func() {
 	var (
 		appName                         string
 		appGuid                         string
@@ -99,6 +99,90 @@ var _ = Describe("v3 app lifecycle", func() {
 			return helpers.CurlAppRoot(webProcess.Name)
 		}, DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
 	})
+})
+
+var _ = Describe("v3 docker app lifecycle", func() {
+	config := helpers.LoadConfig()
+	if config.IncludeDiegoDocker {
+		var (
+			appName                         string
+			appGuid                         string
+			packageGuid                     string
+			spaceGuid                       string
+			appCreationEnvironmentVariables string
+		)
+
+		BeforeEach(func() {
+			appName = generator.PrefixedRandomName("CATS-APP-")
+			spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
+			appCreationEnvironmentVariables = `"foo":"bar"`
+			appGuid = CreateDockerApp(appName, spaceGuid, `{"foo":"bar"}`)
+			packageGuid = CreateDockerPackage(appGuid, "cloudfoundry/diego-docker-app:latest")
+		})
+
+		AfterEach(func() {
+			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+			DeleteApp(appGuid)
+		})
+
+		It("can run apps", func() {
+			dropletGuid := StagePackage(packageGuid, "{}")
+			WaitForDropletToStage(dropletGuid)
+
+			AssignDropletToApp(appGuid, dropletGuid)
+
+			var webProcess Process
+			//var workerProcess Process
+			processes := getProcess(appGuid, appName)
+			for _, process := range processes {
+				if process.Type == "web" {
+					webProcess = process
+				} else if process.Type == "worker" {
+					//	workerProcess = process
+				}
+			}
+
+			Expect(webProcess.Guid).ToNot(BeEmpty())
+			//Expect(workerProcess.Guid).ToNot(BeEmpty())
+
+			CreateAndMapRoute(appGuid, context.RegularUserContext().Space, helpers.LoadConfig().AppsDomain, webProcess.Name)
+
+			StartApp(appGuid)
+
+			Eventually(func() string {
+				return helpers.CurlAppRoot(webProcess.Name)
+			}, DEFAULT_TIMEOUT).Should(Equal("0"))
+
+			output := helpers.CurlApp(webProcess.Name, "/env")
+			Expect(output).To(ContainSubstring(fmt.Sprintf("application_name\\\":\\\"%s", appName)))
+			Expect(output).To(ContainSubstring(appCreationEnvironmentVariables))
+
+			Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", webProcess.Name)))
+			//Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", workerProcess.Name)))
+
+			usageEvents := lastPageUsageEvents(appName)
+
+			event1 := AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
+			//event2 := AppUsageEvent{Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
+			Expect(eventsInclude(usageEvents, event1)).To(BeTrue())
+			// Expect(eventsInclude(usageEvents, event2)).To(BeTrue())
+
+			StopApp(appGuid)
+
+			Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+stopped", webProcess.Name)))
+			//Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+stopped", workerProcess.Name)))
+
+			usageEvents = lastPageUsageEvents(appName)
+			event1 = AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
+			//event2 = AppUsageEvent{Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
+			Expect(eventsInclude(usageEvents, event1)).To(BeTrue())
+			//	Expect(eventsInclude(usageEvents, event2)).To(BeTrue())
+
+			Eventually(func() string {
+				return helpers.CurlAppRoot(webProcess.Name)
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
+		})
+	}
 })
 
 type Entity struct {

@@ -34,6 +34,16 @@ func CreateApp(appName, spaceGuid, environmentVariables string) string {
 	return app.Guid
 }
 
+func CreateDockerApp(appName, spaceGuid, environmentVariables string) string {
+	session := cf.Cf("curl", "/v3/apps", "-X", "POST", "-d", fmt.Sprintf(`{"name":"%s", "relationships": {"space": {"guid": "%s"}}, "environment_variables":%s, "lifecycle": {"type": "docker", "data": {} } }`, appName, spaceGuid, environmentVariables))
+	bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
+	var app struct {
+		Guid string `json:"guid"`
+	}
+	json.Unmarshal(bytes, &app)
+	return app.Guid
+}
+
 func DeleteApp(appGuid string) {
 	session := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s", appGuid), "-X", "DELETE", "-v")
 	bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
@@ -59,6 +69,17 @@ func WaitForDropletToStage(dropletGuid string) {
 func CreatePackage(appGuid string) string {
 	packageCreateUrl := fmt.Sprintf("/v3/apps/%s/packages", appGuid)
 	session := cf.Cf("curl", packageCreateUrl, "-X", "POST", "-d", fmt.Sprintf(`{"type":"bits"}`))
+	bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
+	var pac struct {
+		Guid string `json:"guid"`
+	}
+	json.Unmarshal(bytes, &pac)
+	return pac.Guid
+}
+
+func CreateDockerPackage(appGuid, imagePath string) string {
+	packageCreateUrl := fmt.Sprintf("/v3/apps/%s/packages", appGuid)
+	session := cf.Cf("curl", packageCreateUrl, "-X", "POST", "-d", fmt.Sprintf(`{"type":"docker", "data": {"image": "%s"}}`, imagePath))
 	bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
 	var pac struct {
 		Guid string `json:"guid"`
