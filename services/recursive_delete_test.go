@@ -61,7 +61,9 @@ var _ = Describe("Recursive Delete", func() {
 		app_helpers.AppReport(broker.Name, DEFAULT_TIMEOUT)
 
 		broker.Destroy()
-		runner.NewCmdRunner(cf.Cf("delete-quota", quotaName), context.ShortTimeout()).Run()
+		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			runner.NewCmdRunner(cf.Cf("delete-quota", "-f", quotaName), context.ShortTimeout()).Run()
+		})
 	})
 
 	It("deletes all apps and services in all spaces in an org", func() {
