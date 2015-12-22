@@ -16,6 +16,7 @@
 1. `GET /loglines/:linecount` Writes n lines to stdout, each line contains a timestamp with nanoseconds
 1. `GET /echo/:destination/:output` Echos out the output to the destination
 1. `GET /env/:name` Prints out the env variable
+1. `GET /largetext/:kbytes` Returns a dummy response of size `:kbytes`. For testing large payloads.
 
 ## Sticky Sessions
 
