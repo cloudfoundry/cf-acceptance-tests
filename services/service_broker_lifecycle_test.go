@@ -28,7 +28,11 @@ var _ = Describe("Service Broker Lifecycle", func() {
 		var oldPlanName string
 
 		BeforeEach(func() {
-			broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
+			broker = NewServiceBroker(
+				generator.PrefixedRandomName("pblc-brkr-"),
+				assets.NewAssets().ServiceBroker,
+				context,
+			)
 			cf.TargetSpace(context.RegularUserContext(), context.ShortTimeout())
 			broker.Push()
 			broker.Configure()
@@ -56,8 +60,8 @@ var _ = Describe("Service Broker Lifecycle", func() {
 				// Changing the catalog on the broker
 				oldServiceName = broker.Service.Name
 				oldPlanName = broker.SyncPlans[0].Name
-				broker.Service.Name = generator.RandomName()
-				broker.SyncPlans[0].Name = generator.RandomName()
+				broker.Service.Name = generator.PrefixedRandomName("pblc-brkr-")
+				broker.SyncPlans[0].Name = generator.PrefixedRandomName("pblc-brkr-")
 				broker.Configure()
 				broker.Update()
 
@@ -190,14 +194,18 @@ var _ = Describe("Service Broker Lifecycle", func() {
 
 	Describe("private brokers", func() {
 		BeforeEach(func() {
-			broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
+			broker = NewServiceBroker(
+				generator.PrefixedRandomName("prbr-"),
+				assets.NewAssets().ServiceBroker,
+				context,
+			)
 			cf.TargetSpace(context.RegularUserContext(), context.ShortTimeout())
 			broker.Push()
 			broker.Configure()
 		})
 
 		AfterEach(func() {
-			broker.Delete()
+			broker.Destroy()
 		})
 
 		It("can be created and viewed (in list) by SpaceDevelopers", func() {

@@ -17,7 +17,11 @@ var _ = Describe("Purging service offerings", func() {
 	var broker ServiceBroker
 
 	BeforeEach(func() {
-		broker = NewServiceBroker(generator.RandomName(), assets.NewAssets().ServiceBroker, context)
+		broker = NewServiceBroker(
+			generator.PrefixedRandomName("ps-"),
+			assets.NewAssets().ServiceBroker,
+			context,
+		)
 		broker.Push()
 		broker.Configure()
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
@@ -36,9 +40,9 @@ var _ = Describe("Purging service offerings", func() {
 		var appName, instanceName, asyncInstanceName string
 
 		BeforeEach(func() {
-			appName = generator.PrefixedRandomName("CATS-APP-")
-			instanceName = generator.RandomName()
-			asyncInstanceName = generator.RandomName()
+			appName = generator.PrefixedRandomName("CATS-APP-ps-")
+			instanceName = generator.PrefixedRandomName("CATS-APP-ps-")
+			asyncInstanceName = generator.PrefixedRandomName("CATS-APP-ps-")
 
 			createApp := cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)
 			Expect(createApp).To(Exit(0), "failed creating app")
