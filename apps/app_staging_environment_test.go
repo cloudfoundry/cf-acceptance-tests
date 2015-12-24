@@ -117,10 +117,18 @@ EOF
 	})
 
 	It("uses ruby 1.9.3-p547 for staging", func() {
-		push := cf.Cf("push", appName, "-b", BuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)
-		Expect(push).To(Exit(0))
-		Expect(push).To(Say("RUBY_LOCATION=/usr/bin/ruby"))
-		Expect(push).To(Say("RUBY_VERSION=ruby 1.9.3p547"))
-	})
+		Expect(cf.Cf("push", appName,
+			"--no-start",
+			"-b", BuildpackName,
+			"-m", DEFAULT_MEMORY_LIMIT,
+			"-p", appPath,
+			"-d", config.AppsDomain,
+		).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		app_helpers.SetBackend(appName)
 
+		start := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)
+		Expect(start).To(Exit(0))
+		Expect(start).To(Say("RUBY_LOCATION=/usr/bin/ruby"))
+		Expect(start).To(Say("RUBY_VERSION=ruby 1.9.3p547"))
+	})
 })

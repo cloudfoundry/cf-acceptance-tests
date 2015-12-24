@@ -29,16 +29,18 @@ var _ = Describe("Changing an app's start command", func() {
 	})
 
 	Context("by using the command flag", func() {
-
 		BeforeEach(func() {
 			Expect(cf.Cf(
 				"push", appName,
+				"--no-start",
 				"-b", config.RubyBuildpackName,
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Dora,
 				"-d", helpers.LoadConfig().AppsDomain,
 				"-c", "FOO=foo bundle exec rackup config.ru -p $PORT",
-			).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			app_helpers.SetBackend(appName)
+			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		})
 
 		It("takes effect after a restart, not requiring a push", func() {

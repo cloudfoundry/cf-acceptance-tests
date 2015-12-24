@@ -230,51 +230,46 @@ section of the godep documentation.
 There are a number of conventions we recommend developers of CF acceptance tests
 adopt:
 
-1. Print app guid and recent application logs during cleanup of each test.
-There is a helper method `AppReport` provided in the `app_helpers` package for this purpose.
+1. When pushing an app:
+  * set the **backend**,
+  * set the **memory** requirement, and use the suite's `DEFAULT_MEMORY_LIMIT`
+unless the test specifically needs to test a different value,
+  * set the **buildpack** unless the test specifically needs to test the case where
+a buildpack is unspecified,
+  * set the **domain**, and use the `config.AppsDomain` unless the test specifically
+needs to test a different app domain.
+
+  For example:
+
+  ```go
+  Expect(cf.Cf("push", appName,
+      "--no-start"                          // don't start before setting backend
+      "-b", buildpackName,                  // specify buildpack
+      "-m", DEFAULT_MEMORY_LIMIT,           // specify memory limit
+      "-d", config.AppsDomain,              // specify app domain
+  ).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
+  //use the config-file specified backend when starting this app
+  app_helpers.SetBackend(appName)
+
+  Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+  ```
+1. Delete all resources that are created, e.g. apps, routes, quotas, etc.
+This is in order to leave the system in the same state it was found in.
+For example, to delete apps and their associated routes:
+    ```
+		Expect(cf.Cf("delete", myAppName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+    ```
+1. Specifically for apps, before tearing them down, print the app guid and
+recent application logs. There is a helper method `AppReport` provided in the
+`app_helpers` package for this purpose.
 
     ```go
     AfterEach(func() {
       app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
     })
     ```
-1. Delete all resources that are created, e.g. apps, routes, quotas, etc.
-This is in order to leave the system in the same state it was found in.
-For example, to delete apps and their associated routes:
-    ```
-		Expect(cf.Cf("push", myAppName, "--no-start").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
-
-		Expect(cf.Cf("delete", myAppName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-    ```
-1. Target whichever backend (i.e. diego,dea) is currently configured.
-There is a helper method `SetBackend` provided in the `app_helpers` package for this purpose.
-
-    ```go
-    BeforeEach(func() {
-      Expect(cf.Cf("push", appName, "--no-start").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-
-      //use the config-file specified backend when starting this app
-      app_helpers.SetBackend(appName)
-
-      Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
-    })
-    ```
-1. Explicitly specify buildpack for each app you push using the `-b` CF CLI flag.
-
-    ```go
-    Expect(cf.Cf("push", app, "-b", buildpackName, "--no-start").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-    ```
-1. Specify a default memory constant in your suite.
-This constant should be used for each app that is pushed with the `-m` CF CLI flag.
-All app pushes should use this constant unless there's a specific test that has a reason not to do so.
-
-    ```go
-    const (
-      DEFAULT_MEMORY_LIMIT = "256M"
-    )
-    Expect(cf.Cf("push", app, "-m", DEFAULT_MEMORY_LIMIT).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-    ```
 1. Document the purpose of your test suite in this repo's README.md.
-This is especially important when changing the explicit behavior of exisiting suites
+This is especially important when changing the explicit behavior of existing suites
 or adding new suites.
 1. Document all changes to the config object in this repo's README.md
