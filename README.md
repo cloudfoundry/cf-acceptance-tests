@@ -238,6 +238,14 @@ There is a helper method `AppReport` provided in the `app_helpers` package for t
       app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
     })
     ```
+1. Delete all resources that are created, e.g. apps, routes, quotas, etc.
+This is in order to leave the system in the same state it was found in.
+For example, to delete apps and their associated routes:
+    ```
+		Expect(cf.Cf("push", myAppName, "--no-start").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+
+		Expect(cf.Cf("delete", myAppName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+    ```
 1. Target whichever backend (i.e. diego,dea) is currently configured.
 There is a helper method `SetBackend` provided in the `app_helpers` package for this purpose.
 
