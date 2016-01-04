@@ -142,7 +142,7 @@ func GetAppInfo(appName string) (host, port string) {
 	return appIp, appPort
 }
 
-const (
+var (
 	DEFAULT_TIMEOUT      = 30 * time.Second
 	CF_PUSH_TIMEOUT      = 2 * time.Minute
 	DEFAULT_MEMORY_LIMIT = "256M"
@@ -154,6 +154,14 @@ func TestRouting(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	config = helpers.LoadConfig()
+
+	if config.DefaultTimeout > 0 {
+		DEFAULT_TIMEOUT = config.DefaultTimeout * time.Second
+	}
+
+	if config.CfPushTimeout > 0 {
+		CF_PUSH_TIMEOUT = config.CfPushTimeout * time.Second
+	}
 
 	componentName := "Routing"
 
