@@ -18,6 +18,17 @@ import (
 	"testing"
 )
 
+const (
+	DEFAULT_MEMORY_LIMIT = "256M"
+)
+
+var (
+	DEFAULT_TIMEOUT = 30 * time.Second
+	CF_PUSH_TIMEOUT = 2 * time.Minute
+
+	config helpers.Config
+)
+
 type AppResource struct {
 	Metadata struct {
 		Url string
@@ -141,14 +152,6 @@ func GetAppInfo(appName string) (host, port string) {
 	appPort := fmt.Sprintf("%d", statsResponse["0"].Stats.Port)
 	return appIp, appPort
 }
-
-var (
-	DEFAULT_TIMEOUT      = 30 * time.Second
-	CF_PUSH_TIMEOUT      = 2 * time.Minute
-	DEFAULT_MEMORY_LIMIT = "256M"
-)
-
-var config helpers.Config
 
 func TestRouting(t *testing.T) {
 	RegisterFailHandler(Fail)
