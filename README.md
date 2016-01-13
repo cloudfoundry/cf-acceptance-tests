@@ -194,6 +194,8 @@ Most of these flags and options can also be passed to the `bin/test_default` scr
 
 * `apps`: Tests the core functionalities of Cloud Foundry: staging, running, logging, routing, buildpacks, etc.  This suite should always pass against a sound Cloud Foundry deployment.
 
+* `docker`: Test our ability to run docker containers on diego and that we handle docker metadata correctly.
+
 * `internet_dependent`: This suite tests the feature of being able to specify a buildpack via a Github URL.  As such, this depends on your Cloud Foundry application containers having access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
 
 * `logging`: This test exercises the syslog drain forwarding functionality. A TCP listener is
