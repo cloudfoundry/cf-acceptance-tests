@@ -208,7 +208,49 @@ var _ = Describe("Service Broker Lifecycle", func() {
 			broker.Destroy()
 		})
 
-		It("can be created and viewed (in list) by SpaceDevelopers", func() {
+		It("can be created, viewed (in list), updated, and deleted by SpaceDevelopers", func() {
+			cf.AsUser(context.RegularUserContext(), context.ShortTimeout(), func() {
+				spaceCmd := cf.Cf("space", context.RegularUserContext().Space, "--guid").Wait(DEFAULT_TIMEOUT)
+				spaceGuid := string(spaceCmd.Out.Contents())
+				spaceGuid = strings.Trim(spaceGuid, "\n")
+				body := map[string]string{
+					"name":          broker.Name,
+					"broker_url":    helpers.AppUri(broker.Name, ""),
+					"auth_username": context.RegularUserContext().Username,
+					"auth_password": context.RegularUserContext().Password,
+					"space_guid":    spaceGuid,
+				}
+				jsonBody, _ := json.Marshal(body)
+
+				By("Create")
+				createBrokerCommand := cf.Cf("curl", "/v2/service_brokers", "-X", "POST", "-d", string(jsonBody)).Wait(DEFAULT_TIMEOUT)
+				Expect(createBrokerCommand).To(Exit(0))
+
+				By("Read")
+				serviceBrokersCommand := cf.Cf("service-brokers").Wait(DEFAULT_TIMEOUT)
+				Expect(serviceBrokersCommand).To(Exit(0))
+				Expect(serviceBrokersCommand.Out.Contents()).To(ContainSubstring(broker.Name))
+
+				By("Update")
+				updatedName := broker.Name + "updated"
+				updateBrokerCommand := cf.Cf("rename-service-broker", broker.Name, updatedName).Wait(DEFAULT_TIMEOUT)
+				Expect(updateBrokerCommand).To(Exit(0))
+
+				serviceBrokersCommand = cf.Cf("service-brokers").Wait(DEFAULT_TIMEOUT)
+				Expect(serviceBrokersCommand).To(Exit(0))
+				Expect(serviceBrokersCommand.Out.Contents()).To(ContainSubstring(updatedName))
+
+				By("Delete")
+				deleteBrokerCommand := cf.Cf("delete-service-broker", updatedName, "-f").Wait(DEFAULT_TIMEOUT)
+				Expect(deleteBrokerCommand).To(Exit(0))
+
+				serviceBrokersCommand = cf.Cf("service-brokers").Wait(DEFAULT_TIMEOUT)
+				Expect(serviceBrokersCommand).To(Exit(0))
+				Expect(serviceBrokersCommand.Out.Contents()).NotTo(ContainSubstring(updatedName))
+			})
+		})
+
+		It("exposes the services and plans of the private broker in the space", func() {
 			cf.AsUser(context.RegularUserContext(), context.ShortTimeout(), func() {
 				spaceCmd := cf.Cf("space", context.RegularUserContext().Space, "--guid").Wait(DEFAULT_TIMEOUT)
 				spaceGuid := string(spaceCmd.Out.Contents())
@@ -225,9 +267,12 @@ var _ = Describe("Service Broker Lifecycle", func() {
 				createBrokerCommand := cf.Cf("curl", "/v2/service_brokers", "-X", "POST", "-d", string(jsonBody)).Wait(DEFAULT_TIMEOUT)
 				Expect(createBrokerCommand).To(Exit(0))
 
-				serviceBrokersCommand := cf.Cf("service-brokers").Wait(DEFAULT_TIMEOUT)
-				Expect(serviceBrokersCommand).To(Exit(0))
-				Expect(serviceBrokersCommand.Out.Contents()).To(ContainSubstring(broker.Name))
+				marketplaceOutput := cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
+
+				Expect(marketplaceOutput).To(Exit(0))
+				Expect(marketplaceOutput).To(Say(broker.Service.Name))
+				Expect(marketplaceOutput).To(Say(broker.SyncPlans[0].Name))
+				Expect(marketplaceOutput).To(Say(broker.SyncPlans[1].Name))
 			})
 		})
 	})
