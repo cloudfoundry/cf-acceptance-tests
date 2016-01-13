@@ -24,12 +24,20 @@ func guidForAppName(appName string) string {
 func SetBackend(appName string) {
 	config := helpers.LoadConfig()
 	if config.Backend == "diego" {
-		guid := guidForAppName(appName)
-		Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": true}`), DEFAULT_TIMEOUT).Should(Exit(0))
+		EnableDiego(appName)
 	} else if config.Backend == "dea" {
-		guid := guidForAppName(appName)
-		Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": false}`), DEFAULT_TIMEOUT).Should(Exit(0))
+		DisableDiego(appName)
 	}
+}
+
+func EnableDiego(appName string) {
+	guid := guidForAppName(appName)
+	Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": true}`), DEFAULT_TIMEOUT).Should(Exit(0))
+}
+
+func DisableDiego(appName string) {
+	guid := guidForAppName(appName)
+	Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": false}`), DEFAULT_TIMEOUT).Should(Exit(0))
 }
 
 func AppReport(appName string, timeout time.Duration) {
