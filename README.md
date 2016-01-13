@@ -211,6 +211,8 @@ messages.  Tests in this package are only intended to be run on machines that ar
 
 * `services`: This suite tests various features related to services, e.g. registering a service broker via the service broker API.  Some of these tests exercise special integrations, such as Single Sign-On authentication; you may wish to run some tests in this package but selectively skip others if you haven't configured the required integrations.  Consult the [ginkgo spec runner](http://onsi.github.io/ginkgo/#the-spec-runner) documention to see how to use the `--skip` and `--focus` flags.
 
+* `ssh`: This suite tests our ability to communicate with Diego apps via ssh, scp, and sftp.
+
 * `v3`: This suite contains tests for the next-generation v3 Cloud Controller API.  As of this writing, the v3 API is not officially supported.
 
 
