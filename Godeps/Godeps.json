@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/cloudfoundry/cf-acceptance-tests",
-	"GoVersion": "go1.5.2",
+	"GoVersion": "go1.4.2",
 	"Packages": [
 		"./..."
 	],
@@ -34,6 +34,11 @@
 			"Rev": "87f6f6a22ebfbc3f89b9ccdc7fddd1b914c095f9"
 		},
 		{
+			"ImportPath": "github.com/kr/pty",
+			"Comment": "release.r56-29-gf7ee69f",
+			"Rev": "f7ee69f31298ecbe5d2b349c711e2547a617d398"
+		},
+		{
 			"ImportPath": "github.com/nu7hatch/gouuid",
 			"Rev": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3"
 		},
@@ -50,6 +55,14 @@
 		{
 			"ImportPath": "github.com/pivotal-golang/archiver/extractor/test_helper",
 			"Rev": "8313f4fb92fd04f23d3132024ca1cdad3bebec3e"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/curve25519",
+			"Rev": "3760e016850398b85094c4c99e955b8c3dea5711"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/ssh",
+			"Rev": "3760e016850398b85094c4c99e955b8c3dea5711"
 		}
 	]
 }
