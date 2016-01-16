@@ -32,9 +32,23 @@ var _ = Describe("Delete Route", func() {
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 
-	Describe("delete the route", func() {
-		It("completes successfully", func() {
+	Describe("Removing the route", func() {
+		It("Should be  able to remove and delete the route", func() {
+			secondHost := generator.RandomName()
+
+			By("adding a route")
+			Eventually(cf.Cf("map-route", appName, helpers.LoadConfig().AppsDomain, "-n", secondHost), DEFAULT_TIMEOUT).Should(Exit(0))
+			Eventually(helpers.CurlingAppRoot(appName), DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
+			Eventually(helpers.CurlingAppRoot(secondHost), DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
+
+			By("removing a route")
+			Eventually(cf.Cf("unmap-route", appName, helpers.LoadConfig().AppsDomain, "-n", secondHost), DEFAULT_TIMEOUT).Should(Exit(0))
+			Eventually(helpers.CurlingAppRoot(secondHost), DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
+			Eventually(helpers.CurlingAppRoot(appName), DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
+
+			By("deleting the original route")
 			Expect(cf.Cf("delete-route", helpers.LoadConfig().AppsDomain, "-n", appName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Eventually(helpers.CurlingAppRoot(appName), DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
 		})
 	})
 })

@@ -19,6 +19,7 @@ var (
 )
 
 const diegoUnsupportedTag = "{NO_DIEGO_SUPPORT} "
+const deaUnsupportedTag = "{NO_DEA_SUPPORT} "
 
 var (
 	context helpers.SuiteContext
