@@ -85,6 +85,7 @@ The full set of config parameters is explained below:
 * `persistent_app_quota_name` (optional): [See below](#persistent-app-test-setup).
 * `backend` (optional): Set to 'diego' or 'dea' to determine the backend used. If unspecified the default backend will be used.
 * `include_route_services` (optional): If true, the route services tests will be run. These require a Diego deployment.
+* `include_tasks` (optional): If true, the task tests will be run. These require the task_creation feature flag to be enabled.
 * `artifacts_directory` (optional): If set, `cf` CLI trace output from test runs will be captured in files and placed in this directory. [See below](#capturing-test-output) for more.
 * `default_timeout` (optional): Default time (in seconds) to wait for polling assertions that wait for asynchronous results.
 * `cf_push_timeout` (optional): Default time (in seconds) to wait for `cf push` commands to succeed.

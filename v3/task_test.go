@@ -5,6 +5,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 
@@ -42,11 +43,14 @@ var _ = Describe("v3 tasks", func() {
 	})
 
 	XIt("can create a task", func() {
-		postBody := `{"command": "echo 0", "name": "mreow"}`
-		createCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks", appGuid), "-X", "POST", "-d", postBody).Wait(DEFAULT_TIMEOUT)
-		Expect(createCommand).To(Exit(0))
-		Expect(createCommand.Out.Contents()).To(ContainSubstring("echo 0"))
-		Expect(createCommand.Out.Contents()).To(ContainSubstring("mreow"))
-		Expect(createCommand.Out.Contents()).To(ContainSubstring("RUNNING"))
+		config := helpers.LoadConfig()
+		if config.IncludeTasks {
+			postBody := `{"command": "echo 0", "name": "mreow"}`
+			createCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks", appGuid), "-X", "POST", "-d", postBody).Wait(DEFAULT_TIMEOUT)
+			Expect(createCommand).To(Exit(0))
+			Expect(createCommand.Out.Contents()).To(ContainSubstring("echo 0"))
+			Expect(createCommand.Out.Contents()).To(ContainSubstring("mreow"))
+			Expect(createCommand.Out.Contents()).To(ContainSubstring("RUNNING"))
+		}
 	})
 })

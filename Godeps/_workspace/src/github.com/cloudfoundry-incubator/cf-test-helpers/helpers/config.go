@@ -35,6 +35,7 @@ type Config struct {
 	Backend              string `json:"backend"`
 	IncludeRouteServices bool   `json:"include_route_services"`
 	IncludeDiegoDocker   bool   `json:"include_diego_docker"`
+	IncludeTasks         bool   `json:"include_tasks"`
 
 	ArtifactsDirectory string `json:"artifacts_directory"`
 
