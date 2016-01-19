@@ -15,42 +15,44 @@ import (
 )
 
 var _ = Describe("v3 tasks", func() {
-	var (
-		appName                         string
-		appGuid                         string
-		packageGuid                     string
-		spaceGuid                       string
-		appCreationEnvironmentVariables string
-	)
+	config := helpers.LoadConfig()
+	if config.IncludeTasks {
+		Context("tasks lifecycle", func() {
+			var (
+				appName                         string
+				appGuid                         string
+				packageGuid                     string
+				spaceGuid                       string
+				appCreationEnvironmentVariables string
+			)
 
-	BeforeEach(func() {
-		appName = generator.PrefixedRandomName("CATS-APP-")
-		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
-		appCreationEnvironmentVariables = `"foo"=>"bar"`
-		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
-		packageGuid = CreatePackage(appGuid)
-		token := GetAuthToken()
-		uploadUrl := fmt.Sprintf("%s/v3/packages/%s/upload", config.ApiEndpoint, packageGuid)
-		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
-		WaitForPackageToBeReady(packageGuid)
-		dropletGuid := StagePackage(packageGuid, "{}")
-		WaitForDropletToStage(dropletGuid)
-		AssignDropletToApp(appGuid, dropletGuid)
-	})
+			BeforeEach(func() {
+				appName = generator.PrefixedRandomName("CATS-APP-")
+				spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
+				appCreationEnvironmentVariables = `"foo"=>"bar"`
+				appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
+				packageGuid = CreatePackage(appGuid)
+				token := GetAuthToken()
+				uploadUrl := fmt.Sprintf("%s/v3/packages/%s/upload", config.ApiEndpoint, packageGuid)
+				UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
+				WaitForPackageToBeReady(packageGuid)
+				dropletGuid := StagePackage(packageGuid, "{}")
+				WaitForDropletToStage(dropletGuid)
+				AssignDropletToApp(appGuid, dropletGuid)
+			})
 
-	AfterEach(func() {
-		DeleteApp(appGuid)
-	})
+			AfterEach(func() {
+				DeleteApp(appGuid)
+			})
 
-	XIt("can create a task", func() {
-		config := helpers.LoadConfig()
-		if config.IncludeTasks {
-			postBody := `{"command": "echo 0", "name": "mreow"}`
-			createCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks", appGuid), "-X", "POST", "-d", postBody).Wait(DEFAULT_TIMEOUT)
-			Expect(createCommand).To(Exit(0))
-			Expect(createCommand.Out.Contents()).To(ContainSubstring("echo 0"))
-			Expect(createCommand.Out.Contents()).To(ContainSubstring("mreow"))
-			Expect(createCommand.Out.Contents()).To(ContainSubstring("RUNNING"))
+			It("can create a task", func() {
+				postBody := `{"command": "echo 0", "name": "mreow"}`
+				createCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks", appGuid), "-X", "POST", "-d", postBody).Wait(DEFAULT_TIMEOUT)
+				Expect(createCommand).To(Exit(0))
+				Expect(createCommand.Out.Contents()).To(ContainSubstring("echo 0"))
+				Expect(createCommand.Out.Contents()).To(ContainSubstring("mreow"))
+				Expect(createCommand.Out.Contents()).To(ContainSubstring("RUNNING"))
+			})
+		})
 		}
 	})
-})
