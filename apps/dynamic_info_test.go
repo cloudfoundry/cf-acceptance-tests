@@ -45,12 +45,15 @@ var _ = Describe("A running application", func() {
 		Expect(files).To(Say("run Dora"))
 	})
 
-	It("can show crash events", func() {
+	It("shows crash events and recovers from crashes", func() {
+		id := helpers.CurlApp(appName, "/id")
 		helpers.CurlApp(appName, "/sigterm/KILL")
 
 		Eventually(func() string {
 			return string(cf.Cf("events", appName).Wait(DEFAULT_TIMEOUT).Out.Contents())
 		}, DEFAULT_TIMEOUT).Should(MatchRegexp("[eE]xited"))
+
+		Eventually(func() string { return helpers.CurlApp(appName, "/id") }).Should(Not(Equal(id)))
 	})
 
 	Context("with multiple instances", func() {

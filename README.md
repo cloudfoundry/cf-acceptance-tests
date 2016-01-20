@@ -194,6 +194,10 @@ Most of these flags and options can also be passed to the `bin/test_default` scr
 
 * `apps`: Tests the core functionalities of Cloud Foundry: staging, running, logging, routing, buildpacks, etc.  This suite should always pass against a sound Cloud Foundry deployment.
 
+* `backend_compatibility`: Tests interoperability of droplets staged on Diego or the DEAs
+
+* `docker`: Test our ability to run docker containers on diego and that we handle docker metadata correctly.
+
 * `internet_dependent`: This suite tests the feature of being able to specify a buildpack via a Github URL.  As such, this depends on your Cloud Foundry application containers having access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
 
 * `logging`: This test exercises the syslog drain forwarding functionality. A TCP listener is
@@ -210,6 +214,8 @@ messages.  Tests in this package are only intended to be run on machines that ar
 * `security_groups`: This suite tests the security groups feature of Cloud Foundry that lets you apply rules-based controls to network traffic in and out of your containers.  These should pass for most recent Cloud Foundry installations.  `cf-release` versions `v200` and up should have support for most security group specs to pass.
 
 * `services`: This suite tests various features related to services, e.g. registering a service broker via the service broker API.  Some of these tests exercise special integrations, such as Single Sign-On authentication; you may wish to run some tests in this package but selectively skip others if you haven't configured the required integrations.  Consult the [ginkgo spec runner](http://onsi.github.io/ginkgo/#the-spec-runner) documention to see how to use the `--skip` and `--focus` flags.
+
+* `ssh`: This suite tests our ability to communicate with Diego apps via ssh, scp, and sftp.
 
 * `v3`: This suite contains tests for the next-generation v3 Cloud Controller API.  As of this writing, the v3 API is not officially supported.
 
