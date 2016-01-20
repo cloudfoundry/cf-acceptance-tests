@@ -74,5 +74,5 @@ var _ = Describe("v3 tasks", func() {
 				Expect(createOutput.State).To(Equal("RUNNING"))
 			})
 		})
-		}
-	})
+	}
+})

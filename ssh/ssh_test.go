@@ -130,7 +130,7 @@ var _ = Describe(deaUnsupportedTag+"SSH", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
-		It("can be ssh'ed to and records its success", func() {
+		It("records successful ssh attempts", func() {
 			password := sshAccessCode()
 
 			clientConfig := &ssh.ClientConfig{

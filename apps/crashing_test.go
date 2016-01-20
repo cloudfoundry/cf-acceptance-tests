@@ -27,7 +27,17 @@ var _ = Describe("Crashing", func() {
 
 	Describe(deaUnsupportedTag+"a continuously crashing app", func() {
 		It("emits crash events and reports as 'crashed' after enough crashes", func() {
-			Expect(cf.Cf("push", appName, "-c", "/bin/false", "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf(
+				"push",
+				appName,
+				"-c", "/bin/false",
+				"--no-start",
+				"-b", config.RubyBuildpackName,
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().Dora,
+				"-d", config.AppsDomain,
+			).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
 			app_helpers.SetBackend(appName)
 			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(1))
 
@@ -39,19 +49,37 @@ var _ = Describe("Crashing", func() {
 		})
 	})
 
-	It("shows crash events and recovers from crashes", func() {
-		Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-		app_helpers.SetBackend(appName)
-		Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+	Context("the app crashes", func() {
+		BeforeEach(func() {
+			Expect(cf.Cf(
+				"push",
+				appName,
+				"--no-start",
+				"-b", config.RubyBuildpackName,
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().Dora,
+				"-d", config.AppsDomain,
+			).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
-		id := helpers.CurlApp(appName, "/id")
-		helpers.CurlApp(appName, "/sigterm/KILL")
+			app_helpers.SetBackend(appName)
+			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		})
 
-		Eventually(func() string {
-			return string(cf.Cf("events", appName).Wait(DEFAULT_TIMEOUT).Out.Contents())
-		}, DEFAULT_TIMEOUT).Should(MatchRegexp("[eE]xited"))
+		It("shows crash events", func() {
+			helpers.CurlApp(appName, "/sigterm/KILL")
 
-		Eventually(func() string { return helpers.CurlApp(appName, "/id") }).Should(Not(Equal(id)))
+			Eventually(func() string {
+				return string(cf.Cf("events", appName).Wait(DEFAULT_TIMEOUT).Out.Contents())
+			}, DEFAULT_TIMEOUT).Should(MatchRegexp("[eE]xited"))
+		})
+
+		It("recovers", func() {
+			id := helpers.CurlApp(appName, "/id")
+			helpers.CurlApp(appName, "/sigterm/KILL")
+
+			Eventually(func() string {
+				return helpers.CurlApp(appName, "/id")
+			}, DEFAULT_TIMEOUT).Should(Not(Equal(id)))
+		})
 	})
-
 })
