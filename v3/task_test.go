@@ -2,6 +2,7 @@ package v3
 
 import (
 	"fmt"
+	"encoding/json"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
@@ -45,13 +46,32 @@ var _ = Describe("v3 tasks", func() {
 				DeleteApp(appGuid)
 			})
 
-			It("can create a task", func() {
+			It("can create and read a task", func() {
+				type Task struct {
+					Guid string `json:"guid"`
+					Command string `json:"command"`
+					Name string `json:"name"`
+					State string `json:"state"`
+				}
+
+				By("create")
+				var createOutput Task
 				postBody := `{"command": "echo 0", "name": "mreow"}`
 				createCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks", appGuid), "-X", "POST", "-d", postBody).Wait(DEFAULT_TIMEOUT)
 				Expect(createCommand).To(Exit(0))
-				Expect(createCommand.Out.Contents()).To(ContainSubstring("echo 0"))
-				Expect(createCommand.Out.Contents()).To(ContainSubstring("mreow"))
-				Expect(createCommand.Out.Contents()).To(ContainSubstring("RUNNING"))
+				json.Unmarshal(createCommand.Out.Contents(), &createOutput)
+				Expect(createOutput.Command).To(Equal("echo 0"))
+				Expect(createOutput.Name).To(Equal("mreow"))
+				Expect(createOutput.State).To(Equal("RUNNING"))
+
+				By("read")
+				var readOutput Task
+				readCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks/%s", appGuid, createOutput.Guid), "-X", "GET").Wait(DEFAULT_TIMEOUT)
+				Expect(createCommand).To(Exit(0))
+				json.Unmarshal(readCommand.Out.Contents(), &readOutput)
+				Expect(createOutput.Command).To(Equal("echo 0"))
+				Expect(createOutput.Name).To(Equal("mreow"))
+				Expect(createOutput.State).To(Equal("RUNNING"))
 			})
 		})
 		}
