@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"regexp"
+	"strings"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
@@ -102,6 +104,40 @@ var _ = Describe("Route Services", func() {
 					}, DEFAULT_TIMEOUT).Should(ContainSubstring("go, world"))
 				})
 			})
+
+			Context("when arbitrary parameters are sent", func() {
+				var (
+					brokerName          string
+					brokerAppName       string
+					serviceInstanceName string
+					routeGuid           string
+				)
+
+				BeforeEach(func() {
+					var serviceName string
+					brokerName, brokerAppName, serviceName = createServiceBroker()
+					serviceInstanceName = createServiceInstance(serviceName)
+					routeGuid = CreateRoute("panda", "", targetedSpaceGuid(), sharedDomainGuid())
+
+					configureBroker(brokerAppName, "")
+				})
+
+				AfterEach(func() {
+					unbindRouteFromService("panda", serviceInstanceName)
+					deleteServiceInstance(serviceInstanceName)
+					deleteServiceBroker(brokerName)
+				})
+
+				It("passes them to the service broker", func() {
+					bindRouteToServiceWithParams("panda", serviceInstanceName, "{\"key1\":[\"value1\",\"irynaparam\"],\"key2\":\"value3\"}")
+
+					Eventually(func() *Session {
+						logs := cf.Cf("logs", "--recent", brokerAppName)
+						Expect(logs.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+						return logs
+					}, DEFAULT_TIMEOUT).Should(Say("irynaparam"))
+				})
+			})
 		})
 	}
 })
@@ -116,6 +152,21 @@ func bindRouteToService(routeName, serviceInstanceName string) {
 	routeGuid := getRouteGuid(routeName)
 	serviceInstanceGuid := getServiceInstanceGuid(serviceInstanceName)
 	cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", serviceInstanceGuid, routeGuid), "-X", "PUT")
+
+	Eventually(func() string {
+		response := cf.Cf("curl", fmt.Sprintf("/v2/routes/%s", routeGuid))
+		Expect(response.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
+		contents := response.Out.Contents()
+		return string(contents)
+	}, DEFAULT_TIMEOUT, "1s").ShouldNot(ContainSubstring(`"service_instance_guid": null`))
+}
+
+func bindRouteToServiceWithParams(routeName, serviceInstanceName string, params string) {
+	routeGuid := getRouteGuid(routeName)
+	serviceInstanceGuid := getServiceInstanceGuid(serviceInstanceName)
+	cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", serviceInstanceGuid, routeGuid), "-X", "PUT", 
+							  "-d", fmt.Sprintf("{\"parameters\": %s}", params))
 
 	Eventually(func() string {
 		response := cf.Cf("curl", fmt.Sprintf("/v2/routes/%s", routeGuid))
@@ -285,4 +336,30 @@ func initiateBrokerConfig(serviceBrokerAppName string) string {
 	helpers.CurlApp(serviceBrokerAppName, "/config", "-X", "POST", "-d", string(changedJson))
 
 	return serviceName
+}
+
+func targetedSpaceGuid() string {
+	output := cf.Cf("target")
+	Expect(output.Wait()).To(Exit(0))
+
+	targetInfo := strings.TrimSpace(string(output.Out.Contents()))
+	spaceMatch, _ := regexp.Compile(`Space:\s+([^\s]+)`)
+	spaceName := spaceMatch.FindAllStringSubmatch(targetInfo, -1)[0][1]
+
+	output = cf.Cf("space", spaceName, "--guid")
+	Expect(output.Wait()).To(Exit(0))
+
+	return strings.TrimSpace(string(output.Out.Contents()))
+}
+
+func sharedDomainGuid() string {
+	output := cf.Cf("curl", "/v2/shared_domains")
+	Expect(output.Wait()).To(Exit(0))
+
+	var sharedDomainMap response
+
+	err := json.Unmarshal(output.Out.Contents(), &sharedDomainMap)
+	Expect(err).NotTo(HaveOccurred())
+
+	return sharedDomainMap.Resources[0].Metadata.Guid
 }

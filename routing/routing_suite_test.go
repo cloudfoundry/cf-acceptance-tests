@@ -99,8 +99,8 @@ func MapRouteToApp(domain, path, app string) {
 	Expect(cf.Cf("curl", "/v2/apps/"+appGuid+"/routes/"+routeGuid, "-X", "PUT").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 }
 
-func CreateRoute(domainName, contextPath, spaceGuid, domainGuid string) string {
-	jsonBody := "{\"host\":\"" + domainName + "\", \"path\":\"" + contextPath + "\", \"domain_guid\":\"" + domainGuid + "\",\"space_guid\":\"" + spaceGuid + "\"}"
+func CreateRoute(hostName, contextPath, spaceGuid, domainGuid string) string {
+	jsonBody := "{\"host\":\"" + hostName + "\", \"path\":\"" + contextPath + "\", \"domain_guid\":\"" + domainGuid + "\",\"space_guid\":\"" + spaceGuid + "\"}"
 	session := cf.Cf("curl", "/v2/routes", "-X", "POST", "-d", jsonBody).Wait(CF_PUSH_TIMEOUT)
 	routePostResponseBody := session.Out.Contents()
 
