@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = PDescribe("Getting instance information", func() {
+var _ = Describe("Getting instance information", func() {
 	var appName string
 
 	BeforeEach(func() {
@@ -46,7 +46,7 @@ var _ = PDescribe("Getting instance information", func() {
 		It("fails with insufficient resources", func() {
 			app := cf.Cf("app", appName)
 			Eventually(app, DEFAULT_TIMEOUT).Should(Exit(0))
-			Expect(app.Out).To(Or(Say("insufficient"), Say("down")))
+			Expect(app.Out).NotTo(Say("instances: 1/1"))
 		})
 	})
 })
