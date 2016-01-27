@@ -14,7 +14,7 @@ var DEFAULT_TIMEOUT = 30 * time.Second
 
 func guidForAppName(appName string) string {
 	cfApp := cf.Cf("app", appName, "--guid")
-	Expect(cfApp.Wait()).To(Exit(0))
+	Eventually(cfApp, DEFAULT_TIMEOUT).Should(Exit(0))
 
 	appGuid := strings.TrimSpace(string(cfApp.Out.Contents()))
 	Expect(appGuid).NotTo(Equal(""))
