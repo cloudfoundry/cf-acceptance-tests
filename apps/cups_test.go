@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = FDescribe("User services", func() {
+var _ = Describe("User services", func() {
 	var testConfig = helpers.LoadConfig()
 	var appName string
 
