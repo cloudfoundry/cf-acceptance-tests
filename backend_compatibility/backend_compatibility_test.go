@@ -18,7 +18,7 @@ var _ = Describe("Backend Compatibility", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = generator.RandomName()
+		appName = generator.PrefixedRandomName("CATS-APP-")
 		Eventually(cf.Cf(
 			"push", appName,
 			"-p", assets.NewAssets().Binary,

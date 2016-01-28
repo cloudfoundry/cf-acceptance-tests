@@ -34,7 +34,7 @@ var _ = Describe(deaUnsupportedTag+"SSH", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = generator.RandomName()
+		appName = generator.PrefixedRandomName("CATS-APP-")
 		Eventually(cf.Cf(
 			"push", appName,
 			"-p", assets.NewAssets().Dora,

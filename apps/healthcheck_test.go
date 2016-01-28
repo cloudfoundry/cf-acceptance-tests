@@ -16,7 +16,7 @@ var _ = Describe(deaUnsupportedTag+"Healthcheck", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = generator.RandomName()
+		appName = generator.PrefixedRandomName("CATS-APP-")
 	})
 
 	AfterEach(func() {
