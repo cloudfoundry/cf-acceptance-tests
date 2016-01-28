@@ -219,6 +219,7 @@ messages.  Tests in this package are only intended to be run on machines that ar
 
 * `v3`: This suite contains tests for the next-generation v3 Cloud Controller API.  As of this writing, the v3 API is not officially supported.
 
+**Please note**: The `backend_compatibility` suite should only be run in environments running both the Diego and a DEA backends.
 
 ## Contributing
 
