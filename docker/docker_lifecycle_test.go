@@ -22,7 +22,7 @@ var _ = Describe(deaUnsupportedTag+"Docker Application Lifecycle", func() {
 	JustBeforeEach(func() {
 		app_helpers.SetBackend(appName)
 
-		By("downloading from dockerhub")
+		By("downloading from dockerhub (starting the app)")
 		Eventually(cf.Cf("start", appName), CF_PUSH_TIMEOUT).Should(Exit(0))
 		Eventually(func() string {
 			return helpers.CurlApp(appName, "/env/INSTANCE_INDEX")

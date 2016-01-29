@@ -39,8 +39,8 @@ var _ = Describe(deaUnsupportedTag+"Healthcheck", func() {
 				DEFAULT_TIMEOUT,
 			).Should(Exit(0))
 
-			By("staging and running it on Diego")
-			app_helpers.EnableDiego(appName)
+			By("staging and running it")
+			app_helpers.SetBackend(appName)
 			Eventually(cf.Cf("start", appName), CF_PUSH_TIMEOUT).Should(Exit(0))
 
 			By("verifying it's up")
@@ -63,8 +63,8 @@ var _ = Describe(deaUnsupportedTag+"Healthcheck", func() {
 				DEFAULT_TIMEOUT,
 			).Should(Exit(0))
 
-			By("staging and running it on Diego")
-			app_helpers.EnableDiego(appName)
+			By("staging and running it")
+			app_helpers.SetBackend(appName)
 			Eventually(cf.Cf("start", appName), CF_PUSH_TIMEOUT).Should(Exit(0))
 
 			By("verifying it's up")
