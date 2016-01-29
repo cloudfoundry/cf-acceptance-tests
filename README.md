@@ -154,13 +154,21 @@ The `cf` trace output for the tests in these specs will be found in `CF-TRACE-Ap
 
 ### Test Execution
 
-There are several different test suites, and you may not wish to run all the tests in all contexts, and sometimes you may want to focus individual test suites to pinpoint a failure.  The default set of tests can be run via:
+There are several different test suites, and you may not wish to run all the tests in all contexts, and sometimes you may want to focus individual test suites to pinpoint a failure.  The default set of tests for the DEAs can be run via:
 
 ```bash
 ./bin/test_default
 ```
 
 This will run the `apps`, `internet_dependent`, and `security_groups` test suites, as well as the top level test suite that simply asserts that the installed `cf` CLI version is high enough to be compatible with the test suite.
+
+The default tests for Diego can be run via: 
+
+```bash 
+./bin/diego_test_default
+```
+
+This will run the `apps`, `backend_compatibility`, `detect`, `docker`, `internet_dependent`, `security_groups`, and `ssh` test suites, as well as the top level test suite that simply asserts that the installed `cf` CLI version is high enough to be compatible with the test suite.
 
 For more flexibility you can run `./bin/test` and specify many more options, e.g. which suites to run, which suites to exclude (e.g. if you want to run all but one suite), whether or not to run the tests in parallel, the number of parallel nodes to use, etc.  Refer to [ginkgo documentation](http://onsi.github.io/ginkgo/) for full details.  
 
@@ -188,37 +196,26 @@ To see verbose output from `ginkgo`, use the `-v` flag.
 
 Most of these flags and options can also be passed to the `bin/test_default` script as well.
 
+
+
 ## Explanation of Test Suites
 
 * The test suite in the top level directory of this repository simply asserts the the installed version of the `cf` CLI is compatible with the rest of the test suites.
 
-* `apps`: Tests the core functionalities of Cloud Foundry: staging, running, logging, routing, buildpacks, etc.  This suite should always pass against a sound Cloud Foundry deployment.
-
-* `backend_compatibility`: Tests interoperability of droplets staged on Diego or the DEAs
-
-* `docker`: Test our ability to run docker containers on diego and that we handle docker metadata correctly.
-
-* `internet_dependent`: This suite tests the feature of being able to specify a buildpack via a Github URL.  As such, this depends on your Cloud Foundry application containers having access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
-
-* `logging`: This test exercises the syslog drain forwarding functionality. A TCP listener is
-spun up on the running machine, an app is deployed to the target Cloud Foundry
-and bound to that listener (as a syslog drain) and the drain is checked for log
-messages.  Tests in this package are only intended to be run on machines that are accessible by your deployment.
-
-* `operator`: Tests in this package are only intended to be run in non-production environments.  They may not clean up after themselves and may affect global CF state.  They test some miscellaneous features; read the tests for more details.
-
-* `routing`: This package contains routing specific acceptance tests, Route Services, and GoRouter (Context path, wildcard, SSL termination, sticky sessions).  At the time of this writing, many of the routing features are works in progress.
-
-* `routing_api`: This package contains Routing API specific acceptance tests.
-
-* `security_groups`: This suite tests the security groups feature of Cloud Foundry that lets you apply rules-based controls to network traffic in and out of your containers.  These should pass for most recent Cloud Foundry installations.  `cf-release` versions `v200` and up should have support for most security group specs to pass.
-
-* `services`: This suite tests various features related to services, e.g. registering a service broker via the service broker API.  Some of these tests exercise special integrations, such as Single Sign-On authentication; you may wish to run some tests in this package but selectively skip others if you haven't configured the required integrations.  Consult the [ginkgo spec runner](http://onsi.github.io/ginkgo/#the-spec-runner) documention to see how to use the `--skip` and `--focus` flags.
-
-* `ssh`: This suite tests our ability to communicate with Diego apps via ssh, scp, and sftp.
-
-* `v3`: This suite contains tests for the next-generation v3 Cloud Controller API.  As of this writing, the v3 API is not officially supported.
-
+Test Suite Name| Compatable Backend | Description
+--- | --- | ---
+`apps`| DEA or Diego | Tests the core functionalities of Cloud Foundry: staging, running, logging, routing, buildpacks, etc.  This suite should always pass against a sound Cloud Foundry deployment.
+`backend_compatibility` | DEA and Diego are required simultaneously| Tests interoperability of droplets staged on Diego or the DEAs
+`docker`| Diego |Test our ability to run docker containers on diego and that we handle docker metadata correctly.
+`internet_dependent`| DEA or Diego | This suite tests the feature of being able to specify a buildpack via a Github URL.  As such, this depends on your Cloud Foundry application containers having access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
+`logging`| DEA or Diego | This test exercises the syslog drain forwarding functionality. A TCP listener is spun up on the running machine, an app is deployed to the target Cloud Foundry and bound to that listener (as a syslog drain) and the drain is checked for log messages.  Tests in this package are only intended to be run on machines that are accessible by your deployment.
+`operator`| DEA or Diego |Tests in this package are only intended to be run in non-production environments.  They may not clean up after themselves and may affect global CF state.  They test some miscellaneous features; read the tests for more details.
+`routing`| DEA or Diego |This package contains routing specific acceptance tests, Route Services, and GoRouter (Context path, wildcard, SSL termination, sticky sessions).  At the time of this writing, many of the routing features are works in progress.
+`routing_api`| DEA or Diego |This package contains Routing API specific acceptance tests.
+`security_groups`| DEA or Diego |This suite tests the security groups feature of Cloud Foundry that lets you apply rules-based controls to network traffic in and out of your containers.  These should pass for most recent Cloud Foundry installations.  `cf-release` versions `v200` and up should have support for most security group specs to pass.
+`services`| DEA or Diego | This suite tests various features related to services, e.g. registering a service broker via the service broker API.  Some of these tests exercise special integrations, such as Single Sign-On authentication; you may wish to run some tests in this package but selectively skip others if you haven't configured the required integrations.  Consult the [ginkgo spec runner](http://onsi.github.io/ginkgo/#the-spec-runner) documention to see how to use the `--skip` and `--focus` flags.
+`ssh`| Diego |This suite tests our ability to communicate with Diego apps via ssh, scp, and sftp.
+`v3`| Diego| This suite contains tests for the next-generation v3 Cloud Controller API.  As of this writing, the v3 API is not officially supported.
 
 ## Contributing
 

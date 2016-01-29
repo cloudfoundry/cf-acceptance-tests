@@ -5,6 +5,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -16,7 +17,7 @@ var _ = Describe(deaUnsupportedTag+"Healthcheck", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = generator.RandomName()
+		appName = generator.PrefixedRandomName("CATS-APP-")
 	})
 
 	AfterEach(func() {
@@ -29,9 +30,9 @@ var _ = Describe(deaUnsupportedTag+"Healthcheck", func() {
 			By("pushing it")
 			Eventually(cf.Cf(
 				"push", appName,
-				"-p", assets.NewAssets().Dora,
+				"-p", assets.NewAssets().WorkerApp,
 				"--no-start",
-				"-b", "ruby_buildpack",
+				"-b", "go_buildpack",
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-d", config.AppsDomain,
 				"-i", "1",
@@ -44,7 +45,11 @@ var _ = Describe(deaUnsupportedTag+"Healthcheck", func() {
 			Eventually(cf.Cf("start", appName), CF_PUSH_TIMEOUT).Should(Exit(0))
 
 			By("verifying it's up")
-			Eventually(helpers.CurlingAppRoot(appName)).Should(ContainSubstring("Hi, I'm Dora!"))
+			Eventually(func() *Session {
+				appLogsSession := cf.Cf("logs", "--recent", appName)
+				Expect(appLogsSession.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				return appLogsSession
+			}, DEFAULT_TIMEOUT).Should(gbytes.Say("I am working at"))
 		})
 	})
 

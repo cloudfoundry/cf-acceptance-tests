@@ -16,7 +16,7 @@ var _ = Describe("Getting instance information", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = generator.RandomName()
+		appName = generator.PrefixedRandomName("CATS-APP-")
 
 		Eventually(cf.Cf(
 			"push", appName,

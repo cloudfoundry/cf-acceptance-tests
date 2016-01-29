@@ -36,7 +36,7 @@ var _ = Describe(deaUnsupportedTag+"Docker Application Lifecycle", func() {
 
 	Describe("running a docker app with a start command", func() {
 		BeforeEach(func() {
-			appName = generator.RandomName()
+			appName = generator.PrefixedRandomName("CATS-APP-")
 			Eventually(cf.Cf(
 				"push", appName,
 				"--no-start",
@@ -66,7 +66,7 @@ var _ = Describe(deaUnsupportedTag+"Docker Application Lifecycle", func() {
 
 	Describe("running a docker app without a start command", func() {
 		BeforeEach(func() {
-			appName = generator.RandomName()
+			appName = generator.PrefixedRandomName("CATS-APP-")
 			Eventually(cf.Cf(
 				"push", appName,
 				"--no-start",
