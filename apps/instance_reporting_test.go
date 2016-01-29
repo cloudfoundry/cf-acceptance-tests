@@ -23,6 +23,8 @@ var _ = Describe("Getting instance information", func() {
 			"-p", assets.NewAssets().Binary,
 			"--no-start",
 			"-b", "binary_buildpack",
+			"-m", DEFAULT_MEMORY_LIMIT,
+			"-d", config.AppsDomain,
 			"-c", "./app"),
 			CF_PUSH_TIMEOUT).Should(Exit(0))
 
