@@ -39,12 +39,29 @@ var _ = Describe("Wildcard Routes", func() {
 		})
 
 		appNameDora = generator.PrefixedRandomName("CATS-APP-")
-		Expect(cf.Cf("push", appNameDora, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		appNameSimple = generator.PrefixedRandomName("CATS-APP-")
+
+		Expect(cf.Cf(
+			"push", appNameDora,
+			"--no-start",
+			"-b", config.RubyBuildpackName,
+			"-m", DEFAULT_MEMORY_LIMIT,
+			"-p", assets.NewAssets().Dora,
+			"-d", config.AppsDomain,
+		).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+
 		app_helpers.SetBackend(appNameDora)
 		Expect(cf.Cf("start", appNameDora).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
-		appNameSimple = generator.PrefixedRandomName("CATS-APP-")
-		Expect(cf.Cf("push", appNameSimple, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf(
+			"push", appNameSimple,
+			"--no-start",
+			"-b", config.RubyBuildpackName,
+			"-m", DEFAULT_MEMORY_LIMIT,
+			"-p", assets.NewAssets().HelloWorld,
+			"-d", config.AppsDomain,
+		).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+
 		app_helpers.SetBackend(appNameSimple)
 		Expect(cf.Cf("start", appNameSimple).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
