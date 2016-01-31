@@ -78,7 +78,7 @@ var _ = Describe("An application that's already been pushed", func() {
 			return helpers.CurlAppRoot(appName)
 		}, DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
 
-		Expect(cf.Cf("start", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(appName)
