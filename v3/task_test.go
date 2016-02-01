@@ -67,9 +67,9 @@ var _ = Describe("v3 tasks", func() {
 				var readOutput Task
 				Eventually(func() string {
 					readCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks/%s", appGuid, createOutput.Guid), "-X", "GET").Wait(DEFAULT_TIMEOUT)
-					Expect(createCommand).To(Exit(0))
+					Expect(readCommand).To(Exit(0))
 					json.Unmarshal(readCommand.Out.Contents(), &readOutput)
-					return createOutput.State
+					return readOutput.State
 				}, DEFAULT_TIMEOUT).Should(Equal("SUCCEEDED"))
 			})
 		})
