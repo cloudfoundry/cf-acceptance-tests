@@ -123,6 +123,8 @@ var _ = Describe("Session Affinity", func() {
 		)
 
 		BeforeEach(func() {
+			domain := config.AppsDomain
+
 			app1 = PushApp(stickyAsset, config.RubyBuildpackName)
 			app2 = PushApp(stickyAsset, config.RubyBuildpackName)
 
@@ -130,8 +132,8 @@ var _ = Describe("Session Affinity", func() {
 			ScaleAppInstances(app2, 2)
 			hostname = generator.PrefixedRandomName("RATS-HOSTNAME-")
 
-			MapRouteToApp(hostname, app1Path, app1)
-			MapRouteToApp(hostname, app2Path, app2)
+			MapRouteToApp(app1, domain, hostname, app1Path)
+			MapRouteToApp(app2, domain, hostname, app2Path)
 
 			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
 			Expect(err).ToNot(HaveOccurred())
@@ -188,6 +190,8 @@ var _ = Describe("Session Affinity", func() {
 		)
 
 		BeforeEach(func() {
+			domain := config.AppsDomain
+
 			app1 = PushApp(stickyAsset, config.RubyBuildpackName)
 			app2 = PushApp(stickyAsset, config.RubyBuildpackName)
 
@@ -195,7 +199,7 @@ var _ = Describe("Session Affinity", func() {
 			ScaleAppInstances(app2, 2)
 			hostname = app1
 
-			MapRouteToApp(hostname, app2Path, app2)
+			MapRouteToApp(app2, domain, hostname, app2Path)
 
 			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
 			Expect(err).ToNot(HaveOccurred())

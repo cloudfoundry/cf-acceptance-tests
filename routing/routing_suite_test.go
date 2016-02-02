@@ -26,8 +26,22 @@ var (
 	DEFAULT_TIMEOUT = 30 * time.Second
 	CF_PUSH_TIMEOUT = 2 * time.Minute
 
-	config helpers.Config
+	context helpers.SuiteContext
+	config  helpers.Config
 )
+
+type Metadata struct {
+	Guid string
+}
+
+type Resource struct {
+	Metadata Metadata
+}
+
+type ListResponse struct {
+	TotalResults int `json:"total_results"`
+	Resources    []Resource
+}
 
 type AppResource struct {
 	Metadata struct {
@@ -90,49 +104,39 @@ func GetAppGuid(appName string) string {
 	return strings.TrimSpace(string(appGuid))
 }
 
-func MapRouteToApp(domain, path, app string) {
-	spaceGuid, domainGuid := GetSpaceAndDomainGuids(app)
-
-	routeGuid := CreateRoute(domain, path, spaceGuid, domainGuid)
-	appGuid := GetAppGuid(app)
-
-	Expect(cf.Cf("curl", "/v2/apps/"+appGuid+"/routes/"+routeGuid, "-X", "PUT").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+func MapRouteToApp(app, domain, host, path string) {
+	Expect(cf.Cf("map-route", app, domain, "--hostname", host, "--path", path).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 }
 
-func CreateRoute(hostName, contextPath, spaceGuid, domainGuid string) string {
-	jsonBody := "{\"host\":\"" + hostName + "\", \"path\":\"" + contextPath + "\", \"domain_guid\":\"" + domainGuid + "\",\"space_guid\":\"" + spaceGuid + "\"}"
-	session := cf.Cf("curl", "/v2/routes", "-X", "POST", "-d", jsonBody).Wait(CF_PUSH_TIMEOUT)
-	routePostResponseBody := session.Out.Contents()
-
-	var routeResponseJSON struct {
-		Metadata struct {
-			Guid string `json:"guid"`
-		} `json:"metadata"`
-	}
-	err := json.Unmarshal([]byte(routePostResponseBody), &routeResponseJSON)
-	Expect(err).NotTo(HaveOccurred())
-	return routeResponseJSON.Metadata.Guid
+func DeleteRoute(hostname, contextPath, domain string) {
+	Expect(cf.Cf("delete-route", domain,
+		"--hostname", hostname,
+		"--path", contextPath,
+		"-f",
+	).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 }
 
-func GetSpaceAndDomainGuids(app string) (string, string) {
-	getRoutePath := fmt.Sprintf("/v2/routes?q=host:%s", app)
-	routeBody := cf.Cf("curl", getRoutePath).Wait(DEFAULT_TIMEOUT).Out.Contents()
-	var routeJSON struct {
-		Resources []struct {
-			Entity struct {
-				SpaceGuid  string `json:"space_guid"`
-				DomainGuid string `json:"domain_guid"`
-			} `json:"entity"`
-		} `json:"resources"`
-	}
+func CreateRoute(hostname, contextPath, space, domain string) string {
+	Expect(cf.Cf("create-route", space, domain,
+		"--hostname", hostname,
+		"--path", contextPath,
+	).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
-	err := json.Unmarshal([]byte(routeBody), &routeJSON)
+	return GetRouteGuid(hostname, contextPath)
+}
+
+func GetRouteGuid(hostname, path string) string {
+	responseBuffer := cf.Cf("curl", fmt.Sprintf("/v2/routes?q=host:%s&q=path:%s", hostname, path))
+	Expect(responseBuffer.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	routeBytes := responseBuffer.Out.Contents()
+
+	var routeResponse ListResponse
+
+	err := json.Unmarshal(routeBytes, &routeResponse)
 	Expect(err).NotTo(HaveOccurred())
+	Expect(routeResponse.TotalResults).To(Equal(1))
 
-	spaceGuid := routeJSON.Resources[0].Entity.SpaceGuid
-	domainGuid := routeJSON.Resources[0].Entity.DomainGuid
-
-	return spaceGuid, domainGuid
+	return routeResponse.Resources[0].Metadata.Guid
 }
 
 func GetAppInfo(appName string) (host, port string) {
@@ -170,7 +174,7 @@ func TestRouting(t *testing.T) {
 
 	rs := []Reporter{}
 
-	context := helpers.NewContext(config)
+	context = helpers.NewContext(config)
 	environment := helpers.NewEnvironment(context)
 
 	BeforeSuite(func() {
