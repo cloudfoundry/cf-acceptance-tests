@@ -116,13 +116,11 @@ func DeleteRoute(hostname, contextPath, domain string) {
 	).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 }
 
-func CreateRoute(hostname, contextPath, space, domain string) string {
+func CreateRoute(hostname, contextPath, space, domain string) {
 	Expect(cf.Cf("create-route", space, domain,
 		"--hostname", hostname,
 		"--path", contextPath,
 	).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-
-	return GetRouteGuid(hostname, contextPath)
 }
 
 func GetRouteGuid(hostname, path string) string {
