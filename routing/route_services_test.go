@@ -39,7 +39,7 @@ var _ = Describe("Route Services", func() {
 					serviceInstanceName = createServiceInstance(serviceName)
 
 					appName = PushAppNoStart(golangAsset, config.GoBuildpackName)
-					EnableDiego(appName)
+					app_helpers.EnableDiego(appName)
 					StartApp(appName)
 
 					routeServiceName = PushApp(loggingRouteServiceAsset, config.GoBuildpackName)
@@ -81,7 +81,7 @@ var _ = Describe("Route Services", func() {
 					brokerName, brokerAppName, serviceName = createServiceBroker()
 					serviceInstanceName = createServiceInstance(serviceName)
 					appName = PushAppNoStart(golangAsset, config.GoBuildpackName)
-					EnableDiego(appName)
+					app_helpers.EnableDiego(appName)
 					StartApp(appName)
 
 					configureBroker(brokerAppName, "")
@@ -123,7 +123,7 @@ var _ = Describe("Route Services", func() {
 					brokerName, brokerAppName, serviceName = createServiceBroker()
 					serviceInstanceName = createServiceInstance(serviceName)
 
-					CreateRoute(hostname, "", spacename, domain)
+					createRoute(hostname, "", spacename, domain)
 
 					configureBroker(brokerAppName, "")
 				})
@@ -156,7 +156,7 @@ func (c customMap) key(key string) customMap {
 }
 
 func bindRouteToService(hostname, serviceInstanceName string) {
-	routeGuid := GetRouteGuid(hostname, "")
+	routeGuid := getRouteGuid(hostname, "")
 	serviceInstanceGuid := getServiceInstanceGuid(serviceInstanceName)
 	cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", serviceInstanceGuid, routeGuid), "-X", "PUT")
 
@@ -170,7 +170,7 @@ func bindRouteToService(hostname, serviceInstanceName string) {
 }
 
 func bindRouteToServiceWithParams(hostname, serviceInstanceName string, params string) {
-	routeGuid := GetRouteGuid(hostname, "")
+	routeGuid := getRouteGuid(hostname, "")
 	serviceInstanceGuid := getServiceInstanceGuid(serviceInstanceName)
 	cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", serviceInstanceGuid, routeGuid), "-X", "PUT",
 		"-d", fmt.Sprintf("{\"parameters\": %s}", params))
@@ -205,7 +205,7 @@ func deleteServiceInstance(serviceInstanceName string) {
 }
 
 func unbindRouteFromService(hostname, serviceInstanceName string) {
-	routeGuid := GetRouteGuid(hostname, "")
+	routeGuid := getRouteGuid(hostname, "")
 	guid := getServiceInstanceGuid(serviceInstanceName)
 	cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", guid, routeGuid), "-X", "DELETE")
 
