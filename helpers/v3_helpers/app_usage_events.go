@@ -14,6 +14,7 @@ type Entity struct {
 	ParentAppName string `json:"parent_app_name"`
 	ParentAppGuid string `json:"parent_app_guid"`
 	ProcessType   string `json:"process_type"`
+	TaskGuid      string `json:"task_guid"`
 }
 type AppUsageEvent struct {
 	Entity `json:"entity"`
@@ -30,7 +31,8 @@ func UsageEventsInclude(events []AppUsageEvent, event AppUsageEvent) bool {
 			event.Entity.ParentAppGuid == e.Entity.ParentAppGuid &&
 			event.Entity.ProcessType == e.Entity.ProcessType &&
 			event.Entity.State == e.Entity.State &&
-			event.Entity.AppGuid == e.Entity.AppGuid
+			event.Entity.AppGuid == e.Entity.AppGuid &&
+			event.Entity.TaskGuid == e.Entity.TaskGuid
 		if found {
 			break
 		}

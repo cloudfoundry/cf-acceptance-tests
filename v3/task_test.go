@@ -54,7 +54,7 @@ var _ = Describe("v3 tasks", func() {
 					State   string `json:"state"`
 				}
 
-				By("create")
+				By("creating the task")
 				var createOutput Task
 				postBody := `{"command": "echo 0", "name": "mreow"}`
 				createCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks", appGuid), "-X", "POST", "-d", postBody).Wait(DEFAULT_TIMEOUT)
@@ -64,6 +64,12 @@ var _ = Describe("v3 tasks", func() {
 				Expect(createOutput.Name).To(Equal("mreow"))
 				Expect(createOutput.State).To(Equal("RUNNING"))
 
+				By("TASK_STARTED AppUsageEvent")
+				usageEvents := LastPageUsageEvents(context)
+				start_event := AppUsageEvent{Entity{State: "TASK_STARTED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: createOutput.Guid}}
+				Expect(UsageEventsInclude(usageEvents, start_event)).To(BeTrue())
+
+				By("successfully running")
 				var readOutput Task
 				Eventually(func() string {
 					readCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks/%s", appGuid, createOutput.Guid), "-X", "GET").Wait(DEFAULT_TIMEOUT)
@@ -71,6 +77,11 @@ var _ = Describe("v3 tasks", func() {
 					json.Unmarshal(readCommand.Out.Contents(), &readOutput)
 					return readOutput.State
 				}, DEFAULT_TIMEOUT).Should(Equal("SUCCEEDED"))
+
+				By("TASK_STOPPED AppUsageEvent")
+				usageEvents = LastPageUsageEvents(context)
+				stop_event := AppUsageEvent{Entity{State: "TASK_STOPPED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: createOutput.Guid}}
+				Expect(UsageEventsInclude(usageEvents, stop_event)).To(BeTrue())
 			})
 		})
 	}
