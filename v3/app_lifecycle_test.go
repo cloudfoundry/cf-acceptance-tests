@@ -77,23 +77,23 @@ var _ = Describe("v3 buildpack app lifecycle", func() {
 		Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", webProcess.Name)))
 		//Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", workerProcess.Name)))
 
-		usageEvents := lastPageUsageEvents()
+		usageEvents := LastPageUsageEvents(context)
 
 		event1 := AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
 		//event2 := AppUsageEvent{Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
-		Expect(eventsInclude(usageEvents, event1)).To(BeTrue())
-		// Expect(eventsInclude(usageEvents, event2)).To(BeTrue())
+		Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
+		// Expect(UsageEventsInclude(usageEvents, event2)).To(BeTrue())
 
 		StopApp(appGuid)
 
 		Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+stopped", webProcess.Name)))
 		//Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+stopped", workerProcess.Name)))
 
-		usageEvents = lastPageUsageEvents()
+		usageEvents = LastPageUsageEvents(context)
 		event1 = AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
 		//event2 = AppUsageEvent{Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
-		Expect(eventsInclude(usageEvents, event1)).To(BeTrue())
-		//	Expect(eventsInclude(usageEvents, event2)).To(BeTrue())
+		Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
+		//	Expect(UsageEventsInclude(usageEvents, event2)).To(BeTrue())
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(webProcess.Name)
@@ -160,23 +160,23 @@ var _ = Describe("v3 docker app lifecycle", func() {
 			Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", webProcess.Name)))
 			//Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", workerProcess.Name)))
 
-			usageEvents := lastPageUsageEvents()
+			usageEvents := LastPageUsageEvents(context)
 
 			event1 := AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
 			//event2 := AppUsageEvent{Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
-			Expect(eventsInclude(usageEvents, event1)).To(BeTrue())
-			// Expect(eventsInclude(usageEvents, event2)).To(BeTrue())
+			Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
+			// Expect(UsageEventsInclude(usageEvents, event2)).To(BeTrue())
 
 			StopApp(appGuid)
 
 			Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+stopped", webProcess.Name)))
 			//Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+stopped", workerProcess.Name)))
 
-			usageEvents = lastPageUsageEvents()
+			usageEvents = LastPageUsageEvents(context)
 			event1 = AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
 			//event2 = AppUsageEvent{Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
-			Expect(eventsInclude(usageEvents, event1)).To(BeTrue())
-			//	Expect(eventsInclude(usageEvents, event2)).To(BeTrue())
+			Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
+			//	Expect(UsageEventsInclude(usageEvents, event2)).To(BeTrue())
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(webProcess.Name)
@@ -184,49 +184,6 @@ var _ = Describe("v3 docker app lifecycle", func() {
 		})
 	}
 })
-
-type Entity struct {
-	AppName       string `json:"app_name"`
-	AppGuid       string `json:"app_guid"`
-	State         string `json:"state"`
-	BuildpackName string `json:"buildpack_name"`
-	BuildpackGuid string `json:"buildpack_guid"`
-	ParentAppName string `json:"parent_app_name"`
-	ParentAppGuid string `json:"parent_app_guid"`
-	ProcessType   string `json:"process_type"`
-}
-type AppUsageEvent struct {
-	Entity `json:"entity"`
-}
-
-type AppUsageEvents struct {
-	Resources []AppUsageEvent `struct:"resources"`
-}
-
-func eventsInclude(events []AppUsageEvent, event AppUsageEvent) bool {
-	found := false
-	for _, e := range events {
-		found = event.Entity.ParentAppName == e.Entity.ParentAppName &&
-			event.Entity.ParentAppGuid == e.Entity.ParentAppGuid &&
-			event.Entity.ProcessType == e.Entity.ProcessType &&
-			event.Entity.State == e.Entity.State &&
-			event.Entity.AppGuid == e.Entity.AppGuid
-		if found {
-			break
-		}
-	}
-	return found
-}
-
-func lastPageUsageEvents() []AppUsageEvent {
-	var response AppUsageEvents
-
-	cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-		cf.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1", &response, DEFAULT_TIMEOUT)
-	})
-
-	return response.Resources
-}
 
 type ProcessList struct {
 	Processes []Process `json:"resources"`
