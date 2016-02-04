@@ -18,8 +18,9 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("Route Services", func() {
+var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 	config := helpers.LoadConfig()
+
 	if config.IncludeRouteServices {
 		Context("when a route binds to a service", func() {
 			Context("when service broker returns a route service url", func() {

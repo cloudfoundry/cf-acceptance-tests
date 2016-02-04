@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-const minCliVersion = "6.11.3"
+const minCliVersion = "6.15"
 
 var _ = Describe("cf CLI version", func() {
 	It("meets the minimum required CLI version for the CATs", func() {

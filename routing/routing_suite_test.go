@@ -19,6 +19,7 @@ import (
 
 const (
 	DEFAULT_MEMORY_LIMIT = "256M"
+	deaUnsupportedTag    = "{NO_DEA_SUPPORT} "
 )
 
 var (
