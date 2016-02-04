@@ -277,4 +277,7 @@ recent application logs. There is a helper method `AppReport` provided in the
 1. Document the purpose of your test suite in this repo's README.md.
 This is especially important when changing the explicit behavior of existing suites
 or adding new suites.
-1. Document all changes to the config object in this repo's README.md
+1. Document all changes to the config object in this repo's README.md.
+1. Document the compatible backends in this repo's README.md.
+1. If you add a test that requires a new minimum `cf` CLI version, update the `cli_compatibility_test`.
+1. If you add a test that is unsupported on a particular backend, add the appropriate prefix to the test description (e.g. `deaUnsupportedTag`).
