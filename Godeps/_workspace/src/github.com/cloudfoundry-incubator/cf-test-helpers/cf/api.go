@@ -23,17 +23,23 @@ type QueryResponse struct {
 }
 
 var ApiRequest = func(method, endpoint string, response interface{}, timeout time.Duration, data ...string) {
-	request := Cf(
+	args := []string{
 		"curl",
 		endpoint,
 		"-X", method,
-		"-d", strings.Join(data, ""),
-	)
+	}
 
+	dataArg := strings.Join(data, "")
+	if len(dataArg) > 0 {
+		args = append(args, "-d", dataArg)
+	}
+
+	request := Cf(args...)
 	runner.NewCmdRunner(request, timeout).Run()
 
 	if response != nil {
 		err := json.Unmarshal(request.Out.Contents(), response)
 		Expect(err).ToNot(HaveOccurred())
 	}
+
 }
