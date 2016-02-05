@@ -17,18 +17,20 @@ var _ = Describe("Context Paths", func() {
 		app2Path = "/app2"
 		app3     string
 		app3Path = "/app3/long/sub/path"
-		domain   string
+		hostname string
 	)
 
 	BeforeEach(func() {
+		domain := config.AppsDomain
+
 		app1 = PushApp(helloRoutingAsset, config.RubyBuildpackName)
 		app2 = PushApp(helloRoutingAsset, config.RubyBuildpackName)
 		app3 = PushApp(helloRoutingAsset, config.RubyBuildpackName)
 
-		domain = app1
+		hostname = app1
 
-		MapRouteToApp(domain, app2Path, app2)
-		MapRouteToApp(domain, app3Path, app3)
+		MapRouteToApp(app2, domain, hostname, app2Path)
+		MapRouteToApp(app3, domain, hostname, app3Path)
 	})
 
 	AfterEach(func() {
@@ -44,15 +46,15 @@ var _ = Describe("Context Paths", func() {
 	Context("when another app has a route with a context path", func() {
 		It("routes to app with context path", func() {
 			Eventually(func() string {
-				return helpers.CurlAppRoot(domain)
+				return helpers.CurlAppRoot(hostname)
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring(app1))
 
 			Eventually(func() string {
-				return helpers.CurlApp(domain, app2Path)
+				return helpers.CurlApp(hostname, app2Path)
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring(app2))
 
 			Eventually(func() string {
-				return helpers.CurlApp(domain, app3Path)
+				return helpers.CurlApp(hostname, app3Path)
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring(app3))
 		})
 	})

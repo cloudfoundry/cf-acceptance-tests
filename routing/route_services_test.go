@@ -18,8 +18,9 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("Route Services", func() {
+var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 	config := helpers.LoadConfig()
+
 	if config.IncludeRouteServices {
 		Context("when a route binds to a service", func() {
 			Context("when service broker returns a route service url", func() {
@@ -39,7 +40,7 @@ var _ = Describe("Route Services", func() {
 					serviceInstanceName = createServiceInstance(serviceName)
 
 					appName = PushAppNoStart(golangAsset, config.GoBuildpackName)
-					EnableDiego(appName)
+					app_helpers.EnableDiego(appName)
 					StartApp(appName)
 
 					routeServiceName = PushApp(loggingRouteServiceAsset, config.GoBuildpackName)
@@ -81,7 +82,7 @@ var _ = Describe("Route Services", func() {
 					brokerName, brokerAppName, serviceName = createServiceBroker()
 					serviceInstanceName = createServiceInstance(serviceName)
 					appName = PushAppNoStart(golangAsset, config.GoBuildpackName)
-					EnableDiego(appName)
+					app_helpers.EnableDiego(appName)
 					StartApp(appName)
 
 					configureBroker(brokerAppName, "")
@@ -110,26 +111,33 @@ var _ = Describe("Route Services", func() {
 					brokerName          string
 					brokerAppName       string
 					serviceInstanceName string
-					routeGuid           string
+					domain              string
+					hostname            string
 				)
 
 				BeforeEach(func() {
 					var serviceName string
+					domain = config.AppsDomain
+					spacename := context.RegularUserContext().Space
+					hostname = generator.PrefixedRandomName("RATS-HOSTNAME-")
+
 					brokerName, brokerAppName, serviceName = createServiceBroker()
 					serviceInstanceName = createServiceInstance(serviceName)
-					routeGuid = CreateRoute("panda", "", targetedSpaceGuid(), sharedDomainGuid())
+
+					createRoute(hostname, "", spacename, domain)
 
 					configureBroker(brokerAppName, "")
 				})
 
 				AfterEach(func() {
-					unbindRouteFromService("panda", serviceInstanceName)
+					unbindRouteFromService(hostname, serviceInstanceName)
 					deleteServiceInstance(serviceInstanceName)
 					deleteServiceBroker(brokerName)
+					DeleteRoute(hostname, "", domain)
 				})
 
 				It("passes them to the service broker", func() {
-					bindRouteToServiceWithParams("panda", serviceInstanceName, "{\"key1\":[\"value1\",\"irynaparam\"],\"key2\":\"value3\"}")
+					bindRouteToServiceWithParams(hostname, serviceInstanceName, "{\"key1\":[\"value1\",\"irynaparam\"],\"key2\":\"value3\"}")
 
 					Eventually(func() *Session {
 						logs := cf.Cf("logs", "--recent", brokerAppName)
@@ -148,8 +156,8 @@ func (c customMap) key(key string) customMap {
 	return c[key].(map[string]interface{})
 }
 
-func bindRouteToService(routeName, serviceInstanceName string) {
-	routeGuid := getRouteGuid(routeName)
+func bindRouteToService(hostname, serviceInstanceName string) {
+	routeGuid := getRouteGuid(hostname, "")
 	serviceInstanceGuid := getServiceInstanceGuid(serviceInstanceName)
 	cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", serviceInstanceGuid, routeGuid), "-X", "PUT")
 
@@ -162,11 +170,11 @@ func bindRouteToService(routeName, serviceInstanceName string) {
 	}, DEFAULT_TIMEOUT, "1s").ShouldNot(ContainSubstring(`"service_instance_guid": null`))
 }
 
-func bindRouteToServiceWithParams(routeName, serviceInstanceName string, params string) {
-	routeGuid := getRouteGuid(routeName)
+func bindRouteToServiceWithParams(hostname, serviceInstanceName string, params string) {
+	routeGuid := getRouteGuid(hostname, "")
 	serviceInstanceGuid := getServiceInstanceGuid(serviceInstanceName)
-	cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", serviceInstanceGuid, routeGuid), "-X", "PUT", 
-							  "-d", fmt.Sprintf("{\"parameters\": %s}", params))
+	cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", serviceInstanceGuid, routeGuid), "-X", "PUT",
+		"-d", fmt.Sprintf("{\"parameters\": %s}", params))
 
 	Eventually(func() string {
 		response := cf.Cf("curl", fmt.Sprintf("/v2/routes/%s", routeGuid))
@@ -197,31 +205,18 @@ func deleteServiceInstance(serviceInstanceName string) {
 	}, DEFAULT_TIMEOUT, "1s").Should(ContainSubstring("CF-ServiceInstanceNotFound"))
 }
 
-func unbindRouteFromService(routeName, serviceInstanceName string) {
-	route_guid := getRouteGuid(routeName)
+func unbindRouteFromService(hostname, serviceInstanceName string) {
+	routeGuid := getRouteGuid(hostname, "")
 	guid := getServiceInstanceGuid(serviceInstanceName)
-	cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", guid, route_guid), "-X", "DELETE")
+	cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", guid, routeGuid), "-X", "DELETE")
 
 	Eventually(func() string {
-		response := cf.Cf("curl", fmt.Sprintf("/v2/routes/%s", route_guid))
+		response := cf.Cf("curl", fmt.Sprintf("/v2/routes/%s", routeGuid))
 		Expect(response.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
 		contents := response.Out.Contents()
 		return string(contents)
 	}, DEFAULT_TIMEOUT, "1s").Should(ContainSubstring(`"service_instance_guid": null`))
-}
-
-func getRouteGuid(hostname string) string {
-	responseBuffer := cf.Cf("curl", fmt.Sprintf("/v2/routes?q=host:%s", hostname))
-	Expect(responseBuffer.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-	routeBytes := responseBuffer.Out.Contents()
-
-	var routeMap response
-
-	err := json.Unmarshal(routeBytes, &routeMap)
-	Expect(err).NotTo(HaveOccurred())
-
-	return routeMap.Resources[0].Metadata.Guid
 }
 
 type metadata struct {
