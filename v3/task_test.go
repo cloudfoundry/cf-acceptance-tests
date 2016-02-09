@@ -62,7 +62,7 @@ var _ = Describe("v3 tasks", func() {
 				json.Unmarshal(createCommand.Out.Contents(), &createOutput)
 				Expect(createOutput.Command).To(Equal("echo 0"))
 				Expect(createOutput.Name).To(Equal("mreow"))
-				Expect(createOutput.State).To(Equal("PENDING"))
+				Expect(createOutput.State).To(Equal("RUNNING"))
 
 				By("TASK_STARTED AppUsageEvent")
 				usageEvents := LastPageUsageEvents(context)
