@@ -1,7 +1,6 @@
 package v3
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"path"
@@ -26,7 +25,6 @@ var _ = Describe("buildpack", func() {
 		appName       string
 		appGuid       string
 		buildpackName string
-		buildpackGuid string
 		packageGuid   string
 		spaceGuid     string
 		token         string
@@ -48,18 +46,6 @@ var _ = Describe("buildpack", func() {
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
-
-		session := cf.Cf("curl", fmt.Sprintf("/v2/buildpacks?q=name:%s", buildpackName))
-		bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
-		var buildpack struct {
-			Resources []struct {
-				Metadata struct {
-					Guid string `json:"guid"`
-				} `json:"metadata"`
-			} `json:"resources"`
-		}
-		json.Unmarshal(bytes, &buildpack)
-		buildpackGuid = buildpack.Resources[0].Metadata.Guid
 	})
 
 	AfterEach(func() {
