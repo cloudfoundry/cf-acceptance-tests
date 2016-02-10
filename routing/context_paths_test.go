@@ -23,9 +23,12 @@ var _ = Describe("Context Paths", func() {
 	BeforeEach(func() {
 		domain := config.AppsDomain
 
-		app1 = PushApp(helloRoutingAsset, config.RubyBuildpackName)
-		app2 = PushApp(helloRoutingAsset, config.RubyBuildpackName)
-		app3 = PushApp(helloRoutingAsset, config.RubyBuildpackName)
+		app1 = GenerateAppName()
+		PushApp(app1, helloRoutingAsset, config.RubyBuildpackName)
+		app2 = GenerateAppName()
+		PushApp(app2, helloRoutingAsset, config.RubyBuildpackName)
+		app3 = GenerateAppName()
+		PushApp(app3, helloRoutingAsset, config.RubyBuildpackName)
 
 		hostname = app1
 

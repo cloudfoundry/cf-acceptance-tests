@@ -30,7 +30,8 @@ var _ = Describe("Session Affinity", func() {
 			cookieStorePath string
 		)
 		BeforeEach(func() {
-			appName = PushApp(stickyAsset, config.RubyBuildpackName)
+			appName = GenerateAppName()
+			PushApp(appName, stickyAsset, config.RubyBuildpackName)
 
 			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
 			Expect(err).ToNot(HaveOccurred())
@@ -79,7 +80,8 @@ var _ = Describe("Session Affinity", func() {
 		)
 
 		BeforeEach(func() {
-			appName = PushApp(helloWorldAsset, config.RubyBuildpackName)
+			appName = GenerateAppName()
+			PushApp(appName, helloWorldAsset, config.RubyBuildpackName)
 		})
 
 		AfterEach(func() {
@@ -125,8 +127,10 @@ var _ = Describe("Session Affinity", func() {
 		BeforeEach(func() {
 			domain := config.AppsDomain
 
-			app1 = PushApp(stickyAsset, config.RubyBuildpackName)
-			app2 = PushApp(stickyAsset, config.RubyBuildpackName)
+			app1 = GenerateAppName()
+			PushApp(app1, stickyAsset, config.RubyBuildpackName)
+			app2 = GenerateAppName()
+			PushApp(app2, stickyAsset, config.RubyBuildpackName)
 
 			ScaleAppInstances(app1, 2)
 			ScaleAppInstances(app2, 2)
@@ -192,8 +196,10 @@ var _ = Describe("Session Affinity", func() {
 		BeforeEach(func() {
 			domain := config.AppsDomain
 
-			app1 = PushApp(stickyAsset, config.RubyBuildpackName)
-			app2 = PushApp(stickyAsset, config.RubyBuildpackName)
+			app1 = GenerateAppName()
+			PushApp(app1, stickyAsset, config.RubyBuildpackName)
+			app2 = GenerateAppName()
+			PushApp(app2, stickyAsset, config.RubyBuildpackName)
 
 			ScaleAppInstances(app1, 2)
 			ScaleAppInstances(app2, 2)

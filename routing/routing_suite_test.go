@@ -68,16 +68,17 @@ func StartApp(app string) {
 	Expect(cf.Cf("start", app).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 }
 
-func PushApp(asset, buildpackName string) string {
-	app := PushAppNoStart(asset, buildpackName)
-	StartApp(app)
-	return app
+func PushApp(appName, asset, buildpackName string) {
+	PushAppNoStart(appName, asset, buildpackName)
+	StartApp(appName)
 }
 
-func PushAppNoStart(asset, buildpackName string) string {
-	app := generator.PrefixedRandomName("RATS-APP-")
-	Expect(cf.Cf("push", app, "-b", buildpackName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", asset, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-	return app
+func GenerateAppName() string {
+	return generator.PrefixedRandomName("RATS-APP-")
+}
+
+func PushAppNoStart(appName, asset, buildpackName string) {
+	Expect(cf.Cf("push", appName, "-b", buildpackName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", asset, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 }
 
 func ScaleAppInstances(appName string, instances int) {
