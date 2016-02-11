@@ -65,7 +65,8 @@ var _ = Describe("v3 tasks", func() {
 				postBody := `{"command": "echo 0", "name": "mreow"}`
 				createCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks", appGuid), "-X", "POST", "-d", postBody).Wait(DEFAULT_TIMEOUT)
 				Expect(createCommand).To(Exit(0))
-				json.Unmarshal(createCommand.Out.Contents(), &createOutput)
+				err := json.Unmarshal(createCommand.Out.Contents(), &createOutput)
+				Expect(err).NotTo(HaveOccurred())
 				Expect(createOutput.Command).To(Equal("echo 0"))
 				Expect(createOutput.Name).To(Equal("mreow"))
 				Expect(createOutput.State).To(Equal("RUNNING"))
@@ -80,7 +81,8 @@ var _ = Describe("v3 tasks", func() {
 				Eventually(func() string {
 					readCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks/%s", appGuid, createOutput.Guid), "-X", "GET").Wait(DEFAULT_TIMEOUT)
 					Expect(readCommand).To(Exit(0))
-					json.Unmarshal(readCommand.Out.Contents(), &readOutput)
+					err := json.Unmarshal(readCommand.Out.Contents(), &readOutput)
+					Expect(err).NotTo(HaveOccurred())
 					return readOutput.State
 				}, DEFAULT_TIMEOUT).Should(Equal("SUCCEEDED"))
 
