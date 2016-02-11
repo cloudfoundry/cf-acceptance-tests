@@ -92,23 +92,36 @@ var _ = Describe("v3 tasks", func() {
 		})
 
 		Context("When canceling a task", func() {
-			var createOutput Task
+			var taskGuid string
 
 			BeforeEach(func() {
 				postBody := `{"command": "sleep 100;", "name": "mreow"}`
 				createCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks", appGuid), "-X", "POST", "-d", postBody).Wait(DEFAULT_TIMEOUT)
 				Expect(createCommand).To(Exit(0))
+
+				var createOutput Task
+				err := json.Unmarshal(createCommand.Out.Contents(), &createOutput)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(createOutput.Guid).NotTo(Equal(""))
+				taskGuid = createOutput.Guid
 			})
 
 			It("should show task is in FAILED state", func() {
-				var cancelOutput Task
+				var failureReason string
+				cancelCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks/%s/cancel", appGuid, taskGuid), "-X", "PUT").Wait(DEFAULT_TIMEOUT)
+				Expect(cancelCommand).To(Exit(0))
+
 				Eventually(func() string {
-					cancelCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks/%s/cancel", appGuid, createOutput.Guid), "-X", "PUT").Wait(DEFAULT_TIMEOUT)
-					Expect(cancelCommand).To(Exit(0))
-					json.Unmarshal(cancelCommand.Out.Contents(), &cancelOutput)
-					return cancelOutput.State
+					readCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks/%s", appGuid, taskGuid), "-X", "GET").Wait(DEFAULT_TIMEOUT)
+					Expect(readCommand).To(Exit(0))
+
+					var readOutput Task
+					err := json.Unmarshal(readCommand.Out.Contents(), &readOutput)
+					Expect(err).NotTo(HaveOccurred())
+					failureReason = readOutput.Result.FailureReason
+					return readOutput.State
 				}, DEFAULT_TIMEOUT).Should(Equal("FAILED"))
-				Expect(cancelOutput.Result.FailureReason).To(Equal("task was canceled"))
+				Expect(failureReason).To(Equal("task was cancelled"))
 			})
 		})
 	}
