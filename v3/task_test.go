@@ -17,7 +17,7 @@ import (
 
 var _ = Describe("v3 tasks", func() {
 	type Result struct {
-		FailureReason string `json: "failure_reason"`
+		FailureReason string `json:"failure_reason"`
 	}
 
 	type Task struct {
