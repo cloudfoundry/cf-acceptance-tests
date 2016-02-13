@@ -64,12 +64,12 @@ func RestartApp(app string) {
 }
 
 func StartApp(app string) {
-	app_helpers.SetBackend(app)
 	Expect(cf.Cf("start", app).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 }
 
 func PushApp(appName, asset, buildpackName string) {
 	PushAppNoStart(appName, asset, buildpackName)
+	app_helpers.SetBackend(appName)
 	StartApp(appName)
 }
 
@@ -78,7 +78,13 @@ func GenerateAppName() string {
 }
 
 func PushAppNoStart(appName, asset, buildpackName string) {
-	Expect(cf.Cf("push", appName, "-b", buildpackName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", asset, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	Expect(cf.Cf("push", appName,
+		"-b", buildpackName,
+		"--no-start",
+		"-m", DEFAULT_MEMORY_LIMIT,
+		"-p", asset,
+		"-d", config.AppsDomain,
+	).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 }
 
 func ScaleAppInstances(appName string, instances int) {
