@@ -129,9 +129,14 @@ func CreateAndMapRoute(appGuid, space, domain, host string) {
 	}{}
 	json.Unmarshal([]byte(routeBody), &routeJSON)
 	routeGuid := routeJSON.Resources[0].Metadata.Guid
-	addRoutePath := fmt.Sprintf("/v3/apps/%s/routes", appGuid)
-	addRouteBody := fmt.Sprintf(`{"route_guid":"%s"}`, routeGuid)
-	Expect(cf.Cf("curl", addRoutePath, "-X", "PUT", "-d", addRouteBody).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	addRoutePath := fmt.Sprintf("/v3/apps/%s/route_mappings", appGuid)
+	addRouteBody := fmt.Sprintf(`
+	{
+		"relationships": {
+			"route": {"guid":"%s"}
+		}
+	}`, routeGuid)
+	Expect(cf.Cf("curl", addRoutePath, "-X", "POST", "-d", addRouteBody).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 }
 
 func AssignDropletToApp(appGuid, dropletGuid string) {
