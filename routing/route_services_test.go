@@ -26,7 +26,6 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 			Context("when service broker returns a route service url", func() {
 				var (
 					brokerName               string
-					brokerAppName            string
 					serviceInstanceName      string
 					appName                  string
 					routeServiceName         string
@@ -35,15 +34,21 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 				)
 
 				BeforeEach(func() {
-					var serviceName string
-					brokerName, brokerAppName, serviceName = createServiceBroker()
-					serviceInstanceName = createServiceInstance(serviceName)
+					brokerAppName := GenerateAppName()
+					brokerName := generator.PrefixedRandomName("RATS-BROKER-")
+					serviceName := generator.PrefixedRandomName("RATS-SERVICE-")
 
-					appName = PushAppNoStart(golangAsset, config.GoBuildpackName)
+					createServiceBroker(brokerName, brokerAppName, serviceName)
+					serviceInstanceName := generator.PrefixedRandomName("RATS-SERVICE-")
+					createServiceInstance(serviceInstanceName, serviceName)
+
+					appName = GenerateAppName()
+					PushAppNoStart(appName, golangAsset, config.GoBuildpackName)
 					app_helpers.EnableDiego(appName)
 					StartApp(appName)
 
-					routeServiceName = PushApp(loggingRouteServiceAsset, config.GoBuildpackName)
+					routeServiceName = GenerateAppName()
+					PushApp(routeServiceName, loggingRouteServiceAsset, config.GoBuildpackName)
 					configureBroker(brokerAppName, routeServiceName)
 
 					bindRouteToService(appName, serviceInstanceName)
@@ -71,17 +76,22 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 			Context("when service broker does not return a route service url", func() {
 				var (
 					brokerName          string
-					brokerAppName       string
 					serviceInstanceName string
 					appName             string
 					golangAsset         = assets.NewAssets().Golang
 				)
 
 				BeforeEach(func() {
-					var serviceName string
-					brokerName, brokerAppName, serviceName = createServiceBroker()
-					serviceInstanceName = createServiceInstance(serviceName)
-					appName = PushAppNoStart(golangAsset, config.GoBuildpackName)
+					brokerAppName := GenerateAppName()
+					brokerName := generator.PrefixedRandomName("RATS-BROKER-")
+					serviceName := generator.PrefixedRandomName("RATS-SERVICE-")
+
+					createServiceBroker(brokerName, brokerAppName, serviceName)
+					serviceInstanceName := generator.PrefixedRandomName("RATS-SERVICE-")
+					createServiceInstance(serviceInstanceName, serviceName)
+
+					appName = GenerateAppName()
+					PushAppNoStart(appName, golangAsset, config.GoBuildpackName)
 					app_helpers.EnableDiego(appName)
 					StartApp(appName)
 
@@ -116,13 +126,17 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 				)
 
 				BeforeEach(func() {
-					var serviceName string
 					domain = config.AppsDomain
 					spacename := context.RegularUserContext().Space
 					hostname = generator.PrefixedRandomName("RATS-HOSTNAME-")
 
-					brokerName, brokerAppName, serviceName = createServiceBroker()
-					serviceInstanceName = createServiceInstance(serviceName)
+					brokerAppName := GenerateAppName()
+					brokerName := generator.PrefixedRandomName("RATS-BROKER-")
+					serviceName := generator.PrefixedRandomName("RATS-SERVICE-")
+
+					createServiceBroker(brokerName, brokerAppName, serviceName)
+					serviceInstanceName := generator.PrefixedRandomName("RATS-SERVICE-")
+					createServiceInstance(serviceInstanceName, serviceName)
 
 					createRoute(hostname, "", spacename, domain)
 
@@ -242,13 +256,9 @@ func getServiceInstanceGuid(serviceInstanceName string) string {
 	return serviceInstanceMap.Resources[0].Metadata.Guid
 }
 
-func createServiceInstance(serviceName string) string {
-	serviceInstanceName := generator.PrefixedRandomName("RATS-SERVICE-")
-
+func createServiceInstance(serviceInstanceName, serviceName string) {
 	session := cf.Cf("create-service", serviceName, "fake-plan", serviceInstanceName)
 	Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-
-	return serviceInstanceName
 }
 
 func configureBroker(serviceBrokerAppName, routeServiceName string) {
@@ -277,14 +287,13 @@ func configureBroker(serviceBrokerAppName, routeServiceName string) {
 	helpers.CurlApp(serviceBrokerAppName, "/config", "-X", "POST", "-d", string(changedJson))
 }
 
-func createServiceBroker() (string, string, string) {
+func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 	serviceBrokerAsset := assets.NewAssets().ServiceBroker
-	serviceBrokerAppName := PushApp(serviceBrokerAsset, config.RubyBuildpackName)
+	PushApp(brokerAppName, serviceBrokerAsset, config.RubyBuildpackName)
 
-	serviceName := initiateBrokerConfig(serviceBrokerAppName)
+	initiateBrokerConfig(serviceName, brokerAppName)
 
-	brokerName := generator.PrefixedRandomName("RATS-BROKER-")
-	brokerUrl := helpers.AppUri(serviceBrokerAppName, "")
+	brokerUrl := helpers.AppUri(brokerAppName, "")
 
 	config = helpers.LoadConfig()
 	context := helpers.NewContext(config)
@@ -296,11 +305,9 @@ func createServiceBroker() (string, string, string) {
 		Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
 	})
-
-	return brokerName, serviceBrokerAppName, serviceName
 }
 
-func initiateBrokerConfig(serviceBrokerAppName string) string {
+func initiateBrokerConfig(serviceName, serviceBrokerAppName string) {
 	brokerConfigJson := helpers.CurlApp(serviceBrokerAppName, "/config")
 
 	var brokerConfigMap customMap
@@ -309,7 +316,6 @@ func initiateBrokerConfig(serviceBrokerAppName string) string {
 	Expect(err).NotTo(HaveOccurred())
 
 	dashboardClientId := generator.PrefixedRandomName("RATS-DASHBOARD-ID-")
-	serviceName := generator.PrefixedRandomName("RATS-SERVICE-")
 	serviceId := generator.PrefixedRandomName("RATS-SERVICE-ID-")
 
 	services := brokerConfigMap.key("behaviors").key("catalog").key("body")["services"].([]interface{})
@@ -329,8 +335,6 @@ func initiateBrokerConfig(serviceBrokerAppName string) string {
 	Expect(err).NotTo(HaveOccurred())
 
 	helpers.CurlApp(serviceBrokerAppName, "/config", "-X", "POST", "-d", string(changedJson))
-
-	return serviceName
 }
 
 func targetedSpaceGuid() string {
