@@ -10,7 +10,6 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
@@ -85,12 +84,8 @@ var _ = Describe("service bindings", func() {
 		// TODO Unpend this test once v3 service bindings can be deleted (especially recursively through org delete)
 		PIt("exposes them during staging", func() {
 			StagePackage(packageGuid, fmt.Sprintf(`{"lifecycle":{ "type": "buildpack", "data": { "buildpack": "%s" } }}`, buildpackName))
-			logUrl := fmt.Sprintf("loggregator.%s/recent?app=%s", config.AppsDomain, appGuid)
 			Eventually(func() *Session {
-				session := runner.Curl(logUrl, "-H", fmt.Sprintf("Authorization: %s", token))
-				Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-				fmt.Println(string(session.Out.Contents()))
-				return session
+				return FetchRecentLogs(appGuid, token, config)
 			}, 1*time.Minute, 10*time.Second).Should(Say("my-service"))
 		})
 	})

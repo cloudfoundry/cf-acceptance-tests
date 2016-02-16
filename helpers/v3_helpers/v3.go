@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 
 	. "github.com/onsi/gomega"
@@ -143,4 +144,12 @@ func AssignDropletToApp(appGuid, dropletGuid string) {
 	appUpdatePath := fmt.Sprintf("/v3/apps/%s/current_droplet", appGuid)
 	appUpdateBody := fmt.Sprintf(`{"droplet_guid":"%s"}`, dropletGuid)
 	Expect(cf.Cf("curl", appUpdatePath, "-X", "PUT", "-d", appUpdateBody).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+}
+
+func FetchRecentLogs(appGuid, oauthToken string, config helpers.Config) *Session {
+	loggregatorEndpoint := strings.Replace(config.ApiEndpoint, "api", "loggregator", -1)
+	logUrl := fmt.Sprintf("%s/recent?app=%s", loggregatorEndpoint, appGuid)
+	session := runner.Curl(logUrl, "-H", fmt.Sprintf("Authorization: %s", oauthToken))
+	Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	return session
 }

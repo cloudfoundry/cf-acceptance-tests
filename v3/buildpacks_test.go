@@ -9,7 +9,6 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
@@ -59,23 +58,16 @@ var _ = Describe("buildpack", func() {
 
 	It("Stages with a user specified admin buildpack", func() {
 		StagePackage(packageGuid, fmt.Sprintf(`{"lifecycle":{ "type": "buildpack", "data": { "buildpack": "%s" } }}`, buildpackName))
-
-		logUrl := fmt.Sprintf("loggregator.%s/recent?app=%s", config.AppsDomain, appGuid)
 		Eventually(func() *Session {
-			session := runner.Curl(logUrl, "-H", fmt.Sprintf("Authorization: %s", token))
-			Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-			return session
+			return FetchRecentLogs(appGuid, token, config)
 		}, 1*time.Minute, 10*time.Second).Should(Say("STAGED WITH CUSTOM BUILDPACK"))
 	})
 
 	It("Stages with a user specified github buildpack", func() {
 		StagePackage(packageGuid, `{"lifecycle":{ "type": "buildpack", "data": { "buildpack": "http://github.com/cloudfoundry/go-buildpack" } }`)
 
-		logUrl := fmt.Sprintf("loggregator.%s/recent?app=%s", config.AppsDomain, appGuid)
 		Eventually(func() *Session {
-			session := runner.Curl(logUrl, "-H", fmt.Sprintf("Authorization: %s", token))
-			Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-			return session
+			return FetchRecentLogs(appGuid, token, config)
 		}, 3*time.Minute, 10*time.Second).Should(Say("Godeps"))
 	})
 
