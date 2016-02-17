@@ -25,8 +25,8 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 		Context("when a route binds to a service", func() {
 			Context("when service broker returns a route service url", func() {
 				var (
-					brokerName               string
 					serviceInstanceName      string
+					brokerName               string
 					appName                  string
 					routeServiceName         string
 					golangAsset              = assets.NewAssets().Golang
@@ -34,20 +34,21 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 				)
 
 				BeforeEach(func() {
-					brokerAppName := GenerateAppName()
-					brokerName := generator.PrefixedRandomName("RATS-BROKER-")
+					routeServiceName = GenerateAppName()
+					brokerName = generator.PrefixedRandomName("RATS-BROKER-")
+					serviceInstanceName = generator.PrefixedRandomName("RATS-SERVICE-")
+					appName = GenerateAppName()
+
 					serviceName := generator.PrefixedRandomName("RATS-SERVICE-")
+					brokerAppName := GenerateAppName()
 
 					createServiceBroker(brokerName, brokerAppName, serviceName)
-					serviceInstanceName := generator.PrefixedRandomName("RATS-SERVICE-")
 					createServiceInstance(serviceInstanceName, serviceName)
 
-					appName = GenerateAppName()
 					PushAppNoStart(appName, golangAsset, config.GoBuildpackName)
 					app_helpers.EnableDiego(appName)
 					StartApp(appName)
 
-					routeServiceName = GenerateAppName()
 					PushApp(routeServiceName, loggingRouteServiceAsset, config.GoBuildpackName)
 					configureBroker(brokerAppName, routeServiceName)
 
@@ -56,11 +57,13 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 
 				AfterEach(func() {
 					app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+					app_helpers.AppReport(routeServiceName, DEFAULT_TIMEOUT)
 
 					unbindRouteFromService(appName, serviceInstanceName)
 					deleteServiceInstance(serviceInstanceName)
 					deleteServiceBroker(brokerName)
 					DeleteApp(appName)
+					DeleteApp(routeServiceName)
 				})
 
 				It("a request to the app is routed through the route service", func() {
@@ -75,22 +78,23 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 
 			Context("when service broker does not return a route service url", func() {
 				var (
-					brokerName          string
 					serviceInstanceName string
+					brokerName          string
 					appName             string
 					golangAsset         = assets.NewAssets().Golang
 				)
 
 				BeforeEach(func() {
+					appName = GenerateAppName()
+					brokerName = generator.PrefixedRandomName("RATS-BROKER-")
+					serviceInstanceName = generator.PrefixedRandomName("RATS-SERVICE-")
+
 					brokerAppName := GenerateAppName()
-					brokerName := generator.PrefixedRandomName("RATS-BROKER-")
 					serviceName := generator.PrefixedRandomName("RATS-SERVICE-")
 
 					createServiceBroker(brokerName, brokerAppName, serviceName)
-					serviceInstanceName := generator.PrefixedRandomName("RATS-SERVICE-")
 					createServiceInstance(serviceInstanceName, serviceName)
 
-					appName = GenerateAppName()
 					PushAppNoStart(appName, golangAsset, config.GoBuildpackName)
 					app_helpers.EnableDiego(appName)
 					StartApp(appName)
@@ -118,24 +122,24 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 
 			Context("when arbitrary parameters are sent", func() {
 				var (
+					serviceInstanceName string
 					brokerName          string
 					brokerAppName       string
-					serviceInstanceName string
 					domain              string
 					hostname            string
 				)
 
 				BeforeEach(func() {
 					domain = config.AppsDomain
-					spacename := context.RegularUserContext().Space
 					hostname = generator.PrefixedRandomName("RATS-HOSTNAME-")
+					brokerAppName = GenerateAppName()
+					serviceInstanceName = generator.PrefixedRandomName("RATS-SERVICE-")
 
-					brokerAppName := GenerateAppName()
+					spacename := context.RegularUserContext().Space
 					brokerName := generator.PrefixedRandomName("RATS-BROKER-")
 					serviceName := generator.PrefixedRandomName("RATS-SERVICE-")
 
 					createServiceBroker(brokerName, brokerAppName, serviceName)
-					serviceInstanceName := generator.PrefixedRandomName("RATS-SERVICE-")
 					createServiceInstance(serviceInstanceName, serviceName)
 
 					createRoute(hostname, "", spacename, domain)
