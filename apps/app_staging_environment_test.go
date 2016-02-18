@@ -116,7 +116,7 @@ EOF
 		os.RemoveAll(tmpdir)
 	})
 
-	It("uses ruby 1.9.3-p547 for staging", func() {
+	It("uses a ruby binary for staging", func() {
 		Expect(cf.Cf("push", appName,
 			"--no-start",
 			"-b", BuildpackName,
@@ -129,6 +129,5 @@ EOF
 		start := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)
 		Expect(start).To(Exit(0))
 		Expect(start).To(Say("RUBY_LOCATION=/usr/bin/ruby"))
-		Expect(start).To(Say("RUBY_VERSION=ruby 1.9.3p547"))
 	})
 })
