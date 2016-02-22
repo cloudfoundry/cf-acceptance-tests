@@ -12,7 +12,7 @@ popd
 
 export GOPATH=$project_gopath:$GOPATH
 
-go install -v github.com/onsi/ginkgo/ginkgo
+go install -v github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/ginkgo
 
 go list github.com/cloudfoundry/cf-acceptance-tests/... | xargs -I {} go test -c {}
 
