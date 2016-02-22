@@ -3,7 +3,6 @@
 set -e -x
 
 cats_dir=$(cd $(dirname $0)/.. && pwd)
-godep_gopath=$cats_dir/Godeps/_workspace
 
 project_go_root="$(dirname ${BASH_SOURCE[0]})/../../../../../"
 
@@ -11,8 +10,7 @@ pushd $project_go_root
 project_gopath=$PWD
 popd
 
-export GOPATH=$godep_gopath:$project_gopath:$GOPATH
-export PATH=$godep_gopath/bin:$PATH
+export GOPATH=$project_gopath:$GOPATH
 
 go install -v github.com/onsi/ginkgo/ginkgo
 

@@ -11,7 +11,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/onsi/ginkgo/types"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/types"
 )
 
 const defaultStyle = "\x1b[0m"

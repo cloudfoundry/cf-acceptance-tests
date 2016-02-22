@@ -1,7 +1,7 @@
 package testingtsupport_test
 
 import (
-	. "github.com/onsi/gomega"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
 
 	"testing"
 )

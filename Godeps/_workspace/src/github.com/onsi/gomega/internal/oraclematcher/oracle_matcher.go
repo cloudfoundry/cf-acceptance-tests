@@ -1,6 +1,6 @@
 package oraclematcher
 
-import "github.com/onsi/gomega/types"
+import "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/types"
 
 /*
 GomegaMatchers that also match the OracleMatcher interface can convey information about

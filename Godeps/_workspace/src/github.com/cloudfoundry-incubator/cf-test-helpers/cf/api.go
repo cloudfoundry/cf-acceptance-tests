@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/onsi/gomega"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 )
 
 //var CfApiTimeout = 30 * time.Second

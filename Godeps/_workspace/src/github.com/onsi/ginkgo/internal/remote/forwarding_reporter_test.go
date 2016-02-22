@@ -2,11 +2,11 @@ package remote_test
 
 import (
 	"encoding/json"
-	. "github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/config"
-	. "github.com/onsi/ginkgo/internal/remote"
-	"github.com/onsi/ginkgo/types"
-	. "github.com/onsi/gomega"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/config"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/internal/remote"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/types"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
 )
 
 var _ = Describe("ForwardingReporter", func() {

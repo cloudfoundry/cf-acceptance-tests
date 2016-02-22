@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	ginkgoconfig "github.com/onsi/ginkgo/config"
-	"github.com/onsi/ginkgo/reporters"
+	ginkgoconfig "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/config"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/reporters"
 )
 
 func EnableCFTrace(config Config, componentName string) {

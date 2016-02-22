@@ -1,11 +1,11 @@
 package noaa_test
 
 import (
-	"github.com/cloudfoundry/noaa"
-	"github.com/cloudfoundry/noaa/events"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry/noaa"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry/noaa/events"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
 )
 
 var _ = Describe("SortRecent", func() {

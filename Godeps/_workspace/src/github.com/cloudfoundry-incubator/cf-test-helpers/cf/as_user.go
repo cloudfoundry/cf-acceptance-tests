@@ -6,9 +6,9 @@ import (
 	"os"
 	"time"
 
-	ginkgoconfig "github.com/onsi/ginkgo/config"
+	ginkgoconfig "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/config"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 )
 
 var AsUser = func(userContext UserContext, timeout time.Duration, actions func()) {

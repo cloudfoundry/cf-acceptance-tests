@@ -3,7 +3,7 @@ package gexec
 import (
 	"fmt"
 
-	"github.com/onsi/gomega/format"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/format"
 )
 
 /*

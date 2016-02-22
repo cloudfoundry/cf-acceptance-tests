@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/onsi/ginkgo/types"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/types"
 )
 
 type Failer struct {

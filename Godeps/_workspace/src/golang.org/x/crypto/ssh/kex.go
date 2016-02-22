@@ -14,7 +14,7 @@ import (
 	"io"
 	"math/big"
 
-	"golang.org/x/crypto/curve25519"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/golang.org/x/crypto/curve25519"
 )
 
 const (

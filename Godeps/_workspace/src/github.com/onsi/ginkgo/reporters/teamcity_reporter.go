@@ -10,8 +10,8 @@ package reporters
 
 import (
 	"fmt"
-	"github.com/onsi/ginkgo/config"
-	"github.com/onsi/ginkgo/types"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/config"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/types"
 	"io"
 	"strings"
 )

@@ -16,10 +16,10 @@ import (
 	"sync"
 	"time"
 
-	noaa_errors "github.com/cloudfoundry/noaa/errors"
-	"github.com/cloudfoundry/noaa/events"
-	"github.com/gogo/protobuf/proto"
-	"github.com/gorilla/websocket"
+	noaa_errors "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry/noaa/errors"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry/noaa/events"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/gogo/protobuf/proto"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/gorilla/websocket"
 )
 
 var (

@@ -11,14 +11,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry/noaa"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry/noaa/events"
 	"github.com/cloudfoundry/loggregatorlib/loggertesthelper"
 	"github.com/cloudfoundry/loggregatorlib/server/handlers"
-	"github.com/cloudfoundry/noaa"
-	"github.com/cloudfoundry/noaa/events"
 	"github.com/elazarl/goproxy"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
 )
 
 var _ = Describe("Noaa behind a Proxy", func() {

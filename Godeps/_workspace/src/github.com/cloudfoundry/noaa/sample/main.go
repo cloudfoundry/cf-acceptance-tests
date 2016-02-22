@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/cloudfoundry/noaa"
-	"github.com/cloudfoundry/noaa/events"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry/noaa"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry/noaa/events"
 )
 
 var dopplerAddress = os.Getenv("DOPPLER_ADDR")

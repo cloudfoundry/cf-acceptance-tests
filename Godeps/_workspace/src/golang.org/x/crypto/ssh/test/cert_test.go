@@ -10,7 +10,7 @@ import (
 	"crypto/rand"
 	"testing"
 
-	"golang.org/x/crypto/ssh"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/golang.org/x/crypto/ssh"
 )
 
 func TestCertLogin(t *testing.T) {

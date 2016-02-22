@@ -6,7 +6,7 @@ import (
 	"compress/gzip"
 	"os"
 
-	. "github.com/onsi/gomega"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
 )
 
 type ArchiveFile struct {

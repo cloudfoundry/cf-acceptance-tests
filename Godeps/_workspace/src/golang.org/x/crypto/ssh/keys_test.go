@@ -17,7 +17,7 @@ import (
 	"strings"
 	"testing"
 
-	"golang.org/x/crypto/ssh/testdata"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/golang.org/x/crypto/ssh/testdata"
 )
 
 func rawKey(pub PublicKey) interface{} {
@@ -306,14 +306,14 @@ func TestInvalidEntry(t *testing.T) {
 }
 
 var knownHostsParseTests = []struct {
-	input     string
-	err       string
+	input string
+	err   string
 
-	marker   string
-	comment  string
-	hosts    []string
-	rest     string
-} {
+	marker  string
+	comment string
+	hosts   []string
+	rest    string
+}{
 	{
 		"",
 		"EOF",
@@ -372,13 +372,13 @@ var knownHostsParseTests = []struct {
 		"localhost,[host2:123]\tssh-rsa {RSAPUB}\tcomment comment",
 		"",
 
-		"", "comment comment", []string{"localhost","[host2:123]"}, "",
+		"", "comment comment", []string{"localhost", "[host2:123]"}, "",
 	},
 	{
 		"@marker \tlocalhost,[host2:123]\tssh-rsa {RSAPUB}",
 		"",
 
-		"marker", "", []string{"localhost","[host2:123]"}, "",
+		"marker", "", []string{"localhost", "[host2:123]"}, "",
 	},
 	{
 		"@marker \tlocalhost,[host2:123]\tssh-rsa aabbccdd",

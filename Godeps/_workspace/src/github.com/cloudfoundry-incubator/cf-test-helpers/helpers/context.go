@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"time"
 
-	ginkgoconfig "github.com/onsi/ginkgo/config"
-	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
+	ginkgoconfig "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/config"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/gbytes"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 )
 
 const RUNAWAY_QUOTA_MEM_LIMIT = "99999G"

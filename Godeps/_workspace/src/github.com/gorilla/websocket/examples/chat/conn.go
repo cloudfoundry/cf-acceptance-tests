@@ -5,7 +5,7 @@
 package main
 
 import (
-	"github.com/gorilla/websocket"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/gorilla/websocket"
 	"log"
 	"net/http"
 	"time"

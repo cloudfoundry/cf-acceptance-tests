@@ -35,7 +35,7 @@ import (
 	"testing"
 
 	pb "./testdata"
-	. "github.com/gogo/protobuf/proto"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/gogo/protobuf/proto"
 )
 
 // Four identical base messages.

@@ -11,15 +11,15 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry/noaa"
+	noaa_errors "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry/noaa/errors"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry/noaa/events"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/gogo/protobuf/proto"
 	"github.com/cloudfoundry/loggregatorlib/loggertesthelper"
 	"github.com/cloudfoundry/loggregatorlib/server/handlers"
-	"github.com/cloudfoundry/noaa"
-	noaa_errors "github.com/cloudfoundry/noaa/errors"
-	"github.com/cloudfoundry/noaa/events"
-	"github.com/gogo/protobuf/proto"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
 )
 
 var _ = Describe("Noaa", func() {
@@ -1214,8 +1214,8 @@ func createContainerMetric(instanceIndex int32, timestamp int64) *events.Envelop
 		ApplicationId: proto.String("appId"),
 		InstanceIndex: proto.Int32(instanceIndex),
 		CpuPercentage: proto.Float64(1),
-		MemoryBytes: proto.Uint64(2),
-		DiskBytes: proto.Uint64(3),
+		MemoryBytes:   proto.Uint64(2),
+		DiskBytes:     proto.Uint64(3),
 	}
 
 	return &events.Envelope{

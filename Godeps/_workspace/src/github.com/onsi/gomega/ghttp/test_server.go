@@ -116,7 +116,7 @@ import (
 	"strings"
 	"sync"
 
-	. "github.com/onsi/gomega"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
 )
 
 func new() *Server {
