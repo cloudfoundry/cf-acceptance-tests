@@ -27,7 +27,7 @@ func ParseRawCliVersionString(rawVersion string) CliVersionCheck {
 		return CliVersionCheck{Revisions: []int{}, BuildFromSource: true}
 	}
 
-	re := regexp.MustCompile(`[0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?`)
+	re := regexp.MustCompile(`[0-9]+(\.[0-9]+)*`)
 	result := re.FindStringSubmatch(rawVersion)
 
 	if len(result) == 0 {
@@ -42,24 +42,22 @@ func (c CliVersionCheck) AtLeast(min_version CliVersionCheck) bool {
 		return true
 	}
 
-	if len(c.Revisions) > 0 && len(min_version.Revisions) == 0 {
-		return true
-	} else if len(min_version.Revisions) > 0 && len(c.Revisions) == 0 {
-		for _, v := range min_version.Revisions {
-			if v != 0 {
-				return false
-			}
+	comparisionLength := getMinLength(c.Revisions, min_version.Revisions)
+
+	for i := 0; i < comparisionLength; i++ {
+		if c.Revisions[i] < min_version.Revisions[i] {
+			return false
 		}
-		return true
 	}
-
-	if c.Revisions[0] < min_version.Revisions[0] {
-		return false
-	} else if (len(c.Revisions) > 1 || len(min_version.Revisions) > 1) && c.Revisions[0] == min_version.Revisions[0] {
-		return CliVersionCheck{false, c.Revisions[1:]}.AtLeast(CliVersionCheck{false, min_version.Revisions[1:]})
-	}
-
 	return true
+}
+
+func getMinLength(a1, a2 []int) int {
+	if len(a1) > len(a2) {
+		return len(a2)
+	} else {
+		return len(a1)
+	}
 }
 
 func parseRevisions(extractedVersionStr string) []int {

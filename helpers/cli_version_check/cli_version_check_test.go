@@ -27,6 +27,18 @@ var _ = Describe("CliVersionCheck", func() {
 			Ω(ver.Revisions).To(Equal([]int{}))
 			Ω(ver.BuildFromSource).To(BeTrue())
 		})
+
+		It("handles semvers without patch version", func() {
+			ver := ParseRawCliVersionString("6.15")
+			Expect(ver.Revisions).To(Equal([]int{6, 15}))
+			Expect(ver.BuildFromSource).To(BeFalse())
+		})
+
+		It("handles semvers without minor versions", func() {
+			ver := ParseRawCliVersionString("6")
+			Expect(ver.Revisions).To(Equal([]int{6}))
+			Expect(ver.BuildFromSource).To(BeFalse())
+		})
 	})
 
 	Describe("CliVersionCheck.AtLeast()", func() {
@@ -60,6 +72,22 @@ var _ = Describe("CliVersionCheck", func() {
 		It("returns true if provided version is built from source'", func() {
 			cliVersionCheck = ParseRawCliVersionString("cf version BUILT_FROM_SOURCE-BUILT_AT_UNKNOWN_TIME")
 			Ω(cliVersionCheck.AtLeast(ParseRawCliVersionString("7.0.0"))).To(BeTrue())
+		})
+
+		It("handles versions without patch versions", func() {
+			cliVersionCheck = ParseRawCliVersionString("6.12.3")
+			Ω(cliVersionCheck.AtLeast(ParseRawCliVersionString("6.15"))).To(BeFalse())
+
+			cliVersionCheck = ParseRawCliVersionString("6.15")
+			Ω(cliVersionCheck.AtLeast(ParseRawCliVersionString("6.12.3"))).To(BeTrue())
+		})
+
+		It("handles versions without minor versions", func() {
+			cliVersionCheck = ParseRawCliVersionString("7")
+			Ω(cliVersionCheck.AtLeast(ParseRawCliVersionString("6.15"))).To(BeTrue())
+
+			cliVersionCheck = ParseRawCliVersionString("6.15")
+			Ω(cliVersionCheck.AtLeast(ParseRawCliVersionString("7"))).To(BeFalse())
 		})
 	})
 })
