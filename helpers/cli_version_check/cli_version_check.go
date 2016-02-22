@@ -42,22 +42,35 @@ func (c CliVersionCheck) AtLeast(min_version CliVersionCheck) bool {
 		return true
 	}
 
-	comparisionLength := getMinLength(c.Revisions, min_version.Revisions)
+	c.Revisions, min_version.Revisions = zeroPadToLongerArray(c.Revisions, min_version.Revisions)
 
-	for i := 0; i < comparisionLength; i++ {
-		if c.Revisions[i] < min_version.Revisions[i] {
-			return false
+	for i := 0; i < len(c.Revisions); i++ {
+		if c.Revisions[i] == min_version.Revisions[i] {
+			continue
 		}
+
+		return c.Revisions[i] > min_version.Revisions[i]
 	}
+
 	return true
 }
 
-func getMinLength(a1, a2 []int) int {
+func zeroPadToLongerArray(a1, a2 []int) (paddedA1, paddedA2 []int) {
 	if len(a1) > len(a2) {
-		return len(a2)
+		paddedShorter := zeroPadToLength(a2, len(a1))
+		return a1, paddedShorter
 	} else {
-		return len(a1)
+		paddedShorter := zeroPadToLength(a1, len(a2))
+		return paddedShorter, a2
 	}
+}
+
+func zeroPadToLength(array []int, newLength int) []int {
+	paddedArray := make([]int, newLength)
+	for i, val := range array {
+		paddedArray[i] = val
+	}
+	return paddedArray
 }
 
 func parseRevisions(extractedVersionStr string) []int {
