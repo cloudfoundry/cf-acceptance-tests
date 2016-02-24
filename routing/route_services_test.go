@@ -16,6 +16,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/gexec"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/routing_helpers"
 )
 
 var _ = Describe(deaUnsupportedTag+"Route Services", func() {
@@ -45,11 +46,11 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 					createServiceBroker(brokerName, brokerAppName, serviceName)
 					createServiceInstance(serviceInstanceName, serviceName)
 
-					PushAppNoStart(appName, golangAsset, config.GoBuildpackName)
+					PushAppNoStart(appName, golangAsset, config.GoBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
 					app_helpers.EnableDiego(appName)
-					StartApp(appName)
+					StartApp(appName, DEFAULT_TIMEOUT)
 
-					PushApp(routeServiceName, loggingRouteServiceAsset, config.GoBuildpackName)
+					PushApp(routeServiceName, loggingRouteServiceAsset, config.GoBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
 					configureBroker(brokerAppName, routeServiceName)
 
 					bindRouteToService(appName, serviceInstanceName)
@@ -62,8 +63,8 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 					unbindRouteFromService(appName, serviceInstanceName)
 					deleteServiceInstance(serviceInstanceName)
 					deleteServiceBroker(brokerName)
-					DeleteApp(appName)
-					DeleteApp(routeServiceName)
+					DeleteApp(appName, DEFAULT_TIMEOUT)
+					DeleteApp(routeServiceName, DEFAULT_TIMEOUT)
 				})
 
 				It("a request to the app is routed through the route service", func() {
@@ -95,9 +96,9 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 					createServiceBroker(brokerName, brokerAppName, serviceName)
 					createServiceInstance(serviceInstanceName, serviceName)
 
-					PushAppNoStart(appName, golangAsset, config.GoBuildpackName)
+					PushAppNoStart(appName, golangAsset, config.GoBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
 					app_helpers.EnableDiego(appName)
-					StartApp(appName)
+					StartApp(appName, DEFAULT_TIMEOUT)
 
 					configureBroker(brokerAppName, "")
 
@@ -110,7 +111,7 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 					unbindRouteFromService(appName, serviceInstanceName)
 					deleteServiceInstance(serviceInstanceName)
 					deleteServiceBroker(brokerName)
-					DeleteApp(appName)
+					DeleteApp(appName, DEFAULT_TIMEOUT)
 				})
 
 				It("routes to an app", func() {
@@ -142,7 +143,7 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 					createServiceBroker(brokerName, brokerAppName, serviceName)
 					createServiceInstance(serviceInstanceName, serviceName)
 
-					createRoute(hostname, "", spacename, domain)
+					CreateRoute(hostname, "", spacename, domain, DEFAULT_TIMEOUT)
 
 					configureBroker(brokerAppName, "")
 				})
@@ -151,7 +152,7 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 					unbindRouteFromService(hostname, serviceInstanceName)
 					deleteServiceInstance(serviceInstanceName)
 					deleteServiceBroker(brokerName)
-					DeleteRoute(hostname, "", domain)
+					DeleteRoute(hostname, "", domain, DEFAULT_TIMEOUT)
 				})
 
 				It("passes them to the service broker", func() {
@@ -175,7 +176,7 @@ func (c customMap) key(key string) customMap {
 }
 
 func bindRouteToService(hostname, serviceInstanceName string) {
-	routeGuid := getRouteGuid(hostname, "")
+	routeGuid := GetRouteGuid(hostname, "", DEFAULT_TIMEOUT)
 	serviceInstanceGuid := getServiceInstanceGuid(serviceInstanceName)
 	cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", serviceInstanceGuid, routeGuid), "-X", "PUT")
 
@@ -189,7 +190,7 @@ func bindRouteToService(hostname, serviceInstanceName string) {
 }
 
 func bindRouteToServiceWithParams(hostname, serviceInstanceName string, params string) {
-	routeGuid := getRouteGuid(hostname, "")
+	routeGuid := GetRouteGuid(hostname, "", DEFAULT_TIMEOUT)
 	serviceInstanceGuid := getServiceInstanceGuid(serviceInstanceName)
 	cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", serviceInstanceGuid, routeGuid), "-X", "PUT",
 		"-d", fmt.Sprintf("{\"parameters\": %s}", params))
@@ -224,7 +225,7 @@ func deleteServiceInstance(serviceInstanceName string) {
 }
 
 func unbindRouteFromService(hostname, serviceInstanceName string) {
-	routeGuid := getRouteGuid(hostname, "")
+	routeGuid := GetRouteGuid(hostname, "", DEFAULT_TIMEOUT)
 	guid := getServiceInstanceGuid(serviceInstanceName)
 	cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", guid, routeGuid), "-X", "DELETE")
 
@@ -293,7 +294,7 @@ func configureBroker(serviceBrokerAppName, routeServiceName string) {
 
 func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 	serviceBrokerAsset := assets.NewAssets().ServiceBroker
-	PushApp(brokerAppName, serviceBrokerAsset, config.RubyBuildpackName)
+	PushApp(brokerAppName, serviceBrokerAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
 
 	initiateBrokerConfig(serviceName, brokerAppName)
 

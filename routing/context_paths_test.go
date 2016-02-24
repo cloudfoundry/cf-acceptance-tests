@@ -6,6 +6,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/routing_helpers"
 )
 
 var _ = Describe("Context Paths", func() {
@@ -24,16 +25,16 @@ var _ = Describe("Context Paths", func() {
 		domain := config.AppsDomain
 
 		app1 = GenerateAppName()
-		PushApp(app1, helloRoutingAsset, config.RubyBuildpackName)
+		PushApp(app1, helloRoutingAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
 		app2 = GenerateAppName()
-		PushApp(app2, helloRoutingAsset, config.RubyBuildpackName)
+		PushApp(app2, helloRoutingAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
 		app3 = GenerateAppName()
-		PushApp(app3, helloRoutingAsset, config.RubyBuildpackName)
+		PushApp(app3, helloRoutingAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
 
 		hostname = app1
 
-		MapRouteToApp(app2, domain, hostname, app2Path)
-		MapRouteToApp(app3, domain, hostname, app3Path)
+		MapRouteToApp(app2, domain, hostname, app2Path, DEFAULT_TIMEOUT)
+		MapRouteToApp(app3, domain, hostname, app3Path, DEFAULT_TIMEOUT)
 	})
 
 	AfterEach(func() {
@@ -41,9 +42,9 @@ var _ = Describe("Context Paths", func() {
 		app_helpers.AppReport(app2, DEFAULT_TIMEOUT)
 		app_helpers.AppReport(app3, DEFAULT_TIMEOUT)
 
-		DeleteApp(app1)
-		DeleteApp(app2)
-		DeleteApp(app3)
+		DeleteApp(app1, DEFAULT_TIMEOUT)
+		DeleteApp(app2, DEFAULT_TIMEOUT)
+		DeleteApp(app3, DEFAULT_TIMEOUT)
 	})
 
 	Context("when another app has a route with a context path", func() {

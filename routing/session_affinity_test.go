@@ -15,6 +15,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	route_helpers "github.com/cloudfoundry/cf-acceptance-tests/helpers/routing_helpers"
 )
 
 const (
@@ -22,6 +23,7 @@ const (
 )
 
 var _ = Describe("Session Affinity", func() {
+	config = helpers.LoadConfig()
 	var stickyAsset = assets.NewAssets().HelloRouting
 
 	Context("when an app sets a JSESSIONID cookie", func() {
@@ -30,8 +32,8 @@ var _ = Describe("Session Affinity", func() {
 			cookieStorePath string
 		)
 		BeforeEach(func() {
-			appName = GenerateAppName()
-			PushApp(appName, stickyAsset, config.RubyBuildpackName)
+			appName = route_helpers.GenerateAppName()
+			route_helpers.PushApp(appName, stickyAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
 
 			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
 			Expect(err).ToNot(HaveOccurred())
@@ -42,7 +44,7 @@ var _ = Describe("Session Affinity", func() {
 		AfterEach(func() {
 			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 
-			DeleteApp(appName)
+			route_helpers.DeleteApp(appName, DEFAULT_TIMEOUT)
 
 			err := os.Remove(cookieStorePath)
 			Expect(err).ToNot(HaveOccurred())
@@ -50,7 +52,7 @@ var _ = Describe("Session Affinity", func() {
 
 		Context("when an app has multiple instances", func() {
 			BeforeEach(func() {
-				ScaleAppInstances(appName, 3)
+				route_helpers.ScaleAppInstances(appName, 3, DEFAULT_TIMEOUT)
 			})
 
 			Context("when the client sends VCAP_ID and JSESSION cookies", func() {
@@ -80,18 +82,18 @@ var _ = Describe("Session Affinity", func() {
 		)
 
 		BeforeEach(func() {
-			appName = GenerateAppName()
-			PushApp(appName, helloWorldAsset, config.RubyBuildpackName)
+			appName = route_helpers.GenerateAppName()
+			route_helpers.PushApp(appName, helloWorldAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
 		})
 
 		AfterEach(func() {
 			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
-			DeleteApp(appName)
+			route_helpers.DeleteApp(appName, DEFAULT_TIMEOUT)
 		})
 
 		Context("when an app has multiple instances", func() {
 			BeforeEach(func() {
-				ScaleAppInstances(appName, 3)
+				route_helpers.ScaleAppInstances(appName, 3, DEFAULT_TIMEOUT)
 			})
 
 			Context("when the client does not send VCAP_ID and JSESSION cookies", func() {
@@ -128,17 +130,17 @@ var _ = Describe("Session Affinity", func() {
 		BeforeEach(func() {
 			domain := config.AppsDomain
 
-			app1 = GenerateAppName()
-			PushApp(app1, stickyAsset, config.RubyBuildpackName)
-			app2 = GenerateAppName()
-			PushApp(app2, stickyAsset, config.RubyBuildpackName)
+			app1 = route_helpers.GenerateAppName()
+			route_helpers.PushApp(app1, stickyAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
+			app2 = route_helpers.GenerateAppName()
+			route_helpers.PushApp(app2, stickyAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
 
-			ScaleAppInstances(app1, 2)
-			ScaleAppInstances(app2, 2)
+			route_helpers.ScaleAppInstances(app1, 2, DEFAULT_TIMEOUT)
+			route_helpers.ScaleAppInstances(app2, 2, DEFAULT_TIMEOUT)
 			hostname = generator.PrefixedRandomName("RATS-HOSTNAME-")
 
-			MapRouteToApp(app1, domain, hostname, app1Path)
-			MapRouteToApp(app2, domain, hostname, app2Path)
+			route_helpers.MapRouteToApp(app1, domain, hostname, app1Path, DEFAULT_TIMEOUT)
+			route_helpers.MapRouteToApp(app2, domain, hostname, app2Path, DEFAULT_TIMEOUT)
 
 			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
 			Expect(err).ToNot(HaveOccurred())
@@ -149,8 +151,8 @@ var _ = Describe("Session Affinity", func() {
 		AfterEach(func() {
 			app_helpers.AppReport(app1, DEFAULT_TIMEOUT)
 			app_helpers.AppReport(app2, DEFAULT_TIMEOUT)
-			DeleteApp(app1)
-			DeleteApp(app2)
+			route_helpers.DeleteApp(app1, DEFAULT_TIMEOUT)
+			route_helpers.DeleteApp(app2, DEFAULT_TIMEOUT)
 
 			err := os.Remove(cookieStorePath)
 			Expect(err).ToNot(HaveOccurred())
@@ -199,16 +201,16 @@ var _ = Describe("Session Affinity", func() {
 		BeforeEach(func() {
 			domain := config.AppsDomain
 
-			app1 = GenerateAppName()
-			PushApp(app1, stickyAsset, config.RubyBuildpackName)
-			app2 = GenerateAppName()
-			PushApp(app2, stickyAsset, config.RubyBuildpackName)
+			app1 = route_helpers.GenerateAppName()
+			route_helpers.PushApp(app1, stickyAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
+			app2 = route_helpers.GenerateAppName()
+			route_helpers.PushApp(app2, stickyAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
 
-			ScaleAppInstances(app1, 2)
-			ScaleAppInstances(app2, 2)
+			route_helpers.ScaleAppInstances(app1, 2, DEFAULT_TIMEOUT)
+			route_helpers.ScaleAppInstances(app2, 2, DEFAULT_TIMEOUT)
 			hostname = app1
 
-			MapRouteToApp(app2, domain, hostname, app2Path)
+			route_helpers.MapRouteToApp(app2, domain, hostname, app2Path, DEFAULT_TIMEOUT)
 
 			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
 			Expect(err).ToNot(HaveOccurred())
@@ -220,8 +222,8 @@ var _ = Describe("Session Affinity", func() {
 			app_helpers.AppReport(app1, DEFAULT_TIMEOUT)
 			app_helpers.AppReport(app2, DEFAULT_TIMEOUT)
 
-			DeleteApp(app1)
-			DeleteApp(app2)
+			route_helpers.DeleteApp(app1, DEFAULT_TIMEOUT)
+			route_helpers.DeleteApp(app2, DEFAULT_TIMEOUT)
 
 			err := os.Remove(cookieStorePath)
 			Expect(err).ToNot(HaveOccurred())
