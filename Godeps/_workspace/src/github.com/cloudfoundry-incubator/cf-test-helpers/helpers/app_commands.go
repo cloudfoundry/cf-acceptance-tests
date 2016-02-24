@@ -28,7 +28,7 @@ func CurlAppWithTimeout(appName, path string, timeout time.Duration, args ...str
 	uri := AppUri(appName, path)
 	curlCmd := runner.Curl(append([]string{uri}, args...)...)
 
-	runner.NewCmdRunner(curlCmd, timeout).Run()
+	runner.NewCmdWaiter(curlCmd, timeout).Wait()
 	Expect(string(curlCmd.Err.Contents())).To(HaveLen(0))
 	return string(curlCmd.Out.Contents())
 }

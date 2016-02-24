@@ -40,7 +40,7 @@ var _ = Describe("cmdRunner", func() {
 		It("does nothing when the command succeeds before the timeout", func() {
 			failures := InterceptGomegaFailures(func() {
 				session := runner.Run("bash", "-c", "echo hi out; echo hi err 1>&2; exit 0")
-				runner.NewCmdRunner(session, cmdTimeout).Run()
+				runner.NewCmdWaiter(session, cmdTimeout).Wait()
 			})
 			Expect(failures).To(BeEmpty())
 		})
@@ -48,7 +48,7 @@ var _ = Describe("cmdRunner", func() {
 		It("expects the command not to fail", func() {
 			failures := InterceptGomegaFailures(func() {
 				session := runner.Run("bash", "-c", "echo hi out; echo hi err 1>&2; exit 42")
-				runner.NewCmdRunner(session, cmdTimeout).Run()
+				runner.NewCmdWaiter(session, cmdTimeout).Wait()
 			})
 			Expect(failures[0]).To(MatchRegexp(
 				"Failed executing command \\(exit 42\\):\nCommand: %s\n\n\\[stdout\\]:\n%s\n\n\\[stderr\\]:\n%s",
@@ -61,7 +61,7 @@ var _ = Describe("cmdRunner", func() {
 		It("expects the command not to time out", func() {
 			failures := InterceptGomegaFailures(func() {
 				session := runner.Run("bash", "-c", "echo hi out; echo hi err 1>&2; sleep 1")
-				runner.NewCmdRunner(session, 100*time.Millisecond).Run()
+				runner.NewCmdWaiter(session, 100*time.Millisecond).Wait()
 			})
 			Expect(failures[0]).To(MatchRegexp(
 				"Timed out executing command \\(100ms\\):\nCommand: %s\n\n\\[stdout\\]:\n%s\n\n\\[stderr\\]:\n%s",
@@ -75,7 +75,7 @@ var _ = Describe("cmdRunner", func() {
 			It("expects exit code", func() {
 				failures := InterceptGomegaFailures(func() {
 					session := runner.Run("bash", "-c", "echo hi out; echo hi err 1>&2; exit 42")
-					runner.NewCmdRunner(session, cmdTimeout).WithExitCode(42).Run()
+					runner.NewCmdWaiter(session, cmdTimeout).WithExitCode(42).Wait()
 				})
 				Expect(failures).To(HaveLen(0))
 			})
@@ -85,7 +85,7 @@ var _ = Describe("cmdRunner", func() {
 			It("expects output", func() {
 				failures := InterceptGomegaFailures(func() {
 					session := runner.Run("bash", "-c", "echo hi out; echo hi err 1>&2; exit 0")
-					runner.NewCmdRunner(session, cmdTimeout).WithOutput("hi out").Run()
+					runner.NewCmdWaiter(session, cmdTimeout).WithOutput("hi out").Wait()
 				})
 				Expect(failures).To(HaveLen(0))
 			})
@@ -109,7 +109,7 @@ var _ = Describe("cmdRunner", func() {
 
 				failures := InterceptGomegaFailures(func() {
 					session := runner.Run("bash", "-c", command)
-					runner.NewCmdRunner(session, 1*time.Second).WithAttempts(attempts).Run()
+					runner.NewCmdWaiter(session, 1*time.Second).WithAttempts(attempts).Wait()
 				})
 
 				Expect(failures).To(HaveLen(0))

@@ -37,9 +37,9 @@ func InitiateUserContext(userContext UserContext, timeout time.Duration) (origin
 		cfSetApiArgs = append(cfSetApiArgs, "--skip-ssl-validation")
 	}
 
-	runner.NewCmdRunner(Cf(cfSetApiArgs...), timeout).Run()
+	runner.NewCmdWaiter(Cf(cfSetApiArgs...), timeout).Wait()
 
-	runner.NewCmdRunner(Cf("auth", userContext.Username, userContext.Password), timeout).Run()
+	runner.NewCmdWaiter(CfAuth(userContext.Username, userContext.Password), timeout).Wait()
 
 	return
 }
@@ -47,15 +47,15 @@ func InitiateUserContext(userContext UserContext, timeout time.Duration) (origin
 func TargetSpace(userContext UserContext, timeout time.Duration) {
 	if userContext.Org != "" {
 		if userContext.Space != "" {
-			runner.NewCmdRunner(Cf("target", "-o", userContext.Org, "-s", userContext.Space), timeout).Run()
+			runner.NewCmdWaiter(Cf("target", "-o", userContext.Org, "-s", userContext.Space), timeout).Wait()
 		} else {
-			runner.NewCmdRunner(Cf("target", "-o", userContext.Org), timeout).Run()
+			runner.NewCmdWaiter(Cf("target", "-o", userContext.Org), timeout).Wait()
 		}
 	}
 }
 
 func RestoreUserContext(_ UserContext, timeout time.Duration, originalCfHomeDir, currentCfHomeDir string) {
-	runner.NewCmdRunner(Cf("logout"), timeout).Run()
+	runner.NewCmdWaiter(Cf("logout"), timeout).Wait()
 	os.Setenv("CF_HOME", originalCfHomeDir)
 	os.RemoveAll(currentCfHomeDir)
 }

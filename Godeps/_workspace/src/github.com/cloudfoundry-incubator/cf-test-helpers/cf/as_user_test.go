@@ -16,6 +16,7 @@ var _ = Describe("AsUser", func() {
 		timeout               = 1 * time.Second
 		FakeThingsToRunAsUser = func() {}
 		FakeCfCalls           = [][]string{}
+		FakeCfAuthCalls       = [][]string{}
 	)
 
 	var FakeCf = func(args ...string) *gexec.Session {
@@ -23,12 +24,28 @@ var _ = Describe("AsUser", func() {
 		var session, _ = gexec.Start(exec.Command("echo", "nothing"), nil, nil)
 		return session
 	}
+
+	var FakeCfAuth = func(user, password string) *gexec.Session {
+		FakeCfAuthCalls = append(FakeCfAuthCalls, []string{user, password})
+		var session, _ = gexec.Start(exec.Command("echo", "nothing"), nil, nil)
+		return session
+	}
+	var oldCfAuth func(string, string) *gexec.Session
 	var user cf.UserContext
 
 	BeforeEach(func() {
 		FakeCfCalls = [][]string{}
+		FakeCfAuthCalls = [][]string{}
 		cf.Cf = FakeCf
+
+		oldCfAuth = cf.CfAuth
+		cf.CfAuth = FakeCfAuth
+
 		user = cf.NewUserContext("http://FAKE_API.example.com", "FAKE_USERNAME", "FAKE_PASSWORD", "FAKE_ORG", "FAKE_SPACE", true)
+	})
+
+	AfterEach(func() {
+		cf.CfAuth = oldCfAuth
 	})
 
 	It("calls cf api", func() {
@@ -40,7 +57,7 @@ var _ = Describe("AsUser", func() {
 	It("calls cf auth", func() {
 		cf.AsUser(user, timeout, FakeThingsToRunAsUser)
 
-		Expect(FakeCfCalls[1]).To(Equal([]string{"auth", "FAKE_USERNAME", "FAKE_PASSWORD"}))
+		Expect(FakeCfAuthCalls[0]).To(Equal([]string{"FAKE_USERNAME", "FAKE_PASSWORD"}))
 	})
 
 	Describe("calling cf target", func() {
@@ -48,7 +65,7 @@ var _ = Describe("AsUser", func() {
 			It("includes flags to set org and space", func() {
 				cf.AsUser(user, timeout, FakeThingsToRunAsUser)
 
-				Expect(FakeCfCalls[2]).To(Equal([]string{"target", "-o", "FAKE_ORG", "-s", "FAKE_SPACE"}))
+				Expect(FakeCfCalls[1]).To(Equal([]string{"target", "-o", "FAKE_ORG", "-s", "FAKE_SPACE"}))
 			})
 		})
 
@@ -60,7 +77,7 @@ var _ = Describe("AsUser", func() {
 			It("includes a flag to set org but NOT for space", func() {
 				cf.AsUser(user, timeout, FakeThingsToRunAsUser)
 
-				Expect(FakeCfCalls[2]).To(Equal([]string{"target", "-o", "FAKE_ORG"}))
+				Expect(FakeCfCalls[1]).To(Equal([]string{"target", "-o", "FAKE_ORG"}))
 			})
 		})
 

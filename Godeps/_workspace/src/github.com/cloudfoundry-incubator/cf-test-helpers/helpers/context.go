@@ -116,24 +116,24 @@ func (context *ConfiguredContext) Setup() {
 			args = append(args, "--allow-paid-service-plans")
 		}
 
-		runner.NewCmdRunner(cf.Cf(args...), context.shortTimeout).Run()
+		runner.NewCmdWaiter(cf.Cf(args...), context.shortTimeout).Wait()
 
 		if !context.config.UseExistingUser {
 			createUserCmd := cf.Cf("create-user", context.regularUserUsername, context.regularUserPassword)
-			runner.NewCmdRunner(createUserCmd, context.shortTimeout).Run()
+			runner.NewCmdWaiter(createUserCmd, context.shortTimeout).Wait()
 			if createUserCmd.ExitCode() != 0 {
 				Expect(createUserCmd.Out).To(Say("scim_resource_already_exists"))
 			}
 		}
 
-		runner.NewCmdRunner(cf.Cf("create-org", context.organizationName), context.shortTimeout).Run()
-		runner.NewCmdRunner(cf.Cf("set-quota", context.organizationName, definition.Name), context.shortTimeout).Run()
+		runner.NewCmdWaiter(cf.Cf("create-org", context.organizationName), context.shortTimeout).Wait()
+		runner.NewCmdWaiter(cf.Cf("set-quota", context.organizationName, definition.Name), context.shortTimeout).Wait()
 	})
 }
 
 func (context *ConfiguredContext) SetRunawayQuota() {
 	cf.AsUser(context.AdminUserContext(), context.shortTimeout, func() {
-		runner.NewCmdRunner(cf.Cf("update-quota", context.quotaDefinitionName, "-m", RUNAWAY_QUOTA_MEM_LIMIT, "-i=-1"), context.shortTimeout).Run()
+		runner.NewCmdWaiter(cf.Cf("update-quota", context.quotaDefinitionName, "-m", RUNAWAY_QUOTA_MEM_LIMIT, "-i=-1"), context.shortTimeout).Wait()
 	})
 }
 
@@ -141,12 +141,12 @@ func (context *ConfiguredContext) Teardown() {
 	cf.AsUser(context.AdminUserContext(), context.shortTimeout, func() {
 
 		if !context.config.ShouldKeepUser {
-			runner.NewCmdRunner(cf.Cf("delete-user", "-f", context.regularUserUsername), context.shortTimeout).Run()
+			runner.NewCmdWaiter(cf.Cf("delete-user", "-f", context.regularUserUsername), context.shortTimeout).Wait()
 		}
 
 		if !context.isPersistent {
-			runner.NewCmdRunner(cf.Cf("delete-org", "-f", context.organizationName), context.shortTimeout).Run()
-			runner.NewCmdRunner(cf.Cf("delete-quota", "-f", context.quotaDefinitionName), context.shortTimeout).Run()
+			runner.NewCmdWaiter(cf.Cf("delete-org", "-f", context.organizationName), context.shortTimeout).Wait()
+			runner.NewCmdWaiter(cf.Cf("delete-quota", "-f", context.quotaDefinitionName), context.shortTimeout).Wait()
 		}
 	})
 }

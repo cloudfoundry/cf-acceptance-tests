@@ -20,6 +20,6 @@ var _ = Describe("Cf", func() {
 			return exec.Command("bash", "-c", `exit 42`)
 		}
 
-		runner.NewCmdRunner(Cf("apps"), 1*time.Second).WithExitCode(42).Run()
+		runner.NewCmdWaiter(Cf("apps"), 1*time.Second).WithExitCode(42).Wait()
 	})
 })

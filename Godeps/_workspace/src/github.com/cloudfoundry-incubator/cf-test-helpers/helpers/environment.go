@@ -47,8 +47,8 @@ func (e *Environment) Teardown() {
 }
 
 func (e *Environment) setUpSpaceWithUserAccess(uc cf.UserContext) {
-	runner.NewCmdRunner(cf.Cf("create-space", "-o", uc.Org, uc.Space), e.context.ShortTimeout()).Run()
-	runner.NewCmdRunner(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceManager"), e.context.ShortTimeout()).Run()
-	runner.NewCmdRunner(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceDeveloper"), e.context.ShortTimeout()).Run()
-	runner.NewCmdRunner(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceAuditor"), e.context.ShortTimeout()).Run()
+	runner.NewCmdWaiter(cf.Cf("create-space", "-o", uc.Org, uc.Space), e.context.ShortTimeout()).Wait()
+	runner.NewCmdWaiter(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceManager"), e.context.ShortTimeout()).Wait()
+	runner.NewCmdWaiter(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceDeveloper"), e.context.ShortTimeout()).Wait()
+	runner.NewCmdWaiter(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceAuditor"), e.context.ShortTimeout()).Wait()
 }

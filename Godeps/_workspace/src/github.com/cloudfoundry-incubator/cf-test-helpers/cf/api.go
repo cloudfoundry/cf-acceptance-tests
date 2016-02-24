@@ -35,7 +35,7 @@ var ApiRequest = func(method, endpoint string, response interface{}, timeout tim
 	}
 
 	request := Cf(args...)
-	runner.NewCmdRunner(request, timeout).Run()
+	runner.NewCmdWaiter(request, timeout).Wait()
 
 	if response != nil {
 		err := json.Unmarshal(request.Out.Contents(), response)
