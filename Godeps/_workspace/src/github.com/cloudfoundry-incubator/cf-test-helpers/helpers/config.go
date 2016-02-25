@@ -10,11 +10,9 @@ import (
 )
 
 type Config struct {
-	ApiEndpoint  string `json:"api"`
-	SystemDomain string `json:"system_domain"`
-	ClientSecret string `json:"client_secret"`
-	AppsDomain   string `json:"apps_domain"`
-	UseHttp      bool   `json:"use_http"`
+	ApiEndpoint string `json:"api"`
+	AppsDomain  string `json:"apps_domain"`
+	UseHttp     bool   `json:"use_http"`
 
 	AdminUser     string `json:"admin_user"`
 	AdminPassword string `json:"admin_password"`
@@ -31,11 +29,10 @@ type Config struct {
 	PersistentAppOrg       string `json:"persistent_app_org"`
 	PersistentAppQuotaName string `json:"persistent_app_quota_name"`
 
-	SkipSSLValidation    bool   `json:"skip_ssl_validation"`
-	Backend              string `json:"backend"`
-	IncludeRouteServices bool   `json:"include_route_services"`
-	IncludeDiegoDocker   bool   `json:"include_diego_docker"`
-	IncludeTasks         bool   `json:"include_tasks"`
+	SkipSSLValidation  bool   `json:"skip_ssl_validation"`
+	Backend            string `json:"backend"`
+	IncludeDiegoDocker bool   `json:"include_diego_docker"`
+	IncludeTasks       bool   `json:"include_tasks"`
 
 	ArtifactsDirectory string `json:"artifacts_directory"`
 
