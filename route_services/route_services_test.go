@@ -1,4 +1,4 @@
-package routing
+package route_services
 
 import (
 	"encoding/json"
@@ -22,151 +22,149 @@ import (
 var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 	config := helpers.LoadConfig()
 
-	if config.IncludeRouteServices {
-		Context("when a route binds to a service", func() {
-			Context("when service broker returns a route service url", func() {
-				var (
-					serviceInstanceName      string
-					brokerName               string
-					appName                  string
-					routeServiceName         string
-					golangAsset              = assets.NewAssets().Golang
-					loggingRouteServiceAsset = assets.NewAssets().LoggingRouteServiceZip
-				)
+	Context("when a route binds to a service", func() {
+		Context("when service broker returns a route service url", func() {
+			var (
+				serviceInstanceName      string
+				brokerName               string
+				appName                  string
+				routeServiceName         string
+				golangAsset              = assets.NewAssets().Golang
+				loggingRouteServiceAsset = assets.NewAssets().LoggingRouteServiceZip
+			)
 
-				BeforeEach(func() {
-					routeServiceName = GenerateAppName()
-					brokerName = generator.PrefixedRandomName("RATS-BROKER-")
-					serviceInstanceName = generator.PrefixedRandomName("RATS-SERVICE-")
-					appName = GenerateAppName()
+			BeforeEach(func() {
+				routeServiceName = GenerateAppName()
+				brokerName = generator.PrefixedRandomName("RATS-BROKER-")
+				serviceInstanceName = generator.PrefixedRandomName("RATS-SERVICE-")
+				appName = GenerateAppName()
 
-					serviceName := generator.PrefixedRandomName("RATS-SERVICE-")
-					brokerAppName := GenerateAppName()
+				serviceName := generator.PrefixedRandomName("RATS-SERVICE-")
+				brokerAppName := GenerateAppName()
 
-					createServiceBroker(brokerName, brokerAppName, serviceName)
-					createServiceInstance(serviceInstanceName, serviceName)
+				createServiceBroker(brokerName, brokerAppName, serviceName)
+				createServiceInstance(serviceInstanceName, serviceName)
 
-					PushAppNoStart(appName, golangAsset, config.GoBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
-					app_helpers.EnableDiego(appName)
-					StartApp(appName, DEFAULT_TIMEOUT)
+				PushAppNoStart(appName, golangAsset, config.GoBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
+				app_helpers.EnableDiego(appName)
+				StartApp(appName, CF_PUSH_TIMEOUT)
 
-					PushApp(routeServiceName, loggingRouteServiceAsset, config.GoBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
-					configureBroker(brokerAppName, routeServiceName)
+				PushApp(routeServiceName, loggingRouteServiceAsset, config.GoBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
+				configureBroker(brokerAppName, routeServiceName)
 
-					bindRouteToService(appName, serviceInstanceName)
-				})
-
-				AfterEach(func() {
-					app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
-					app_helpers.AppReport(routeServiceName, DEFAULT_TIMEOUT)
-
-					unbindRouteFromService(appName, serviceInstanceName)
-					deleteServiceInstance(serviceInstanceName)
-					deleteServiceBroker(brokerName)
-					DeleteApp(appName, DEFAULT_TIMEOUT)
-					DeleteApp(routeServiceName, DEFAULT_TIMEOUT)
-				})
-
-				It("a request to the app is routed through the route service", func() {
-					Eventually(func() *Session {
-						helpers.CurlAppRoot(appName)
-						logs := cf.Cf("logs", "--recent", routeServiceName)
-						Expect(logs.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-						return logs
-					}, DEFAULT_TIMEOUT).Should(Say("Response Body: go, world"))
-				})
+				bindRouteToService(appName, serviceInstanceName)
 			})
 
-			Context("when service broker does not return a route service url", func() {
-				var (
-					serviceInstanceName string
-					brokerName          string
-					appName             string
-					golangAsset         = assets.NewAssets().Golang
-				)
+			AfterEach(func() {
+				app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+				app_helpers.AppReport(routeServiceName, DEFAULT_TIMEOUT)
 
-				BeforeEach(func() {
-					appName = GenerateAppName()
-					brokerName = generator.PrefixedRandomName("RATS-BROKER-")
-					serviceInstanceName = generator.PrefixedRandomName("RATS-SERVICE-")
-
-					brokerAppName := GenerateAppName()
-					serviceName := generator.PrefixedRandomName("RATS-SERVICE-")
-
-					createServiceBroker(brokerName, brokerAppName, serviceName)
-					createServiceInstance(serviceInstanceName, serviceName)
-
-					PushAppNoStart(appName, golangAsset, config.GoBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
-					app_helpers.EnableDiego(appName)
-					StartApp(appName, DEFAULT_TIMEOUT)
-
-					configureBroker(brokerAppName, "")
-
-					bindRouteToService(appName, serviceInstanceName)
-				})
-
-				AfterEach(func() {
-					app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
-
-					unbindRouteFromService(appName, serviceInstanceName)
-					deleteServiceInstance(serviceInstanceName)
-					deleteServiceBroker(brokerName)
-					DeleteApp(appName, DEFAULT_TIMEOUT)
-				})
-
-				It("routes to an app", func() {
-					Eventually(func() string {
-						return helpers.CurlAppRoot(appName)
-					}, DEFAULT_TIMEOUT).Should(ContainSubstring("go, world"))
-				})
+				unbindRouteFromService(appName, serviceInstanceName)
+				deleteServiceInstance(serviceInstanceName)
+				deleteServiceBroker(brokerName)
+				DeleteApp(appName, DEFAULT_TIMEOUT)
+				DeleteApp(routeServiceName, DEFAULT_TIMEOUT)
 			})
 
-			Context("when arbitrary parameters are sent", func() {
-				var (
-					serviceInstanceName string
-					brokerName          string
-					brokerAppName       string
-					domain              string
-					hostname            string
-				)
-
-				BeforeEach(func() {
-					domain = config.AppsDomain
-					hostname = generator.PrefixedRandomName("RATS-HOSTNAME-")
-					brokerAppName = GenerateAppName()
-					serviceInstanceName = generator.PrefixedRandomName("RATS-SERVICE-")
-
-					spacename := context.RegularUserContext().Space
-					brokerName := generator.PrefixedRandomName("RATS-BROKER-")
-					serviceName := generator.PrefixedRandomName("RATS-SERVICE-")
-
-					createServiceBroker(brokerName, brokerAppName, serviceName)
-					createServiceInstance(serviceInstanceName, serviceName)
-
-					CreateRoute(hostname, "", spacename, domain, DEFAULT_TIMEOUT)
-
-					configureBroker(brokerAppName, "")
-				})
-
-				AfterEach(func() {
-					unbindRouteFromService(hostname, serviceInstanceName)
-					deleteServiceInstance(serviceInstanceName)
-					deleteServiceBroker(brokerName)
-					DeleteRoute(hostname, "", domain, DEFAULT_TIMEOUT)
-				})
-
-				It("passes them to the service broker", func() {
-					bindRouteToServiceWithParams(hostname, serviceInstanceName, "{\"key1\":[\"value1\",\"irynaparam\"],\"key2\":\"value3\"}")
-
-					Eventually(func() *Session {
-						logs := cf.Cf("logs", "--recent", brokerAppName)
-						Expect(logs.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-						return logs
-					}, DEFAULT_TIMEOUT).Should(Say("irynaparam"))
-				})
+			It("a request to the app is routed through the route service", func() {
+				Eventually(func() *Session {
+					helpers.CurlAppRoot(appName)
+					logs := cf.Cf("logs", "--recent", routeServiceName)
+					Expect(logs.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+					return logs
+				}, DEFAULT_TIMEOUT).Should(Say("Response Body: go, world"))
 			})
 		})
-	}
+
+		Context("when service broker does not return a route service url", func() {
+			var (
+				serviceInstanceName string
+				brokerName          string
+				appName             string
+				golangAsset         = assets.NewAssets().Golang
+			)
+
+			BeforeEach(func() {
+				appName = GenerateAppName()
+				brokerName = generator.PrefixedRandomName("RATS-BROKER-")
+				serviceInstanceName = generator.PrefixedRandomName("RATS-SERVICE-")
+
+				brokerAppName := GenerateAppName()
+				serviceName := generator.PrefixedRandomName("RATS-SERVICE-")
+
+				createServiceBroker(brokerName, brokerAppName, serviceName)
+				createServiceInstance(serviceInstanceName, serviceName)
+
+				PushAppNoStart(appName, golangAsset, config.GoBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
+				app_helpers.EnableDiego(appName)
+				StartApp(appName, CF_PUSH_TIMEOUT)
+
+				configureBroker(brokerAppName, "")
+
+				bindRouteToService(appName, serviceInstanceName)
+			})
+
+			AfterEach(func() {
+				app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+
+				unbindRouteFromService(appName, serviceInstanceName)
+				deleteServiceInstance(serviceInstanceName)
+				deleteServiceBroker(brokerName)
+				DeleteApp(appName, DEFAULT_TIMEOUT)
+			})
+
+			It("routes to an app", func() {
+				Eventually(func() string {
+					return helpers.CurlAppRoot(appName)
+				}, DEFAULT_TIMEOUT).Should(ContainSubstring("go, world"))
+			})
+		})
+
+		Context("when arbitrary parameters are sent", func() {
+			var (
+				serviceInstanceName string
+				brokerName          string
+				brokerAppName       string
+				domain              string
+				hostname            string
+			)
+
+			BeforeEach(func() {
+				domain = config.AppsDomain
+				hostname = generator.PrefixedRandomName("RATS-HOSTNAME-")
+				brokerAppName = GenerateAppName()
+				serviceInstanceName = generator.PrefixedRandomName("RATS-SERVICE-")
+
+				spacename := context.RegularUserContext().Space
+				brokerName := generator.PrefixedRandomName("RATS-BROKER-")
+				serviceName := generator.PrefixedRandomName("RATS-SERVICE-")
+
+				createServiceBroker(brokerName, brokerAppName, serviceName)
+				createServiceInstance(serviceInstanceName, serviceName)
+
+				CreateRoute(hostname, "", spacename, domain, DEFAULT_TIMEOUT)
+
+				configureBroker(brokerAppName, "")
+			})
+
+			AfterEach(func() {
+				unbindRouteFromService(hostname, serviceInstanceName)
+				deleteServiceInstance(serviceInstanceName)
+				deleteServiceBroker(brokerName)
+				DeleteRoute(hostname, "", domain, DEFAULT_TIMEOUT)
+			})
+
+			It("passes them to the service broker", func() {
+				bindRouteToServiceWithParams(hostname, serviceInstanceName, "{\"key1\":[\"value1\",\"irynaparam\"],\"key2\":\"value3\"}")
+
+				Eventually(func() *Session {
+					logs := cf.Cf("logs", "--recent", brokerAppName)
+					Expect(logs.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+					return logs
+				}, DEFAULT_TIMEOUT).Should(Say("irynaparam"))
+			})
+		})
+	})
 })
 
 type customMap map[string]interface{}
