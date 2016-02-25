@@ -11,8 +11,8 @@ such as basic CRUD of an object in the Cloud Controller. These tests belong with
 NOTE: Because we want to parallelize execution, tests should be written in such a way as to be runnable individually. This means that tests should not depend on state in other tests,
 and should not modify the CF state in such a way as to impact other tests.
 
-1. [Test Setup](#test-setup)  
-    1. [Install Required Dependencies](#install-required-dependencies)  
+1. [Test Setup](#test-setup)
+    1. [Install Required Dependencies](#install-required-dependencies)
     1. [Test Configuration](#test-configuration)
 1. [Test Execution](#test-execution)
 1. [Explanation of Test Suites](#explanation-of-test-suites)
@@ -30,8 +30,6 @@ You will probably also need the following SCM programs in order to `go get` sour
 * [bazaar](http://bazaar.canonical.com/)
 
 See [cf CLI](https://github.com/cloudfoundry/cli) for instructions on installing the go version of `cf`.
-
-If you plan on running the tests in the `routing` package (not run by default), install the [Routing API CLI](https://github.com/cloudfoundry-incubator/routing-api-cli) v2.0.
 
 Make sure that [curl](http://curl.haxx.se/) is installed on your system.
 
@@ -73,8 +71,6 @@ The full set of config parameters is explained below:
 * `admin_password` (required): Password of the admin user above.
 * `apps_domain` (required): A shared domain that tests can use to create subdomains that will route to applications also craeted in the tests.
 * `skip_ssl_validation`: Set to true if using an invalid (e.g. self-signed) cert for traffic routed to your CF instance; this is generally always true for BOSH-Lite deployments of CF.
-* `system_domain` (only required for `routing` suite): Used to construct addresses for internal CF components, namely UAA and the Routing API, which are expected to live at `uaa.SYSTEM_DOMAIN` and `routing-api.SYSTEM_DOMAIN`.
-* `client_secret` (only required for `routing` suite): Password used by the tcp-emitter to access the Routing API routes.
 * `use_existing_user` (optional): The admin user configured above will normally be used to create a temporary user (with lesser permissions) to perform actions (such as push applications) during tests, and then delete said user after the tests have run; set this to `true` if you want to use an existing user, configured via the following properties.
 * `keep_user_at_suite_end` (optional): If using an existing user (see above), set this to `true` unless you are okay having your existing user being deleted at the end. You can also set this to `true` when not using an existing user if you want to leave the temporary user around for debugging purposes after the test teardown.
 * `existing_user` (optional): Name of the existing user to use.
@@ -120,9 +116,9 @@ Many tests specify a buildpack when pushing an app, so that on diego the app sta
 * `php_buildpack_name: php_buildpack`
 * `binary_buildpack_name: binary_buildpack`
 
-#### Routing Test Suite Setup
+#### Route Services Test Suite Setup
 
-The `routing` suite pushes applications which must be able to reach the load balancer of your Cloud Foundry deployment. This requires configuring application security groups to support this. Your deployment manifest should include the following data if you are running the `routing` suite:
+The `route services` suite pushes applications which must be able to reach the load balancer of your Cloud Foundry deployment. This requires configuring application security groups to support this. Your deployment manifest should include the following data if you are running the `route services` suite:
 
 ```yaml
 ...
@@ -160,15 +156,15 @@ There are several different test suites, and you may not wish to run all the tes
 ./bin/test_default
 ```
 
-This will run the `apps`, `internet_dependent`, and `security_groups` test suites, as well as the top level test suite that simply asserts that the installed `cf` CLI version is high enough to be compatible with the test suite.
+This will run the `apps`, `internet_dependent`, `routing` and `security_groups` test suites, as well as the top level test suite that simply asserts that the installed `cf` CLI version is high enough to be compatible with the test suite.
 
-The default tests for Diego can be run via: 
+The default tests for Diego can be run via:
 
-```bash 
+```bash
 ./bin/diego_test_default
 ```
 
-This will run the `apps`, `backend_compatibility`, `detect`, `docker`, `internet_dependent`, `security_groups`, and `ssh` test suites, as well as the top level test suite that simply asserts that the installed `cf` CLI version is high enough to be compatible with the test suite.
+This will run the `apps`, `backend_compatibility`, `detect`, `docker`, `internet_dependent`, `routing`, `security_groups`, and `ssh` test suites, as well as the top level test suite that simply asserts that the installed `cf` CLI version is high enough to be compatible with the test suite.
 
 For more flexibility you can run `./bin/test` and specify many more options, e.g. which suites to run, which suites to exclude (e.g. if you want to run all but one suite), whether or not to run the tests in parallel, the number of parallel nodes to use, etc.  Refer to [ginkgo documentation](http://onsi.github.io/ginkgo/) for full details.  
 
@@ -211,7 +207,8 @@ Test Suite Name| Compatable Backend | Description
 `internet_dependent`| DEA or Diego | This suite tests the feature of being able to specify a buildpack via a Github URL.  As such, this depends on your Cloud Foundry application containers having access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
 `logging`| DEA or Diego | This test exercises the syslog drain forwarding functionality. A TCP listener is spun up on the running machine, an app is deployed to the target Cloud Foundry and bound to that listener (as a syslog drain) and the drain is checked for log messages.  Tests in this package are only intended to be run on machines that are accessible by your deployment.
 `operator`| DEA or Diego |Tests in this package are only intended to be run in non-production environments.  They may not clean up after themselves and may affect global CF state.  They test some miscellaneous features; read the tests for more details.
-`routing`| DEA or Diego |This package contains routing specific acceptance tests, Route Services, and GoRouter (Context path, wildcard, SSL termination, sticky sessions).  At the time of this writing, many of the routing features are works in progress.
+`routing`| DEA or Diego |This package contains routing specific acceptance tests (Context path, wildcard, SSL termination, sticky sessions).
+`route services` | Diego |This package contains route services acceptance tests.
 `security_groups`| DEA or Diego |This suite tests the security groups feature of Cloud Foundry that lets you apply rules-based controls to network traffic in and out of your containers.  These should pass for most recent Cloud Foundry installations.  `cf-release` versions `v200` and up should have support for most security group specs to pass.
 `services`| DEA or Diego | This suite tests various features related to services, e.g. registering a service broker via the service broker API.  Some of these tests exercise special integrations, such as Single Sign-On authentication; you may wish to run some tests in this package but selectively skip others if you haven't configured the required integrations.  Consult the [ginkgo spec runner](http://onsi.github.io/ginkgo/#the-spec-runner) documention to see how to use the `--skip` and `--focus` flags.
 `ssh`| Diego |This suite tests our ability to communicate with Diego apps via ssh, scp, and sftp.
