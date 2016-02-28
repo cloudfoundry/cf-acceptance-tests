@@ -40,17 +40,15 @@ The recommended way to do this is to run `go get -d github.com/cloudfoundry/cf-a
 
 All `go` dependencies required by CATs are vendored in `cf-acceptance-tests/Godeps`. The test script itself, [bin/test](https://github.com/cloudfoundry/cf-acceptance-tests/blob/master/bin/test), ensures that the vendored dependencies are available when executing the tests by prepending this directory to `$GOPATH`.
 
-You will also of course need a running Cloud Foundry deployment to run these acceptance tess against.
+You will also of course need a running Cloud Foundry deployment to run these acceptance tests against.
 
 ### Test Configuration
 
 You must set an environment variable `$CONFIG` which points to a JSON file that contains several pieces of data that will be used to configure the acceptance tests, e.g. telling the tests how to target your running Cloud Foundry deployment.
 
-The following script will setup a sufficient `$CONFIG` to run the core test suites against a [BOSH-Lite](https://github.com/cloudfoundry/bosh-lite) deployment of CF.
+The following can be pasted into a terminal and will set up a sufficient `$CONFIG` to run the core test suites against a [BOSH-Lite](https://github.com/cloudfoundry/bosh-lite) deployment of CF.
 
 ```bash
-#! /bin/bash
-
 cat > integration_config.json <<EOF
 {
   "api": "api.bosh-lite.com",
@@ -156,7 +154,7 @@ There are several different test suites, and you may not wish to run all the tes
 ./bin/test_default
 ```
 
-This will run the `apps`, `internet_dependent`, `routing` and `security_groups` test suites, as well as the top level test suite that simply asserts that the installed `cf` CLI version is high enough to be compatible with the test suite.
+This will run the `apps`, `detect`, `internet_dependent`, `routing` and `security_groups` test suites, as well as the top level test suite that simply asserts that the installed `cf` CLI version is high enough to be compatible with the test suite.
 
 The default tests for Diego can be run via:
 
@@ -190,9 +188,7 @@ To see verbose output from `ginkgo`, use the `-v` flag.
 ./bin/test routing -v
 ```
 
-Most of these flags and options can also be passed to the `bin/test_default` script as well.
-
-
+Most of these flags and options can also be passed to the `bin/test_default` and `bin/diego_test_default` scripts as well.
 
 ## Explanation of Test Suites
 
