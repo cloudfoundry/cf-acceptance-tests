@@ -68,7 +68,7 @@ var _ = Describe("buildpack", func() {
 
 		Eventually(func() *Session {
 			return FetchRecentLogs(appGuid, token, config)
-		}, 3*time.Minute, 10*time.Second).Should(Say("Godeps"))
+		}, 3*time.Minute, 10*time.Second).Should(Say("Godep"))
 	})
 
 	It("uses buildpack cache for staging", func() {
