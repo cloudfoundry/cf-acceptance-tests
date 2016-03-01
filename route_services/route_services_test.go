@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"regexp"
-	"strings"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/generator"
@@ -20,8 +18,6 @@ import (
 )
 
 var _ = Describe(deaUnsupportedTag+"Route Services", func() {
-	config := helpers.LoadConfig()
-
 	Context("when a route binds to a service", func() {
 		Context("when service broker returns a route service url", func() {
 			var (
@@ -125,24 +121,21 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 				serviceInstanceName string
 				brokerName          string
 				brokerAppName       string
-				domain              string
 				hostname            string
 			)
 
 			BeforeEach(func() {
-				domain = config.AppsDomain
 				hostname = generator.PrefixedRandomName("RATS-HOSTNAME-")
 				brokerAppName = GenerateAppName()
 				serviceInstanceName = generator.PrefixedRandomName("RATS-SERVICE-")
+				brokerName = generator.PrefixedRandomName("RATS-BROKER-")
 
-				spacename := context.RegularUserContext().Space
-				brokerName := generator.PrefixedRandomName("RATS-BROKER-")
 				serviceName := generator.PrefixedRandomName("RATS-SERVICE-")
 
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
 
-				CreateRoute(hostname, "", spacename, domain, DEFAULT_TIMEOUT)
+				CreateRoute(hostname, "", context.RegularUserContext().Space, config.AppsDomain, DEFAULT_TIMEOUT)
 
 				configureBroker(brokerAppName, "")
 			})
@@ -151,7 +144,7 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 				unbindRouteFromService(hostname, serviceInstanceName)
 				deleteServiceInstance(serviceInstanceName)
 				deleteServiceBroker(brokerName)
-				DeleteRoute(hostname, "", domain, DEFAULT_TIMEOUT)
+				DeleteRoute(hostname, "", config.AppsDomain, DEFAULT_TIMEOUT)
 			})
 
 			It("passes them to the service broker", func() {
@@ -175,93 +168,57 @@ func (c customMap) key(key string) customMap {
 
 func bindRouteToService(hostname, serviceInstanceName string) {
 	routeGuid := GetRouteGuid(hostname, "", DEFAULT_TIMEOUT)
-	serviceInstanceGuid := getServiceInstanceGuid(serviceInstanceName)
-	cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", serviceInstanceGuid, routeGuid), "-X", "PUT")
+
+	Expect(cf.Cf("bind-route-service", config.AppsDomain, serviceInstanceName,
+		"-f",
+		"--hostname", hostname,
+	).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
 	Eventually(func() string {
 		response := cf.Cf("curl", fmt.Sprintf("/v2/routes/%s", routeGuid))
 		Expect(response.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
-		contents := response.Out.Contents()
-		return string(contents)
+		return string(response.Out.Contents())
 	}, DEFAULT_TIMEOUT, "1s").ShouldNot(ContainSubstring(`"service_instance_guid": null`))
 }
 
 func bindRouteToServiceWithParams(hostname, serviceInstanceName string, params string) {
 	routeGuid := GetRouteGuid(hostname, "", DEFAULT_TIMEOUT)
-	serviceInstanceGuid := getServiceInstanceGuid(serviceInstanceName)
-	cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", serviceInstanceGuid, routeGuid), "-X", "PUT",
-		"-d", fmt.Sprintf("{\"parameters\": %s}", params))
+	Expect(cf.Cf("bind-route-service", config.AppsDomain, serviceInstanceName,
+		"-f",
+		"--hostname", hostname,
+		"-c", fmt.Sprintf("{\"parameters\": %s}", params),
+	).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
 	Eventually(func() string {
 		response := cf.Cf("curl", fmt.Sprintf("/v2/routes/%s", routeGuid))
 		Expect(response.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
-		contents := response.Out.Contents()
-		return string(contents)
+		return string(response.Out.Contents())
 	}, DEFAULT_TIMEOUT, "1s").ShouldNot(ContainSubstring(`"service_instance_guid": null`))
-}
-
-func deleteServiceBroker(brokerName string) {
-	config = helpers.LoadConfig()
-	context := helpers.NewContext(config)
-	cf.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
-		responseBuffer := cf.Cf("delete-service-broker", brokerName, "-f")
-		Expect(responseBuffer.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-	})
-}
-
-func deleteServiceInstance(serviceInstanceName string) {
-	guid := getServiceInstanceGuid(serviceInstanceName)
-	Eventually(func() string {
-		response := cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s", guid), "-X", "DELETE")
-		Expect(response.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-
-		contents := response.Out.Contents()
-		return string(contents)
-	}, DEFAULT_TIMEOUT, "1s").Should(ContainSubstring("CF-ServiceInstanceNotFound"))
 }
 
 func unbindRouteFromService(hostname, serviceInstanceName string) {
 	routeGuid := GetRouteGuid(hostname, "", DEFAULT_TIMEOUT)
-	guid := getServiceInstanceGuid(serviceInstanceName)
-	cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/routes/%s", guid, routeGuid), "-X", "DELETE")
+	Expect(cf.Cf("unbind-route-service", config.AppsDomain, serviceInstanceName,
+		"-f",
+		"--hostname", hostname,
+	).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
 	Eventually(func() string {
 		response := cf.Cf("curl", fmt.Sprintf("/v2/routes/%s", routeGuid))
 		Expect(response.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
-		contents := response.Out.Contents()
-		return string(contents)
+		return string(response.Out.Contents())
 	}, DEFAULT_TIMEOUT, "1s").Should(ContainSubstring(`"service_instance_guid": null`))
 }
 
-type metadata struct {
-	Guid string
-}
-type resource struct {
-	Metadata metadata
-}
-type response struct {
-	Resources []resource
-}
-
-func getServiceInstanceGuid(serviceInstanceName string) string {
-	serviceInstanceBuffer := cf.Cf("curl", fmt.Sprintf("/v2/service_instances?q=name:%s", serviceInstanceName))
-	Expect(serviceInstanceBuffer.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-	serviceInstanceBytes := serviceInstanceBuffer.Out.Contents()
-
-	var serviceInstanceMap response
-
-	err := json.Unmarshal(serviceInstanceBytes, &serviceInstanceMap)
-	Expect(err).NotTo(HaveOccurred())
-
-	return serviceInstanceMap.Resources[0].Metadata.Guid
-}
-
 func createServiceInstance(serviceInstanceName, serviceName string) {
-	session := cf.Cf("create-service", serviceName, "fake-plan", serviceInstanceName)
-	Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	Expect(cf.Cf("create-service", serviceName, "fake-plan", serviceInstanceName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+}
+
+func deleteServiceInstance(serviceInstanceName string) {
+	Expect(cf.Cf("delete-service", serviceInstanceName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 }
 
 func configureBroker(serviceBrokerAppName, routeServiceName string) {
@@ -310,6 +267,14 @@ func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 	})
 }
 
+func deleteServiceBroker(brokerName string) {
+	context := helpers.NewContext(config)
+	cf.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
+		responseBuffer := cf.Cf("delete-service-broker", brokerName, "-f")
+		Expect(responseBuffer.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	})
+}
+
 func initiateBrokerConfig(serviceName, serviceBrokerAppName string) {
 	brokerConfigJson := helpers.CurlApp(serviceBrokerAppName, "/config")
 
@@ -338,30 +303,4 @@ func initiateBrokerConfig(serviceName, serviceBrokerAppName string) {
 	Expect(err).NotTo(HaveOccurred())
 
 	helpers.CurlApp(serviceBrokerAppName, "/config", "-X", "POST", "-d", string(changedJson))
-}
-
-func targetedSpaceGuid() string {
-	output := cf.Cf("target")
-	Expect(output.Wait()).To(Exit(0))
-
-	targetInfo := strings.TrimSpace(string(output.Out.Contents()))
-	spaceMatch, _ := regexp.Compile(`Space:\s+([^\s]+)`)
-	spaceName := spaceMatch.FindAllStringSubmatch(targetInfo, -1)[0][1]
-
-	output = cf.Cf("space", spaceName, "--guid")
-	Expect(output.Wait()).To(Exit(0))
-
-	return strings.TrimSpace(string(output.Out.Contents()))
-}
-
-func sharedDomainGuid() string {
-	output := cf.Cf("curl", "/v2/shared_domains")
-	Expect(output.Wait()).To(Exit(0))
-
-	var sharedDomainMap response
-
-	err := json.Unmarshal(output.Out.Contents(), &sharedDomainMap)
-	Expect(err).NotTo(HaveOccurred())
-
-	return sharedDomainMap.Resources[0].Metadata.Guid
 }
