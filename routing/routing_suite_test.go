@@ -13,7 +13,7 @@ import (
 const deaUnsupportedTag = "{NO_DEA_SUPPORT} "
 
 var (
-	DEFAULT_TIMEOUT = 30 * time.Second
+	DEFAULT_TIMEOUT = 1 * time.Minute
 	CF_PUSH_TIMEOUT = 2 * time.Minute
 
 	context helpers.SuiteContext

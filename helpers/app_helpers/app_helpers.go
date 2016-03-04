@@ -12,7 +12,7 @@ import (
 
 var DEFAULT_TIMEOUT = 30 * time.Second
 
-func guidForAppName(appName string) string {
+func GetAppGuid(appName string) string {
 	cfApp := cf.Cf("app", appName, "--guid")
 	Eventually(cfApp, DEFAULT_TIMEOUT).Should(Exit(0))
 
@@ -31,13 +31,23 @@ func SetBackend(appName string) {
 }
 
 func EnableDiego(appName string) {
-	guid := guidForAppName(appName)
+	guid := GetAppGuid(appName)
 	Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": true}`), DEFAULT_TIMEOUT).Should(Exit(0))
 }
 
 func DisableDiego(appName string) {
-	guid := guidForAppName(appName)
+	guid := GetAppGuid(appName)
 	Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": false}`), DEFAULT_TIMEOUT).Should(Exit(0))
+}
+
+func DisableDiegoAndCheckResponse(appName, expectedSubstring string) {
+	guid := GetAppGuid(appName)
+	Eventually(func() string {
+		response := cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego":false}`)
+		Expect(response.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
+		return string(response.Out.Contents())
+	}, DEFAULT_TIMEOUT, "1s").Should(ContainSubstring(expectedSubstring))
 }
 
 func AppReport(appName string, timeout time.Duration) {

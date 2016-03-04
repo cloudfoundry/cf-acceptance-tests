@@ -21,6 +21,7 @@ type Assets struct {
 	Binary                   string
 	LoggingRouteServiceZip   string
 	WorkerApp                string
+	LatticeApp               string
 }
 
 func NewAssets() Assets {
@@ -45,5 +46,6 @@ func NewAssets() Assets {
 		Binary:                 "../assets/binary",
 		LoggingRouteServiceZip: "../assets/logging-route-service.zip",
 		WorkerApp:              "../assets/worker-app",
+		LatticeApp:             "../assets/lattice-app.zip",
 	}
 }

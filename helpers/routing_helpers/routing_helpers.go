@@ -66,14 +66,17 @@ func GenerateAppName() string {
 	return generator.PrefixedRandomName("RATS-APP-")
 }
 
-func PushAppNoStart(appName, asset, buildpackName, domain string, timeout time.Duration) {
-	Expect(cf.Cf("push", appName,
+func PushAppNoStart(appName, asset, buildpackName, domain string, timeout time.Duration, args ...string) {
+	allArgs := []string{"push", appName,
 		"-b", buildpackName,
 		"--no-start",
 		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", asset,
-		"-d", domain,
-	).Wait(timeout)).To(Exit(0))
+		"-d", domain}
+	for _, v := range args {
+		allArgs = append(allArgs, v)
+	}
+	Expect(cf.Cf(allArgs...).Wait(timeout)).To(Exit(0))
 }
 
 func ScaleAppInstances(appName string, instances int, timeout time.Duration) {
@@ -137,4 +140,33 @@ func GetAppInfo(appName string, timeout time.Duration) (host, port string) {
 	appIp := statsResponse["0"].Stats.Host
 	appPort := fmt.Sprintf("%d", statsResponse["0"].Stats.Port)
 	return appIp, appPort
+}
+
+func UpdatePorts(appName string, ports []uint32, timeout time.Duration) {
+	appGuid := app_helpers.GetAppGuid(appName)
+
+	bodyMap := map[string][]uint32{
+		"ports": ports,
+	}
+
+	data, err := json.Marshal(bodyMap)
+	Expect(err).ToNot(HaveOccurred())
+
+	Expect(cf.Cf("curl", fmt.Sprintf("/v2/apps/%s", appGuid), "-X", "PUT", "-d", string(data)).Wait(timeout)).To(Exit(0))
+}
+
+func CreateRouteMapping(appName string, hostname string, port uint32, timeout time.Duration) {
+	appGuid := app_helpers.GetAppGuid(appName)
+	routeGuid := GetRouteGuid(hostname, "", timeout)
+
+	bodyMap := map[string]interface{}{
+		"app_guid":   appGuid,
+		"route_guid": routeGuid,
+		"app_port":   port,
+	}
+
+	data, err := json.Marshal(bodyMap)
+	Expect(err).ToNot(HaveOccurred())
+
+	Expect(cf.Cf("curl", fmt.Sprintf("/v2/route_mappings"), "-X", "POST", "-d", string(data)).Wait(timeout)).To(Exit(0))
 }
