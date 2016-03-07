@@ -93,7 +93,7 @@ var _ = Describe("v3 tasks", func() {
 			})
 		})
 
-		XContext("When canceling a task", func() {
+		Context("When canceling a task", func() {
 			var taskGuid string
 
 			BeforeEach(func() {
