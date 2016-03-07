@@ -42,25 +42,25 @@ var _ = Describe("v3 buildpack app lifecycle", func() {
 		DeleteApp(appGuid)
 	})
 
-	It("can run apps", func() {
+	It("can run apps with processes from the Procfile", func() {
 		dropletGuid := StagePackage(packageGuid, "{}")
 		WaitForDropletToStage(dropletGuid)
 
 		AssignDropletToApp(appGuid, dropletGuid)
 
 		var webProcess Process
-		//var workerProcess Process
+		var workerProcess Process
 		processes := getProcess(appGuid, appName)
 		for _, process := range processes {
 			if process.Type == "web" {
 				webProcess = process
 			} else if process.Type == "worker" {
-				//	workerProcess = process
+				workerProcess = process
 			}
 		}
 
 		Expect(webProcess.Guid).ToNot(BeEmpty())
-		//Expect(workerProcess.Guid).ToNot(BeEmpty())
+		Expect(workerProcess.Guid).ToNot(BeEmpty())
 
 		CreateAndMapRoute(appGuid, context.RegularUserContext().Space, helpers.LoadConfig().AppsDomain, webProcess.Name)
 
@@ -75,25 +75,25 @@ var _ = Describe("v3 buildpack app lifecycle", func() {
 		Expect(output).To(ContainSubstring(appCreationEnvironmentVariables))
 
 		Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", webProcess.Name)))
-		//Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", workerProcess.Name)))
+		Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", workerProcess.Name)))
 
 		usageEvents := LastPageUsageEvents(context)
 
 		event1 := AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
-		//event2 := AppUsageEvent{Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
+		event2 := AppUsageEvent{Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
 		Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
-		// Expect(UsageEventsInclude(usageEvents, event2)).To(BeTrue())
+		Expect(UsageEventsInclude(usageEvents, event2)).To(BeTrue())
 
 		StopApp(appGuid)
 
 		Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+stopped", webProcess.Name)))
-		//Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+stopped", workerProcess.Name)))
+		Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+stopped", workerProcess.Name)))
 
 		usageEvents = LastPageUsageEvents(context)
 		event1 = AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
-		//event2 = AppUsageEvent{Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
+		event2 = AppUsageEvent{Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
 		Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
-		//	Expect(UsageEventsInclude(usageEvents, event2)).To(BeTrue())
+		Expect(UsageEventsInclude(usageEvents, event2)).To(BeTrue())
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(webProcess.Name)
@@ -132,18 +132,14 @@ var _ = Describe("v3 docker app lifecycle", func() {
 			AssignDropletToApp(appGuid, dropletGuid)
 
 			var webProcess Process
-			//var workerProcess Process
 			processes := getProcess(appGuid, appName)
 			for _, process := range processes {
 				if process.Type == "web" {
 					webProcess = process
-				} else if process.Type == "worker" {
-					//	workerProcess = process
 				}
 			}
 
 			Expect(webProcess.Guid).ToNot(BeEmpty())
-			//Expect(workerProcess.Guid).ToNot(BeEmpty())
 
 			CreateAndMapRoute(appGuid, context.RegularUserContext().Space, helpers.LoadConfig().AppsDomain, webProcess.Name)
 
@@ -158,25 +154,19 @@ var _ = Describe("v3 docker app lifecycle", func() {
 			Expect(output).To(ContainSubstring(appCreationEnvironmentVariables))
 
 			Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", webProcess.Name)))
-			//Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", workerProcess.Name)))
 
 			usageEvents := LastPageUsageEvents(context)
 
-			event1 := AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
-			//event2 := AppUsageEvent{Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
-			Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
-			// Expect(UsageEventsInclude(usageEvents, event2)).To(BeTrue())
+			event := AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
+			Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
 
 			StopApp(appGuid)
 
 			Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+stopped", webProcess.Name)))
-			//Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+stopped", workerProcess.Name)))
 
 			usageEvents = LastPageUsageEvents(context)
-			event1 = AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
-			//event2 = AppUsageEvent{Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
-			Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
-			//	Expect(UsageEventsInclude(usageEvents, event2)).To(BeTrue())
+			event = AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
+			Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(webProcess.Name)
