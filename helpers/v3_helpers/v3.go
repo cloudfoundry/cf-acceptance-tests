@@ -101,7 +101,7 @@ func GetAuthToken() string {
 }
 
 func UploadPackage(uploadUrl, packageZipPath, token string) {
-	bits := fmt.Sprintf(`bits=@"%s"`, packageZipPath)
+	bits := fmt.Sprintf(`bits=@%s`, packageZipPath)
 	_, err := exec.Command("curl", "-v", "-s", uploadUrl, "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).CombinedOutput()
 	Expect(err).NotTo(HaveOccurred())
 }
