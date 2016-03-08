@@ -156,6 +156,10 @@ func AssignDropletToApp(appGuid, dropletGuid string) {
 	appUpdatePath := fmt.Sprintf("/v3/apps/%s/current_droplet", appGuid)
 	appUpdateBody := fmt.Sprintf(`{"droplet_guid":"%s"}`, dropletGuid)
 	Expect(cf.Cf("curl", appUpdatePath, "-X", "PUT", "-d", appUpdateBody).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
+	for _, process := range GetProcesses(appGuid, "") {
+		ScaleProcess(appGuid, process.Type, DEFAULT_MEMORY_LIMIT)
+	}
 }
 
 func FetchRecentLogs(appGuid, oauthToken string, config helpers.Config) *Session {
@@ -164,4 +168,10 @@ func FetchRecentLogs(appGuid, oauthToken string, config helpers.Config) *Session
 	session := runner.Curl(logUrl, "-H", fmt.Sprintf("Authorization: %s", oauthToken))
 	Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	return session
+}
+
+func ScaleProcess(appGuid, processType, memoryInMb string) {
+	scalePath := fmt.Sprintf("/v3/apps/%s/processes/%s/scale", appGuid, processType)
+	scaleBody := fmt.Sprintf(`{"memory_in_mb":"%s"}`, memoryInMb)
+	Expect(cf.Cf("curl", scalePath, "-X", "PUT", "-d", scaleBody).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 }
