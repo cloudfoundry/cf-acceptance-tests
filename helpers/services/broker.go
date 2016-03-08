@@ -131,6 +131,13 @@ func (b ServiceBroker) Create() {
 	})
 }
 
+func (b ServiceBroker) CreateSpaceScoped() {
+	cf.AsUser(b.context.RegularUserContext(), DEFAULT_TIMEOUT, func() {
+		Expect(cf.Cf("create-service-broker", b.Name, "username", "password", helpers.AppUri(b.Name, ""), "--space-scoped").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("service-brokers").Wait(DEFAULT_TIMEOUT)).To(Say(b.Name))
+	})
+}
+
 func (b ServiceBroker) Update() {
 	cf.AsUser(b.context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 		Expect(cf.Cf("update-service-broker", b.Name, "username", "password", helpers.AppUri(b.Name, "")).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
