@@ -113,6 +113,33 @@ var _ = Describe("loggregator", func() {
 			Expect(messages).To(ContainElement(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
 		})
 	})
+
+	It("shows container metrics", func() {
+		config := helpers.LoadConfig()
+		appGuid := strings.TrimSpace(string(cf.Cf("app", appName, "--guid").Wait(DEFAULT_TIMEOUT).Out.Contents()))
+
+		noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: config.SkipSSLValidation}, nil)
+		msgChan := make(chan *events.Envelope, 100000)
+		errorChan := make(chan error)
+		stopchan := make(chan struct{})
+		go noaaConnection.Firehose(generator.RandomName(), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
+		defer close(stopchan)
+
+		Eventually(func() bool {
+			for {
+				select {
+				case msg := <-msgChan:
+					if cm := msg.GetContainerMetric(); cm != nil {
+						if cm.GetApplicationId() == appGuid && cm.GetInstanceIndex() == 0 {
+							return true
+						}
+					}
+				default:
+					return false
+				}
+			}
+		}, DEFAULT_TIMEOUT).Should(BeTrue())
+	})
 })
 
 type cfHomeConfig struct {
