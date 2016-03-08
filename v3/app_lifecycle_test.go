@@ -1,7 +1,6 @@
 package v3
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -48,16 +47,9 @@ var _ = Describe("v3 buildpack app lifecycle", func() {
 
 		AssignDropletToApp(appGuid, dropletGuid)
 
-		var webProcess Process
-		var workerProcess Process
-		processes := getProcess(appGuid, appName)
-		for _, process := range processes {
-			if process.Type == "web" {
-				webProcess = process
-			} else if process.Type == "worker" {
-				workerProcess = process
-			}
-		}
+		processes := GetProcesses(appGuid, appName)
+		webProcess := GetProcessByType(processes, "web")
+		workerProcess := GetProcessByType(processes, "worker")
 
 		Expect(webProcess.Guid).ToNot(BeEmpty())
 		Expect(workerProcess.Guid).ToNot(BeEmpty())
@@ -131,13 +123,8 @@ var _ = Describe("v3 docker app lifecycle", func() {
 
 			AssignDropletToApp(appGuid, dropletGuid)
 
-			var webProcess Process
-			processes := getProcess(appGuid, appName)
-			for _, process := range processes {
-				if process.Type == "web" {
-					webProcess = process
-				}
-			}
+			processes := GetProcesses(appGuid, appName)
+			webProcess := GetProcessByType(processes, "web")
 
 			Expect(webProcess.Guid).ToNot(BeEmpty())
 
@@ -174,30 +161,3 @@ var _ = Describe("v3 docker app lifecycle", func() {
 		})
 	}
 })
-
-type ProcessList struct {
-	Processes []Process `json:"resources"`
-}
-
-type Process struct {
-	Guid    string `json:"guid"`
-	Type    string `json:"type"`
-	Command string `json:"command"`
-
-	Name string `json:"-"`
-}
-
-func getProcess(appGuid, appName string) []Process {
-	processesURL := fmt.Sprintf("/v3/apps/%s/processes", appGuid)
-	session := cf.Cf("curl", processesURL)
-	bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
-
-	processes := ProcessList{}
-	json.Unmarshal(bytes, &processes)
-
-	for i, process := range processes.Processes {
-		processes.Processes[i].Name = fmt.Sprintf("v3-%s-%s", appName, process.Type)
-	}
-
-	return processes.Processes
-}

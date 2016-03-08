@@ -58,12 +58,8 @@ var _ = Describe("process", func() {
 
 			AssignDropletToApp(appGuid, dropletGuid)
 
-			processes := getProcess(appGuid, appName)
-			for _, process := range processes {
-				if process.Type == "web" {
-					webProcess = process
-				}
-			}
+			processes := GetProcesses(appGuid, appName)
+			webProcess = GetProcessByType(processes, "web")
 
 			CreateAndMapRoute(appGuid, context.RegularUserContext().Space, helpers.LoadConfig().AppsDomain, webProcess.Name)
 
