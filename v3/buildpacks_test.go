@@ -57,14 +57,14 @@ var _ = Describe("buildpack", func() {
 	})
 
 	It("Stages with a user specified admin buildpack", func() {
-		StagePackage(packageGuid, fmt.Sprintf(`{"lifecycle":{ "type": "buildpack", "data": { "buildpack": "%s" } }}`, buildpackName))
+		StageBuildpackPackage(packageGuid, buildpackName)
 		Eventually(func() *Session {
 			return FetchRecentLogs(appGuid, token, config)
 		}, 1*time.Minute, 10*time.Second).Should(Say("STAGED WITH CUSTOM BUILDPACK"))
 	})
 
 	It("Stages with a user specified github buildpack", func() {
-		StagePackage(packageGuid, `{"lifecycle":{ "type": "buildpack", "data": { "buildpack": "http://github.com/cloudfoundry/go-buildpack" } }`)
+		StageBuildpackPackage(packageGuid, "http://github.com/cloudfoundry/go-buildpack")
 
 		Eventually(func() *Session {
 			return FetchRecentLogs(appGuid, token, config)
@@ -72,7 +72,7 @@ var _ = Describe("buildpack", func() {
 	})
 
 	It("uses buildpack cache for staging", func() {
-		firstDropletGuid := StagePackage(packageGuid, fmt.Sprintf(`{"lifecycle":{ "type": "buildpack", "data": { "buildpack": "%s" } }}`, buildpackName))
+		firstDropletGuid := StageBuildpackPackage(packageGuid, buildpackName)
 		dropletPath := fmt.Sprintf("/v3/droplets/%s", firstDropletGuid)
 		Eventually(func() *Session {
 			result := cf.Cf("curl", dropletPath).Wait(DEFAULT_TIMEOUT)
@@ -85,7 +85,7 @@ var _ = Describe("buildpack", func() {
 		// Wait for buildpack cache to be uploaded to blobstore.
 		time.Sleep(DEFAULT_TIMEOUT)
 
-		secondDropletGuid := StagePackage(packageGuid, fmt.Sprintf(`{"lifecycle":{ "type": "buildpack", "data": { "buildpack": "%s" } }}`, buildpackName))
+		secondDropletGuid := StageBuildpackPackage(packageGuid, buildpackName)
 		dropletPath = fmt.Sprintf("/v3/droplets/%s", secondDropletGuid)
 		Eventually(func() *Session {
 			result := cf.Cf("curl", dropletPath).Wait(DEFAULT_TIMEOUT)

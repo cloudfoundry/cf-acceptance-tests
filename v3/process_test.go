@@ -53,7 +53,7 @@ var _ = Describe("process", func() {
 		)
 
 		BeforeEach(func() {
-			dropletGuid := StagePackage(packageGuid, "{}")
+			dropletGuid := StageBuildpackPackage(packageGuid, "ruby_buildpack")
 			WaitForDropletToStage(dropletGuid)
 
 			AssignDropletToApp(appGuid, dropletGuid)

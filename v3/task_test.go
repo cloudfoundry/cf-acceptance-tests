@@ -46,7 +46,7 @@ var _ = Describe("v3 tasks", func() {
 		uploadUrl := fmt.Sprintf("%s/v3/packages/%s/upload", config.ApiEndpoint, packageGuid)
 		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
 		WaitForPackageToBeReady(packageGuid)
-		dropletGuid := StagePackage(packageGuid, "{}")
+		dropletGuid := StageBuildpackPackage(packageGuid, "ruby_buildpack")
 		WaitForDropletToStage(dropletGuid)
 		AssignDropletToApp(appGuid, dropletGuid)
 	})

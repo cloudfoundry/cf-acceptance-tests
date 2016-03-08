@@ -83,7 +83,7 @@ var _ = Describe("service bindings", func() {
 
 		// TODO Unpend this test once v3 service bindings can be deleted (especially recursively through org delete)
 		PIt("exposes them during staging", func() {
-			StagePackage(packageGuid, fmt.Sprintf(`{"lifecycle":{ "type": "buildpack", "data": { "buildpack": "%s" } }}`, buildpackName))
+			StageBuildpackPackage(packageGuid, buildpackName)
 			Eventually(func() *Session {
 				return FetchRecentLogs(appGuid, token, config)
 			}, 1*time.Minute, 10*time.Second).Should(Say("my-service"))
@@ -92,7 +92,7 @@ var _ = Describe("service bindings", func() {
 
 	// TODO Unpend this test once v3 service bindings can be deleted (especially recursively through org delete)
 	PIt("exposes them during running", func() {
-		dropletGuid := StagePackage(packageGuid, "{}")
+		dropletGuid := StageBuildpackPackage(packageGuid, "ruby_buildpack")
 		WaitForDropletToStage(dropletGuid)
 		AssignDropletToApp(appGuid, dropletGuid)
 		CreateAndMapRoute(appGuid, context.RegularUserContext().Space, config.AppsDomain, appName)
