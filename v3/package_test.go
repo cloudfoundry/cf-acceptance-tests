@@ -10,7 +10,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/runner"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 
@@ -27,6 +26,7 @@ var _ = Describe("package features", func() {
 		packageGuid        string
 		spaceGuid          string
 		destinationAppGuid string
+		token              string
 	)
 
 	BeforeEach(func() {
@@ -34,14 +34,14 @@ var _ = Describe("package features", func() {
 		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
-		token := GetAuthToken()
+		token = GetAuthToken()
 		uploadUrl := fmt.Sprintf("%s/v3/packages/%s/upload", config.ApiEndpoint, packageGuid)
 		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
 		WaitForPackageToBeReady(packageGuid)
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+		FetchRecentLogs(appGuid, token, config)
 		DeleteApp(appGuid)
 		if destinationAppGuid != "" {
 			DeleteApp(destinationAppGuid)

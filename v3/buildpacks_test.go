@@ -14,7 +14,6 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/gbytes"
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/gexec"
 	archive_helpers "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/pivotal-golang/archiver/extractor/test_helper"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 )
@@ -48,7 +47,7 @@ var _ = Describe("buildpack", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+		FetchRecentLogs(appGuid, token, config)
 
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))

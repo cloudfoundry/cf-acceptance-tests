@@ -6,7 +6,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 
@@ -22,6 +21,7 @@ var _ = Describe("v3 buildpack app lifecycle", func() {
 		packageGuid                     string
 		spaceGuid                       string
 		appCreationEnvironmentVariables string
+		token                           string
 	)
 
 	BeforeEach(func() {
@@ -30,14 +30,14 @@ var _ = Describe("v3 buildpack app lifecycle", func() {
 		appCreationEnvironmentVariables = `"foo"=>"bar"`
 		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
 		packageGuid = CreatePackage(appGuid)
-		token := GetAuthToken()
+		token = GetAuthToken()
 		uploadUrl := fmt.Sprintf("%s/v3/packages/%s/upload", config.ApiEndpoint, packageGuid)
 		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
 		WaitForPackageToBeReady(packageGuid)
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+		FetchRecentLogs(appGuid, token, config)
 		DeleteApp(appGuid)
 	})
 
@@ -102,6 +102,7 @@ var _ = Describe("v3 docker app lifecycle", func() {
 			packageGuid                     string
 			spaceGuid                       string
 			appCreationEnvironmentVariables string
+			token                           string
 		)
 
 		BeforeEach(func() {
@@ -110,10 +111,11 @@ var _ = Describe("v3 docker app lifecycle", func() {
 			appCreationEnvironmentVariables = `"foo":"bar"`
 			appGuid = CreateDockerApp(appName, spaceGuid, `{"foo":"bar"}`)
 			packageGuid = CreateDockerPackage(appGuid, "cloudfoundry/diego-docker-app:latest")
+			token = GetAuthToken()
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+			FetchRecentLogs(appGuid, token, config)
 			DeleteApp(appGuid)
 		})
 

@@ -34,6 +34,7 @@ var _ = Describe("v3 tasks", func() {
 		packageGuid                     string
 		spaceGuid                       string
 		appCreationEnvironmentVariables string
+		token                           string
 	)
 
 	BeforeEach(func() {
@@ -42,7 +43,7 @@ var _ = Describe("v3 tasks", func() {
 		appCreationEnvironmentVariables = `"foo"=>"bar"`
 		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
 		packageGuid = CreatePackage(appGuid)
-		token := GetAuthToken()
+		token = GetAuthToken()
 		uploadUrl := fmt.Sprintf("%s/v3/packages/%s/upload", config.ApiEndpoint, packageGuid)
 		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
 		WaitForPackageToBeReady(packageGuid)
@@ -52,6 +53,7 @@ var _ = Describe("v3 tasks", func() {
 	})
 
 	AfterEach(func() {
+		FetchRecentLogs(appGuid, token, config)
 		DeleteApp(appGuid)
 	})
 

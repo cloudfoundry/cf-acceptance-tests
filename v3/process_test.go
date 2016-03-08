@@ -10,7 +10,6 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo"
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/gbytes"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 )
@@ -27,6 +26,7 @@ var _ = Describe("process", func() {
 		appGuid     string
 		packageGuid string
 		spaceGuid   string
+		token       string
 	)
 
 	BeforeEach(func() {
@@ -41,7 +41,7 @@ var _ = Describe("process", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+		FetchRecentLogs(appGuid, token, config)
 		DeleteApp(appGuid)
 	})
 
