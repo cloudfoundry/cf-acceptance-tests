@@ -96,7 +96,7 @@ func GetSpaceGuidFromName(spaceName string) string {
 }
 
 func GetAuthToken() string {
-	bytes := runner.Run("bash", "-c", "cf oauth-token | tail -n +4").Wait(DEFAULT_TIMEOUT).Out.Contents()
+	bytes := runner.Run("bash", "-c", "cf oauth-token | grep bearer").Wait(DEFAULT_TIMEOUT).Out.Contents()
 	return strings.TrimSpace(string(bytes))
 }
 
