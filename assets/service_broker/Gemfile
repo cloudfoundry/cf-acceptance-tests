@@ -2,7 +2,7 @@ source 'http://rubygems.org'
 
 gem 'sinatra'
 gem 'json'
-gem 'colorize'
+gem 'rainbow'
 
 group :test, :development do
   gem 'rspec'

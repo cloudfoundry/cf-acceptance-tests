@@ -5,10 +5,11 @@ require 'sinatra/base'
 require 'json'
 require 'pp'
 require 'logger'
-require 'colorize'
+require 'rainbow/ext/string'
 
 require 'bundler'
 Bundler.require :default, ENV['RACK_ENV'].to_sym
+Rainbow.enabled = true
 
 $stdout.sync = true
 $stderr.sync = true
@@ -142,11 +143,11 @@ class ServiceBroker < Sinatra::Base
   end
 
   def log(request)
-    $log.info "#{request.env['REQUEST_METHOD']} #{request.env['PATH_INFO']} #{request.env['QUERY_STRING']}".yellow
+    $log.info "#{request.env['REQUEST_METHOD']} #{request.env['PATH_INFO']} #{request.env['QUERY_STRING']}".color(:yellow)
     request.body.rewind
     headers = find_headers(request)
-    $log.info "Request headers: #{headers}".light_blue
-    $log.info "Request body: #{request.body.read}".yellow
+    $log.info "Request headers: #{headers}".color(:cyan)
+    $log.info "Request body: #{request.body.read}".color(:yellow)
     request.body.rewind
   end
 
@@ -155,7 +156,7 @@ class ServiceBroker < Sinatra::Base
   end
 
   def log_response(status, body)
-    $log.info "Response: status=#{status}, body=#{body}".green
+    $log.info "Response: status=#{status}, body=#{body}".color(:green)
     body
   end
 
