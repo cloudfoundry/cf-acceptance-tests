@@ -36,8 +36,8 @@ var _ = Describe("Purging service offerings", func() {
 				broker.PublicizePlans()
 			})
 			appName = generator.PrefixedRandomName("CATS-APP-ps-")
-			instanceName = generator.PrefixedRandomName("CATS-APP-ps-")
-			asyncInstanceName = generator.PrefixedRandomName("CATS-APP-ps-")
+			instanceName = generator.PrefixedRandomName("CATS-SI-ps-")
+			asyncInstanceName = generator.PrefixedRandomName("CATS-SI-ps-")
 		})
 
 		AfterEach(func() {
@@ -98,8 +98,8 @@ var _ = Describe("Purging service offerings", func() {
 			broker.Configure()
 			broker.CreateSpaceScoped()
 			appName = generator.PrefixedRandomName("CATS-APP-prps-")
-			instanceName = generator.PrefixedRandomName("CATS-APP-prps-")
-			asyncInstanceName = generator.PrefixedRandomName("CATS-APP-prps-")
+			instanceName = generator.PrefixedRandomName("CATS-SI-prps-")
+			asyncInstanceName = generator.PrefixedRandomName("CATS-SI-prps-")
 		})
 
 		AfterEach(func() {
