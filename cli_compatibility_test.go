@@ -7,7 +7,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
 )
 
-const minCliVersion = "6.15"
+const minCliVersion = "6.16.1"
 
 var _ = Describe("cf CLI version", func() {
 	It("meets the minimum required CLI version for the CATs", func() {
