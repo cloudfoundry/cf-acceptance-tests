@@ -78,7 +78,6 @@ The full set of config parameters is explained below:
 * `persistent_app_org` (optional): [See below](#persistent-app-test-setup).
 * `persistent_app_quota_name` (optional): [See below](#persistent-app-test-setup).
 * `backend` (optional): Set to 'diego' or 'dea' to determine the backend used. If unspecified the default backend will be used.
-* `include_route_services` (optional): If true, the route services tests will be run. These require a Diego deployment.
 * `include_tasks` (optional): If true, the task tests will be run. These require the task_creation feature flag to be enabled.
 * `artifacts_directory` (optional): If set, `cf` CLI trace output from test runs will be captured in files and placed in this directory. [See below](#capturing-test-output) for more.
 * `default_timeout` (optional): Default time (in seconds) to wait for polling assertions that wait for asynchronous results.
@@ -116,7 +115,7 @@ Many tests specify a buildpack when pushing an app, so that on diego the app sta
 
 #### Route Services Test Suite Setup
 
-The `route services` suite pushes applications which must be able to reach the load balancer of your Cloud Foundry deployment. This requires configuring application security groups to support this. Your deployment manifest should include the following data if you are running the `route services` suite:
+The `route_services` suite pushes applications which must be able to reach the load balancer of your Cloud Foundry deployment. This requires configuring application security groups to support this. Your deployment manifest should include the following data if you are running the `route_services` suite:
 
 ```yaml
 ...
@@ -204,7 +203,7 @@ Test Suite Name| Compatable Backend | Description
 `logging`| DEA or Diego | This test exercises the syslog drain forwarding functionality. A TCP listener is spun up on the running machine, an app is deployed to the target Cloud Foundry and bound to that listener (as a syslog drain) and the drain is checked for log messages.  Tests in this package are only intended to be run on machines that are accessible by your deployment.
 `operator`| DEA or Diego |Tests in this package are only intended to be run in non-production environments.  They may not clean up after themselves and may affect global CF state.  They test some miscellaneous features; read the tests for more details.
 `routing`| DEA or Diego |This package contains routing specific acceptance tests (Context path, wildcard, SSL termination, sticky sessions).
-`route services` | Diego |This package contains route services acceptance tests.
+`route_services` | Diego |This package contains route services acceptance tests.
 `security_groups`| DEA or Diego |This suite tests the security groups feature of Cloud Foundry that lets you apply rules-based controls to network traffic in and out of your containers.  These should pass for most recent Cloud Foundry installations.  `cf-release` versions `v200` and up should have support for most security group specs to pass.
 `services`| DEA or Diego | This suite tests various features related to services, e.g. registering a service broker via the service broker API.  Some of these tests exercise special integrations, such as Single Sign-On authentication; you may wish to run some tests in this package but selectively skip others if you haven't configured the required integrations.  Consult the [ginkgo spec runner](http://onsi.github.io/ginkgo/#the-spec-runner) documention to see how to use the `--skip` and `--focus` flags.
 `ssh`| Diego |This suite tests our ability to communicate with Diego apps via ssh, scp, and sftp.
