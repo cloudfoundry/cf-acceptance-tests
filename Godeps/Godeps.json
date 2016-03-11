@@ -6,6 +6,10 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "github.com/cloudfoundry-incubator/cf-routing-test-helpers",
+			"Rev": "c70d4eb01dfc12837fd6ff6ae66411e18fa8f40e"
+		},
+		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers",
 			"Rev": "daa4b3a8696f8b02cfc8ee77fb864ac89448aab5"
 		},

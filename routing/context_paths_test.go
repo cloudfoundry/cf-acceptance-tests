@@ -1,12 +1,11 @@
 package routing
 
 import (
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-routing-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo"
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
-	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/routing_helpers"
 )
 
 var _ = Describe("Context Paths", func() {
@@ -38,9 +37,9 @@ var _ = Describe("Context Paths", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(app1, DEFAULT_TIMEOUT)
-		app_helpers.AppReport(app2, DEFAULT_TIMEOUT)
-		app_helpers.AppReport(app3, DEFAULT_TIMEOUT)
+		AppReport(app1, DEFAULT_TIMEOUT)
+		AppReport(app2, DEFAULT_TIMEOUT)
+		AppReport(app3, DEFAULT_TIMEOUT)
 
 		DeleteApp(app1, DEFAULT_TIMEOUT)
 		DeleteApp(app2, DEFAULT_TIMEOUT)

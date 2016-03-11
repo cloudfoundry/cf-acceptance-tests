@@ -1,95 +1,21 @@
-package routing_helpers
+package helpers
 
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/gexec"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-routing-test-helpers/schema"
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 )
 
 const (
 	DEFAULT_MEMORY_LIMIT = "256M"
 	deaUnsupportedTag    = "{NO_DEA_SUPPORT} "
 )
-
-type Metadata struct {
-	Guid string
-}
-
-type Resource struct {
-	Metadata Metadata
-}
-
-type ListResponse struct {
-	TotalResults int `json:"total_results"`
-	Resources    []Resource
-}
-
-type AppResource struct {
-	Metadata struct {
-		Url string
-	}
-}
-type AppsResponse struct {
-	Resources []AppResource
-}
-type Stat struct {
-	Stats struct {
-		Host string
-		Port int
-	}
-}
-type StatsResponse map[string]Stat
-
-func RestartApp(app string, timeout time.Duration) {
-	Expect(cf.Cf("restart", app).Wait(timeout)).To(Exit(0))
-}
-
-func StartApp(app string, timeout time.Duration) {
-	Expect(cf.Cf("start", app).Wait(timeout)).To(Exit(0))
-}
-
-func PushApp(appName, asset, buildpackName, domain string, timeout time.Duration) {
-	PushAppNoStart(appName, asset, buildpackName, domain, timeout)
-	app_helpers.SetBackend(appName)
-	StartApp(appName, timeout)
-}
-
-func GenerateAppName() string {
-	return generator.PrefixedRandomName("RATS-APP-")
-}
-
-func PushAppNoStart(appName, asset, buildpackName, domain string, timeout time.Duration, args ...string) {
-	allArgs := []string{"push", appName,
-		"-b", buildpackName,
-		"--no-start",
-		"-m", DEFAULT_MEMORY_LIMIT,
-		"-p", asset,
-		"-d", domain}
-	for _, v := range args {
-		allArgs = append(allArgs, v)
-	}
-	Expect(cf.Cf(allArgs...).Wait(timeout)).To(Exit(0))
-}
-
-func ScaleAppInstances(appName string, instances int, timeout time.Duration) {
-	Expect(cf.Cf("scale", appName, "-i", strconv.Itoa(instances)).Wait(timeout)).To(Exit(0))
-	Eventually(func() string {
-		return string(cf.Cf("app", appName).Wait(timeout).Out.Contents())
-	}, timeout*2, 2*time.Second).
-		Should(ContainSubstring(fmt.Sprintf("instances: %d/%d", instances, instances)))
-}
-
-func DeleteApp(appName string, timeout time.Duration) {
-	Expect(cf.Cf("delete", appName, "-f", "-r").Wait(timeout)).To(Exit(0))
-}
 
 func MapRouteToApp(app, domain, host, path string, timeout time.Duration) {
 	Expect(cf.Cf("map-route", app, domain, "--hostname", host, "--path", path).Wait(timeout)).To(Exit(0))
@@ -115,7 +41,7 @@ func GetRouteGuid(hostname, path string, timeout time.Duration) string {
 	Expect(responseBuffer.Wait(timeout)).To(Exit(0))
 	routeBytes := responseBuffer.Out.Contents()
 
-	var routeResponse ListResponse
+	var routeResponse schema.ListResponse
 
 	err := json.Unmarshal(routeBytes, &routeResponse)
 	Expect(err).NotTo(HaveOccurred())
@@ -125,8 +51,8 @@ func GetRouteGuid(hostname, path string, timeout time.Duration) string {
 }
 
 func GetAppInfo(appName string, timeout time.Duration) (host, port string) {
-	var appsResponse AppsResponse
-	var statsResponse StatsResponse
+	var appsResponse schema.AppsResponse
+	var statsResponse schema.StatsResponse
 
 	cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/apps?q=name:%s", appName)).Wait(timeout).Out.Contents()
 	err := json.Unmarshal(cfResponse, &appsResponse)
@@ -143,7 +69,7 @@ func GetAppInfo(appName string, timeout time.Duration) (host, port string) {
 }
 
 func UpdatePorts(appName string, ports []uint32, timeout time.Duration) {
-	appGuid := app_helpers.GetAppGuid(appName)
+	appGuid := GetAppGuid(appName, timeout)
 
 	bodyMap := map[string][]uint32{
 		"ports": ports,
@@ -156,7 +82,7 @@ func UpdatePorts(appName string, ports []uint32, timeout time.Duration) {
 }
 
 func CreateRouteMapping(appName string, hostname string, port uint32, timeout time.Duration) {
-	appGuid := app_helpers.GetAppGuid(appName)
+	appGuid := GetAppGuid(appName, timeout)
 	routeGuid := GetRouteGuid(hostname, "", timeout)
 
 	bodyMap := map[string]interface{}{

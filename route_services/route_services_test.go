@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-routing-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
@@ -12,9 +13,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/gbytes"
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/gexec"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
-	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/routing_helpers"
 )
 
 var _ = Describe(deaUnsupportedTag+"Route Services", func() {
@@ -42,7 +41,7 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 				createServiceInstance(serviceInstanceName, serviceName)
 
 				PushAppNoStart(appName, golangAsset, config.GoBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
-				app_helpers.EnableDiego(appName)
+				EnableDiego(appName, DEFAULT_TIMEOUT)
 				StartApp(appName, CF_PUSH_TIMEOUT)
 
 				PushApp(routeServiceName, loggingRouteServiceAsset, config.GoBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
@@ -52,8 +51,8 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 			})
 
 			AfterEach(func() {
-				app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
-				app_helpers.AppReport(routeServiceName, DEFAULT_TIMEOUT)
+				AppReport(appName, DEFAULT_TIMEOUT)
+				AppReport(routeServiceName, DEFAULT_TIMEOUT)
 
 				unbindRouteFromService(appName, serviceInstanceName)
 				deleteServiceInstance(serviceInstanceName)
@@ -92,7 +91,7 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 				createServiceInstance(serviceInstanceName, serviceName)
 
 				PushAppNoStart(appName, golangAsset, config.GoBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
-				app_helpers.EnableDiego(appName)
+				EnableDiego(appName, DEFAULT_TIMEOUT)
 				StartApp(appName, CF_PUSH_TIMEOUT)
 
 				configureBroker(brokerAppName, "")
@@ -101,7 +100,7 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 			})
 
 			AfterEach(func() {
-				app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+				AppReport(appName, DEFAULT_TIMEOUT)
 
 				unbindRouteFromService(appName, serviceInstanceName)
 				deleteServiceInstance(serviceInstanceName)

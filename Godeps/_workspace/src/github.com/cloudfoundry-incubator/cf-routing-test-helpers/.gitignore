@@ -1,0 +1,6 @@
+tags
+*config.json
+*.test
+results
+.idea
+.DS_Store

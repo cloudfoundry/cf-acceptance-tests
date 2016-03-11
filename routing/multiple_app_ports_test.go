@@ -3,12 +3,11 @@ package routing
 import (
 	"fmt"
 
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-routing-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo"
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
-	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/routing_helpers"
 )
 
 var _ = Describe(deaUnsupportedTag+"Multiple App Ports", func() {
@@ -24,13 +23,13 @@ var _ = Describe(deaUnsupportedTag+"Multiple App Ports", func() {
 
 		// will creates a route for default port 8080
 		PushAppNoStart(app, latticeAppAsset, config.GoBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT, "-c", cmd)
-		app_helpers.EnableDiego(app)
+		EnableDiego(app, DEFAULT_TIMEOUT)
 		UpdatePorts(app, []uint32{7777, 8080}, DEFAULT_TIMEOUT)
 		StartApp(app, DEFAULT_TIMEOUT)
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(app, DEFAULT_TIMEOUT)
+		AppReport(app, DEFAULT_TIMEOUT)
 		DeleteApp(app, DEFAULT_TIMEOUT)
 	})
 
@@ -65,7 +64,7 @@ var _ = Describe(deaUnsupportedTag+"Multiple App Ports", func() {
 		})
 
 		It("returns an error when switching from Diego to DEA", func() {
-			app_helpers.DisableDiegoAndCheckResponse(app, "CF-MultipleAppPortsMappedDiegoToDea")
+			DisableDiegoAndCheckResponse(app, "CF-MultipleAppPortsMappedDiegoToDea", DEFAULT_TIMEOUT)
 		})
 	})
 })
