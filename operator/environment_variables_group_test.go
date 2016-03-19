@@ -102,7 +102,6 @@ exit 1
 	Context("Running environment variable groups", func() {
 		var originalRunningEnv string
 		var appName string
-		var buildpackName string
 
 		BeforeEach(func() {
 			appName = generator.PrefixedRandomName("CATS-APP-")
@@ -118,10 +117,6 @@ exit 1
 
 			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/running", "-X", "PUT", "-d", originalRunningEnv).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-
-				if buildpackName != "" {
-					Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-				}
 			})
 
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
