@@ -27,6 +27,7 @@ var _ = Describe("package features", func() {
 		spaceGuid          string
 		destinationAppGuid string
 		token              string
+		uploadUrl          string
 	)
 
 	BeforeEach(func() {
@@ -35,45 +36,69 @@ var _ = Describe("package features", func() {
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()
-		uploadUrl := fmt.Sprintf("%s/v3/packages/%s/upload", config.ApiEndpoint, packageGuid)
-		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
-		WaitForPackageToBeReady(packageGuid)
+		uploadUrl = fmt.Sprintf("%s/v3/packages/%s/upload", config.ApiEndpoint, packageGuid)
 	})
 
 	AfterEach(func() {
 		FetchRecentLogs(appGuid, token, config)
 		DeleteApp(appGuid)
-		if destinationAppGuid != "" {
-			DeleteApp(destinationAppGuid)
-		}
 	})
 
-	It("can copy package bits to another app and download the package", func() {
-		destinationAppName := generator.PrefixedRandomName("CATS-APP-")
-		destinationAppGuid = CreateApp(destinationAppName, spaceGuid, "{}")
+	Context("with a valid package", func() {
+		BeforeEach(func() {
+			UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
+			WaitForPackageToBeReady(packageGuid)
+		})
 
-		// COPY
-		copyUrl := fmt.Sprintf("/v3/apps/%s/packages?source_package_guid=%s", destinationAppGuid, packageGuid)
-		session := cf.Cf("curl", copyUrl, "-X", "POST")
-		bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
-		var pac struct {
-			Guid string `json:"guid"`
-		}
-		json.Unmarshal(bytes, &pac)
-		copiedPackageGuid := pac.Guid
+		AfterEach(func() {
+			if destinationAppGuid != "" {
+				DeleteApp(destinationAppGuid)
+			}
+		})
 
-		WaitForPackageToBeReady(copiedPackageGuid)
+		It("can copy package bits to another app and download the package", func() {
+			destinationAppName := generator.PrefixedRandomName("CATS-APP-")
+			destinationAppGuid = CreateApp(destinationAppName, spaceGuid, "{}")
 
-		tmpdir, err := ioutil.TempDir(os.TempDir(), "package-download")
-		Expect(err).ToNot(HaveOccurred())
-		app_package_path := path.Join(tmpdir, destinationAppName)
+			// COPY
+			copyUrl := fmt.Sprintf("/v3/apps/%s/packages?source_package_guid=%s", destinationAppGuid, packageGuid)
+			session := cf.Cf("curl", copyUrl, "-X", "POST")
+			bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
+			var pac struct {
+				Guid string `json:"guid"`
+			}
+			json.Unmarshal(bytes, &pac)
+			copiedPackageGuid := pac.Guid
 
-		// DOWNLOAD
-		session = cf.Cf("curl", fmt.Sprintf("/v3/packages/%s/download", copiedPackageGuid), "--output", app_package_path).Wait(DEFAULT_TIMEOUT)
-		Expect(session).To(Exit(0))
+			WaitForPackageToBeReady(copiedPackageGuid)
 
-		session = runner.Run("unzip", "-l", app_package_path)
-		Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-		Expect(session.Out).To(Say("dora.rb"))
+			tmpdir, err := ioutil.TempDir(os.TempDir(), "package-download")
+			Expect(err).ToNot(HaveOccurred())
+			app_package_path := path.Join(tmpdir, destinationAppName)
+
+			// DOWNLOAD
+			session = cf.Cf("curl", fmt.Sprintf("/v3/packages/%s/download", copiedPackageGuid), "--output", app_package_path).Wait(DEFAULT_TIMEOUT)
+			Expect(session).To(Exit(0))
+
+			session = runner.Run("unzip", "-l", app_package_path)
+			Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(session.Out).To(Say("dora.rb"))
+		})
+	})
+
+	Context("when the package contains files in unwriteable directories", func() {
+		BeforeEach(func() {
+			UploadPackage(uploadUrl, assets.NewAssets().JavaUnwriteableZip, token)
+			WaitForPackageToBeReady(packageGuid)
+		})
+
+		It("can still stage the package", func() {
+			dropletGuid := StageBuildpackPackage(packageGuid, "java_buildpack")
+			dropletPath := fmt.Sprintf("/v3/droplets/%s", dropletGuid)
+
+			Eventually(func() *Session {
+				return cf.Cf("curl", dropletPath).Wait(DEFAULT_TIMEOUT)
+			}, CF_PUSH_TIMEOUT).Should(Say("STAGED"))
+		})
 	})
 })

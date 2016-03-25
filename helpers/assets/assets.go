@@ -9,6 +9,8 @@ type Assets struct {
 	HelloWorld               string
 	HelloRouting             string
 	Java                     string
+	JavaSpringZip            string
+	JavaUnwriteableZip       string
 	LoggregatorLoadGenerator string
 	Python                   string
 	Node                     string
@@ -26,14 +28,16 @@ type Assets struct {
 
 func NewAssets() Assets {
 	return Assets{
-		AsyncServiceBroker: "../assets/service_broker",
-		Dora:               "../assets/dora",
-		DoraZip:            "../assets/dora.zip",
-		Fuse:               "../assets/fuse-mount",
-		Golang:             "../assets/golang",
-		HelloRouting:       "../assets/hello-routing",
-		HelloWorld:         "../assets/hello-world",
-		Java:               "../assets/java",
+		AsyncServiceBroker:       "../assets/service_broker",
+		Dora:                     "../assets/dora",
+		DoraZip:                  "../assets/dora.zip",
+		Fuse:                     "../assets/fuse-mount",
+		Golang:                   "../assets/golang",
+		HelloRouting:             "../assets/hello-routing",
+		HelloWorld:               "../assets/hello-world",
+		Java:                     "../assets/java",
+		JavaSpringZip:            "../assets/java-spring/java-spring.jar",
+		JavaUnwriteableZip:       "../assets/java-unwriteable-dir/java-unwriteable-dir.jar",
 		LoggregatorLoadGenerator: "../assets/loggregator-load-generator",
 		Node:                   "../assets/node",
 		NodeWithProcfile:       "../assets/node-with-procfile",
