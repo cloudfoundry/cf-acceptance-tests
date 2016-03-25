@@ -19,12 +19,10 @@ var _ = Describe(deaUnsupportedTag+"Multiple App Ports", func() {
 
 	BeforeEach(func() {
 		app = GenerateAppName()
-		cmd := fmt.Sprintf("%s --ports=7777,8080", "lattice-app")
+		cmd := fmt.Sprintf("lattice-app --ports=7777,8888,8080")
 
-		// will creates a route for default port 8080
 		PushAppNoStart(app, latticeAppAsset, config.GoBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT, "-c", cmd)
 		EnableDiego(app, DEFAULT_TIMEOUT)
-		UpdatePorts(app, []uint32{7777, 8080}, DEFAULT_TIMEOUT)
 		StartApp(app, DEFAULT_TIMEOUT)
 	})
 
@@ -34,20 +32,22 @@ var _ = Describe(deaUnsupportedTag+"Multiple App Ports", func() {
 	})
 
 	Context("when app only has single route", func() {
-		It("should listen on the default app port", func() {
-			Eventually(func() string {
-				return helpers.CurlApp(app, "/port")
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring("8080"))
+		Context("when no ports are specified for the app", func() {
+			It("should listen on the default app port", func() {
+				Eventually(func() string {
+					return helpers.CurlApp(app, "/port")
+				}, DEFAULT_TIMEOUT, "5s").Should(ContainSubstring("8080"))
+			})
 		})
 	})
 
 	Context("when app has multiple ports mapped", func() {
 		BeforeEach(func() {
+			UpdatePorts(app, []uint32{7777, 8888, 8080}, DEFAULT_TIMEOUT)
 			// create 2nd route
-			domain := config.AppsDomain
 			spacename := context.RegularUserContext().Space
 			secondRoute = fmt.Sprintf("%s-two", app)
-			CreateRoute(secondRoute, "", spacename, domain, DEFAULT_TIMEOUT)
+			CreateRoute(secondRoute, "", spacename, config.AppsDomain, DEFAULT_TIMEOUT)
 
 			// map app route to other port
 			CreateRouteMapping(app, secondRoute, 7777, DEFAULT_TIMEOUT)
@@ -56,11 +56,11 @@ var _ = Describe(deaUnsupportedTag+"Multiple App Ports", func() {
 		It("should listen on multiple ports", func() {
 			Eventually(func() string {
 				return helpers.CurlApp(app, "/port")
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring("8080"))
+			}, DEFAULT_TIMEOUT, "5s").Should(ContainSubstring("8080"))
 
 			Eventually(func() string {
 				return helpers.CurlApp(secondRoute, "/port")
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring("7777"))
+			}, DEFAULT_TIMEOUT, "5s").Should(ContainSubstring("7777"))
 		})
 
 		It("returns an error when switching from Diego to DEA", func() {
