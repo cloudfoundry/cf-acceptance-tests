@@ -43,14 +43,14 @@ var _ = Describe(deaUnsupportedTag+"Multiple App Ports", func() {
 
 	Context("when app has multiple ports mapped", func() {
 		BeforeEach(func() {
-			UpdatePorts(app, []uint32{7777, 8888, 8080}, DEFAULT_TIMEOUT)
+			UpdatePorts(app, []uint16{7777, 8888, 8080}, DEFAULT_TIMEOUT)
 			// create 2nd route
 			spacename := context.RegularUserContext().Space
 			secondRoute = fmt.Sprintf("%s-two", app)
 			CreateRoute(secondRoute, "", spacename, config.AppsDomain, DEFAULT_TIMEOUT)
 
 			// map app route to other port
-			CreateRouteMapping(app, secondRoute, 7777, DEFAULT_TIMEOUT)
+			CreateRouteMapping(app, secondRoute, 0, 7777, DEFAULT_TIMEOUT)
 		})
 
 		It("should listen on multiple ports", func() {

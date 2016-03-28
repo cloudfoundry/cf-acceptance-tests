@@ -28,3 +28,9 @@ type Stat struct {
 	}
 }
 type StatsResponse map[string]Stat
+
+type RouteResource struct {
+	Entity struct {
+		Port uint16
+	}
+}

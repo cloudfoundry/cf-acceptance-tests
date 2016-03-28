@@ -63,6 +63,14 @@ func RestartApp(app string, timeout time.Duration) {
 
 func StartApp(app string, timeout time.Duration) {
 	Expect(cf.Cf("start", app).Wait(timeout)).To(Exit(0))
+	InstancesRunning(app, 1, timeout)
+}
+
+func InstancesRunning(appName string, instances int, timeout time.Duration) {
+	Eventually(func() string {
+		return string(cf.Cf("app", appName).Wait(timeout).Out.Contents())
+	}, timeout*2, 2*time.Second).
+		Should(ContainSubstring(fmt.Sprintf("instances: %d/%d", instances, instances)))
 }
 
 func PushApp(appName, asset, buildpackName, domain string, timeout time.Duration) {
@@ -90,10 +98,7 @@ func PushAppNoStart(appName, asset, buildpackName, domain string, timeout time.D
 
 func ScaleAppInstances(appName string, instances int, timeout time.Duration) {
 	Expect(cf.Cf("scale", appName, "-i", strconv.Itoa(instances)).Wait(timeout)).To(Exit(0))
-	Eventually(func() string {
-		return string(cf.Cf("app", appName).Wait(timeout).Out.Contents())
-	}, timeout*2, 2*time.Second).
-		Should(ContainSubstring(fmt.Sprintf("instances: %d/%d", instances, instances)))
+	InstancesRunning(appName, instances, timeout)
 }
 
 func DeleteApp(appName string, timeout time.Duration) {
