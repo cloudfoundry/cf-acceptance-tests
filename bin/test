@@ -27,4 +27,19 @@ go list github.com/cloudfoundry/cf-acceptance-tests/... \
   | grep -v vendor \
   | xargs -I {} go test -c {}
 
+set +e
 ginkgo "$@"
+
+err=$?
+set +x
+
+if which dishy > /dev/null 2>&1; then
+  echo ""
+  if [[ $err == 0 ]]; then
+    echo $(dishy sunglasses cat)
+  else
+    echo $(dishy fail cat)
+  fi
+fi
+
+exit $err
