@@ -19,4 +19,19 @@ go list github.com/cloudfoundry/cf-acceptance-tests/... | xargs -I {} go test -c
 # The only alternative would be to split the string and then re-build the args for ginkgo
 # Instead, we'll simply not add quotes around $@
 # shellcheck disable=SC2068
+set +e
 ginkgo $@
+
+err=$?
+set +x
+
+if which dishy > /dev/null 2>&1; then
+  echo ""
+  if [[ $err == 0 ]]; then
+    echo $(dishy sunglasses cat)
+  else
+    echo $(dishy fail cat)
+  fi
+fi
+
+exit $err
