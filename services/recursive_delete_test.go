@@ -6,7 +6,6 @@ import (
 
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/generator"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo"
@@ -38,12 +37,12 @@ var _ = Describe("Recursive Delete", func() {
 
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 
-			runner.NewCmdRunner(cf.Cf("create-quota", quotaName, "-m", "10G", "-r", "1000", "-s", "5"), context.ShortTimeout()).Run()
+			cf.Cf("create-quota", quotaName, "-m", "10G", "-r", "1000", "-s", "5").Wait(context.ShortTimeout())
 
 			createOrg := cf.Cf("create-org", orgName).Wait(DEFAULT_TIMEOUT)
 			Expect(createOrg).To(Exit(0), "failed to create org")
 
-			runner.NewCmdRunner(cf.Cf("set-quota", orgName, quotaName), context.ShortTimeout()).Run()
+			cf.Cf("set-quota", orgName, quotaName).Wait(context.ShortTimeout())
 
 			createSpace := cf.Cf("create-space", spaceName, "-o", orgName).Wait(DEFAULT_TIMEOUT)
 			Expect(createSpace).To(Exit(0), "failed to create space")
@@ -66,7 +65,7 @@ var _ = Describe("Recursive Delete", func() {
 
 		broker.Destroy()
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			runner.NewCmdRunner(cf.Cf("delete-quota", "-f", quotaName), context.ShortTimeout()).Run()
+			cf.Cf("delete-quota", "-f", quotaName).Wait(context.ShortTimeout())
 		})
 	})
 

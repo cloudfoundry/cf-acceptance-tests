@@ -275,7 +275,6 @@ func parseInstanceIndex(body string) int {
 
 func curlAppWithCookies(appName, path string, cookieStorePath string) string {
 	uri := helpers.AppUri(appName, path)
-	curlCmd := runner.Curl(uri, "-b", cookieStorePath, "-c", cookieStorePath)
-	runner.NewCmdRunner(curlCmd, helpers.CURL_TIMEOUT).Run()
+	curlCmd := runner.Curl(uri, "-b", cookieStorePath, "-c", cookieStorePath).Wait(helpers.CURL_TIMEOUT)
 	return string(curlCmd.Out.Contents())
 }
