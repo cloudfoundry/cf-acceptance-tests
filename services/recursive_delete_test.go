@@ -36,13 +36,14 @@ var _ = Describe("Recursive Delete", func() {
 		instanceName := generator.PrefixedRandomName("rec-del")
 
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-
-			cf.Cf("create-quota", quotaName, "-m", "10G", "-r", "1000", "-s", "5").Wait(context.ShortTimeout())
+			createQuota := cf.Cf("create-quota", quotaName, "-m", "10G", "-r", "1000", "-s", "5").Wait(context.ShortTimeout())
+			Expect(createQuota).To(Exit(0))
 
 			createOrg := cf.Cf("create-org", orgName).Wait(DEFAULT_TIMEOUT)
 			Expect(createOrg).To(Exit(0), "failed to create org")
 
-			cf.Cf("set-quota", orgName, quotaName).Wait(context.ShortTimeout())
+			setQuota := cf.Cf("set-quota", orgName, quotaName).Wait(context.ShortTimeout())
+			Expect(setQuota).To(Exit(0))
 
 			createSpace := cf.Cf("create-space", spaceName, "-o", orgName).Wait(DEFAULT_TIMEOUT)
 			Expect(createSpace).To(Exit(0), "failed to create space")
@@ -65,7 +66,8 @@ var _ = Describe("Recursive Delete", func() {
 
 		broker.Destroy()
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			cf.Cf("delete-quota", "-f", quotaName).Wait(context.ShortTimeout())
+			deleteQuota := cf.Cf("delete-quota", "-f", quotaName).Wait(context.ShortTimeout())
+			Expect(deleteQuota).To(Exit(0))
 		})
 	})
 
