@@ -6,8 +6,7 @@ import (
 	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
-
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/runner"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/gexec"
 )
 
 //var CfApiTimeout = 30 * time.Second
@@ -34,12 +33,11 @@ var ApiRequest = func(method, endpoint string, response interface{}, timeout tim
 		args = append(args, "-d", dataArg)
 	}
 
-	request := Cf(args...)
-	runner.NewCmdWaiter(request, timeout).Wait()
+	request := Cf(args...).Wait(timeout)
+	Expect(request).To(Exit(0))
 
 	if response != nil {
 		err := json.Unmarshal(request.Out.Contents(), response)
 		Expect(err).ToNot(HaveOccurred())
 	}
-
 }

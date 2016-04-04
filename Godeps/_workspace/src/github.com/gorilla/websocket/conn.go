@@ -16,6 +16,20 @@ import (
 	"time"
 )
 
+const (
+	maxFrameHeaderSize         = 2 + 8 + 4 // Fixed header + length + mask
+	maxControlFramePayloadSize = 125
+	finalBit                   = 1 << 7
+	maskBit                    = 1 << 7
+	writeWait                  = time.Second
+
+	defaultReadBufferSize  = 4096
+	defaultWriteBufferSize = 4096
+
+	continuationFrame = 0
+	noFrame           = -1
+)
+
 // Close codes defined in RFC 6455, section 11.7.
 const (
 	CloseNormalClosure           = 1000
@@ -55,49 +69,109 @@ const (
 	PongMessage = 10
 )
 
-var (
-	continuationFrame = 0
-	noFrame           = -1
-)
+// ErrCloseSent is returned when the application writes a message to the
+// connection after sending a close message.
+var ErrCloseSent = errors.New("websocket: close sent")
 
-var (
-	// ErrCloseSent is returned when the application writes a message to the
-	// connection after sending a close message.
-	ErrCloseSent = errors.New("websocket: close sent")
+// ErrReadLimit is returned when reading a message that is larger than the
+// read limit set for the connection.
+var ErrReadLimit = errors.New("websocket: read limit exceeded")
 
-	// ErrReadLimit is returned when reading a message that is larger than the
-	// read limit set for the connection.
-	ErrReadLimit = errors.New("websocket: read limit exceeded")
-)
-
-type websocketError struct {
+// netError satisfies the net Error interface.
+type netError struct {
 	msg       string
 	temporary bool
 	timeout   bool
 }
 
-func (e *websocketError) Error() string   { return e.msg }
-func (e *websocketError) Temporary() bool { return e.temporary }
-func (e *websocketError) Timeout() bool   { return e.timeout }
+func (e *netError) Error() string   { return e.msg }
+func (e *netError) Temporary() bool { return e.temporary }
+func (e *netError) Timeout() bool   { return e.timeout }
+
+// CloseError represents close frame.
+type CloseError struct {
+
+	// Code is defined in RFC 6455, section 11.7.
+	Code int
+
+	// Text is the optional text payload.
+	Text string
+}
+
+func (e *CloseError) Error() string {
+	s := []byte("websocket: close ")
+	s = strconv.AppendInt(s, int64(e.Code), 10)
+	switch e.Code {
+	case CloseNormalClosure:
+		s = append(s, " (normal)"...)
+	case CloseGoingAway:
+		s = append(s, " (going away)"...)
+	case CloseProtocolError:
+		s = append(s, " (protocol error)"...)
+	case CloseUnsupportedData:
+		s = append(s, " (unsupported data)"...)
+	case CloseNoStatusReceived:
+		s = append(s, " (no status)"...)
+	case CloseAbnormalClosure:
+		s = append(s, " (abnormal closure)"...)
+	case CloseInvalidFramePayloadData:
+		s = append(s, " (invalid payload data)"...)
+	case ClosePolicyViolation:
+		s = append(s, " (policy violation)"...)
+	case CloseMessageTooBig:
+		s = append(s, " (message too big)"...)
+	case CloseMandatoryExtension:
+		s = append(s, " (mandatory extension missing)"...)
+	case CloseInternalServerErr:
+		s = append(s, " (internal server error)"...)
+	case CloseTLSHandshake:
+		s = append(s, " (TLS handshake error)"...)
+	}
+	if e.Text != "" {
+		s = append(s, ": "...)
+		s = append(s, e.Text...)
+	}
+	return string(s)
+}
+
+// IsCloseError returns boolean indicating whether the error is a *CloseError
+// with one of the specified codes.
+func IsCloseError(err error, codes ...int) bool {
+	if e, ok := err.(*CloseError); ok {
+		for _, code := range codes {
+			if e.Code == code {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// IsUnexpectedCloseError returns boolean indicating whether the error is a
+// *CloseError with a code not in the list of expected codes.
+func IsUnexpectedCloseError(err error, expectedCodes ...int) bool {
+	if e, ok := err.(*CloseError); ok {
+		for _, code := range expectedCodes {
+			if e.Code == code {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}
 
 var (
-	errWriteTimeout        = &websocketError{msg: "websocket: write timeout", timeout: true}
+	errWriteTimeout        = &netError{msg: "websocket: write timeout", timeout: true, temporary: true}
+	errUnexpectedEOF       = &CloseError{Code: CloseAbnormalClosure, Text: io.ErrUnexpectedEOF.Error()}
 	errBadWriteOpCode      = errors.New("websocket: bad write message type")
 	errWriteClosed         = errors.New("websocket: write closed")
 	errInvalidControlFrame = errors.New("websocket: invalid control frame")
 )
 
-const (
-	maxFrameHeaderSize         = 2 + 8 + 4 // Fixed header + length + mask
-	maxControlFramePayloadSize = 125
-	finalBit                   = 1 << 7
-	maskBit                    = 1 << 7
-	writeWait                  = time.Second
-)
-
 func hideTempErr(err error) error {
 	if e, ok := err.(net.Error); ok && e.Temporary() {
-		err = struct{ error }{err}
+		err = &netError{msg: e.Error(), timeout: e.Timeout()}
 	}
 	return err
 }
@@ -140,6 +214,7 @@ type Conn struct {
 	writeFrameType int    // type of the current frame.
 	writeSeq       int    // incremented to invalidate message writers.
 	writeDeadline  time.Time
+	isWriting      bool // for best-effort concurrent write detection
 
 	// Read fields
 	readErr       error
@@ -153,19 +228,27 @@ type Conn struct {
 	readMaskKey   [4]byte
 	handlePong    func(string) error
 	handlePing    func(string) error
+	readErrCount  int
 }
 
-func newConn(conn net.Conn, isServer bool, readBufSize, writeBufSize int) *Conn {
+func newConn(conn net.Conn, isServer bool, readBufferSize, writeBufferSize int) *Conn {
 	mu := make(chan bool, 1)
 	mu <- true
 
+	if readBufferSize == 0 {
+		readBufferSize = defaultReadBufferSize
+	}
+	if writeBufferSize == 0 {
+		writeBufferSize = defaultWriteBufferSize
+	}
+
 	c := &Conn{
 		isServer:       isServer,
-		br:             bufio.NewReaderSize(conn, readBufSize),
+		br:             bufio.NewReaderSize(conn, readBufferSize),
 		conn:           conn,
 		mu:             mu,
 		readFinal:      true,
-		writeBuf:       make([]byte, writeBufSize+maxFrameHeaderSize),
+		writeBuf:       make([]byte, writeBufferSize+maxFrameHeaderSize),
 		writeFrameType: noFrame,
 		writePos:       maxFrameHeaderSize,
 	}
@@ -278,7 +361,7 @@ func (c *Conn) WriteControl(messageType int, data []byte, deadline time.Time) er
 	if n != 0 && n != len(buf) {
 		c.conn.Close()
 	}
-	return err
+	return hideTempErr(err)
 }
 
 // NextWriter returns a writer for the next message to send.  The writer's
@@ -286,9 +369,6 @@ func (c *Conn) WriteControl(messageType int, data []byte, deadline time.Time) er
 //
 // There can be at most one open writer on a connection. NextWriter closes the
 // previous writer if the application has not already done so.
-//
-// The NextWriter method and the writers returned from the method cannot be
-// accessed by more than one goroutine at a time.
 func (c *Conn) NextWriter(messageType int) (io.WriteCloser, error) {
 	if c.writeErr != nil {
 		return nil, c.writeErr
@@ -362,8 +442,21 @@ func (c *Conn) flushFrame(final bool, extra []byte) error {
 		}
 	}
 
-	// Write the buffers to the connection.
+	// Write the buffers to the connection with best-effort detection of
+	// concurrent writes. See the concurrency section in the package
+	// documentation for more info.
+
+	if c.isWriting {
+		panic("concurrent write to websocket connection")
+	}
+	c.isWriting = true
+
 	c.writeErr = c.write(c.writeFrameType, c.writeDeadline, c.writeBuf[framePos:c.writePos], extra)
+
+	if !c.isWriting {
+		panic("concurrent write to websocket connection")
+	}
+	c.isWriting = false
 
 	// Setup for next frame.
 	c.writePos = maxFrameHeaderSize
@@ -508,7 +601,7 @@ func (c *Conn) WriteMessage(messageType int, data []byte) error {
 // SetWriteDeadline sets the write deadline on the underlying network
 // connection. After a write has timed out, the websocket state is corrupt and
 // all future writes will return an error. A zero value for t means writes will
-// not time out
+// not time out.
 func (c *Conn) SetWriteDeadline(t time.Time) error {
 	c.writeDeadline = t
 	return nil
@@ -527,7 +620,7 @@ func (c *Conn) readFull(p []byte) (err error) {
 	if n == len(p) {
 		err = nil
 	} else if err == io.EOF {
-		err = io.ErrUnexpectedEOF
+		err = errUnexpectedEOF
 	}
 	return
 }
@@ -648,19 +741,16 @@ func (c *Conn) advanceFrame() (int, error) {
 			return noFrame, err
 		}
 	case CloseMessage:
-		c.WriteControl(CloseMessage, []byte{}, time.Now().Add(writeWait))
-		if len(payload) < 2 {
-			return noFrame, io.EOF
+		echoMessage := []byte{}
+		closeCode := CloseNoStatusReceived
+		closeText := ""
+		if len(payload) >= 2 {
+			echoMessage = payload[:2]
+			closeCode = int(binary.BigEndian.Uint16(payload))
+			closeText = string(payload[2:])
 		}
-		closeCode := binary.BigEndian.Uint16(payload)
-		switch closeCode {
-		case CloseNormalClosure, CloseGoingAway:
-			return noFrame, io.EOF
-		default:
-			return noFrame, errors.New("websocket: close " +
-				strconv.Itoa(int(closeCode)) + " " +
-				string(payload[2:]))
-		}
+		c.WriteControl(CloseMessage, echoMessage, time.Now().Add(writeWait))
+		return noFrame, &CloseError{Code: closeCode, Text: closeText}
 	}
 
 	return frameType, nil
@@ -677,8 +767,10 @@ func (c *Conn) handleProtocolError(message string) error {
 // There can be at most one open reader on a connection. NextReader discards
 // the previous message if the application has not already consumed it.
 //
-// The NextReader method and the readers returned from the method cannot be
-// accessed by more than one goroutine at a time.
+// Applications must break out of the application's read loop when this method
+// returns a non-nil error value. Errors returned from this method are
+// permanent. Once this method returns a non-nil error, all subsequent calls to
+// this method return the same error.
 func (c *Conn) NextReader() (messageType int, r io.Reader, err error) {
 
 	c.readSeq++
@@ -694,6 +786,15 @@ func (c *Conn) NextReader() (messageType int, r io.Reader, err error) {
 			return frameType, messageReader{c, c.readSeq}, nil
 		}
 	}
+
+	// Applications that do handle the error returned from this method spin in
+	// tight loop on connection failure. To help application developers detect
+	// this error, panic on repeated reads to the failed connection.
+	c.readErrCount++
+	if c.readErrCount >= 1000 {
+		panic("repeated read on failed websocket connection")
+	}
+
 	return noFrame, nil, c.readErr
 }
 
@@ -739,7 +840,7 @@ func (r messageReader) Read(b []byte) (int, error) {
 
 	err := r.c.readErr
 	if err == io.EOF && r.seq == r.c.readSeq {
-		err = io.ErrUnexpectedEOF
+		err = errUnexpectedEOF
 	}
 	return 0, err
 }
@@ -772,20 +873,27 @@ func (c *Conn) SetReadLimit(limit int64) {
 }
 
 // SetPingHandler sets the handler for ping messages received from the peer.
-// The default ping handler sends a pong to the peer.
-func (c *Conn) SetPingHandler(h func(string) error) {
+// The appData argument to h is the PING frame application data. The default
+// ping handler sends a pong to the peer.
+func (c *Conn) SetPingHandler(h func(appData string) error) {
 	if h == nil {
 		h = func(message string) error {
-			c.WriteControl(PongMessage, []byte(message), time.Now().Add(writeWait))
-			return nil
+			err := c.WriteControl(PongMessage, []byte(message), time.Now().Add(writeWait))
+			if err == ErrCloseSent {
+				return nil
+			} else if e, ok := err.(net.Error); ok && e.Temporary() {
+				return nil
+			}
+			return err
 		}
 	}
 	c.handlePing = h
 }
 
-// SetPongHandler sets then handler for pong messages received from the peer.
-// The default pong handler does nothing.
-func (c *Conn) SetPongHandler(h func(string) error) {
+// SetPongHandler sets the handler for pong messages received from the peer.
+// The appData argument to h is the PONG frame application data. The default
+// pong handler does nothing.
+func (c *Conn) SetPongHandler(h func(appData string) error) {
 	if h == nil {
 		h = func(string) error { return nil }
 	}

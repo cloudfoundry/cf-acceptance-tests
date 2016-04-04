@@ -4,7 +4,8 @@ import (
 	"time"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/runner"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
+	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/gexec"
 )
 
 type SuiteContext interface {
@@ -47,8 +48,8 @@ func (e *Environment) Teardown() {
 }
 
 func (e *Environment) setUpSpaceWithUserAccess(uc cf.UserContext) {
-	runner.NewCmdWaiter(cf.Cf("create-space", "-o", uc.Org, uc.Space), e.context.ShortTimeout()).Wait()
-	runner.NewCmdWaiter(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceManager"), e.context.ShortTimeout()).Wait()
-	runner.NewCmdWaiter(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceDeveloper"), e.context.ShortTimeout()).Wait()
-	runner.NewCmdWaiter(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceAuditor"), e.context.ShortTimeout()).Wait()
+	Eventually(cf.Cf("create-space", "-o", uc.Org, uc.Space), e.context.ShortTimeout()).Should(Exit(0))
+	Eventually(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceManager"), e.context.ShortTimeout()).Should(Exit(0))
+	Eventually(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceDeveloper"), e.context.ShortTimeout()).Should(Exit(0))
+	Eventually(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceAuditor"), e.context.ShortTimeout()).Should(Exit(0))
 }
