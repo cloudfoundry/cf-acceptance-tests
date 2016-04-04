@@ -91,6 +91,7 @@ var _ = Describe("loggregator", func() {
 			msgChan := make(chan *events.Envelope, 100000)
 			errorChan := make(chan error)
 			stopchan := make(chan struct{})
+
 			go noaaConnection.Firehose(generator.RandomName(), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
 			defer close(stopchan)
 
@@ -98,19 +99,7 @@ var _ = Describe("loggregator", func() {
 				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Muahaha"))
 
-			timeout := time.After(5 * time.Second)
-			messages := make([]*events.Envelope, 0, 100000)
-
-			for {
-				select {
-				case <-timeout:
-					return
-				case msg := <-msgChan:
-					messages = append(messages, msg)
-				}
-			}
-
-			Expect(messages).To(ContainElement(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
+			Eventually(msgChan, 5).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
 		})
 	})
 
