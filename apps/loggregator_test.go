@@ -99,7 +99,7 @@ var _ = Describe("loggregator", func() {
 				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Muahaha"))
 
-			Eventually(msgChan, 5).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
+			Eventually(msgChan, 5*time.Second).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
 		})
 	})
 
