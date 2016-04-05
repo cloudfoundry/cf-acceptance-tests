@@ -3,7 +3,6 @@ package v3_helpers
 import (
 	"encoding/json"
 	"fmt"
-	"os/exec"
 	"strings"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -102,8 +101,8 @@ func GetAuthToken() string {
 
 func UploadPackage(uploadUrl, packageZipPath, token string) {
 	bits := fmt.Sprintf(`bits=@%s`, packageZipPath)
-	_, err := exec.Command("curl", "-v", "-s", uploadUrl, "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).CombinedOutput()
-	Expect(err).NotTo(HaveOccurred())
+	curl := runner.Curl("-v", "-s", uploadUrl, "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).Wait(DEFAULT_TIMEOUT)
+	Expect(curl).To(Exit(0))
 }
 
 func StageBuildpackPackage(packageGuid, buildpack string) string {

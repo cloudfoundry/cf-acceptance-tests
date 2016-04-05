@@ -20,6 +20,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/kr/pty"
 	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo"
 	ginkgoconfig "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/config"
@@ -116,11 +117,8 @@ var _ = Describe(deaUnsupportedTag+"SSH", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() string {
-				stdout := &bytes.Buffer{}
-				curlCmd := exec.Command("curl", "http://127.0.0.1:61007/")
-				curlCmd.Stdout = stdout
-				curlCmd.Run()
-				return stdout.String()
+				curl := runner.Curl("http://127.0.0.1:61007/").Wait(DEFAULT_TIMEOUT)
+				return string(curl.Out.Contents())
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora"))
 
 			err = stdin.Close()
