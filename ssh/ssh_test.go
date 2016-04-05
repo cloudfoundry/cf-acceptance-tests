@@ -107,7 +107,7 @@ var _ = Describe(deaUnsupportedTag+"SSH", func() {
 		})
 
 		It("allows local port forwarding", func() {
-			listenCmd := exec.Command("cf", "ssh", "-i", "1", "-L", "127.0.0.1:37001:localhost:8080", appName)
+			listenCmd := exec.Command("cf", "ssh", "-i", "1", "-L", "127.0.0.1:61007:localhost:8080", appName)
 
 			stdin, err := listenCmd.StdinPipe()
 			Expect(err).NotTo(HaveOccurred())
@@ -117,7 +117,7 @@ var _ = Describe(deaUnsupportedTag+"SSH", func() {
 
 			Eventually(func() string {
 				stdout := &bytes.Buffer{}
-				curlCmd := exec.Command("curl", "http://127.0.0.1:37001/")
+				curlCmd := exec.Command("curl", "http://127.0.0.1:61007/")
 				curlCmd.Stdout = stdout
 				curlCmd.Run()
 				return stdout.String()
