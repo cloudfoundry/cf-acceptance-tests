@@ -88,7 +88,7 @@ The full set of config parameters is explained below:
 * `timeout_scale` (optional): Used primarily to scale default timeouts for test setup and teardown actions (e.g. creating an org) as opposed to main test actions (e.g. pushing an app).
 * `syslog_ip_address` (only required for `logging` suite): This must be a publically accessible IP address of your local machine, accessible by applications within your CF deployment.
 * `syslog_drain_port` (only required for `logging` suite): This must be an available port on your local machine.
-* `use_http` (optional): Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (defualt is HTTPS)
+* `use_http` (optional): Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
 * `staticfile_buildpack_name` (optional) [See below](#buildpack-names).
 * `java_buildpack_name` (optional) [See below](#buildpack-names).
 * `ruby_buildpack_name` (optional) [See below](#buildpack-names).
