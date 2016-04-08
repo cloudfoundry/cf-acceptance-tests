@@ -3,6 +3,7 @@ package v3
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/generator"
@@ -72,40 +73,46 @@ var _ = Describe("process", func() {
 			Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", webProcess.Name)))
 		})
 
-		It("/v3/apps/:guid/processes/:guid/instances/:index", func() {
-			statsUrl := fmt.Sprintf("/v2/apps/%s/stats", webProcess.Guid)
-			statsBody := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
-			statsJSON := ProcessStats{}
-			json.Unmarshal(statsBody, &statsJSON)
+		Context("/v3/apps/:guid/processes/:type/instances/:index", func() {
+			It("restarts the instance", func() {
+				statsUrl := fmt.Sprintf("/v2/apps/%s/stats", webProcess.Guid)
+				statsBody := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
+				statsJSON := ProcessStats{}
+				json.Unmarshal(statsBody, &statsJSON)
 
-			Expect(statsJSON.Instance.State).To(Equal("RUNNING"))
+				Expect(statsJSON.Instance.State).To(Equal("RUNNING"))
 
-			terminateUrl := fmt.Sprintf("/v3/apps/%s/processes/%s/instances/%d", appGuid, processType, index)
-			cf.Cf("curl", terminateUrl, "-X", "DELETE").Wait(DEFAULT_TIMEOUT)
+				terminateUrl := fmt.Sprintf("/v3/apps/%s/processes/%s/instances/%d", appGuid, processType, index)
+				cf.Cf("curl", terminateUrl, "-X", "DELETE").Wait(DEFAULT_TIMEOUT)
 
-			Eventually(func() string {
-				statsBodyAfter := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
-				json.Unmarshal(statsBodyAfter, &statsJSON)
-				return statsJSON.Instance.State
-			}).Should(Equal("DOWN"))
+				// Note that this depends on a 30s run loop waking up in Diego.
+				Eventually(func() string {
+					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
+					json.Unmarshal(statsBodyAfter, &statsJSON)
+					return statsJSON.Instance.State
+				}, 35*time.Second).Should(Equal("STARTING"))
+			})
 		})
 
-		It("/v3/processes/:guid/instances/:index", func() {
-			statsUrl := fmt.Sprintf("/v2/apps/%s/stats", webProcess.Guid)
-			statsBody := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
-			statsJSON := ProcessStats{}
-			json.Unmarshal(statsBody, &statsJSON)
+		Context("/v3/processes/:guid/instances/:index", func() {
+			It("restarts the instance", func() {
+				statsUrl := fmt.Sprintf("/v2/apps/%s/stats", webProcess.Guid)
+				statsBody := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
+				statsJSON := ProcessStats{}
+				json.Unmarshal(statsBody, &statsJSON)
 
-			Expect(statsJSON.Instance.State).To(Equal("RUNNING"))
+				Expect(statsJSON.Instance.State).To(Equal("RUNNING"))
 
-			terminateUrl := fmt.Sprintf("/v3/processes/%s/instances/%d", webProcess.Guid, index)
-			cf.Cf("curl", terminateUrl, "-X", "DELETE").Wait(DEFAULT_TIMEOUT)
+				terminateUrl := fmt.Sprintf("/v3/processes/%s/instances/%d", webProcess.Guid, index)
+				cf.Cf("curl", terminateUrl, "-X", "DELETE").Wait(DEFAULT_TIMEOUT)
 
-			Eventually(func() string {
-				statsBodyAfter := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
-				json.Unmarshal(statsBodyAfter, &statsJSON)
-				return statsJSON.Instance.State
-			}).Should(Equal("DOWN"))
+				// Note that this depends on a 30s run loop waking up in Diego.
+				Eventually(func() string {
+					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
+					json.Unmarshal(statsBodyAfter, &statsJSON)
+					return statsJSON.Instance.State
+				}, 35*time.Second).Should(Equal("STARTING"))
+			})
 		})
 	})
 })
