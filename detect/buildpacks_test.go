@@ -27,6 +27,18 @@ var _ = Describe("Buildpacks", func() {
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 
+	Describe("ruby", func() {
+		It("makes the app reachable via its bound route", func() {
+			Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			app_helpers.SetBackend(appName)
+			Expect(cf.Cf("start", appName).Wait(DETECT_TIMEOUT)).To(Exit(0))
+
+			Eventually(func() string {
+				return helpers.CurlAppRoot(appName)
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
+		})
+	})
+
 	Describe("node", func() {
 		It("makes the app reachable via its bound route", func() {
 			Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Node, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
