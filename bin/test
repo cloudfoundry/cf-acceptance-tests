@@ -13,7 +13,9 @@ export PATH="${project_gopath}/bin":$PATH
 
 go install -v github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/ginkgo
 
-go list github.com/cloudfoundry/cf-acceptance-tests/... | xargs -I {} go test -c {}
+go list github.com/cloudfoundry/cf-acceptance-tests/... \
+  | grep -v github.com/cloudfoundry/cf-acceptance-tests/assets \
+  | xargs -I {} go test -c {}
 
 # List of suites is passed in as a single string, so we need to re-split the argument
 # The only alternative would be to split the string and then re-build the args for ginkgo

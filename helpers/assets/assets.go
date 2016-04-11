@@ -21,7 +21,7 @@ type Assets struct {
 	ServiceBroker            string
 	Staticfile               string
 	Binary                   string
-	LoggingRouteServiceZip   string
+	LoggingRouteService      string
 	WorkerApp                string
 	LatticeApp               string
 }
@@ -48,8 +48,8 @@ func NewAssets() Assets {
 		ServiceBroker:          "../assets/service_broker",
 		Staticfile:             "../assets/staticfile",
 		Binary:                 "../assets/binary",
-		LoggingRouteServiceZip: "../assets/logging-route-service.zip",
+		LoggingRouteService:    "../assets/logging-route-service",
 		WorkerApp:              "../assets/worker-app",
-		LatticeApp:             "../assets/lattice-app.zip",
+		LatticeApp:             "../assets/lattice-app",
 	}
 }

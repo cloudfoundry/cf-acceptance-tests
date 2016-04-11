@@ -1,0 +1,6 @@
+[submodule "assets/logging-route-service"]
+	path = assets/logging-route-service
+	url = https://github.com/cloudfoundry-samples/logging-route-service
+[submodule "assets/lattice-app"]
+	path = assets/lattice-app
+	url = https://github.com/cloudfoundry-samples/lattice-app

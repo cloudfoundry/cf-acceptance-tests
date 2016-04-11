@@ -25,7 +25,7 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 				appName                  string
 				routeServiceName         string
 				golangAsset              = assets.NewAssets().Golang
-				loggingRouteServiceAsset = assets.NewAssets().LoggingRouteServiceZip
+				loggingRouteServiceAsset = assets.NewAssets().LoggingRouteService
 			)
 
 			BeforeEach(func() {
