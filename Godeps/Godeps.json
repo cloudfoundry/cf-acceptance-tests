@@ -3,7 +3,6 @@
 	"GoVersion": "go1.5",
 	"GodepVersion": "v60",
 	"Packages": [
-		"github.com/onsi/ginkgo/ginkgo",
 		"./..."
 	],
 	"Deps": [
@@ -17,19 +16,19 @@
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/cf",
-			"Rev": "afb01930e6d41d46bdca5eee2aa1fcccced450d6"
+			"Rev": "4efa2a7e4b4f4eda3f32d6b56b11d560b270a1a7"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/generator",
-			"Rev": "afb01930e6d41d46bdca5eee2aa1fcccced450d6"
+			"Rev": "4efa2a7e4b4f4eda3f32d6b56b11d560b270a1a7"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/helpers",
-			"Rev": "afb01930e6d41d46bdca5eee2aa1fcccced450d6"
+			"Rev": "4efa2a7e4b4f4eda3f32d6b56b11d560b270a1a7"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/runner",
-			"Rev": "afb01930e6d41d46bdca5eee2aa1fcccced450d6"
+			"Rev": "4efa2a7e4b4f4eda3f32d6b56b11d560b270a1a7"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry/noaa",
