@@ -5,8 +5,6 @@ set -e -x
 bin_dir=$(dirname "${BASH_SOURCE[0]}")
 project_go_root="${bin_dir}/../../../../../"
 
-${bin_dir}/update_submodules
-
 pushd "${project_go_root}" > /dev/null
   project_gopath=$PWD
 popd > /dev/null
