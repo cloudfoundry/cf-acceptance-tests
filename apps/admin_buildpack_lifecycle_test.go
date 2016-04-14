@@ -103,7 +103,7 @@ EOF
 			_, err = os.Create(path.Join(appPath, "some-file"))
 			Expect(err).ToNot(HaveOccurred())
 
-			createBuildpack := cf.Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0").Wait(DEFAULT_TIMEOUT)
+			createBuildpack := cf.Cf("create-buildpack", BuildpackName, buildpackArchivePath, "100").Wait(DEFAULT_TIMEOUT)
 			Expect(createBuildpack).Should(Exit(0))
 			Expect(createBuildpack).Should(Say("Creating"))
 			Expect(createBuildpack).Should(Say("OK"))
