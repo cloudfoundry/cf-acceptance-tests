@@ -1,18 +1,18 @@
 {
 	"ImportPath": "github.com/cloudfoundry/cf-acceptance-tests",
 	"GoVersion": "go1.5",
-	"GodepVersion": "v60",
+	"GodepVersion": "v62",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-routing-test-helpers/helpers",
-			"Rev": "f4e6ecc72e30f8e890dbade8937c44b601c27188"
+			"Rev": "5b40c67c00ed8685badeda542a943fcf1b1f755e"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-routing-test-helpers/schema",
-			"Rev": "f4e6ecc72e30f8e890dbade8937c44b601c27188"
+			"Rev": "5b40c67c00ed8685badeda542a943fcf1b1f755e"
 		},
 		{
 			"ImportPath": "github.com/cloudfoundry-incubator/cf-test-helpers/cf",

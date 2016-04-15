@@ -18,6 +18,7 @@ type AppResource struct {
 		Url string
 	}
 }
+
 type AppsResponse struct {
 	Resources []AppResource
 }
@@ -32,5 +33,11 @@ type StatsResponse map[string]Stat
 type RouteResource struct {
 	Entity struct {
 		Port uint16
+	}
+}
+
+type OrgResource struct {
+	Entity struct {
+		QuotaDefinitionUrl string `json:"quota_definition_url"`
 	}
 }
