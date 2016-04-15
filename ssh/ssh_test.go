@@ -64,13 +64,17 @@ var _ = Describe(deaUnsupportedTag+"SSH", func() {
 
 	Describe("ssh", func() {
 		It("can execute a remote command in the container", func() {
-			envCmd := cf.Cf("ssh", "-i", "1", appName, "-c", "/usr/bin/env")
+			envCmd := cf.Cf("ssh", "-i", "1", appName, "-c", "/usr/bin/env && /usr/bin/env >&2")
 			Expect(envCmd.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
-			output := string(envCmd.Buffer().Contents())
+			output := string(envCmd.Out.Contents())
+			stdErr := string(envCmd.Err.Contents())
 
 			Expect(string(output)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=1"))
+
+			Expect(string(stdErr)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
+			Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=1"))
 
 			Eventually(cf.Cf("logs", appName, "--recent"), DEFAULT_TIMEOUT).Should(Say("Successful remote access"))
 			Eventually(cf.Cf("events", appName), DEFAULT_TIMEOUT).Should(Say("audit.app.ssh-authorized"))
