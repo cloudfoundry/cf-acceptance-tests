@@ -8,6 +8,8 @@ For example, one test pushes an app with `cf push`, hits an endpoint on the app 
 Tests that will NOT be introduced here are ones which could be tested at the component level,
 such as basic CRUD of an object in the Cloud Controller. These tests belong with that component.
 
+These tests are not intended for use against production systems, they are intended for acceptance environments for teams developing Cloud Foundry itself.  While these tests attempt to clean up after themselves, there is no guarantee that they will not mutate state of your system in an undesirable way.  For lightweight system tests that are safe to run against a production environment, please use the [CF Smoke Tests](https://github.com/cloudfoundry/cf-smoke-tests).
+
 NOTE: Because we want to parallelize execution, tests should be written in such a way as to be runnable individually. This means that tests should not depend on state in other tests,
 and should not modify the CF state in such a way as to impact other tests.
 
