@@ -16,9 +16,9 @@ import (
 )
 
 type ProcessStats struct {
-	Instance struct {
+	Instance []struct {
 		State string `json:"state"`
-	} `json:"0"`
+	} `json:"processes"`
 }
 
 var _ = Describe("process", func() {
@@ -46,7 +46,7 @@ var _ = Describe("process", func() {
 		DeleteApp(appGuid)
 	})
 
-	Describe("terminating an instance", func() {
+	FDescribe("terminating an instance", func() {
 		var (
 			index       = 0
 			processType = "web"
@@ -75,13 +75,13 @@ var _ = Describe("process", func() {
 
 		Context("/v3/apps/:guid/processes/:type/instances/:index", func() {
 			It("restarts the instance", func() {
-				statsUrl := fmt.Sprintf("/v2/apps/%s/stats", webProcess.Guid)
+				statsUrl := fmt.Sprintf("/v3/apps/%s/stats", appGuid)
 
 				By("ensuring the instance is running")
 				statsBody := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
 				statsJSON := ProcessStats{}
 				json.Unmarshal(statsBody, &statsJSON)
-				Expect(statsJSON.Instance.State).To(Equal("RUNNING"))
+				Expect(statsJSON.Instance[0].State).To(Equal("RUNNING"))
 
 				By("terminating the instance")
 				terminateUrl := fmt.Sprintf("/v3/apps/%s/processes/%s/instances/%d", appGuid, processType, index)
@@ -92,27 +92,27 @@ var _ = Describe("process", func() {
 				Eventually(func() string {
 					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
-					return statsJSON.Instance.State
+					return statsJSON.Instance[0].State
 				}, 35*time.Second).ShouldNot(Equal("RUNNING"))
 
 				By("ensuring the instance is running again")
 				Eventually(func() string {
 					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
-					return statsJSON.Instance.State
+					return statsJSON.Instance[0].State
 				}, 35*time.Second).Should(Equal("RUNNING"))
 			})
 		})
 
 		Context("/v3/processes/:guid/instances/:index", func() {
 			It("restarts the instance", func() {
-				statsUrl := fmt.Sprintf("/v2/apps/%s/stats", webProcess.Guid)
+				statsUrl := fmt.Sprintf("/v3/apps/%s/stats", appGuid)
 
 				By("ensuring the instance is running")
 				statsBody := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
 				statsJSON := ProcessStats{}
 				json.Unmarshal(statsBody, &statsJSON)
-				Expect(statsJSON.Instance.State).To(Equal("RUNNING"))
+				Expect(statsJSON.Instance[0].State).To(Equal("RUNNING"))
 
 				By("terminating the instance")
 				terminateUrl := fmt.Sprintf("/v3/processes/%s/instances/%d", webProcess.Guid, index)
@@ -123,14 +123,14 @@ var _ = Describe("process", func() {
 				Eventually(func() string {
 					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
-					return statsJSON.Instance.State
+					return statsJSON.Instance[0].State
 				}, 35*time.Second).ShouldNot(Equal("RUNNING"))
 
 				By("ensuring the instance is running again")
 				Eventually(func() string {
 					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
-					return statsJSON.Instance.State
+					return statsJSON.Instance[0].State
 				}, 35*time.Second).Should(Equal("RUNNING"))
 			})
 		})
