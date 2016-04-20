@@ -23,7 +23,7 @@ var _ = Describe(deaUnsupportedTag+"Multiple App Ports", func() {
 
 		PushAppNoStart(app, latticeAppAsset, config.GoBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT, "-c", cmd)
 		EnableDiego(app, DEFAULT_TIMEOUT)
-		StartApp(app, DEFAULT_TIMEOUT)
+		StartApp(app, APP_START_TIMEOUT)
 	})
 
 	AfterEach(func() {

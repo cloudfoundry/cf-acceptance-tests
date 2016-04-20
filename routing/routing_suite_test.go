@@ -13,8 +13,9 @@ import (
 const deaUnsupportedTag = "{NO_DEA_SUPPORT} "
 
 var (
-	DEFAULT_TIMEOUT = 1 * time.Minute
-	CF_PUSH_TIMEOUT = 2 * time.Minute
+	DEFAULT_TIMEOUT   = 1 * time.Minute
+	CF_PUSH_TIMEOUT   = 2 * time.Minute
+	APP_START_TIMEOUT = 2 * time.Minute
 
 	context helpers.SuiteContext
 	config  helpers.Config
