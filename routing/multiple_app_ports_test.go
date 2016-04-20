@@ -66,9 +66,5 @@ var _ = Describe(deaUnsupportedTag+"Multiple App Ports", func() {
 				return helpers.CurlApp(secondRoute, "/port")
 			}, DEFAULT_TIMEOUT, "5s").Should(ContainSubstring("7777"))
 		})
-
-		It("returns an error when switching from Diego to DEA", func() {
-			DisableDiegoAndCheckResponse(app, "CF-MultipleAppPortsMappedDiegoToDea", DEFAULT_TIMEOUT)
-		})
 	})
 })
