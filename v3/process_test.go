@@ -46,7 +46,7 @@ var _ = Describe("process", func() {
 		DeleteApp(appGuid)
 	})
 
-	FDescribe("terminating an instance", func() {
+	Describe("terminating an instance", func() {
 		var (
 			index       = 0
 			processType = "web"
