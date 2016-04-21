@@ -18,7 +18,7 @@ import (
 type ProcessStats struct {
 	Instance []struct {
 		State string `json:"state"`
-	} `json:"processes"`
+	} `json:"resources"`
 }
 
 var _ = Describe("process", func() {
@@ -75,7 +75,7 @@ var _ = Describe("process", func() {
 
 		Context("/v3/apps/:guid/processes/:type/instances/:index", func() {
 			It("restarts the instance", func() {
-				statsUrl := fmt.Sprintf("/v3/apps/%s/stats", appGuid)
+				statsUrl := fmt.Sprintf("/v3/apps/%s/processes/web/stats", appGuid)
 
 				By("ensuring the instance is running")
 				statsBody := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
@@ -106,7 +106,7 @@ var _ = Describe("process", func() {
 
 		Context("/v3/processes/:guid/instances/:index", func() {
 			It("restarts the instance", func() {
-				statsUrl := fmt.Sprintf("/v3/apps/%s/stats", appGuid)
+				statsUrl := fmt.Sprintf("/v3/apps/%s/processes/web/stats", appGuid)
 
 				By("ensuring the instance is running")
 				statsBody := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
