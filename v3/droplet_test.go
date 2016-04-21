@@ -82,6 +82,68 @@ var _ = Describe("droplet features", func() {
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 
-	})
+		It("creates an audit.app.droplet.create event for the copied droplet", func() {
+			copyRequestBody := fmt.Sprintf("{\"relationships\":{\"app\":{\"guid\":\"%s\"}}}", destinationAppGuid)
+			copyUrl := fmt.Sprintf("/v3/droplets/%s/copy", sourceDropletGuid)
+			session := cf.Cf("curl", copyUrl, "-X", "POST", "-d", copyRequestBody)
 
+			bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
+			var droplet struct {
+				Guid string `json:"guid"`
+			}
+			json.Unmarshal(bytes, &droplet)
+			copiedDropletGuid := droplet.Guid
+
+			WaitForDropletToStage(copiedDropletGuid)
+
+			DeleteApp(appGuid) // to prove that the new app does not depend on the old app
+
+			AssignDropletToApp(destinationAppGuid, copiedDropletGuid)
+
+			session = cf.Cf("curl", "v2/events", "-X", "GET")
+			bytes = session.Wait(DEFAULT_TIMEOUT).Out.Contents()
+
+			type request struct {
+				SourceDropletGuid string `json:"source_droplet_guid"`
+			}
+
+			type metadata struct {
+				NewDropletGuid string  `json:"droplet_guid"`
+				Request        request `json:"request"`
+			}
+
+			type entity struct {
+				Type      string   `json:"type"`
+				Actee     string   `json:"actee"`
+				ActeeName string   `json:"actee_name"`
+				Metadata  metadata `json:"metadata"`
+			}
+
+			type event struct {
+				Entity entity `json:"entity"`
+			}
+
+			var resources struct {
+				Events []event `json:"resources"`
+			}
+
+			json.Unmarshal(bytes, &resources)
+
+			Expect(len(resources.Events) > 0).Should(BeTrue())
+			Expect(resources.Events).Should(ContainElement(event{
+				entity{
+					Type:      "audit.app.droplet.create",
+					Actee:     destinationAppGuid,
+					ActeeName: destinationAppName,
+					Metadata: metadata{
+						NewDropletGuid: copiedDropletGuid,
+						Request: request{
+							SourceDropletGuid: sourceDropletGuid,
+						},
+					},
+				},
+			}))
+		})
+
+	})
 })
