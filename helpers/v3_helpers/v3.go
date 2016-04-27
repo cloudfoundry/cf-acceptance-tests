@@ -152,7 +152,7 @@ func CreateAndMapRoute(appGuid, space, domain, host string) {
 }
 
 func AssignDropletToApp(appGuid, dropletGuid string) {
-	appUpdatePath := fmt.Sprintf("/v3/apps/%s/current_droplet", appGuid)
+	appUpdatePath := fmt.Sprintf("/v3/apps/%s/droplets/current", appGuid)
 	appUpdateBody := fmt.Sprintf(`{"droplet_guid":"%s"}`, dropletGuid)
 	Expect(cf.Cf("curl", appUpdatePath, "-X", "PUT", "-d", appUpdateBody).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
