@@ -55,8 +55,8 @@ var _ = Describe(deaUnsupportedTag+"Multiple App Ports", func() {
 
 		It("should listen on multiple ports", func() {
 			Eventually(func() string {
-				return helpers.CurlApp(app, "/port")
-			}, DEFAULT_TIMEOUT, "5s").ShouldNot(Equal(""))
+				return helpers.CurlApp(app, "/")
+			}, DEFAULT_TIMEOUT, "5s").Should(ContainSubstring("Lattice"))
 
 			Consistently(func() string {
 				return helpers.CurlApp(app, "/port")
