@@ -53,6 +53,9 @@ var _ = Describe("Application Lifecycle", func() {
 
 		Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		app_helpers.SetBackend(appName)
+	})
+
+	JustBeforeEach(func() {
 		Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 
@@ -73,7 +76,7 @@ var _ = Describe("Application Lifecycle", func() {
 			var app2 string
 			var path = "/imposter_dora"
 
-			BeforeEach(func() {
+			JustBeforeEach(func() {
 				app2 = generator.PrefixedRandomName("CATS-APP-")
 				Expect(cf.Cf("push", app2, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 				app_helpers.SetBackend(app2)
@@ -124,6 +127,19 @@ var _ = Describe("Application Lifecycle", func() {
 			})
 		})
 
+		Context("multiple instances", func() {
+			BeforeEach(func() {
+				Expect(cf.Cf("scale", appName, "-i", "2").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			})
+
+			It("is able to start all instances", func() {
+				app := cf.Cf("app", appName).Wait(DEFAULT_TIMEOUT)
+				Expect(app).To(Exit(0))
+				Expect(app).To(Say("#0   running"))
+				Expect(app).To(Say("#1   running"))
+			})
+		})
+
 		It("makes system environment variables available", func() {
 			var envOutput string
 			Eventually(func() string {
@@ -151,7 +167,7 @@ var _ = Describe("Application Lifecycle", func() {
 	})
 
 	Describe("stopping", func() {
-		BeforeEach(func() {
+		JustBeforeEach(func() {
 			Expect(cf.Cf("stop", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 
@@ -167,7 +183,7 @@ var _ = Describe("Application Lifecycle", func() {
 		})
 
 		Describe("and then starting", func() {
-			BeforeEach(func() {
+			JustBeforeEach(func() {
 				Expect(cf.Cf("start", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 
@@ -196,7 +212,7 @@ var _ = Describe("Application Lifecycle", func() {
 	})
 
 	Describe("deleting", func() {
-		BeforeEach(func() {
+		JustBeforeEach(func() {
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 
