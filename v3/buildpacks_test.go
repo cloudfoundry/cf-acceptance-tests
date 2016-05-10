@@ -63,11 +63,11 @@ var _ = Describe("buildpack", func() {
 	})
 
 	It("Stages with a user specified github buildpack", func() {
-		StageBuildpackPackage(packageGuid, "http://github.com/cloudfoundry/go-buildpack")
+		StageBuildpackPackage(packageGuid, "http://github.com/cloudfoundry/ruby-buildpack")
 
 		Eventually(func() *Session {
 			return FetchRecentLogs(appGuid, token, config)
-		}, 3*time.Minute, 10*time.Second).Should(Say("Godep"))
+		}, 3*time.Minute, 10*time.Second).Should(Say("Compiling Ruby/Rack"))
 	})
 
 	It("uses buildpack cache for staging", func() {
