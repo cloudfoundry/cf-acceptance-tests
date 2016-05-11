@@ -82,7 +82,7 @@ var _ = Describe("buildpack", func() {
 		}, CF_PUSH_TIMEOUT).Should(Say("custom buildpack contents - cache not found"))
 
 		// Wait for buildpack cache to be uploaded to blobstore.
-		time.Sleep(DEFAULT_TIMEOUT)
+		time.Sleep(SLEEP_TIMEOUT)
 
 		secondDropletGuid := StageBuildpackPackage(packageGuid, buildpackName)
 		dropletPath = fmt.Sprintf("/v3/droplets/%s", secondDropletGuid)
