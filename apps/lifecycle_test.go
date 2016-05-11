@@ -130,6 +130,23 @@ var _ = Describe("Application Lifecycle", func() {
 			})
 		})
 
+		Context("multiple instances", func() {
+			BeforeEach(func() {
+				Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				app_helpers.SetBackend(appName)
+				Expect(cf.Cf("scale", appName, "-i", "2").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			})
+
+			It("is able to start all instances", func() {
+				Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+
+				app := cf.Cf("app", appName).Wait(DEFAULT_TIMEOUT)
+				Expect(app).To(Exit(0))
+				Expect(app).To(Say("#0   running"))
+				Expect(app).To(Say("#1   running"))
+			})
+		})
+
 		It("makes system environment variables available", func() {
 			Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			app_helpers.SetBackend(appName)
