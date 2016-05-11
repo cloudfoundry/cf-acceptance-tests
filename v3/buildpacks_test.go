@@ -62,12 +62,12 @@ var _ = Describe("buildpack", func() {
 		}, 1*time.Minute, 10*time.Second).Should(Say("STAGED WITH CUSTOM BUILDPACK"))
 	})
 
-	It("Stages with a user specified github buildpack", func() {
-		StageBuildpackPackage(packageGuid, "http://github.com/cloudfoundry/ruby-buildpack")
+	It("Downloads the correct user specified git buildpack", func() {
+		StageBuildpackPackage(packageGuid, "https://github.com/cloudfoundry/example-git-buildpack")
 
 		Eventually(func() *Session {
 			return FetchRecentLogs(appGuid, token, config)
-		}, 3*time.Minute, 10*time.Second).Should(Say("Compiling Ruby/Rack"))
+		}, 3*time.Minute, 10*time.Second).Should(Say("I'm a buildpack!"))
 	})
 
 	It("uses buildpack cache for staging", func() {
