@@ -24,6 +24,10 @@ func TestApplications(t *testing.T) {
 		DEFAULT_TIMEOUT = config.DefaultTimeout * time.Second
 	}
 
+	if config.SleepTimeout > 0 {
+		SLEEP_TIMEOUT = config.SleepTimeout * time.Second
+	}
+
 	if config.CfPushTimeout > 0 {
 		CF_PUSH_TIMEOUT = config.CfPushTimeout * time.Second
 	}

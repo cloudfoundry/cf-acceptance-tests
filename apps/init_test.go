@@ -12,6 +12,7 @@ import (
 
 var (
 	DEFAULT_TIMEOUT      = 30 * time.Second
+	SLEEP_TIMEOUT        = 30 * time.Second
 	CF_PUSH_TIMEOUT      = 2 * time.Minute
 	LONG_CURL_TIMEOUT    = 2 * time.Minute
 	CF_JAVA_TIMEOUT      = 10 * time.Minute
@@ -33,6 +34,10 @@ func TestApplications(t *testing.T) {
 
 	if config.DefaultTimeout > 0 {
 		DEFAULT_TIMEOUT = config.DefaultTimeout * time.Second
+	}
+
+	if config.SleepTimeout > 0 {
+		SLEEP_TIMEOUT = config.SleepTimeout * time.Second
 	}
 
 	if config.CfPushTimeout > 0 {

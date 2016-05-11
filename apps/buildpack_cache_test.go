@@ -136,7 +136,7 @@ EOF
 			return helpers.CurlAppRoot(appName)
 		}, DEFAULT_TIMEOUT).Should(ContainSubstring("custom buildpack contents - cache not found"))
 
-		time.Sleep(DEFAULT_TIMEOUT)
+		time.Sleep(SLEEP_TIMEOUT)
 
 		restage := cf.Cf("restage", appName).Wait(CF_PUSH_TIMEOUT)
 		Expect(restage).To(Exit(0))
