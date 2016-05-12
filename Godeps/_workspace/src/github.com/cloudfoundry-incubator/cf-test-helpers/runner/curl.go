@@ -1,6 +1,6 @@
 package runner
 
-import "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/gexec"
+import "github.com/onsi/gomega/gexec"
 
 func Curl(args ...string) *gexec.Session {
 	return CurlSkipSSL(SkipSSLValidation, args...)

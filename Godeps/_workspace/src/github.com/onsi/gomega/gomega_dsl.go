@@ -18,10 +18,10 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/internal/assertion"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/internal/asyncassertion"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/internal/testingtsupport"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/types"
+	"github.com/onsi/gomega/internal/assertion"
+	"github.com/onsi/gomega/internal/asyncassertion"
+	"github.com/onsi/gomega/internal/testingtsupport"
+	"github.com/onsi/gomega/types"
 )
 
 const GOMEGA_VERSION = "1.0"

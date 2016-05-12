@@ -20,16 +20,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/config"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/internal/codelocation"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/internal/failer"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/internal/remote"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/internal/suite"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/internal/testingtproxy"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/internal/writer"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/reporters"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/reporters/stenographer"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/types"
+	"github.com/onsi/ginkgo/config"
+	"github.com/onsi/ginkgo/internal/codelocation"
+	"github.com/onsi/ginkgo/internal/failer"
+	"github.com/onsi/ginkgo/internal/remote"
+	"github.com/onsi/ginkgo/internal/suite"
+	"github.com/onsi/ginkgo/internal/testingtproxy"
+	"github.com/onsi/ginkgo/internal/writer"
+	"github.com/onsi/ginkgo/reporters"
+	"github.com/onsi/ginkgo/reporters/stenographer"
+	"github.com/onsi/ginkgo/types"
 )
 
 const GINKGO_VERSION = config.VERSION

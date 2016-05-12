@@ -1,7 +1,7 @@
 package noaa
 
 import (
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry/noaa/events"
+	"github.com/cloudfoundry/noaa/events"
 	"sort"
 )
 

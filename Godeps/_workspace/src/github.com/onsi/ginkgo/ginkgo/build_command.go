@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/ginkgo/interrupthandler"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/ginkgo/testrunner"
+	"github.com/onsi/ginkgo/ginkgo/interrupthandler"
+	"github.com/onsi/ginkgo/ginkgo/testrunner"
 )
 
 func BuildBuildCommand() *Command {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/format"
+	"github.com/onsi/gomega/format"
 )
 
 type notARegularFileError struct {

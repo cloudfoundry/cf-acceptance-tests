@@ -12,7 +12,7 @@ popd > /dev/null
 export GOPATH="${project_gopath}":$GOPATH
 export PATH="${project_gopath}/bin":$PATH
 
-go install -v github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/ginkgo
+go install -v github.com/onsi/ginkgo/ginkgo
 
 go list github.com/cloudfoundry/cf-acceptance-tests/... \
   | grep -v github.com/cloudfoundry/cf-acceptance-tests/assets \

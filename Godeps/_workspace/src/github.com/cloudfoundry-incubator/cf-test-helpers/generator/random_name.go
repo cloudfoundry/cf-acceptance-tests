@@ -1,7 +1,7 @@
 package generator
 
 import (
-	uuid "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/nu7hatch/gouuid"
+	uuid "github.com/nu7hatch/gouuid"
 )
 
 func RandomName() string {

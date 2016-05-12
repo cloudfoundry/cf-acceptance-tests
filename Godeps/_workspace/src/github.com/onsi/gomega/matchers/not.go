@@ -1,8 +1,8 @@
 package matchers
 
 import (
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/internal/oraclematcher"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/types"
+	"github.com/onsi/gomega/internal/oraclematcher"
+	"github.com/onsi/gomega/types"
 )
 
 type NotMatcher struct {

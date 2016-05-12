@@ -3,7 +3,7 @@ package runner
 import (
 	"os/exec"
 
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/gexec"
+	"github.com/onsi/gomega/gexec"
 )
 
 const timeFormat = "2006-01-02 15:04:05.00 (MST)"

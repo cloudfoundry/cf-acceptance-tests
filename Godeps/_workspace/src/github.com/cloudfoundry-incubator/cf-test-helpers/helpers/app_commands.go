@@ -3,10 +3,10 @@ package helpers
 import (
 	"time"
 
-	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
-	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/gexec"
+	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gexec"
 
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/runner"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 )
 
 const CURL_TIMEOUT = 30 * time.Second

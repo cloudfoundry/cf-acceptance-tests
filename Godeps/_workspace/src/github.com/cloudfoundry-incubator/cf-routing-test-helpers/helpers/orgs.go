@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega"
-	. "github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/gexec"
+	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gexec"
 
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-routing-test-helpers/schema"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-routing-test-helpers/schema"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 )
 
 func GetOrgQuotaDefinitionUrl(orgGuid string, timeout time.Duration) (string, error) {

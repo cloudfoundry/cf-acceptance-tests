@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/format"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/gomega/matchers/support/goraph/bipartitegraph"
+	"github.com/onsi/gomega/format"
+	"github.com/onsi/gomega/matchers/support/goraph/bipartitegraph"
 )
 
 type ConsistOfMatcher struct {

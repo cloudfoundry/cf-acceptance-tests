@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/config"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/ginkgo/interrupthandler"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/ginkgo/testrunner"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/ginkgo/testsuite"
-	"github.com/cloudfoundry/cf-acceptance-tests/Godeps/_workspace/src/github.com/onsi/ginkgo/ginkgo/watch"
+	"github.com/onsi/ginkgo/config"
+	"github.com/onsi/ginkgo/ginkgo/interrupthandler"
+	"github.com/onsi/ginkgo/ginkgo/testrunner"
+	"github.com/onsi/ginkgo/ginkgo/testsuite"
+	"github.com/onsi/ginkgo/ginkgo/watch"
 )
 
 func BuildWatchCommand() *Command {
