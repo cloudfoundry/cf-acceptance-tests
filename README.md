@@ -24,6 +24,8 @@ and should not modify the CF state in such a way as to impact other tests.
 
 ### Install Required Dependencies
 
+A valid install of golang >= 1.6 is required.
+
 Set up your golang development environment, per [golang.org](http://golang.org/doc/install).
 
 You will probably also need the following SCM programs in order to `go get` source code:
@@ -38,11 +40,13 @@ Make sure that [curl](http://curl.haxx.se/) is installed on your system.
 Make sure that the go version of `cf` is accessible in your `$PATH`.
 
 Check out a copy of `cf-acceptance-tests` and make sure that it is added to your `$GOPATH`.
-The recommended way to do this is to run `go get -d github.com/cloudfoundry/cf-acceptance-tests`. You will receive a warning "no buildable Go source files"; this can be ignored as there is no compilable go source code in the package, only test code.
+The recommended way to do this is to run `go get -d github.com/cloudfoundry/cf-acceptance-tests`.
+You will receive a warning "no buildable Go source files";
+this can be ignored as there is no compilable go source code in the package, only test code.
 
 Run `./bin/update_submodules` to ensure that all submoduled assets are checked out and using the correct SHA.
 
-All `go` dependencies required by CATs are vendored in `cf-acceptance-tests/Godeps`. The test script itself, [bin/test](https://github.com/cloudfoundry/cf-acceptance-tests/blob/master/bin/test), ensures that the vendored dependencies are available when executing the tests by prepending this directory to `$GOPATH`.
+All `go` dependencies required by CATs are vendored in the `vendor` directory.
 
 You will also of course need a running Cloud Foundry deployment to run these acceptance tests against.
 
@@ -215,15 +219,13 @@ Test Suite Name| Compatable Backend | Description
 
 ## Contributing
 
-This repository uses [godep](https://github.com/tools/godep) to manage `go` dependencies.
+This repository uses [gvt](https://github.com/FiloSottile/gvt) to manage `go` dependencies.
 
-All `go` packages required to run these tests are vendored into the
-`cf-acceptance-tests/Godeps` directory.
+All `go` dependencies required by CATs are vendored in the `vendor` directory.
 
 When making changes to the test suite that bring in additional `go` packages,
 you should use the workflow described in the
-[Add or Update a Dependency](https://github.com/tools/godep#add-a-dependency)
-section of the godep documentation.
+[gvt documentation](https://github.com/FiloSottile/gvt#basic-usage).
 
 ### Code Conventions
 
