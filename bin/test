@@ -16,6 +16,7 @@ go install -v github.com/onsi/ginkgo/ginkgo
 
 go list github.com/cloudfoundry/cf-acceptance-tests/... \
   | grep -v github.com/cloudfoundry/cf-acceptance-tests/assets \
+  | grep -v vendor \
   | xargs -I {} go test -c {}
 
 # List of suites is passed in as a single string, so we need to re-split the argument
