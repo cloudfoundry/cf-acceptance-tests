@@ -1,6 +1,0 @@
-*.coverprofile
-src/
-bin/
-pkg/
-.idea
-*.iml
