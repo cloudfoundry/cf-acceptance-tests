@@ -142,8 +142,8 @@ var _ = Describe("Application Lifecycle", func() {
 
 				app := cf.Cf("app", appName).Wait(DEFAULT_TIMEOUT)
 				Expect(app).To(Exit(0))
-				Eventaully(app, DEFAULT_TIMEOUT).Should(Say("#0   running"))
-				Eventaully(app, DEFAULT_TIMEOUT).Should(Say("#1   running"))
+				Eventually(app, DEFAULT_TIMEOUT).Should(Say("#0   running"))
+				Eventually(app, DEFAULT_TIMEOUT).Should(Say("#1   running"))
 			})
 		})
 
