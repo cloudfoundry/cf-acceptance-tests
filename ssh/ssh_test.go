@@ -194,7 +194,7 @@ var _ = Describe(deaUnsupportedTag+"SSH", func() {
 			generatedFileName = "binary.dat"
 			generatedFile = filepath.Join(sourceDir, generatedFileName)
 
-			err = ioutil.WriteFile(generatedFile, fileContents, 0664)
+			err = ioutil.WriteFile(generatedFile, fileContents, 0644)
 			Expect(err).NotTo(HaveOccurred())
 
 			generatedFileInfo, err = os.Stat(generatedFile)
@@ -289,7 +289,7 @@ var _ = Describe(deaUnsupportedTag+"SSH", func() {
 			generatedFileName = "binary.dat"
 			generatedFile = filepath.Join(sourceDir, generatedFileName)
 
-			err = ioutil.WriteFile(generatedFile, fileContents, 0664)
+			err = ioutil.WriteFile(generatedFile, fileContents, 0644)
 			Expect(err).NotTo(HaveOccurred())
 
 			generatedFileInfo, err = os.Stat(generatedFile)
