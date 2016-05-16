@@ -100,7 +100,7 @@ var _ = Describe("droplet features", func() {
 
 			AssignDropletToApp(destinationAppGuid, copiedDropletGuid)
 
-			session = cf.Cf("curl", "v2/events", "-X", "GET")
+			session = cf.Cf("curl", "v2/events?results-per-page=100", "-X", "GET")
 			bytes = session.Wait(DEFAULT_TIMEOUT).Out.Contents()
 
 			type request struct {
