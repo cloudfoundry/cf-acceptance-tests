@@ -1,16 +1,26 @@
 # CF Acceptance Tests (CATs)
 
-This test suite exercises a full [Cloud Foundry](https://github.com/cloudfoundry/cf-release) deployment using the golang `cf` CLI and `curl`. It is restricted to testing user-facing
-features as a user interacting with the system via the CLI.
+This test suite exercises a full [Cloud Foundry](https://github.com/cloudfoundry/cf-release)
+deployment using the golang `cf` CLI and `curl`.
+It is restricted to testing user-facing features such as a user interacting with the system via the CLI.
 
-For example, one test pushes an app with `cf push`, hits an endpoint on the app with `curl` that causes it to crash, and asserts that we eventually see a crash event registered in `cf events`.
+For example, one test pushes an app with `cf push`, hits an endpoint on the app
+with `curl` that causes it to crash, and asserts that we eventually see a crash
+event registered in `cf events`.
 
 Tests that will NOT be introduced here are ones which could be tested at the component level,
 such as basic CRUD of an object in the Cloud Controller. These tests belong with that component.
 
-These tests are not intended for use against production systems, they are intended for acceptance environments for teams developing Cloud Foundry itself.  While these tests attempt to clean up after themselves, there is no guarantee that they will not mutate state of your system in an undesirable way.  For lightweight system tests that are safe to run against a production environment, please use the [CF Smoke Tests](https://github.com/cloudfoundry/cf-smoke-tests).
+These tests are not intended for use against production systems,
+they are intended for acceptance environments for teams developing Cloud Foundry itself.
+While these tests attempt to clean up after themselves,
+there is no guarantee that they will not mutate state of your system in an undesirable way.
+For lightweight system tests that are safe to run against a production environment,
+please use the [CF Smoke Tests](https://github.com/cloudfoundry/cf-smoke-tests).
 
-NOTE: Because we want to parallelize execution, tests should be written in such a way as to be runnable individually. This means that tests should not depend on state in other tests,
+NOTE: Because we want to parallelize execution, tests should be written in
+such a way as to be runnable individually.
+This means that tests should not depend on state in other tests,
 and should not modify the CF state in such a way as to impact other tests.
 
 1. [Test Setup](#test-setup)
@@ -24,27 +34,40 @@ and should not modify the CF state in such a way as to impact other tests.
 
 ### Pre-Requisites for running CATS
 
-- Install golang >= 1.6. Set up your golang development environment, per [golang.org](http://golang.org/doc/install).
+- Install golang >= 1.6. Set up your golang development environment, per
+[golang.org](http://golang.org/doc/install).
 - Install preferred SCM program in order to `go get` source code.
   * [git](http://git-scm.com/)
   * [mercurial](http://mercurial.selenic.com/)
   * [bazaar](http://bazaar.canonical.com/)
-- Install the go version of [`cf CLI`](https://github.com/cloudfoundry/cli).
-  Make sure that the go version of `cf` is accessible in your `$PATH`.
+- Install the [`cf CLI`](https://github.com/cloudfoundry/cli).
+  Make sure that it is accessible in your `$PATH`.
 - Install [curl](http://curl.haxx.se/)
 - Check out a copy of `cf-acceptance-tests` and make sure that it is added to your `$GOPATH`.
-  The recommended way to do this is to run `go get -d github.com/cloudfoundry/cf-acceptance-tests`.
-  You will receive a warning "no buildable Go source files";
+  The recommended way to do this is to run:
+  ```
+  go get -d github.com/cloudfoundry/cf-acceptance-tests
+  ```
+  You will receive a warning `no buildable Go source files`;
   this can be ignored as there is no compilable go source code in the package, only test code.
-- Run `./bin/update_submodules` to ensure that all submoduled assets are checked out and using the correct SHA.
+- Ensure all submodules are checked out to the correct SHA.
+  The easiest way to do this is by running:
+  ```
+  ./bin/update_submodules
+  ```
 - Install a running Cloud Foundry deployment to run these acceptance tests against. For example, bosh-lite.
 
 ### Updating `go` dependencies
 
 All `go` dependencies required by CATs are vendored in the `vendor` directory.
 
-Install [gvt](https://github.com/FiloSottile/gvt) and make sure its available
-in your $PATH. In order to update a current dependency to a specific version, 
+Install [gvt](https://github.com/FiloSottile/gvt) and make sure it is available
+in your $PATH. The recommended way to do this is to run:
+```
+go get -d github.com/FileSottile/gvt
+```
+
+In order to update a current dependency to a specific version,
 do the following:
 
   ```
@@ -57,9 +80,13 @@ If you'd like to add a new dependency just `gvt fetch`
 
 ### Test Configuration
 
-You must set an environment variable `$CONFIG` which points to a JSON file that contains several pieces of data that will be used to configure the acceptance tests, e.g. telling the tests how to target your running Cloud Foundry deployment.
+You must set an environment variable `$CONFIG` which points to a JSON file that
+contains several pieces of data that will be used to configure the acceptance
+tests, e.g. telling the tests how to target your running Cloud Foundry deployment.
 
-The following can be pasted into a terminal and will set up a sufficient `$CONFIG` to run the core test suites against a [BOSH-Lite](https://github.com/cloudfoundry/bosh-lite) deployment of CF.
+The following can be pasted into a terminal and will set up a sufficient `$CONFIG`
+to run the core test suites against a
+[BOSH-Lite](https://github.com/cloudfoundry/bosh-lite) deployment of CF.
 
 ```bash
 cat > integration_config.json <<EOF
@@ -156,7 +183,7 @@ Random Seed: 1389376383
 Parallel test node 2/10. Assigned 14 of 137 specs.
 ```
 
-The `cf` trace output for the tests in these specs will be found in `CF-TRACE-Applications-2.txt` in the `artifacts_directory`. 
+The `cf` trace output for the tests in these specs will be found in `CF-TRACE-Applications-2.txt` in the `artifacts_directory`.
 
 ### Test Execution
 
