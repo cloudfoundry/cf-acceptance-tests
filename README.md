@@ -22,33 +22,39 @@ and should not modify the CF state in such a way as to impact other tests.
 
 ## Test Setup
 
-### Install Required Dependencies
+### Pre-Requisites for running CATS
 
-A valid install of golang >= 1.6 is required.
+- Install golang >= 1.6.
+  Set up your golang development environment, per [golang.org](http://golang.org/doc/install).
+- Install preferred SCM program in order to `go get` source code.
+  * [git](http://git-scm.com/)
+  * [mercurial](http://mercurial.selenic.com/)
+  * [bazaar](http://bazaar.canonical.com/)
+- Install the go version of `[cf CLI](https://github.com/cloudfoundry/cli)`
+  Make sure that the go version of `cf` is accessible in your `$PATH`.
+- Install [curl](http://curl.haxx.se/)
+- Check out a copy of `cf-acceptance-tests` and make sure that it is added to your `$GOPATH`.
+  The recommended way to do this is to run `go get -d github.com/cloudfoundry/cf-acceptance-tests`.
+  You will receive a warning "no buildable Go source files";
+  this can be ignored as there is no compilable go source code in the package, only test code.
+- Run `./bin/update_submodules` to ensure that all submoduled assets are checked out and using the correct SHA.
+- A running Cloud Foundry deployment to run these acceptance tests against.
 
-Set up your golang development environment, per [golang.org](http://golang.org/doc/install).
-
-You will probably also need the following SCM programs in order to `go get` source code:
-* [git](http://git-scm.com/)
-* [mercurial](http://mercurial.selenic.com/)
-* [bazaar](http://bazaar.canonical.com/)
-
-See [cf CLI](https://github.com/cloudfoundry/cli) for instructions on installing the go version of `cf`.
-
-Make sure that [curl](http://curl.haxx.se/) is installed on your system.
-
-Make sure that the go version of `cf` is accessible in your `$PATH`.
-
-Check out a copy of `cf-acceptance-tests` and make sure that it is added to your `$GOPATH`.
-The recommended way to do this is to run `go get -d github.com/cloudfoundry/cf-acceptance-tests`.
-You will receive a warning "no buildable Go source files";
-this can be ignored as there is no compilable go source code in the package, only test code.
-
-Run `./bin/update_submodules` to ensure that all submoduled assets are checked out and using the correct SHA.
+### Updating `go` dependencies
 
 All `go` dependencies required by CATs are vendored in the `vendor` directory.
 
-You will also of course need a running Cloud Foundry deployment to run these acceptance tests against.
+Install [gvt](https://github.com/FiloSottile/gvt) and make sure its available
+in your $PATH. In order to update a current dependency to a specific version, 
+do the following:
+
+  ```
+  cd cf-acceptance-tests
+  gvt delete <import_path>
+  gvt fetch -revision <revision_number> <import_path>
+  ```
+
+If you'd like to add a new dependency just `gvt fetch`
 
 ### Test Configuration
 
