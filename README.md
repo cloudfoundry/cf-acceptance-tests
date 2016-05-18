@@ -24,13 +24,12 @@ and should not modify the CF state in such a way as to impact other tests.
 
 ### Pre-Requisites for running CATS
 
-- Install golang >= 1.6.
-  Set up your golang development environment, per [golang.org](http://golang.org/doc/install).
+- Install golang >= 1.6. Set up your golang development environment, per [golang.org](http://golang.org/doc/install).
 - Install preferred SCM program in order to `go get` source code.
   * [git](http://git-scm.com/)
   * [mercurial](http://mercurial.selenic.com/)
   * [bazaar](http://bazaar.canonical.com/)
-- Install the go version of [`cf CLI`](https://github.com/cloudfoundry/cli)
+- Install the go version of [`cf CLI`](https://github.com/cloudfoundry/cli).
   Make sure that the go version of `cf` is accessible in your `$PATH`.
 - Install [curl](http://curl.haxx.se/)
 - Check out a copy of `cf-acceptance-tests` and make sure that it is added to your `$GOPATH`.
@@ -38,7 +37,7 @@ and should not modify the CF state in such a way as to impact other tests.
   You will receive a warning "no buildable Go source files";
   this can be ignored as there is no compilable go source code in the package, only test code.
 - Run `./bin/update_submodules` to ensure that all submoduled assets are checked out and using the correct SHA.
-- A running Cloud Foundry deployment to run these acceptance tests against.
+- Install a running Cloud Foundry deployment to run these acceptance tests against. For example, bosh-lite.
 
 ### Updating `go` dependencies
 
