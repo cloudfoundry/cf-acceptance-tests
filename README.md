@@ -30,7 +30,7 @@ and should not modify the CF state in such a way as to impact other tests.
   * [git](http://git-scm.com/)
   * [mercurial](http://mercurial.selenic.com/)
   * [bazaar](http://bazaar.canonical.com/)
-- Install the go version of `[cf CLI](https://github.com/cloudfoundry/cli)`
+- Install the go version of [`cf CLI`](https://github.com/cloudfoundry/cli)
   Make sure that the go version of `cf` is accessible in your `$PATH`.
 - Install [curl](http://curl.haxx.se/)
 - Check out a copy of `cf-acceptance-tests` and make sure that it is added to your `$GOPATH`.
