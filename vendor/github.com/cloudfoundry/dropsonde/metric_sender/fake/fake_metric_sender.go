@@ -111,3 +111,7 @@ func (fms *FakeMetricSender) Value(string, float64, string) metric_sender.ValueC
 func (fms *FakeMetricSender) ContainerMetric(string, int32, float64, uint64, uint64) metric_sender.ContainerMetricChainer {
 	return nil
 }
+
+func (fms *FakeMetricSender) Counter(string) metric_sender.CounterChainer {
+	return nil
+}

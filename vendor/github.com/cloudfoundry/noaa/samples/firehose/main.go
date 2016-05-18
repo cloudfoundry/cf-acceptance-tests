@@ -5,27 +5,24 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/cloudfoundry/noaa"
-	"github.com/cloudfoundry/noaa/events"
+	"github.com/cloudfoundry/noaa/consumer"
 )
-
-var dopplerAddress = os.Getenv("DOPPLER_ADDR")
-var authToken = os.Getenv("CF_ACCESS_TOKEN")
 
 const firehoseSubscriptionId = "firehose-a"
 
+var (
+	dopplerAddress = os.Getenv("DOPPLER_ADDR")
+	authToken      = os.Getenv("CF_ACCESS_TOKEN")
+)
+
 func main() {
-	connection := noaa.NewConsumer(dopplerAddress, &tls.Config{InsecureSkipVerify: true}, nil)
-	connection.SetDebugPrinter(ConsoleDebugPrinter{})
+	consumer := consumer.New(dopplerAddress, &tls.Config{InsecureSkipVerify: true}, nil)
+	consumer.SetDebugPrinter(ConsoleDebugPrinter{})
 
 	fmt.Println("===== Streaming Firehose (will only succeed if you have admin credentials)")
 
-	msgChan := make(chan *events.Envelope)
+	msgChan, errorChan := consumer.Firehose(firehoseSubscriptionId, authToken)
 	go func() {
-		defer close(msgChan)
-		errorChan := make(chan error)
-		go connection.Firehose(firehoseSubscriptionId, authToken, msgChan, errorChan, nil)
-
 		for err := range errorChan {
 			fmt.Fprintf(os.Stderr, "%v\n", err.Error())
 		}

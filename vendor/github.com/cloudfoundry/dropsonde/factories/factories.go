@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/cloudfoundry/sonde-go/events"
@@ -86,8 +87,9 @@ func NewHttpStartStop(req *http.Request, statusCode int, contentLength int64, pe
 		httpStartStop.InstanceId = proto.String(instanceId)
 	}
 
-	if forwarded := req.Header.Get("X-Forwarded-For"); forwarded != "" {
-		httpStartStop.Forwarded = proto.String(forwarded)
+	allForwards := req.Header[http.CanonicalHeaderKey("X-Forwarded-For")]
+	for _, forwarded := range allForwards {
+		httpStartStop.Forwarded = append(httpStartStop.Forwarded, parseXForwarded(forwarded)...)
 	}
 
 	return httpStartStop
@@ -139,6 +141,14 @@ func NewContainerMetric(applicationId string, instanceIndex int32, cpuPercentage
 		MemoryBytes:   &memoryBytes,
 		DiskBytes:     &diskBytes,
 	}
+}
+
+func parseXForwarded(forwarded string) []string {
+	addrs := strings.Split(forwarded, ",")
+	for i, addr := range addrs {
+		addrs[i] = strings.TrimSpace(addr)
+	}
+	return addrs
 }
 
 func scheme(req *http.Request) string {

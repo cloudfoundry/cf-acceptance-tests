@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"mime/multipart"
 	"net"
 	"net/http"
@@ -17,7 +18,7 @@ import (
 	"time"
 
 	noaa_errors "github.com/cloudfoundry/noaa/errors"
-	"github.com/cloudfoundry/noaa/events"
+	"github.com/cloudfoundry/sonde-go/events"
 	"github.com/gogo/protobuf/proto"
 	"github.com/gorilla/websocket"
 )
@@ -34,6 +35,8 @@ var (
 	ErrLostConnection = errors.New("remote server terminated connection unexpectedly")
 )
 
+// noaa.Consumer is deprecated.  Use the one in the consumer package.
+//
 // Consumer represents the actions that can be performed against traffic controller.
 type Consumer struct {
 	trafficControllerUrl string
@@ -42,24 +45,48 @@ type Consumer struct {
 	callback             func()
 	proxy                func(*http.Request) (*url.URL, error)
 	debugPrinter         DebugPrinter
+	idleTimeout          time.Duration
 	sync.RWMutex
+	stopChan chan struct{}
+	client   *http.Client
+	dialer   websocket.Dialer
 }
 
+// noaa.Consumer is deprecated.  Use the one in the consumer package.
+//
 // NewConsumer creates a new consumer to a traffic controller.
 func NewConsumer(trafficControllerUrl string, tlsConfig *tls.Config, proxy func(*http.Request) (*url.URL, error)) *Consumer {
-	return &Consumer{trafficControllerUrl: trafficControllerUrl, tlsConfig: tlsConfig, proxy: proxy, debugPrinter: nullDebugPrinter{}}
+	log.Printf("You are using a deprecated noaa consumer (noaa.Consumer).  Please switch to 'github.com/cloudfoundry/noaa/consumer'.Consumer at your earliest convenience.")
+	transport := &http.Transport{Proxy: proxy, TLSClientConfig: tlsConfig}
+	consumer := &Consumer{
+		trafficControllerUrl: trafficControllerUrl,
+		tlsConfig:            tlsConfig,
+		proxy:                proxy,
+		debugPrinter:         NullDebugPrinter{},
+		stopChan:             make(chan struct{}),
+		client:               &http.Client{Transport: transport},
+	}
+	consumer.dialer = websocket.Dialer{
+		NetDial:         consumer.proxyDial,
+		TLSClientConfig: tlsConfig,
+	}
+	return consumer
 }
 
+// noaa.Consumer is deprecated.  Use the one in the consumer package.
+//
 // TailingLogs behaves exactly as TailingLogsWithoutReconnect, except that it retries 5 times if the connection
 // to the remote server is lost and returns all errors from each attempt on errorChan.
-func (cnsmr *Consumer) TailingLogs(appGuid string, authToken string, outputChan chan<- *events.LogMessage, errorChan chan<- error, stopChan chan struct{}) {
+func (cnsmr *Consumer) TailingLogs(appGuid string, authToken string, outputChan chan<- *events.LogMessage, errorChan chan<- error) {
 	action := func() error {
 		return cnsmr.TailingLogsWithoutReconnect(appGuid, authToken, outputChan)
 	}
 
-	cnsmr.retryAction(action, errorChan, stopChan)
+	cnsmr.retryAction(action, errorChan)
 }
 
+// noaa.Consumer is deprecated.  Use the one in the consumer package.
+//
 // TailingLogsWithoutReconnect listens indefinitely for log messages only; other event types are dropped.
 //
 // If you wish to be able to terminate the listen early, run TailingLogsWithoutReconnect in a Goroutine and
@@ -80,8 +107,6 @@ func (cnsmr *Consumer) TailingLogsWithoutReconnect(appGuid string, authToken str
 	}()
 
 	go func() {
-		defer close(allEvents)
-
 		for event := range allEvents {
 			if *event.EventType == events.Envelope_LogMessage {
 				outputChan <- event.GetLogMessage()
@@ -89,19 +114,28 @@ func (cnsmr *Consumer) TailingLogsWithoutReconnect(appGuid string, authToken str
 		}
 	}()
 
+	go func() {
+		<-cnsmr.stopChan
+		close(allEvents)
+	}()
+
 	return <-errChan
 }
 
+// noaa.Consumer is deprecated.  Use the one in the consumer package.
+//
 // Stream behaves exactly as StreamWithoutReconnect, except that it retries 5 times if the connection
 // to the remote server is lost.
-func (cnsmr *Consumer) Stream(appGuid string, authToken string, outputChan chan<- *events.Envelope, errorChan chan<- error, stopChan chan struct{}) {
+func (cnsmr *Consumer) Stream(appGuid string, authToken string, outputChan chan<- *events.Envelope, errorChan chan<- error) {
 	action := func() error {
 		return cnsmr.StreamWithoutReconnect(appGuid, authToken, outputChan)
 	}
 
-	cnsmr.retryAction(action, errorChan, stopChan)
+	cnsmr.retryAction(action, errorChan)
 }
 
+// noaa.Consumer is deprecated.  Use the one in the consumer package.
+//
 // StreamWithoutReconnect listens indefinitely for all log and event messages.
 //
 // If you wish to be able to terminate the listen early, run StreamWithoutReconnect in a Goroutine and
@@ -115,16 +149,24 @@ func (cnsmr *Consumer) StreamWithoutReconnect(appGuid string, authToken string, 
 	return cnsmr.stream(streamPath, authToken, outputChan)
 }
 
+// noaa.Consumer is deprecated.  Use the one in the consumer package.
+//
 // Firehose behaves exactly as FirehoseWithoutReconnect, except that it retries 5 times if the connection
 // to the remote server is lost.
-func (cnsmr *Consumer) Firehose(subscriptionId string, authToken string, outputChan chan<- *events.Envelope, errorChan chan<- error, stopChan chan struct{}) {
+func (cnsmr *Consumer) Firehose(subscriptionId string, authToken string, outputChan chan<- *events.Envelope, errorChan chan<- error) {
 	action := func() error {
 		return cnsmr.FirehoseWithoutReconnect(subscriptionId, authToken, outputChan)
 	}
 
-	cnsmr.retryAction(action, errorChan, stopChan)
+	cnsmr.retryAction(action, errorChan)
 }
 
+func (cnsmr *Consumer) SetIdleTimeout(idleTimeout time.Duration) {
+	cnsmr.idleTimeout = idleTimeout
+}
+
+// noaa.Consumer is deprecated.  Use the one in the consumer package.
+//
 // FirehoseWithoutReconnect streams all data. All clients with the same subscriptionId will receive a proportionate share of the
 // message stream. Each pool of clients will receive the entire stream.
 //
@@ -164,6 +206,8 @@ func makeError(err error, code int32) *events.Envelope {
 	}
 }
 
+// noaa.Consumer is deprecated.  Use the one in the consumer package.
+//
 // RecentLogs connects to traffic controller via its 'recentlogs' http(s) endpoint and returns a slice of recent messages.
 // It does not guarantee any order of the messages; they are in the order returned by traffic controller.
 //
@@ -183,6 +227,8 @@ func (cnsmr *Consumer) RecentLogs(appGuid string, authToken string) ([]*events.L
 	return messages, err
 }
 
+// noaa.Consumer is deprecated.  Use the one in the consumer package.
+//
 // ContainerMetrics connects to traffic controller via its 'containermetrics' http(s) endpoint and returns the most recent messages for an app.
 // The returned metrics will be sorted by InstanceIndex.
 func (cnsmr *Consumer) ContainerMetrics(appGuid string, authToken string) ([]*events.ContainerMetric, error) {
@@ -220,13 +266,11 @@ func (cnsmr *Consumer) readEnvelopesFromTrafficController(appGuid string, authTo
 	}
 
 	recentPath := fmt.Sprintf("%s://%s/apps/%s/%s", scheme, trafficControllerUrl.Host, appGuid, endpoint)
-	transport := &http.Transport{Proxy: cnsmr.proxy, TLSClientConfig: cnsmr.tlsConfig}
-	client := &http.Client{Transport: transport}
 
 	req, _ := http.NewRequest("GET", recentPath, nil)
 	req.Header.Set("Authorization", authToken)
 
-	resp, err := client.Do(req)
+	resp, err := cnsmr.client.Do(req)
 
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Error dialing traffic controller server: %s.\nPlease ask your Cloud Foundry Operator to check the platform configuration (traffic controller endpoint is %s).", err.Error(), cnsmr.trafficControllerUrl))
@@ -296,10 +340,13 @@ func getMultipartReader(resp *http.Response) (*multipart.Reader, error) {
 	return reader, nil
 }
 
+// noaa.Consumer is deprecated.  Use the one in the consumer package.
+//
 // Close terminates the websocket connection to traffic controller.
 func (cnsmr *Consumer) Close() error {
 	cnsmr.Lock()
 	defer cnsmr.Unlock()
+	defer close(cnsmr.stopChan)
 	if cnsmr.ws == nil {
 		return errors.New("connection does not exist")
 	}
@@ -308,11 +355,15 @@ func (cnsmr *Consumer) Close() error {
 	return cnsmr.ws.Close()
 }
 
+// noaa.Consumer is deprecated.  Use the one in the consumer package.
+//
 // SetOnConnectCallback sets a callback function to be called with the websocket connection is established.
 func (cnsmr *Consumer) SetOnConnectCallback(cb func()) {
 	cnsmr.callback = cb
 }
 
+// noaa.Consumer is deprecated.  Use the one in the consumer package.
+//
 // SetDebugPrinter enables logging of the websocket handshake.
 func (cnsmr *Consumer) SetDebugPrinter(debugPrinter DebugPrinter) {
 	cnsmr.debugPrinter = debugPrinter
@@ -322,6 +373,9 @@ func (cnsmr *Consumer) listenForMessages(msgChan chan<- *events.Envelope) error 
 	defer cnsmr.ws.Close()
 
 	for {
+		if cnsmr.idleTimeout != 0 {
+			cnsmr.ws.SetReadDeadline(time.Now().Add(cnsmr.idleTimeout))
+		}
 		_, data, err := cnsmr.ws.ReadMessage()
 		if err != nil {
 			return err
@@ -348,8 +402,6 @@ func headersString(header http.Header) string {
 func (cnsmr *Consumer) establishWebsocketConnection(path string, authToken string) (*websocket.Conn, error) {
 	header := http.Header{"Origin": []string{"http://localhost"}, "Authorization": []string{authToken}}
 
-	dialer := websocket.Dialer{NetDial: cnsmr.proxyDial, TLSClientConfig: cnsmr.tlsConfig}
-
 	url := cnsmr.trafficControllerUrl + path
 
 	cnsmr.debugPrinter.Print("WEBSOCKET REQUEST:",
@@ -358,7 +410,7 @@ func (cnsmr *Consumer) establishWebsocketConnection(path string, authToken strin
 			"Upgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Version: 13\nSec-WebSocket-Key: [HIDDEN]\n"+
 			headersString(header))
 
-	ws, resp, err := dialer.Dial(url, header)
+	ws, resp, err := cnsmr.dialer.Dial(url, header)
 
 	if resp != nil {
 		cnsmr.debugPrinter.Print("WEBSOCKET RESPONSE:",
@@ -430,7 +482,7 @@ func (cnsmr *Consumer) proxyDial(network, addr string) (net.Conn, error) {
 	return proxyConn, nil
 }
 
-func (cnsmr *Consumer) retryAction(action func() error, errorChan chan<- error, stopChan chan struct{}) {
+func (cnsmr *Consumer) retryAction(action func() error, errorChan chan<- error) {
 	reconnectAttempts := 0
 
 	oldConnectCallback := cnsmr.callback
@@ -446,20 +498,13 @@ func (cnsmr *Consumer) retryAction(action func() error, errorChan chan<- error, 
 	}
 
 	for ; reconnectAttempts < 5; reconnectAttempts++ {
-		errChan := make(chan error)
 		select {
-		case <-stopChan:
-			cnsmr.Close()
+		case <-cnsmr.stopChan:
 			return
 		default:
 		}
 
-		go func() {
-			errChan <- action()
-		}()
-
-		err := <-errChan
-		errorChan <- err
+		errorChan <- action()
 		time.Sleep(reconnectTimeout)
 	}
 }
