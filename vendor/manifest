@@ -57,8 +57,8 @@
 			"importpath": "github.com/cloudfoundry/dropsonde",
 			"repository": "https://github.com/cloudfoundry/dropsonde",
 			"vcs": "git",
-			"revision": "d743b66dc346091dad2f582bd80fe7a355773919",
-			"branch": "HEAD",
+			"revision": "cd91e6f8e1741d02a27a865194e3083ad1b3b48f",
+			"branch": "master",
 			"notests": true
 		},
 		{
@@ -91,7 +91,7 @@
 			"importpath": "github.com/cloudfoundry/noaa",
 			"repository": "https://github.com/cloudfoundry/noaa",
 			"vcs": "git",
-			"revision": "8c9fd92c47a3ef39993b2f0496cc25992f87c01a",
+			"revision": "f8b6ee8f26675363c07e7c6c4bdb85f079277ecf",
 			"branch": "HEAD",
 			"notests": true
 		},
@@ -99,8 +99,8 @@
 			"importpath": "github.com/cloudfoundry/sonde-go/events",
 			"repository": "https://github.com/cloudfoundry/sonde-go",
 			"vcs": "git",
-			"revision": "d6ed492b509e180ee7675ed15237906041e53a6e",
-			"branch": "HEAD",
+			"revision": "f4308d7e1c2fc695ef732606cc82ed9ae61c6d86",
+			"branch": "master",
 			"path": "/events",
 			"notests": true
 		},

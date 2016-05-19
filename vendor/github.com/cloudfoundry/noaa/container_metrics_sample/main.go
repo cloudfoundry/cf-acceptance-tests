@@ -6,23 +6,21 @@ import (
 	"os"
 	"time"
 
-	"github.com/cloudfoundry/noaa/consumer"
+	"github.com/cloudfoundry/noaa"
 )
 
-var (
-	dopplerAddress = os.Getenv("DOPPLER_ADDR")
-	appId          = os.Getenv("APP_GUID")
-	authToken      = os.Getenv("CF_ACCESS_TOKEN")
-)
+var dopplerAddress = os.Getenv("DOPPLER_ADDR")
+var appId = os.Getenv("APP_GUID")
+var authToken = os.Getenv("CF_ACCESS_TOKEN")
 
 func main() {
-	consumer := consumer.New(dopplerAddress, &tls.Config{InsecureSkipVerify: true}, nil)
-	consumer.SetDebugPrinter(ConsoleDebugPrinter{})
+	connection := noaa.NewConsumer(dopplerAddress, &tls.Config{InsecureSkipVerify: true}, nil)
+	connection.SetDebugPrinter(ConsoleDebugPrinter{})
 
 	fmt.Println("===== Streaming ContainerMetrics (will only succeed if you have admin credentials)")
 
 	for {
-		containerMetrics, err := consumer.ContainerMetrics(appId, authToken)
+		containerMetrics, err := connection.ContainerMetrics(appId, authToken)
 
 		for _, cm := range containerMetrics {
 			fmt.Printf("%v \n", cm)

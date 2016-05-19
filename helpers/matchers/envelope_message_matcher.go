@@ -1,7 +1,7 @@
 package matchers
 
 import (
-	"github.com/cloudfoundry/sonde-go/events"
+	"github.com/cloudfoundry/noaa/events"
 	"github.com/onsi/gomega/types"
 
 	"fmt"

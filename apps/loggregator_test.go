@@ -12,10 +12,11 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/noaa"
+	"github.com/cloudfoundry/noaa/events"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/matchers"
-	"github.com/cloudfoundry/noaa/consumer"
 
 	"crypto/tls"
 	"strings"
@@ -86,9 +87,13 @@ var _ = Describe("loggregator", func() {
 		It("shows logs and metrics", func() {
 			config := helpers.LoadConfig()
 
-			noaaConnection := consumer.New(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: config.SkipSSLValidation}, nil)
+			noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: config.SkipSSLValidation}, nil)
+			msgChan := make(chan *events.Envelope, 100000)
+			errorChan := make(chan error)
+			stopchan := make(chan struct{})
 
-			msgChan, _ := noaaConnection.Firehose(generator.RandomName(), getAdminUserAccessToken())
+			go noaaConnection.Firehose(generator.RandomName(), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
+			defer close(stopchan)
 
 			Eventually(func() string {
 				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
@@ -101,8 +106,12 @@ var _ = Describe("loggregator", func() {
 			config := helpers.LoadConfig()
 			appGuid := strings.TrimSpace(string(cf.Cf("app", appName, "--guid").Wait(DEFAULT_TIMEOUT).Out.Contents()))
 
-			noaaConnection := consumer.New(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: config.SkipSSLValidation}, nil)
-			msgChan, errorChan := noaaConnection.Firehose(generator.RandomName(), getAdminUserAccessToken())
+			noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: config.SkipSSLValidation}, nil)
+			msgChan := make(chan *events.Envelope, 100000)
+			errorChan := make(chan error)
+			stopchan := make(chan struct{})
+			go noaaConnection.Firehose(generator.RandomName(), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
+			defer close(stopchan)
 
 			Eventually(func() bool {
 				for {
