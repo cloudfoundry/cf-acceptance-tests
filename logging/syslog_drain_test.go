@@ -1,140 +1,95 @@
 package logging
 
 import (
-	"fmt"
-	"io"
-	"net"
 	"strings"
-	"sync"
+	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gexec"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gbytes"
+	. "github.com/onsi/gomega/gexec"
 )
 
 var _ = Describe("Logging", func() {
-	var testConfig = helpers.LoadConfig()
-	var appName string
+	var logWriterAppName string
+	var listenerAppName string
+	var logs *Session
+	interrupt := make(chan string)
+	serviceName := "service-" + generator.RandomName()
 
 	Describe("Syslog drains", func() {
-		var drainListener *syslogDrainListener
-		var serviceName string
-
 		BeforeEach(func() {
-			syslogDrainAddress := fmt.Sprintf("%s:%d", testConfig.SyslogIpAddress, testConfig.SyslogDrainPort)
+			listenerAppName = generator.PrefixedRandomName("CATS-APP-")
+			logWriterAppName = generator.PrefixedRandomName("CATS-APP-")
 
-			drainListener = &syslogDrainListener{port: testConfig.SyslogDrainPort}
-			drainListener.StartListener()
-			go drainListener.AcceptConnections()
+			Eventually(cf.Cf("push", listenerAppName, "--no-start", "--health-check-type", "port", "-b", config.GoBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().SyslogDrainListener, "-d", config.AppsDomain, "-f", assets.NewAssets().SyslogDrainListener+"/manifest.yml"), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to push app")
+			Eventually(cf.Cf("push", logWriterAppName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().RubySimple, "-d", config.AppsDomain), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to push app")
 
-			testThatDrainIsReachable(syslogDrainAddress, drainListener)
+			app_helpers.SetBackend(listenerAppName)
+			app_helpers.SetBackend(logWriterAppName)
 
-			appName = generator.PrefixedRandomName("CATS-APP-")
+			Expect(cf.Cf("start", listenerAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			logs = cf.Cf("logs", listenerAppName)
+			Expect(cf.Cf("start", logWriterAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
-			Eventually(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().RubySimple, "-d", config.AppsDomain), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to push app")
-			app_helpers.SetBackend(appName)
-			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
-
-			syslogDrainURL := "syslog://" + syslogDrainAddress
-			serviceName = "service-" + generator.RandomName()
+			syslogDrainURL := "syslog://" + getSyslogDrainAddress(listenerAppName)
 
 			Eventually(cf.Cf("cups", serviceName, "-l", syslogDrainURL), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to create syslog drain service")
-			Eventually(cf.Cf("bind-service", appName, serviceName), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to bind service")
+			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to bind service")
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+			interrupt <- "done"
 
-			Eventually(cf.Cf("delete", appName, "-f", "-r"), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to delete app")
+			app_helpers.AppReport(logWriterAppName, DEFAULT_TIMEOUT)
+			app_helpers.AppReport(listenerAppName, DEFAULT_TIMEOUT)
+
+			Eventually(cf.Cf("delete", logWriterAppName, "-f", "-r"), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to delete app")
+			Eventually(cf.Cf("delete", listenerAppName, "-f", "-r"), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to delete app")
 			if serviceName != "" {
 				Eventually(cf.Cf("delete-service", serviceName, "-f"), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to delete service")
 			}
 
 			Eventually(cf.Cf("delete-orphaned-routes", "-f"), CF_PUSH_TIMEOUT).Should(Exit(0), "Failed to delete orphaned routes")
-
-			drainListener.Stop()
 		})
 
 		It("forwards app messages to registered syslog drains", func() {
 			randomMessage := "random-message-" + generator.RandomName()
+			go writeLogsUntilInterrupted(interrupt, randomMessage, logWriterAppName)
 
-			Eventually(func() bool {
-				helpers.CurlAppWithTimeout(appName, "/log/"+randomMessage, DEFAULT_TIMEOUT)
-				return drainListener.DidReceive(randomMessage)
-			}, 90, 1).Should(BeTrue(), "Never received "+randomMessage+" on syslog drain listener")
+			Eventually(logs, (DEFAULT_TIMEOUT + time.Minute)).Should(Say(randomMessage))
 		})
 	})
 })
 
-type syslogDrainListener struct {
-	sync.Mutex
-	port             int
-	listener         net.Listener
-	receivedMessages string
-}
+func getSyslogDrainAddress(appName string) string {
+	config := helpers.LoadConfig()
 
-func (s *syslogDrainListener) StartListener() {
-	listenAddress := fmt.Sprintf(":%d", s.port)
-	var err error
-	s.listener, err = net.Listen("tcp", listenAddress)
-	Expect(err).ToNot(HaveOccurred())
-}
-
-func (s *syslogDrainListener) AcceptConnections() {
-	defer GinkgoRecover()
-
-	for {
-		conn, err := s.listener.Accept()
-		if err != nil {
-			return
-		}
-		go s.handleConnection(conn)
+	if config.Backend == "dea" {
+		cfApp := cf.Cf("files", appName, "/app/address")
+		Eventually(cfApp, DEFAULT_TIMEOUT).Should(Exit(0))
+		lines := strings.Split(string(cfApp.Out.Contents()), "\n")
+		return lines[len(lines)-2]
 	}
+
+	cfApp := cf.Cf("ssh", appName, "-c", "echo $CF_INSTANCE_ADDR")
+	Eventually(cfApp, DEFAULT_TIMEOUT).Should(Exit(0))
+	return strings.TrimSpace(string(cfApp.Out.Contents()))
 }
 
-func (s *syslogDrainListener) Stop() {
-	s.listener.Close()
-}
-
-func (s *syslogDrainListener) DidReceive(message string) bool {
-	s.Lock()
-	defer s.Unlock()
-
-	return strings.Contains(s.receivedMessages, message)
-}
-
-func (s *syslogDrainListener) handleConnection(conn net.Conn) {
-	defer GinkgoRecover()
-	buffer := make([]byte, 65536)
+func writeLogsUntilInterrupted(interrupt chan string, randomMessage string, logWriterAppName string) {
 	for {
-		n, err := conn.Read(buffer)
-
-		if err == io.EOF {
+		select {
+		case <-interrupt:
 			return
+		default:
+			helpers.CurlAppWithTimeout(logWriterAppName, "/log/"+randomMessage, DEFAULT_TIMEOUT)
+			time.Sleep(3 * time.Second)
 		}
-		Expect(err).ToNot(HaveOccurred())
-
-		s.Lock()
-		s.receivedMessages += string(buffer[0:n])
-		s.Unlock()
 	}
-}
-
-func testThatDrainIsReachable(syslogDrainAddress string, drainListener *syslogDrainListener) {
-	conn, err := net.Dial("tcp", syslogDrainAddress)
-	Expect(err).ToNot(HaveOccurred())
-	defer conn.Close()
-
-	randomMessage := "random-message-" + generator.RandomName()
-	_, err = conn.Write([]byte(randomMessage))
-	Expect(err).ToNot(HaveOccurred())
-
-	Eventually(func() bool {
-		return drainListener.DidReceive(randomMessage)
-	}).Should(BeTrue())
 }
