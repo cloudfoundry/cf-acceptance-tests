@@ -34,16 +34,11 @@ var _ = Describe("Logging", func() {
 			app_helpers.SetBackend(logWriterAppName)
 
 			Expect(cf.Cf("start", listenerAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
-			logs = cf.Cf("logs", listenerAppName)
 			Expect(cf.Cf("start", logWriterAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
-
-			syslogDrainURL := "syslog://" + getSyslogDrainAddress(listenerAppName)
-
-			Eventually(cf.Cf("cups", serviceName, "-l", syslogDrainURL), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to create syslog drain service")
-			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to bind service")
 		})
 
 		AfterEach(func() {
+			logs.Kill()
 			interrupt <- "done"
 
 			app_helpers.AppReport(logWriterAppName, DEFAULT_TIMEOUT)
@@ -59,6 +54,12 @@ var _ = Describe("Logging", func() {
 		})
 
 		It("forwards app messages to registered syslog drains", func() {
+			syslogDrainURL := "syslog://" + getSyslogDrainAddress(listenerAppName)
+
+			Eventually(cf.Cf("cups", serviceName, "-l", syslogDrainURL), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to create syslog drain service")
+			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to bind service")
+
+			logs = cf.Cf("logs", listenerAppName)
 			randomMessage := "random-message-" + generator.RandomName()
 			go writeLogsUntilInterrupted(interrupt, randomMessage, logWriterAppName)
 
