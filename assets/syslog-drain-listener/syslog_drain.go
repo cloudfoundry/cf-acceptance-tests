@@ -3,13 +3,13 @@ package main
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"os"
+	"time"
 )
 
 func main() {
-	writeIpFile()
+	go logIP()
 
 	listenAddress := fmt.Sprintf(":%s", os.Getenv("PORT"))
 	listener, err := net.Listen("tcp", listenAddress)
@@ -45,12 +45,11 @@ func handleConnection(conn net.Conn) {
 	}
 }
 
-func writeIpFile() {
+func logIP() {
 	ip := os.Getenv("CF_INSTANCE_IP")
 	port := os.Getenv("CF_INSTANCE_PORT")
-
-	err := ioutil.WriteFile("address", []byte(ip+":"+port), 444)
-	if err != nil {
-		panic(err)
+	for {
+		fmt.Printf("ADDRESS: |%s:%s|\n", ip, port)
+		time.Sleep(5 * time.Second)
 	}
 }

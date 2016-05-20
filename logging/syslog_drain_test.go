@@ -1,7 +1,7 @@
 package logging
 
 import (
-	"strings"
+	"regexp"
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -58,6 +58,7 @@ var _ = Describe("Logging", func() {
 
 			Eventually(cf.Cf("cups", serviceName, "-l", syslogDrainURL), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to create syslog drain service")
 			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to bind service")
+			// We don't need to restage, because syslog service bindings don't change the app's environment variables
 
 			logs = cf.Cf("logs", listenerAppName)
 			randomMessage := "random-message-" + generator.RandomName()
@@ -69,18 +70,18 @@ var _ = Describe("Logging", func() {
 })
 
 func getSyslogDrainAddress(appName string) string {
-	config := helpers.LoadConfig()
+	var address []byte
 
-	if config.Backend == "dea" {
-		cfApp := cf.Cf("files", appName, "/app/address")
-		Eventually(cfApp, DEFAULT_TIMEOUT).Should(Exit(0))
-		lines := strings.Split(string(cfApp.Out.Contents()), "\n")
-		return lines[len(lines)-2]
-	}
+	Eventually(func() []byte {
+		re, err := regexp.Compile("ADDRESS: \\|(.*)\\|")
+		Expect(err).NotTo(HaveOccurred())
 
-	cfApp := cf.Cf("ssh", appName, "-c", "echo $CF_INSTANCE_ADDR")
-	Eventually(cfApp, DEFAULT_TIMEOUT).Should(Exit(0))
-	return strings.TrimSpace(string(cfApp.Out.Contents()))
+		logs := cf.Cf("logs", appName, "--recent").Wait(DEFAULT_TIMEOUT)
+		address = re.FindSubmatch(logs.Out.Contents())[1]
+		return address
+	}, DEFAULT_TIMEOUT).Should(Not(BeNil()))
+
+	return string(address)
 }
 
 func writeLogsUntilInterrupted(interrupt chan string, randomMessage string, logWriterAppName string) {
