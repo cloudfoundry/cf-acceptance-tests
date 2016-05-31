@@ -64,7 +64,7 @@ All `go` dependencies required by CATs are vendored in the `vendor` directory.
 Install [gvt](https://github.com/FiloSottile/gvt) and make sure it is available
 in your $PATH. The recommended way to do this is to run:
 ```
-go get -d github.com/FiloSottile/gvt
+go get -u github.com/FiloSottile/gvt
 ```
 
 In order to update a current dependency to a specific version,
