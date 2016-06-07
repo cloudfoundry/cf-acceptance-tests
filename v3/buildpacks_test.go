@@ -9,13 +9,13 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 	archive_helpers "github.com/pivotal-golang/archiver/extractor/test_helper"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
-	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 )
 
 var _ = Describe("buildpack", func() {
