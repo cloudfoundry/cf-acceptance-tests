@@ -129,7 +129,7 @@ func StageDockerPackage(packageGuid string) string {
 }
 
 func CreateAndMapRoute(appGuid, space, domain, host string) {
-	Expect(cf.Cf("create-route", space, domain, "-n", host).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	CreateRoute(space, domain, host)
 	getRoutePath := fmt.Sprintf("/v2/routes?q=host:%s", host)
 	routeBody := cf.Cf("curl", getRoutePath).Wait(DEFAULT_TIMEOUT).Out.Contents()
 	routeJSON := struct {
@@ -173,4 +173,8 @@ func ScaleProcess(appGuid, processType, memoryInMb string) {
 	scalePath := fmt.Sprintf("/v3/apps/%s/processes/%s/scale", appGuid, processType)
 	scaleBody := fmt.Sprintf(`{"memory_in_mb":"%s"}`, memoryInMb)
 	Expect(cf.Cf("curl", scalePath, "-X", "PUT", "-d", scaleBody).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+}
+
+func CreateRoute(space, domain, host string) {
+	Expect(cf.Cf("create-route", space, domain, "-n", host).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 }
