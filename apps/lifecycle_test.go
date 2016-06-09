@@ -151,7 +151,13 @@ var _ = Describe("Application Lifecycle", func() {
 		})
 
 		It("makes system environment variables available", func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push",
+				appName,
+				"--no-start",
+				"-b", config.RubyBuildpackName,
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().Dora,
+				"-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 			app_helpers.SetBackend(appName)
 
 			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
@@ -175,7 +181,7 @@ var _ = Describe("Application Lifecycle", func() {
 				"-b", config.RubyBuildpackName,
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Dora,
-				"-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT),
+				"-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT),
 			).To(Exit(0))
 			app_helpers.SetBackend(appName)
 
@@ -237,7 +243,13 @@ var _ = Describe("Application Lifecycle", func() {
 
 	Describe("updating", func() {
 		BeforeEach(func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push",
+				appName,
+				"--no-start",
+				"-b", config.RubyBuildpackName,
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().Dora,
+				"-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 			app_helpers.SetBackend(appName)
 
 			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))

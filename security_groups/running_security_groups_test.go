@@ -49,7 +49,13 @@ var _ = Describe("Security Groups", func() {
 
 	BeforeEach(func() {
 		serverAppName = generator.PrefixedRandomName("CATS-APP-")
-		Expect(cf.Cf("push", serverAppName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push",
+			serverAppName,
+			"--no-start",
+			"-b", config.RubyBuildpackName,
+			"-m", DEFAULT_MEMORY_LIMIT,
+			"-p", assets.NewAssets().Dora,
+			"-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		app_helpers.SetBackend(serverAppName)
 		Expect(cf.Cf("start", serverAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 

@@ -17,7 +17,13 @@ var _ = Describe("Encoding", func() {
 
 	BeforeEach(func() {
 		appName = generator.PrefixedRandomName("CATS-APP-")
-		Expect(cf.Cf("push", appName, "--no-start", "-b", config.JavaBuildpackName, "-p", assets.NewAssets().Java, "-m", "512M", "-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push",
+			appName,
+			"--no-start",
+			"-b", config.JavaBuildpackName,
+			"-p", assets.NewAssets().Java,
+			"-m", "512M",
+			"-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		app_helpers.SetBackend(appName)
 		Expect(cf.Cf("set-env", appName, "JAVA_OPTS", "-Djava.security.egd=file:///dev/urandom").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		Expect(cf.Cf("start", appName).Wait(CF_JAVA_TIMEOUT)).To(Exit(0))

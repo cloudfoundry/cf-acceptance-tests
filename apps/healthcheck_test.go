@@ -37,7 +37,7 @@ var _ = Describe(deaUnsupportedTag+"Healthcheck", func() {
 				"-d", config.AppsDomain,
 				"-i", "1",
 				"-u", "none"),
-				DEFAULT_TIMEOUT,
+				CF_PUSH_TIMEOUT,
 			).Should(Exit(0))
 
 			By("staging and running it")

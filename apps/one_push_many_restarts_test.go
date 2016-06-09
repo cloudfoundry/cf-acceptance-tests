@@ -70,7 +70,7 @@ var _ = Describe("An application that's already been pushed", func() {
 	It("can be restarted and still come up", func() {
 		Eventually(func() string {
 			return helpers.CurlAppRoot(appName)
-		}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
+		}, CF_PUSH_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
 
 		Expect(cf.Cf("stop", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
@@ -82,6 +82,6 @@ var _ = Describe("An application that's already been pushed", func() {
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(appName)
-		}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
+		}, CF_PUSH_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
 	})
 })

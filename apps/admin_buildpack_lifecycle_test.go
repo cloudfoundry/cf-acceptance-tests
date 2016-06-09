@@ -303,7 +303,13 @@ exit 1
 	}
 
 	itRaisesBuildpackCompileFailedError := func() {
-		Expect(cf.Cf("push", appName, "--no-start", "-b", BuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push",
+			appName,
+			"--no-start",
+			"-b", BuildpackName,
+			"-m", DEFAULT_MEMORY_LIMIT,
+			"-p", appPath,
+			"-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		app_helpers.SetBackend(appName)
 
 		start := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)

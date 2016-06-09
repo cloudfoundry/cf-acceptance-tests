@@ -92,7 +92,7 @@ var _ = Describe("Session Affinity", func() {
 
 		Context("when an app has multiple instances", func() {
 			BeforeEach(func() {
-				ScaleAppInstances(appName, 3, DEFAULT_TIMEOUT)
+				ScaleAppInstances(appName, 3, CF_PUSH_TIMEOUT)
 			})
 
 			Context("when the client does not send VCAP_ID and JSESSION cookies", func() {
