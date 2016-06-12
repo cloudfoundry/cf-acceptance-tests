@@ -2,6 +2,14 @@
 
 set -e -x
 
+if [ ! -f "${CONFIG}" ]; then
+  echo "FAIL: \$CONFIG must be set to the path of an integration config JSON file"
+  exit 1
+fi
+
+echo "Printing sanitized \$CONFIG"
+grep -v password $CONFIG
+
 bin_dir=$(dirname "${BASH_SOURCE[0]}")
 project_go_root="${bin_dir}/../../../../../"
 
