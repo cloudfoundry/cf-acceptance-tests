@@ -62,7 +62,9 @@ func WaitForPackageToBeReady(packageGuid string) {
 func WaitForDropletToStage(dropletGuid string) {
 	dropletPath := fmt.Sprintf("/v3/droplets/%s", dropletGuid)
 	Eventually(func() *Session {
-		return cf.Cf("curl", dropletPath).Wait(DEFAULT_TIMEOUT)
+		session := cf.Cf("curl", dropletPath).Wait(DEFAULT_TIMEOUT)
+		Expect(session).NotTo(Say("FAILED"))
+		return session
 	}, CF_PUSH_TIMEOUT).Should(Say("STAGED"))
 }
 
