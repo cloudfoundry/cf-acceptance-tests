@@ -45,7 +45,7 @@ func NewContext(config Config) *ConfiguredContext {
 	node := ginkgoconfig.GinkgoConfig.ParallelNode
 	timeTag := time.Now().Format("2006_01_02-15h04m05.999s")
 
-	regUser := fmt.Sprintf("CATS-USER-%d-%s", node, timeTag)
+	regUser := fmt.Sprintf("%s-USER-%d-%s", config.NamePrefix, node, timeTag)
 	regUserPass := "meow"
 
 	if config.UseExistingUser {
@@ -62,10 +62,10 @@ func NewContext(config Config) *ConfiguredContext {
 		shortTimeout: config.ScaledTimeout(1 * time.Minute),
 		longTimeout:  config.ScaledTimeout(5 * time.Minute),
 
-		quotaDefinitionName: fmt.Sprintf("CATS-QUOTA-%d-%s", node, timeTag),
+		quotaDefinitionName: fmt.Sprintf("%s-QUOTA-%d-%s", config.NamePrefix, node, timeTag),
 
-		organizationName: fmt.Sprintf("CATS-ORG-%d-%s", node, timeTag),
-		spaceName:        fmt.Sprintf("CATS-SPACE-%d-%s", node, timeTag),
+		organizationName: fmt.Sprintf("%s-ORG-%d-%s", config.NamePrefix, node, timeTag),
+		spaceName:        fmt.Sprintf("%s-SPACE-%d-%s", config.NamePrefix, node, timeTag),
 
 		regularUserUsername: regUser,
 		regularUserPassword: regUserPass,

@@ -68,6 +68,8 @@ type Config struct {
 	PythonBuildpackName     string `json:"python_buildpack_name"`
 	PhpBuildpackName        string `json:"php_buildpack_name"`
 	BinaryBuildpackName     string `json:"binary_buildpack_name"`
+
+	NamePrefix string `json:"name_prefix"`
 }
 
 var defaults = Config{
@@ -86,6 +88,8 @@ var defaults = Config{
 	BinaryBuildpackName:     "binary_buildpack",
 
 	ArtifactsDirectory: filepath.Join("..", "results"),
+
+	NamePrefix: "CATS",
 }
 
 func (c Config) ScaledTimeout(timeout time.Duration) time.Duration {

@@ -21,7 +21,7 @@
 			"importpath": "github.com/cloudfoundry-incubator/cf-test-helpers/cf",
 			"repository": "https://github.com/cloudfoundry-incubator/cf-test-helpers",
 			"vcs": "git",
-			"revision": "96db0e38482793bdf21f5872b827e46d6852f2c4",
+			"revision": "4dd9d48177008d37e3a5e581cf65c8585453e45c",
 			"branch": "master",
 			"path": "/cf",
 			"notests": true
@@ -30,7 +30,7 @@
 			"importpath": "github.com/cloudfoundry-incubator/cf-test-helpers/generator",
 			"repository": "https://github.com/cloudfoundry-incubator/cf-test-helpers",
 			"vcs": "git",
-			"revision": "96db0e38482793bdf21f5872b827e46d6852f2c4",
+			"revision": "4dd9d48177008d37e3a5e581cf65c8585453e45c",
 			"branch": "master",
 			"path": "generator",
 			"notests": true
@@ -39,7 +39,7 @@
 			"importpath": "github.com/cloudfoundry-incubator/cf-test-helpers/helpers",
 			"repository": "https://github.com/cloudfoundry-incubator/cf-test-helpers",
 			"vcs": "git",
-			"revision": "96db0e38482793bdf21f5872b827e46d6852f2c4",
+			"revision": "4dd9d48177008d37e3a5e581cf65c8585453e45c",
 			"branch": "master",
 			"path": "helpers",
 			"notests": true
@@ -48,7 +48,7 @@
 			"importpath": "github.com/cloudfoundry-incubator/cf-test-helpers/runner",
 			"repository": "https://github.com/cloudfoundry-incubator/cf-test-helpers",
 			"vcs": "git",
-			"revision": "96db0e38482793bdf21f5872b827e46d6852f2c4",
+			"revision": "4dd9d48177008d37e3a5e581cf65c8585453e45c",
 			"branch": "master",
 			"path": "runner",
 			"notests": true
