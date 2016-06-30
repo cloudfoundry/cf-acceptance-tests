@@ -206,8 +206,8 @@
 			"notests": true
 		},
 		{
-			"importpath": "github.com/pivotal-golang/archiver/extractor/test_helper",
-			"repository": "https://github.com/pivotal-golang/archiver",
+			"importpath": "github.com/cloudfoundry/archiver/extractor/test_helper",
+			"repository": "https://github.com/cloudfoundry/archiver",
 			"vcs": "git",
 			"revision": "f598990ddfeda2767a09346acf844a7d216c1256",
 			"branch": "master",

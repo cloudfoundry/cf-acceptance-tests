@@ -18,7 +18,7 @@ import (
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 
-	archive_helpers "github.com/pivotal-golang/archiver/extractor/test_helper"
+	archive_helpers "github.com/cloudfoundry/archiver/extractor/test_helper"
 )
 
 var _ = Describe("Environment Variables Groups", func() {
