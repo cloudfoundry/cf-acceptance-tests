@@ -14,7 +14,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
-	archive_helpers "github.com/cloudfoundry/archiver/extractor/test_helper"
+	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 )
 
