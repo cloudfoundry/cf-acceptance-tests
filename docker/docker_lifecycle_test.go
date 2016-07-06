@@ -87,17 +87,44 @@ var _ = Describe(deaUnsupportedTag+"Docker Application Lifecycle", func() {
 			json.Unmarshal([]byte(env_json), &env_vars)
 
 			By("merging garden and docker environment variables correctly")
+			// values tested here are defined by:
+			// cloudfoundry-incubator/diego-dockerfiles/diego-docker-custom-app/Dockerfile
+
 			// garden set values should win
-			Expect(env_vars).To(HaveKey("HOME"))
-			Expect(env_vars).NotTo(HaveKeyWithValue("HOME", "/home/some_docker_user"))
 			Expect(env_vars).To(HaveKey("VCAP_APPLICATION"))
 			Expect(env_vars).NotTo(HaveKeyWithValue("VCAP_APPLICATION", "{}"))
+			Expect(env_vars).NotTo(HaveKey("TMPDIR"))
+
 			// docker image values should remain
+			Expect(env_vars).To(HaveKeyWithValue("HOME", "/home/dockeruser"))
 			Expect(env_vars).To(HaveKeyWithValue("SOME_VAR", "some_docker_value"))
 			Expect(env_vars).To(HaveKeyWithValue("BAD_QUOTE", "'"))
 			Expect(env_vars).To(HaveKeyWithValue("BAD_SHELL", "$1"))
-			// values tested here are defined by:
-			// cloudfoundry-incubator/diego-dockerfiles/diego-docker-custom-app/Dockerfile
+		})
+
+		Context("when env vars are set with 'cf set-env'", func() {
+			BeforeEach(func() {
+				Eventually(cf.Cf(
+					"set-env", appName,
+					"HOME", "/tmp/fakehome"),
+				).Should(Exit(0))
+
+				Eventually(cf.Cf(
+					"set-env", appName,
+					"TMPDIR", "/tmp/dir"),
+				).Should(Exit(0))
+			})
+
+			It("prefers the env vars from cf set-env over those in the Dockerfile", func() {
+				Eventually(helpers.CurlingAppRoot(appName), DEFAULT_TIMEOUT).Should(Equal("0"))
+
+				env_json := helpers.CurlApp(appName, "/env")
+				var env_vars map[string]string
+				json.Unmarshal([]byte(env_json), &env_vars)
+
+				Expect(env_vars).To(HaveKeyWithValue("HOME", "/tmp/fakehome"))
+				Expect(env_vars).To(HaveKeyWithValue("TMPDIR", "/tmp/dir"))
+			})
 		})
 	})
 })
