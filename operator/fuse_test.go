@@ -13,25 +13,30 @@ import (
 )
 
 var _ = Describe("FUSE", func() {
-	var appName string
 
-	BeforeEach(func() {
-		appName = generator.PrefixedRandomName("CATS-APP-")
-	})
+	config := helpers.LoadConfig()
+	if config.IncludePrivilegedContainerSupport {
 
-	AfterEach(func() {
-		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+		var appName string
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-	})
+		BeforeEach(func() {
+			appName = generator.PrefixedRandomName("CATS-APP-")
+		})
 
-	It("Can mount a fuse endpoint", func() {
-		Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Fuse, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-		app_helpers.SetBackend(appName)
-		Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		AfterEach(func() {
+			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 
-		Eventually(func() string {
-			return helpers.CurlAppRoot(appName)
-		}, DEFAULT_TIMEOUT).Should(ContainSubstring("great success!"))
-	})
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		})
+
+		It("Can mount a fuse endpoint", func() {
+			Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Fuse, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			app_helpers.SetBackend(appName)
+			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+
+			Eventually(func() string {
+				return helpers.CurlAppRoot(appName)
+			}, DEFAULT_TIMEOUT).Should(ContainSubstring("great success!"))
+		})
+	}
 })

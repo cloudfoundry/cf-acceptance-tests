@@ -31,10 +31,11 @@ type Config struct {
 	PersistentAppOrg       string `json:"persistent_app_org"`
 	PersistentAppQuotaName string `json:"persistent_app_quota_name"`
 
-	SkipSSLValidation  bool   `json:"skip_ssl_validation"`
-	Backend            string `json:"backend"`
-	IncludeDiegoDocker bool   `json:"include_diego_docker"`
-	IncludeTasks       bool   `json:"include_tasks"`
+	SkipSSLValidation                 bool   `json:"skip_ssl_validation"`
+	Backend                           string `json:"backend"`
+	IncludeDiegoDocker                bool   `json:"include_diego_docker"`
+	IncludeTasks                      bool   `json:"include_tasks"`
+	IncludePrivilegedContainerSupport bool   `json:"include_privileged_container_support"`
 
 	ArtifactsDirectory string `json:"artifacts_directory"`
 
