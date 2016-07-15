@@ -107,12 +107,12 @@ var _ = Describe(deaUnsupportedTag+"Docker Application Lifecycle", func() {
 				Eventually(cf.Cf(
 					"set-env", appName,
 					"HOME", "/tmp/fakehome"),
-				).Should(Exit(0))
+					DEFAULT_TIMEOUT).Should(Exit(0))
 
 				Eventually(cf.Cf(
 					"set-env", appName,
 					"TMPDIR", "/tmp/dir"),
-				).Should(Exit(0))
+					DEFAULT_TIMEOUT).Should(Exit(0))
 			})
 
 			It("prefers the env vars from cf set-env over those in the Dockerfile", func() {
