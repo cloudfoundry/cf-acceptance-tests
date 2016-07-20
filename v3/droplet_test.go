@@ -43,7 +43,7 @@ var _ = Describe("droplet features", func() {
 		)
 
 		BeforeEach(func() {
-			sourceDropletGuid = StageBuildpackPackage(packageGuid, "ruby_buildpack")
+			sourceDropletGuid = StageBuildpackPackage(packageGuid, config.RubyBuildpackName)
 			WaitForDropletToStage(sourceDropletGuid)
 
 			destinationAppName = generator.PrefixedRandomName("CATS-APP-")

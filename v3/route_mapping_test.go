@@ -46,7 +46,7 @@ var _ = Describe("route_mapping", func() {
 		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
 		WaitForPackageToBeReady(packageGuid)
 
-		dropletGuid := StageBuildpackPackage(packageGuid, "ruby_buildpack")
+		dropletGuid := StageBuildpackPackage(packageGuid, config.RubyBuildpackName)
 		WaitForDropletToStage(dropletGuid)
 		AssignDropletToApp(appGuid, dropletGuid)
 

@@ -60,7 +60,7 @@ var _ = Describe(deaUnsupportedTag+"Healthcheck", func() {
 				"push", appName,
 				"-p", assets.NewAssets().Dora,
 				"--no-start",
-				"-b", "ruby_buildpack",
+				"-b", config.RubyBuildpackName,
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-d", config.AppsDomain,
 				"-i", "1",

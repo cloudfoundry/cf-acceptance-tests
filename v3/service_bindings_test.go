@@ -91,7 +91,7 @@ var _ = Describe("service bindings", func() {
 
 	// TODO Unpend this test once v3 service bindings can be deleted (especially recursively through org delete)
 	PIt("exposes them during running", func() {
-		dropletGuid := StageBuildpackPackage(packageGuid, "ruby_buildpack")
+		dropletGuid := StageBuildpackPackage(packageGuid, config.RubyBuildpackName)
 		WaitForDropletToStage(dropletGuid)
 		AssignDropletToApp(appGuid, dropletGuid)
 		CreateAndMapRoute(appGuid, context.RegularUserContext().Space, config.AppsDomain, appName)
