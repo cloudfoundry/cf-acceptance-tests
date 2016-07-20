@@ -47,7 +47,7 @@ var _ = Describe("v3 buildpack app lifecycle", func() {
 		})
 
 		It("can run apps with processes from the Procfile", func() {
-			dropletGuid := StageBuildpackPackage(packageGuid, "ruby_buildpack")
+			dropletGuid := StageBuildpackPackage(packageGuid, config.RubyBuildpackName)
 			WaitForDropletToStage(dropletGuid)
 
 			AssignDropletToApp(appGuid, dropletGuid)
@@ -105,7 +105,7 @@ var _ = Describe("v3 buildpack app lifecycle", func() {
 		})
 
 		It("can run spring apps", func() {
-			dropletGuid := StageBuildpackPackage(packageGuid, "java_buildpack")
+			dropletGuid := StageBuildpackPackage(packageGuid, config.JavaBuildpackName)
 			WaitForDropletToStage(dropletGuid)
 
 			AssignDropletToApp(appGuid, dropletGuid)
