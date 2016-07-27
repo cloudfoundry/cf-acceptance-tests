@@ -48,6 +48,10 @@ var _ = Describe("Security Groups", func() {
 	var privatePort int
 
 	BeforeEach(func() {
+		// This is to fail early.
+		// If there is no load balancer this test suite should not be run.
+		Expect(cf.Cf("security-group", "load_balancer").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+
 		serverAppName = generator.PrefixedRandomName("CATS-APP-")
 		Expect(cf.Cf("push",
 			serverAppName,
