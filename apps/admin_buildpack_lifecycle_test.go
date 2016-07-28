@@ -60,11 +60,7 @@ var _ = Describe("Admin Buildpacks", func() {
 					Name: "bin/compile",
 					Body: `#!/usr/bin/env bash
 
-sleep 5 # give loggregator time to start streaming the logs
-
-echo "Staging with Simple Buildpack"
-
-sleep 10
+exit 0
 `,
 				},
 				{
@@ -251,7 +247,8 @@ exit 1
 
 		start := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)
 		Expect(start).To(Exit(0))
-		Expect(start).To(Say("Staging with Simple Buildpack"))
+		appOutput := cf.Cf("app", appName).Wait(DEFAULT_TIMEOUT)
+		Expect(appOutput).To(Say("buildpack: Simple"))
 	}
 
 	itDoesNotDetectForEmptyApp := func() {
