@@ -1,6 +1,7 @@
 package operator
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"path"
@@ -91,8 +92,14 @@ exit 1
 			buildpackZip := createBuildpack(envVarName)
 
 			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-				env := fmt.Sprintf(`{"%s": "%s"}`, envVarName, envVarValue)
-				Expect(cf.Cf("set-staging-environment-variable-group", env).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				originalStagingEnvMap := map[string]string{}
+				err := json.Unmarshal([]byte(originalStagingEnv), &originalStagingEnvMap)
+				Expect(err).NotTo(HaveOccurred())
+				originalStagingEnvMap[envVarName] = envVarValue
+				jsonObj, err := json.Marshal(originalStagingEnvMap)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(cf.Cf("set-staging-environment-variable-group", string(jsonObj)).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 
@@ -136,8 +143,14 @@ exit 1
 
 		It("Applies correct environment variables while running apps", func() {
 			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-				env := fmt.Sprintf(`{"%s": "%s"}`, envVarName, envVarValue)
-				Expect(cf.Cf("set-running-environment-variable-group", env).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				originalRunningEnvMap := map[string]string{}
+				err := json.Unmarshal([]byte(originalRunningEnv), &originalRunningEnvMap)
+				Expect(err).NotTo(HaveOccurred())
+				originalRunningEnvMap[envVarName] = envVarValue
+				jsonObj, err := json.Marshal(originalRunningEnvMap)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(cf.Cf("set-running-environment-variable-group", string(jsonObj)).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 
 			Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
