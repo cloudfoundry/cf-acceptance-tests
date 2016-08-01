@@ -77,7 +77,17 @@ exit 1
 			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 
 			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-				Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/staging", "-X", "PUT", "-d", originalStagingEnv).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				session := cf.Cf("curl", "/v2/config/environment_variable_groups/staging").Wait(DEFAULT_TIMEOUT)
+				Expect(session).To(Exit(0))
+				stagingEnv := string(session.Out.Contents())
+				stagingEnvMap := map[string]string{}
+				err := json.Unmarshal([]byte(stagingEnv), &stagingEnvMap)
+				Expect(err).NotTo(HaveOccurred())
+				delete(stagingEnvMap, envVarName)
+				jsonObj, err := json.Marshal(stagingEnvMap)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/staging", "-X", "PUT", "-d", string(jsonObj)).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
 				if buildpackName != "" {
 					Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
@@ -126,6 +136,17 @@ exit 1
 
 			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				session := cf.Cf("curl", "/v2/config/environment_variable_groups/running").Wait(DEFAULT_TIMEOUT)
+				Expect(session).To(Exit(0))
+				runningEnv := string(session.Out.Contents())
+				runningEnvMap := map[string]string{}
+				err := json.Unmarshal([]byte(runningEnv), &runningEnvMap)
+				Expect(err).NotTo(HaveOccurred())
+				delete(runningEnvMap, envVarName)
+				jsonObj, err := json.Marshal(runningEnvMap)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/running", "-X", "PUT", "-d", string(jsonObj)).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+
 				Expect(session).To(Exit(0))
 				originalRunningEnv = string(session.Out.Contents())
 			})
