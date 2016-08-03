@@ -1,4 +1,4 @@
-package operator
+package apps
 
 import (
 	"encoding/json"

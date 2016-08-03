@@ -1,4 +1,4 @@
-package operator
+package apps
 
 import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
