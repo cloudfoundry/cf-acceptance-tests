@@ -105,7 +105,7 @@ export CONFIG=$PWD/integration_config.json
 The full set of config parameters is explained below:
 
 * `api` (required): Cloud Controller API endpoint.
-* `admin_user` (required): Name of a user in your CF instance with admin credentials.  This admin user must have the `doppler.firehose` scope if running the `logging` firehose tests.
+* `admin_user` (required): Name of a user in your CF instance with admin credentials.  This admin user must have the `doppler.firehose` scope.
 * `admin_password` (required): Password of the admin user above.
 * `apps_domain` (required): A shared domain that tests can use to create subdomains that will route to applications also craeted in the tests.
 * `skip_ssl_validation`: Set to true if using an invalid (e.g. self-signed) cert for traffic routed to your CF instance; this is generally always true for BOSH-Lite deployments of CF.
@@ -127,8 +127,6 @@ The full set of config parameters is explained below:
 * `broker_start_timeout` (optional, only relevant for `services` suite): Time (in seconds) to wait for service broker test app to start.
 * `test_password` (optional): Used to set the password for the test user. This may be needed if your CF installation has password policies.
 * `timeout_scale` (optional): Used primarily to scale default timeouts for test setup and teardown actions (e.g. creating an org) as opposed to main test actions (e.g. pushing an app).
-* `syslog_ip_address` (only required for `logging` suite): This must be a publically accessible IP address of your local machine, accessible by applications within your CF deployment.
-* `syslog_drain_port` (only required for `logging` suite): This must be an available port on your local machine.
 * `use_http` (optional): Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
 * `staticfile_buildpack_name` (optional) [See below](#buildpack-names).
 * `java_buildpack_name` (optional) [See below](#buildpack-names).
@@ -241,7 +239,6 @@ Test Suite Name| Compatable Backend | Description
 `detect` | DEA or Diego | Tests the ability of the platform to detect the correct buildpack for compiling an application if no buildpack is explicitly specified.
 `docker`| Diego |Test our ability to run docker containers on diego and that we handle docker metadata correctly.
 `internet_dependent`| DEA or Diego | This suite tests the feature of being able to specify a buildpack via a Github URL.  As such, this depends on your Cloud Foundry application containers having access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
-`logging`| DEA or Diego | This test exercises the syslog drain forwarding functionality. A TCP listener is deployed to Cloud Foundry. Another app is deployed to the target Cloud Foundry and bound to that listener (as a syslog drain) and the drain is checked for log messages.
 `operator`| DEA or Diego |Tests in this package are only intended to be run in non-production environments.  They may not clean up after themselves and may affect global CF state.  They test some miscellaneous features; read the tests for more details.
 `routing`| DEA or Diego |This package contains routing specific acceptance tests (Context path, wildcard, SSL termination, sticky sessions).
 `route_services` | Diego |This package contains route services acceptance tests.
