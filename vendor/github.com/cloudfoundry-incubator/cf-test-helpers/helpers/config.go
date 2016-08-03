@@ -48,9 +48,6 @@ type Config struct {
 
 	TimeoutScale float64 `json:"timeout_scale"`
 
-	SyslogDrainPort int    `json:"syslog_drain_port"`
-	SyslogIpAddress string `json:"syslog_ip_address"`
-
 	SecureAddress string `json:"secure_address"`
 
 	DockerExecutable      string   `json:"docker_executable"`
