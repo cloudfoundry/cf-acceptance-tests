@@ -29,7 +29,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 
 		BeforeEach(func() {
 			broker = NewServiceBroker(
-				generator.PrefixedRandomName("pblc-brkr-"),
+				generator.RandomNameForResource("BROKER"),
 				assets.NewAssets().ServiceBroker,
 				context,
 			)
@@ -60,8 +60,8 @@ var _ = Describe("Service Broker Lifecycle", func() {
 				// Changing the catalog on the broker
 				oldServiceName = broker.Service.Name
 				oldPlanName = broker.SyncPlans[0].Name
-				broker.Service.Name = generator.PrefixedRandomName("pblc-brkr-")
-				broker.SyncPlans[0].Name = generator.PrefixedRandomName("pblc-brkr-")
+				broker.Service.Name = generator.RandomNameForResource("SVC")
+				broker.SyncPlans[0].Name = generator.RandomNameForResource("SVC-PLAN")
 				broker.Configure()
 				broker.Update()
 
@@ -195,7 +195,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 	Describe("private brokers", func() {
 		BeforeEach(func() {
 			broker = NewServiceBroker(
-				generator.PrefixedRandomName("prbr-"),
+				generator.RandomNameForResource("BROKER"),
 				assets.NewAssets().ServiceBroker,
 				context,
 			)

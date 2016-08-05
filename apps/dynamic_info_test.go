@@ -17,7 +17,7 @@ var _ = Describe("A running application", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = generator.PrefixedRandomName("CATS-APP-")
+		appName = generator.RandomNameForResource("APP")
 
 		Expect(cf.Cf("push",
 			appName,

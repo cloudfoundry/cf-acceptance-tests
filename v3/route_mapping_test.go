@@ -35,7 +35,7 @@ var _ = Describe("route_mapping", func() {
 	)
 
 	BeforeEach(func() {
-		appName = generator.PrefixedRandomName("CATS-APP-")
+		appName = generator.RandomNameForResource("APP")
 		spaceName = context.RegularUserContext().Space
 		spaceGuid = GetSpaceGuidFromName(spaceName)
 		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)

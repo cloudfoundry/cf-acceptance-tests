@@ -26,7 +26,7 @@ var _ = Describe("v3 buildpack app lifecycle", func() {
 	)
 
 	BeforeEach(func() {
-		appName = generator.PrefixedRandomName("CATS-APP-")
+		appName = generator.RandomNameForResource("APP")
 		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
 		appCreationEnvironmentVariables = `"foo"=>"bar"`
 		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
@@ -158,7 +158,7 @@ var _ = Describe("v3 docker app lifecycle", func() {
 		)
 
 		BeforeEach(func() {
-			appName = generator.PrefixedRandomName("CATS-APP-")
+			appName = generator.RandomNameForResource("APP")
 			spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
 			appCreationEnvironmentVariables = `"foo":"bar"`
 			appGuid = CreateDockerApp(appName, spaceGuid, `{"foo":"bar"}`)

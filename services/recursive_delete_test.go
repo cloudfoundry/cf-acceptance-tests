@@ -20,7 +20,7 @@ var _ = Describe("Recursive Delete", func() {
 
 	BeforeEach(func() {
 		broker = NewServiceBroker(
-			generator.PrefixedRandomName("rec-del"),
+			generator.RandomNameForResource("BROKER"),
 			assets.NewAssets().ServiceBroker,
 			context,
 		)
@@ -29,11 +29,11 @@ var _ = Describe("Recursive Delete", func() {
 		broker.Create()
 		broker.PublicizePlans()
 
-		orgName = generator.PrefixedRandomName("rec-del")
-		quotaName = generator.PrefixedRandomName("rec-del")
-		spaceName := generator.PrefixedRandomName("rec-del")
-		appName := generator.PrefixedRandomName("rec-del")
-		instanceName := generator.PrefixedRandomName("rec-del")
+		orgName = generator.RandomNameForResource("ORG")
+		quotaName = generator.RandomNameForResource("QUOTA")
+		spaceName := generator.RandomNameForResource("SPACE")
+		appName := generator.RandomNameForResource("APP")
+		instanceName := generator.RandomNameForResource("SVCINS")
 
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			createQuota := cf.Cf("create-quota", quotaName, "-m", "10G", "-r", "1000", "-s", "5").Wait(context.ShortTimeout())

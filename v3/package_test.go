@@ -31,7 +31,7 @@ var _ = Describe("package features", func() {
 	)
 
 	BeforeEach(func() {
-		appName = generator.PrefixedRandomName("CATS-APP-")
+		appName = generator.RandomNameForResource("APP")
 		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
@@ -57,7 +57,7 @@ var _ = Describe("package features", func() {
 		})
 
 		It("can copy package bits to another app and download the package", func() {
-			destinationAppName := generator.PrefixedRandomName("CATS-APP-")
+			destinationAppName := generator.RandomNameForResource("APP")
 			destinationAppGuid = CreateApp(destinationAppName, spaceGuid, "{}")
 
 			// COPY

@@ -85,19 +85,19 @@ func NewServiceBroker(name string, path string, context helpers.SuiteContext) Se
 	b := ServiceBroker{}
 	b.Path = path
 	b.Name = name
-	b.Service.Name = generator.RandomName()
-	b.Service.ID = generator.RandomName()
+	b.Service.Name = generator.RandomNameForResource("SVC")
+	b.Service.ID = generator.RandomNameForResource("SVC-ID")
 	b.SyncPlans = []Plan{
-		{Name: generator.RandomName(), ID: generator.RandomName()},
-		{Name: generator.RandomName(), ID: generator.RandomName()},
+		{Name: generator.RandomNameForResource("SVC-PLAN"), ID: generator.RandomNameForResource("SVC-PLAN-ID")},
+		{Name: generator.RandomNameForResource("SVC-PLAN"), ID: generator.RandomNameForResource("SVC-PLAN-ID")},
 	}
 	b.AsyncPlans = []Plan{
-		{Name: generator.RandomName(), ID: generator.RandomName()},
-		{Name: generator.RandomName(), ID: generator.RandomName()},
+		{Name: generator.RandomNameForResource("SVC-PLAN"), ID: generator.RandomNameForResource("SVC-PLAN-ID")},
+		{Name: generator.RandomNameForResource("SVC-PLAN"), ID: generator.RandomNameForResource("SVC-PLAN-ID")},
 	}
-	b.Service.DashboardClient.ID = generator.RandomName()
-	b.Service.DashboardClient.Secret = generator.RandomName()
-	b.Service.DashboardClient.RedirectUri = generator.RandomName()
+	b.Service.DashboardClient.ID = generator.RandomNameForResource("DASHBOARD-ID")
+	b.Service.DashboardClient.Secret = generator.RandomNameForResource("DASHBOARD-SECRET")
+	b.Service.DashboardClient.RedirectUri = generator.RandomNameForResource("DASHBOARD-URI")
 	b.context = context
 	return b
 }

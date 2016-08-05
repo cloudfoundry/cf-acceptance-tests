@@ -12,11 +12,11 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-	"github.com/cloudfoundry/noaa"
-	"github.com/cloudfoundry/noaa/events"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/matchers"
+	"github.com/cloudfoundry/noaa"
+	"github.com/cloudfoundry/noaa/events"
 
 	"crypto/tls"
 	"strings"
@@ -31,7 +31,7 @@ var _ = Describe("loggregator", func() {
 	const hundredthOfOneSecond = 10000 // this app uses millionth of seconds
 
 	BeforeEach(func() {
-		appName = generator.PrefixedRandomName("CATS-APP-")
+		appName = generator.RandomNameForResource("APP")
 
 		Expect(cf.Cf("push",
 			appName,

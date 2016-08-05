@@ -25,7 +25,7 @@ var _ = Describe("Purging service offerings", func() {
 	Context("for public brokers", func() {
 		BeforeEach(func() {
 			broker = NewServiceBroker(
-				generator.PrefixedRandomName("ps-"),
+				generator.RandomNameForResource("BROKER"),
 				assets.NewAssets().ServiceBroker,
 				context,
 			)
@@ -35,9 +35,9 @@ var _ = Describe("Purging service offerings", func() {
 				broker.Create()
 				broker.PublicizePlans()
 			})
-			appName = generator.PrefixedRandomName("CATS-APP-ps-")
-			instanceName = generator.PrefixedRandomName("CATS-SI-ps-")
-			asyncInstanceName = generator.PrefixedRandomName("CATS-SI-ps-")
+			appName = generator.RandomNameForResource("APP")
+			instanceName = generator.RandomNameForResource("SVCINS")
+			asyncInstanceName = generator.RandomNameForResource("SVCINS")
 		})
 
 		AfterEach(func() {
@@ -89,7 +89,7 @@ var _ = Describe("Purging service offerings", func() {
 	Context("for space scoped brokers", func() {
 		BeforeEach(func() {
 			broker = NewServiceBroker(
-				generator.PrefixedRandomName("prps-"),
+				generator.RandomNameForResource("BROKER"),
 				assets.NewAssets().ServiceBroker,
 				context,
 			)
@@ -97,9 +97,9 @@ var _ = Describe("Purging service offerings", func() {
 			broker.Push()
 			broker.Configure()
 			broker.CreateSpaceScoped()
-			appName = generator.PrefixedRandomName("CATS-APP-prps-")
-			instanceName = generator.PrefixedRandomName("CATS-SI-prps-")
-			asyncInstanceName = generator.PrefixedRandomName("CATS-SI-prps-")
+			appName = generator.RandomNameForResource("APP")
+			instanceName = generator.RandomNameForResource("SVCINS")
+			asyncInstanceName = generator.RandomNameForResource("SVCINS")
 		})
 
 		AfterEach(func() {

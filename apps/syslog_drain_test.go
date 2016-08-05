@@ -20,12 +20,12 @@ var _ = Describe("Logging", func() {
 	var listenerAppName string
 	var logs *Session
 	interrupt := make(chan string)
-	serviceName := "service-" + generator.RandomName()
+	serviceName := generator.RandomNameForResource("SVCINS")
 
 	Describe("Syslog drains", func() {
 		BeforeEach(func() {
-			listenerAppName = generator.PrefixedRandomName("CATS-APP-")
-			logWriterAppName = generator.PrefixedRandomName("CATS-APP-")
+			listenerAppName = generator.RandomNameForResource("APP")
+			logWriterAppName = generator.RandomNameForResource("APP")
 
 			Eventually(cf.Cf("push", listenerAppName, "--no-start", "--health-check-type", "port", "-b", config.GoBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().SyslogDrainListener, "-d", config.AppsDomain, "-f", assets.NewAssets().SyslogDrainListener+"/manifest.yml"), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to push app")
 			Eventually(cf.Cf("push", logWriterAppName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().RubySimple, "-d", config.AppsDomain), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to push app")

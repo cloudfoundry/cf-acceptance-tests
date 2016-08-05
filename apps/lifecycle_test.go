@@ -49,7 +49,7 @@ var _ = Describe("Application Lifecycle", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = generator.PrefixedRandomName("CATS-APP-")
+		appName = generator.RandomNameForResource("APP")
 	})
 
 	AfterEach(func() {
@@ -80,7 +80,7 @@ var _ = Describe("Application Lifecycle", func() {
 
 				Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
-				app2 = generator.PrefixedRandomName("CATS-APP-")
+				app2 = generator.RandomNameForResource("APP")
 				Expect(cf.Cf("push", app2, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 				app_helpers.SetBackend(app2)
 				Expect(cf.Cf("start", app2).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))

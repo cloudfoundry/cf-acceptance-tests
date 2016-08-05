@@ -62,7 +62,7 @@ exit 1
 		var envVarName, envVarValue string
 
 		BeforeEach(func() {
-			appName = generator.PrefixedRandomName("CATS-APP-")
+			appName = generator.RandomNameForResource("APP")
 			envVarName = fmt.Sprintf("CATS_STAGING_TEST_VAR_%s", strconv.Itoa(int(time.Now().UnixNano())))
 			envVarValue = fmt.Sprintf("staging_env_value_%s", strconv.Itoa(int(time.Now().UnixNano())))
 
@@ -98,7 +98,7 @@ exit 1
 		})
 
 		It("Applies environment variables while staging apps", func() {
-			buildpackName = generator.RandomName()
+			buildpackName = generator.RandomNameForResource("BPK")
 			buildpackZip := createBuildpack(envVarName)
 
 			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
@@ -130,7 +130,7 @@ exit 1
 		var envVarName, envVarValue string
 
 		BeforeEach(func() {
-			appName = generator.PrefixedRandomName("CATS-APP-")
+			appName = generator.RandomNameForResource("APP")
 			envVarName = fmt.Sprintf("CATS_RUNNING_TEST_VAR_%s", strconv.Itoa(int(time.Now().UnixNano())))
 			envVarValue = fmt.Sprintf("running_env_value_%s", strconv.Itoa(int(time.Now().UnixNano())))
 

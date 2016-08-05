@@ -20,7 +20,7 @@ var _ = Describe("FUSE", func() {
 		var appName string
 
 		BeforeEach(func() {
-			appName = generator.PrefixedRandomName("CATS-APP-")
+			appName = generator.RandomNameForResource("APP")
 		})
 
 		AfterEach(func() {

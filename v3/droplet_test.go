@@ -25,7 +25,7 @@ var _ = Describe("droplet features", func() {
 	)
 
 	BeforeEach(func() {
-		appName = generator.PrefixedRandomName("CATS-APP-")
+		appName = generator.RandomNameForResource("APP")
 		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
@@ -46,7 +46,7 @@ var _ = Describe("droplet features", func() {
 			sourceDropletGuid = StageBuildpackPackage(packageGuid, config.RubyBuildpackName)
 			WaitForDropletToStage(sourceDropletGuid)
 
-			destinationAppName = generator.PrefixedRandomName("CATS-APP-")
+			destinationAppName = generator.RandomNameForResource("APP")
 			destinationAppGuid = CreateApp(destinationAppName, spaceGuid, "{}")
 		})
 

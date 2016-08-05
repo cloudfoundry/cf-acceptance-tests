@@ -59,7 +59,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 	Context("Synchronous operations", func() {
 		BeforeEach(func() {
 			broker = NewServiceBroker(
-				generator.PrefixedRandomName("pblc-brkr-"),
+				generator.RandomNameForResource("BROKER"),
 				assets.NewAssets().ServiceBroker,
 				context,
 			)
@@ -81,7 +81,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 				type Params struct{ Param1 string }
 				params, _ := json.Marshal(Params{Param1: "value"})
 
-				instanceName := generator.PrefixedRandomName("ss-")
+				instanceName := generator.RandomNameForResource("SVCINS")
 				createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName, "-c", string(params), "-t", tags).Wait(DEFAULT_TIMEOUT)
 				Expect(createService).To(Exit(0))
 
@@ -95,7 +95,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 			Context("when there is an existing service instance", func() {
 				var instanceName string
 				BeforeEach(func() {
-					instanceName = generator.PrefixedRandomName("ess-")
+					instanceName = generator.RandomNameForResource("SVCINS")
 					createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
 					Expect(createService).To(Exit(0), "failed creating service")
 				})
@@ -165,7 +165,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 				Describe("service keys", func() {
 					var keyName string
 					BeforeEach(func() {
-						keyName = generator.PrefixedRandomName("sk-")
+						keyName = generator.RandomNameForResource("SVC-KEY")
 					})
 					It("can create service keys", func() {
 						createKey := cf.Cf("create-service-key", instanceName, keyName).Wait(DEFAULT_TIMEOUT)
@@ -211,7 +211,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 			params, _ := json.Marshal(Params{Param1: "value"})
 
 			BeforeEach(func() {
-				appName = generator.PrefixedRandomName("CATS-APP-sil-")
+				appName = generator.RandomNameForResource("APP")
 				createApp := cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)
 				Expect(createApp).To(Exit(0), "failed creating app")
 				app_helpers.SetBackend(appName)
@@ -219,7 +219,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 
 				checkForEvents(appName, []string{"audit.app.create"})
 
-				instanceName = generator.PrefixedRandomName("eai-")
+				instanceName = generator.RandomNameForResource("SVCINS")
 				createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
 				Expect(createService).To(Exit(0), "failed creating service")
 			})
@@ -276,7 +276,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 	Context("Asynchronous operations", func() {
 		BeforeEach(func() {
 			broker = NewServiceBroker(
-				generator.PrefixedRandomName("asl-"),
+				generator.RandomNameForResource("BROKER"),
 				assets.NewAssets().ServiceBroker,
 				context,
 			)
@@ -295,7 +295,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 			type Params struct{ Param1 string }
 			params, _ := json.Marshal(Params{Param1: "value"})
 
-			instanceName := generator.PrefixedRandomName("asl-")
+			instanceName := generator.RandomNameForResource("SVCINS")
 			createService := cf.Cf("create-service", broker.Service.Name, broker.AsyncPlans[0].Name, instanceName, "-t", tags, "-c", string(params)).Wait(DEFAULT_TIMEOUT)
 			Expect(createService).To(Exit(0))
 			Expect(createService).To(Say("Create in progress."))
@@ -318,7 +318,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 
 			var instanceName string
 			BeforeEach(func() {
-				instanceName = generator.PrefixedRandomName("asl-")
+				instanceName = generator.RandomNameForResource("SVC")
 				createService := cf.Cf("create-service", broker.Service.Name, broker.AsyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
 				Expect(createService).To(Exit(0))
 				Expect(createService).To(Say("Create in progress."))
@@ -381,7 +381,7 @@ var _ = Describe("Service Instance Lifecycle", func() {
 			Context("when there is an app", func() {
 				var appName string
 				BeforeEach(func() {
-					appName = generator.PrefixedRandomName("CATS-APP-asl-")
+					appName = generator.RandomNameForResource("APP")
 					createApp := cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)
 					Expect(createApp).To(Exit(0), "failed creating app")
 					app_helpers.SetBackend(appName)

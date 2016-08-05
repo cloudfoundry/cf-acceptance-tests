@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
@@ -15,7 +16,6 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
-	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
 )
 
 var _ = Describe("buildpack", func() {
@@ -29,7 +29,7 @@ var _ = Describe("buildpack", func() {
 	)
 
 	BeforeEach(func() {
-		appName = generator.PrefixedRandomName("CATS-APP-")
+		appName = generator.RandomNameForResource("APP")
 		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
@@ -38,7 +38,7 @@ var _ = Describe("buildpack", func() {
 		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
 		WaitForPackageToBeReady(packageGuid)
 
-		buildpackName = generator.PrefixedRandomName("CATS-BP-")
+		buildpackName = generator.RandomNameForResource("BPK")
 		buildpackZip := createBuildpack()
 
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {

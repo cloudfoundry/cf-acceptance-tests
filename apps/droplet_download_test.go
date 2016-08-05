@@ -24,7 +24,7 @@ var _ = Describe("Downloading droplets", func() {
 	var out bytes.Buffer
 
 	BeforeEach(func() {
-		helloWorldAppName = generator.PrefixedRandomName("CATS-APP-")
+		helloWorldAppName = generator.RandomNameForResource("APP")
 
 		Expect(cf.Cf("push", helloWorldAppName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		app_helpers.SetBackend(helloWorldAppName)

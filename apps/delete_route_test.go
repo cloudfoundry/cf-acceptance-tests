@@ -16,7 +16,7 @@ var _ = Describe("Delete Route", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = generator.PrefixedRandomName("CATS-APP-")
+		appName = generator.RandomNameForResource("APP")
 
 		Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		app_helpers.SetBackend(appName)
@@ -34,7 +34,7 @@ var _ = Describe("Delete Route", func() {
 
 	Describe("Removing the route", func() {
 		It("Should be  able to remove and delete the route", func() {
-			secondHost := generator.RandomName()
+			secondHost := generator.RandomNameForResource("ROUTE")
 
 			By("adding a route")
 			Eventually(cf.Cf("map-route", appName, helpers.LoadConfig().AppsDomain, "-n", secondHost), DEFAULT_TIMEOUT).Should(Exit(0))

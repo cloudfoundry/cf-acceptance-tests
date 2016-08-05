@@ -4,10 +4,11 @@ import (
 	"fmt"
 
 	. "github.com/cloudfoundry-incubator/cf-routing-test-helpers/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 )
 
 var _ = Describe(deaUnsupportedTag+"Multiple App Ports", func() {
@@ -18,7 +19,7 @@ var _ = Describe(deaUnsupportedTag+"Multiple App Ports", func() {
 	)
 
 	BeforeEach(func() {
-		app = GenerateAppName()
+		app = generator.RandomNameForResource("APP")
 		cmd := fmt.Sprintf("lattice-app --ports=7777,8888,8080")
 
 		PushAppNoStart(app, latticeAppAsset, config.GoBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT, "-c", cmd)

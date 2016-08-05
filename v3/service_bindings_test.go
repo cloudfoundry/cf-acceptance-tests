@@ -33,8 +33,8 @@ var _ = Describe("service bindings", func() {
 	)
 
 	BeforeEach(func() {
-		appName = generator.PrefixedRandomName("CATS-APP-")
-		upsName = generator.PrefixedRandomName("CATS-UPS-")
+		appName = generator.RandomNameForResource("APP")
+		upsName = generator.RandomNameForResource("SVC")
 		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
@@ -67,7 +67,7 @@ var _ = Describe("service bindings", func() {
 		var buildpackName string
 
 		BeforeEach(func() {
-			buildpackName = generator.PrefixedRandomName("CATS-BP-")
+			buildpackName = generator.RandomNameForResource("BPK")
 			buildpackZip := createEnvBuildpack()
 			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))

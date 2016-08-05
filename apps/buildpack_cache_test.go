@@ -7,15 +7,15 @@ import (
 	"path"
 	"time"
 
+	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	. "github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
-	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 )
 
 var _ = Describe("Buildpack cache", func() {
@@ -35,8 +35,8 @@ var _ = Describe("Buildpack cache", func() {
 
 	BeforeEach(func() {
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			BuildpackName = RandomName()
-			appName = PrefixedRandomName("CATS-APP-")
+			BuildpackName = RandomNameForResource("BPK")
+			appName = RandomNameForResource("APP")
 
 			tmpdir, err := ioutil.TempDir(os.TempDir(), "matching-app")
 			Expect(err).ToNot(HaveOccurred())

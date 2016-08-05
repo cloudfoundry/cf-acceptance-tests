@@ -9,11 +9,11 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 )
 
 var _ = Describe(deaUnsupportedTag+"Route Services", func() {
@@ -29,13 +29,13 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 			)
 
 			BeforeEach(func() {
-				routeServiceName = GenerateAppName()
-				brokerName = generator.PrefixedRandomName("RATS-BROKER-")
-				serviceInstanceName = generator.PrefixedRandomName("RATS-SERVICE-")
-				appName = GenerateAppName()
+				routeServiceName = generator.RandomNameForResource("APP")
+				brokerName = generator.RandomNameForResource("BROKER")
+				serviceInstanceName = generator.RandomNameForResource("SVCINS")
+				appName = generator.RandomNameForResource("APP")
 
-				serviceName := generator.PrefixedRandomName("RATS-SERVICE-")
-				brokerAppName := GenerateAppName()
+				serviceName := generator.RandomNameForResource("SVC")
+				brokerAppName := generator.RandomNameForResource("APP")
 
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
@@ -80,12 +80,12 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 			)
 
 			BeforeEach(func() {
-				appName = GenerateAppName()
-				brokerName = generator.PrefixedRandomName("RATS-BROKER-")
-				serviceInstanceName = generator.PrefixedRandomName("RATS-SERVICE-")
+				appName = generator.RandomNameForResource("APP")
+				brokerName = generator.RandomNameForResource("BROKER")
+				serviceInstanceName = generator.RandomNameForResource("SVCINS")
 
-				brokerAppName := GenerateAppName()
-				serviceName := generator.PrefixedRandomName("RATS-SERVICE-")
+				brokerAppName := generator.RandomNameForResource("APP")
+				serviceName := generator.RandomNameForResource("SVC")
 
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
@@ -124,12 +124,12 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 			)
 
 			BeforeEach(func() {
-				hostname = generator.PrefixedRandomName("RATS-HOSTNAME-")
-				brokerAppName = GenerateAppName()
-				serviceInstanceName = generator.PrefixedRandomName("RATS-SERVICE-")
-				brokerName = generator.PrefixedRandomName("RATS-BROKER-")
+				hostname = generator.RandomNameForResource("ROUTE")
+				brokerAppName = generator.RandomNameForResource("APP")
+				serviceInstanceName = generator.RandomNameForResource("SVCINS")
+				brokerName = generator.RandomNameForResource("BROKER")
 
-				serviceName := generator.PrefixedRandomName("RATS-SERVICE-")
+				serviceName := generator.RandomNameForResource("SVC")
 
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
@@ -282,8 +282,8 @@ func initiateBrokerConfig(serviceName, serviceBrokerAppName string) {
 	err := json.Unmarshal([]byte(brokerConfigJson), &brokerConfigMap)
 	Expect(err).NotTo(HaveOccurred())
 
-	dashboardClientId := generator.PrefixedRandomName("RATS-DASHBOARD-ID-")
-	serviceId := generator.PrefixedRandomName("RATS-SERVICE-ID-")
+	dashboardClientId := generator.RandomNameForResource("DASHBOARD-ID")
+	serviceId := generator.RandomNameForResource("SVC-ID")
 
 	services := brokerConfigMap.key("behaviors").key("catalog").key("body")["services"].([]interface{})
 	service := services[0].(map[string]interface{})
@@ -294,7 +294,7 @@ func initiateBrokerConfig(serviceName, serviceBrokerAppName string) {
 	plans := service["plans"].([]interface{})
 
 	for i, plan := range plans {
-		servicePlanId := generator.PrefixedRandomName(fmt.Sprintf("RATS-SERVICE-PLAN-ID-%d-", i))
+		servicePlanId := generator.RandomNameForResource(fmt.Sprintf("SVC-PLAN-ID-%d-", i))
 		plan.(map[string]interface{})["id"] = servicePlanId
 	}
 

@@ -18,7 +18,7 @@ var _ = Describe("Buildpacks", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = generator.PrefixedRandomName("CATS-APP-")
+		appName = generator.RandomNameForResource("APP")
 	})
 
 	AfterEach(func() {

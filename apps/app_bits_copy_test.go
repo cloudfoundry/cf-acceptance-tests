@@ -17,8 +17,8 @@ var _ = Describe("Copy app bits", func() {
 	var helloWorldAppName string
 
 	BeforeEach(func() {
-		golangAppName = generator.PrefixedRandomName("CATS-APP-")
-		helloWorldAppName = generator.PrefixedRandomName("CATS-APP-")
+		golangAppName = generator.RandomNameForResource("APP")
+		helloWorldAppName = generator.RandomNameForResource("APP")
 
 		Expect(cf.Cf("push", golangAppName,
 			"--no-start",

@@ -20,7 +20,7 @@ var _ = Describe("SSO Lifecycle", func() {
 
 	BeforeEach(func() {
 		broker = NewServiceBroker(
-			generator.PrefixedRandomName("sso-lifecycle-"),
+			generator.RandomNameForResource("BROKER"),
 			assets.NewAssets().ServiceBroker,
 			context,
 		)
@@ -50,7 +50,7 @@ var _ = Describe("SSO Lifecycle", func() {
 		It("can perform an operation on a user's behalf using sso", func() {
 			//create a service instance
 			broker.PublicizePlans()
-			serviceInstanceGuid := broker.CreateServiceInstance(generator.PrefixedRandomName("sso-lifecycle-"))
+			serviceInstanceGuid := broker.CreateServiceInstance(generator.RandomNameForResource("SVC"))
 
 			// perform the OAuth lifecycle to obtain an access token
 			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
@@ -71,7 +71,7 @@ var _ = Describe("SSO Lifecycle", func() {
 
 	Context("When a service broker is updated with a new dashboard client", func() {
 		It("can perform an operation on a user's behalf using sso", func() {
-			config.ClientId = generator.PrefixedRandomName("sso-lifecycle-")
+			config.ClientId = generator.RandomNameForResource("CLIENT-ID")
 			broker.Service.DashboardClient.ID = config.ClientId
 			broker.Configure()
 
@@ -79,7 +79,7 @@ var _ = Describe("SSO Lifecycle", func() {
 
 			//create a service instance
 			broker.PublicizePlans()
-			serviceInstanceGuid := broker.CreateServiceInstance(generator.PrefixedRandomName("sso-lifecycle-"))
+			serviceInstanceGuid := broker.CreateServiceInstance(generator.RandomNameForResource("SVC"))
 
 			// perform the OAuth lifecycle to obtain an access token
 			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)

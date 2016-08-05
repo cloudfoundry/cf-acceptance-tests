@@ -16,7 +16,7 @@ var _ = Describe("Encoding", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = generator.PrefixedRandomName("CATS-APP-")
+		appName = generator.RandomNameForResource("APP")
 		Expect(cf.Cf("push",
 			appName,
 			"--no-start",

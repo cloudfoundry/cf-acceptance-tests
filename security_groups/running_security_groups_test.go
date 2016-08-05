@@ -48,7 +48,7 @@ var _ = Describe("Security Groups", func() {
 	var privatePort int
 
 	BeforeEach(func() {
-		serverAppName = generator.PrefixedRandomName("CATS-APP-")
+		serverAppName = generator.RandomNameForResource("APP")
 		Expect(cf.Cf("push",
 			serverAppName,
 			"--no-start",
@@ -85,7 +85,7 @@ var _ = Describe("Security Groups", func() {
 	// are discoverable via the cc api and dora's myip endpoint
 	It("allows previously-blocked ip traffic after applying a security group, and re-blocks it when the group is removed", func() {
 
-		clientAppName := generator.PrefixedRandomName("CATS-APP-")
+		clientAppName := generator.RandomNameForResource("APP")
 		Expect(cf.Cf("push", clientAppName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		app_helpers.SetBackend(clientAppName)
 		Expect(cf.Cf("start", clientAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
@@ -119,7 +119,7 @@ var _ = Describe("Security Groups", func() {
 		file.WriteString(rules)
 
 		rulesPath := file.Name()
-		securityGroupName = fmt.Sprintf("CATS-SG-%s", generator.RandomName())
+		securityGroupName = generator.RandomNameForResource("SG")
 
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("create-security-group", securityGroupName, rulesPath).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
@@ -155,8 +155,8 @@ var _ = Describe("Security Groups", func() {
 	})
 
 	It("allows external and denies internal traffic during staging based on default staging security rules", func() {
-		buildpack := fmt.Sprintf("CATS-SGBP-%s", generator.RandomName())
-		testAppName := generator.PrefixedRandomName("CATS-APP-")
+		buildpack := generator.RandomNameForResource("BPK")
+		testAppName := generator.RandomNameForResource("APP")
 		privateUri := fmt.Sprintf("%s:%d", privateHost, privatePort)
 
 		buildpackZip := assets.NewAssets().SecurityGroupBuildpack
