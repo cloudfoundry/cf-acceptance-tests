@@ -11,18 +11,18 @@
 			"notests": true
 		},
 		{
-			"importpath": "github.com/apoydence/eachers",
-			"repository": "https://github.com/apoydence/eachers",
+			"importpath": "code.cloudfoundry.org/cf-routing-test-helpers",
+			"repository": "https://github.com/cloudfoundry-incubator/cf-routing-test-helpers",
 			"vcs": "git",
-			"revision": "d8b651c8dda6b446f2da0dd1210ddf9b7817274d",
+			"revision": "480b43ec0bb53f8135fda080dd7dfa242d799544",
 			"branch": "master",
 			"notests": true
 		},
 		{
-			"importpath": "github.com/cloudfoundry-incubator/cf-routing-test-helpers",
-			"repository": "https://github.com/cloudfoundry-incubator/cf-routing-test-helpers",
+			"importpath": "github.com/apoydence/eachers",
+			"repository": "https://github.com/apoydence/eachers",
 			"vcs": "git",
-			"revision": "480b43ec0bb53f8135fda080dd7dfa242d799544",
+			"revision": "d8b651c8dda6b446f2da0dd1210ddf9b7817274d",
 			"branch": "master",
 			"notests": true
 		},
