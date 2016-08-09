@@ -6,11 +6,11 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
 var _ = Describe("Wildcard Routes", func() {
@@ -33,13 +33,13 @@ var _ = Describe("Wildcard Routes", func() {
 		orgName = context.RegularUserContext().Org
 		spaceName = context.RegularUserContext().Space
 
-		domainName = generator.RandomName() + "." + helpers.LoadConfig().AppsDomain
+		domainName = random_name.CATSRandomName("DOMAIN") + "." + helpers.LoadConfig().AppsDomain
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("create-shared-domain", domainName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		})
 
-		appNameDora = generator.RandomNameForResource("APP")
-		appNameSimple = generator.RandomNameForResource("APP")
+		appNameDora = random_name.CATSRandomName("APP")
+		appNameSimple = random_name.CATSRandomName("APP")
 
 		Expect(cf.Cf(
 			"push", appNameDora,

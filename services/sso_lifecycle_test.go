@@ -4,10 +4,10 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 )
 
@@ -20,7 +20,7 @@ var _ = Describe("SSO Lifecycle", func() {
 
 	BeforeEach(func() {
 		broker = NewServiceBroker(
-			generator.RandomNameForResource("BROKER"),
+			random_name.CATSRandomName("BROKER"),
 			assets.NewAssets().ServiceBroker,
 			context,
 		)
@@ -50,7 +50,7 @@ var _ = Describe("SSO Lifecycle", func() {
 		It("can perform an operation on a user's behalf using sso", func() {
 			//create a service instance
 			broker.PublicizePlans()
-			serviceInstanceGuid := broker.CreateServiceInstance(generator.RandomNameForResource("SVC"))
+			serviceInstanceGuid := broker.CreateServiceInstance(random_name.CATSRandomName("SVC"))
 
 			// perform the OAuth lifecycle to obtain an access token
 			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
@@ -71,7 +71,7 @@ var _ = Describe("SSO Lifecycle", func() {
 
 	Context("When a service broker is updated with a new dashboard client", func() {
 		It("can perform an operation on a user's behalf using sso", func() {
-			config.ClientId = generator.RandomNameForResource("CLIENT-ID")
+			config.ClientId = random_name.CATSRandomName("CLIENT-ID")
 			broker.Service.DashboardClient.ID = config.ClientId
 			broker.Configure()
 
@@ -79,7 +79,7 @@ var _ = Describe("SSO Lifecycle", func() {
 
 			//create a service instance
 			broker.PublicizePlans()
-			serviceInstanceGuid := broker.CreateServiceInstance(generator.RandomNameForResource("SVC"))
+			serviceInstanceGuid := broker.CreateServiceInstance(random_name.CATSRandomName("SVC"))
 
 			// perform the OAuth lifecycle to obtain an access token
 			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)

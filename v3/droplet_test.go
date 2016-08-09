@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 
 	. "github.com/onsi/ginkgo"
@@ -25,7 +25,7 @@ var _ = Describe("droplet features", func() {
 	)
 
 	BeforeEach(func() {
-		appName = generator.RandomNameForResource("APP")
+		appName = random_name.CATSRandomName("APP")
 		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
@@ -46,7 +46,7 @@ var _ = Describe("droplet features", func() {
 			sourceDropletGuid = StageBuildpackPackage(packageGuid, config.RubyBuildpackName)
 			WaitForDropletToStage(sourceDropletGuid)
 
-			destinationAppName = generator.RandomNameForResource("APP")
+			destinationAppName = random_name.CATSRandomName("APP")
 			destinationAppGuid = CreateApp(destinationAppName, spaceGuid, "{}")
 		})
 

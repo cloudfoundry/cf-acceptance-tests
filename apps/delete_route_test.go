@@ -6,17 +6,17 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
 var _ = Describe("Delete Route", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = generator.RandomNameForResource("APP")
+		appName = random_name.CATSRandomName("APP")
 
 		Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		app_helpers.SetBackend(appName)
@@ -34,7 +34,7 @@ var _ = Describe("Delete Route", func() {
 
 	Describe("Removing the route", func() {
 		It("Should be  able to remove and delete the route", func() {
-			secondHost := generator.RandomNameForResource("ROUTE")
+			secondHost := random_name.CATSRandomName("ROUTE")
 
 			By("adding a route")
 			Eventually(cf.Cf("map-route", appName, helpers.LoadConfig().AppsDomain, "-n", secondHost), DEFAULT_TIMEOUT).Should(Exit(0))

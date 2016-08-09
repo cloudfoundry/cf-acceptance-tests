@@ -9,15 +9,15 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
 var _ = Describe(deaUnsupportedTag+"Healthcheck", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = generator.RandomNameForResource("APP")
+		appName = random_name.CATSRandomName("APP")
 	})
 
 	AfterEach(func() {

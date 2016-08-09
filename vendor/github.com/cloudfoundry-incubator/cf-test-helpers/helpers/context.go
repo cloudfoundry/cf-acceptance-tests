@@ -10,6 +10,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 )
 
 const RUNAWAY_QUOTA_MEM_LIMIT = "99999G"
@@ -62,10 +63,10 @@ func NewContext(config Config) *ConfiguredContext {
 		shortTimeout: config.ScaledTimeout(1 * time.Minute),
 		longTimeout:  config.ScaledTimeout(5 * time.Minute),
 
-		quotaDefinitionName: fmt.Sprintf("%s-QUOTA-%d-%s", config.NamePrefix, node, timeTag),
+		quotaDefinitionName: generator.PrefixedRandomName(config.NamePrefix, "QUOTA"),
 
-		organizationName: fmt.Sprintf("%s-ORG-%d-%s", config.NamePrefix, node, timeTag),
-		spaceName:        fmt.Sprintf("%s-SPACE-%d-%s", config.NamePrefix, node, timeTag),
+		organizationName: generator.PrefixedRandomName(config.NamePrefix, "ORG"),
+		spaceName:        generator.PrefixedRandomName(config.NamePrefix, "SPACE"),
 
 		regularUserUsername: regUser,
 		regularUserPassword: regUserPass,

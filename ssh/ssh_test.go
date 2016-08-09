@@ -11,11 +11,11 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
 	ginkgoconfig "github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
@@ -27,7 +27,7 @@ var _ = Describe(deaUnsupportedTag+"SSH", func() {
 	var appName string
 
 	BeforeEach(func() {
-		appName = generator.RandomNameForResource("APP")
+		appName = random_name.CATSRandomName("APP")
 		Eventually(cf.Cf(
 			"push", appName,
 			"-p", assets.NewAssets().Dora,

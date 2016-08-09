@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 
 	. "github.com/onsi/ginkgo"
@@ -38,7 +38,7 @@ var _ = Describe("v3 tasks", func() {
 	)
 
 	BeforeEach(func() {
-		appName = generator.RandomNameForResource("APP")
+		appName = random_name.CATSRandomName("APP")
 		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
 		appCreationEnvironmentVariables = `"foo"=>"bar"`
 		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)

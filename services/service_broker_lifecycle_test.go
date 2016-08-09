@@ -11,10 +11,10 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 )
 
@@ -29,7 +29,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 
 		BeforeEach(func() {
 			broker = NewServiceBroker(
-				generator.RandomNameForResource("BROKER"),
+				random_name.CATSRandomName("BROKER"),
 				assets.NewAssets().ServiceBroker,
 				context,
 			)
@@ -60,8 +60,8 @@ var _ = Describe("Service Broker Lifecycle", func() {
 				// Changing the catalog on the broker
 				oldServiceName = broker.Service.Name
 				oldPlanName = broker.SyncPlans[0].Name
-				broker.Service.Name = generator.RandomNameForResource("SVC")
-				broker.SyncPlans[0].Name = generator.RandomNameForResource("SVC-PLAN")
+				broker.Service.Name = random_name.CATSRandomName("SVC")
+				broker.SyncPlans[0].Name = random_name.CATSRandomName("SVC-PLAN")
 				broker.Configure()
 				broker.Update()
 
@@ -195,7 +195,7 @@ var _ = Describe("Service Broker Lifecycle", func() {
 	Describe("private brokers", func() {
 		BeforeEach(func() {
 			broker = NewServiceBroker(
-				generator.RandomNameForResource("BROKER"),
+				random_name.CATSRandomName("BROKER"),
 				assets.NewAssets().ServiceBroker,
 				context,
 			)

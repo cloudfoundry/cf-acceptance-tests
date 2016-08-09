@@ -10,10 +10,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 )
@@ -54,7 +54,7 @@ func SetOauthEndpoints(apiEndpoint string, config *OAuthConfig) {
 func AuthenticateUser(authorizationEndpoint string, username string, password string) (cookie string) {
 	loginCsrfUri := fmt.Sprintf("%v/login", authorizationEndpoint)
 
-	cookieFile, err := ioutil.TempFile("", "cats-csrf-cookie"+generator.RandomName())
+	cookieFile, err := ioutil.TempFile("", random_name.CATSRandomName("CATS-CSRF-COOKIE"))
 	Expect(err).ToNot(HaveOccurred())
 	cookiePath := cookieFile.Name()
 	defer func() {

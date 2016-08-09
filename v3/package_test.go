@@ -8,9 +8,9 @@ import (
 	"path"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 
 	. "github.com/onsi/ginkgo"
@@ -31,7 +31,7 @@ var _ = Describe("package features", func() {
 	)
 
 	BeforeEach(func() {
-		appName = generator.RandomNameForResource("APP")
+		appName = random_name.CATSRandomName("APP")
 		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
@@ -57,7 +57,7 @@ var _ = Describe("package features", func() {
 		})
 
 		It("can copy package bits to another app and download the package", func() {
-			destinationAppName := generator.RandomNameForResource("APP")
+			destinationAppName := random_name.CATSRandomName("APP")
 			destinationAppGuid = CreateApp(destinationAppName, spaceGuid, "{}")
 
 			// COPY

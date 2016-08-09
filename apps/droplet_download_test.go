@@ -14,9 +14,9 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
 var _ = Describe("Downloading droplets", func() {
@@ -24,7 +24,7 @@ var _ = Describe("Downloading droplets", func() {
 	var out bytes.Buffer
 
 	BeforeEach(func() {
-		helloWorldAppName = generator.RandomNameForResource("APP")
+		helloWorldAppName = random_name.CATSRandomName("APP")
 
 		Expect(cf.Cf("push", helloWorldAppName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		app_helpers.SetBackend(helloWorldAppName)

@@ -9,10 +9,10 @@ import (
 	"time"
 
 	. "github.com/cloudfoundry-incubator/cf-routing-test-helpers/helpers"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
@@ -31,7 +31,7 @@ var _ = Describe("Session Affinity", func() {
 			cookieStorePath string
 		)
 		BeforeEach(func() {
-			appName = generator.RandomNameForResource("APP")
+			appName = random_name.CATSRandomName("APP")
 			PushApp(appName, stickyAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
 
 			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
@@ -81,7 +81,7 @@ var _ = Describe("Session Affinity", func() {
 		)
 
 		BeforeEach(func() {
-			appName = generator.RandomNameForResource("APP")
+			appName = random_name.CATSRandomName("APP")
 			PushApp(appName, helloWorldAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
 		})
 
@@ -129,14 +129,14 @@ var _ = Describe("Session Affinity", func() {
 		BeforeEach(func() {
 			domain := config.AppsDomain
 
-			app1 = generator.RandomNameForResource("APP")
+			app1 = random_name.CATSRandomName("APP")
 			PushApp(app1, stickyAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
-			app2 = generator.RandomNameForResource("APP")
+			app2 = random_name.CATSRandomName("APP")
 			PushApp(app2, stickyAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
 
 			ScaleAppInstances(app1, 2, DEFAULT_TIMEOUT)
 			ScaleAppInstances(app2, 2, DEFAULT_TIMEOUT)
-			hostname = generator.RandomNameForResource("ROUTE")
+			hostname = random_name.CATSRandomName("ROUTE")
 
 			MapRouteToApp(app1, domain, hostname, app1Path, DEFAULT_TIMEOUT)
 			MapRouteToApp(app2, domain, hostname, app2Path, DEFAULT_TIMEOUT)
@@ -200,9 +200,9 @@ var _ = Describe("Session Affinity", func() {
 		BeforeEach(func() {
 			domain := config.AppsDomain
 
-			app1 = generator.RandomNameForResource("APP")
+			app1 = random_name.CATSRandomName("APP")
 			PushApp(app1, stickyAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
-			app2 = generator.RandomNameForResource("APP")
+			app2 = random_name.CATSRandomName("APP")
 			PushApp(app2, stickyAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
 
 			ScaleAppInstances(app1, 2, DEFAULT_TIMEOUT)

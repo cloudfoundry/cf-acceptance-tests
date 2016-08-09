@@ -10,11 +10,11 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/matchers"
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/noaa"
 	"github.com/cloudfoundry/noaa/events"
 
@@ -31,7 +31,7 @@ var _ = Describe("loggregator", func() {
 	const hundredthOfOneSecond = 10000 // this app uses millionth of seconds
 
 	BeforeEach(func() {
-		appName = generator.RandomNameForResource("APP")
+		appName = CATSRandomName("APP")
 
 		Expect(cf.Cf("push",
 			appName,
@@ -98,7 +98,7 @@ var _ = Describe("loggregator", func() {
 			errorChan := make(chan error)
 			stopchan := make(chan struct{})
 
-			go noaaConnection.Firehose(generator.RandomName(), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
+			go noaaConnection.Firehose(CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
 			defer close(stopchan)
 
 			Eventually(func() string {
@@ -116,7 +116,7 @@ var _ = Describe("loggregator", func() {
 			msgChan := make(chan *events.Envelope, 100000)
 			errorChan := make(chan error)
 			stopchan := make(chan struct{})
-			go noaaConnection.Firehose(generator.RandomName(), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
+			go noaaConnection.Firehose(CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
 			defer close(stopchan)
 
 			Eventually(func() bool {

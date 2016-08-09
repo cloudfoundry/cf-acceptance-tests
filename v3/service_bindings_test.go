@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 
 	. "github.com/onsi/ginkgo"
@@ -33,8 +33,8 @@ var _ = Describe("service bindings", func() {
 	)
 
 	BeforeEach(func() {
-		appName = generator.RandomNameForResource("APP")
-		upsName = generator.RandomNameForResource("SVC")
+		appName = random_name.CATSRandomName("APP")
+		upsName = random_name.CATSRandomName("SVC")
 		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
@@ -67,7 +67,7 @@ var _ = Describe("service bindings", func() {
 		var buildpackName string
 
 		BeforeEach(func() {
-			buildpackName = generator.RandomNameForResource("BPK")
+			buildpackName = random_name.CATSRandomName("BPK")
 			buildpackZip := createEnvBuildpack()
 			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))

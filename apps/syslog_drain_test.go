@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -20,12 +20,12 @@ var _ = Describe("Logging", func() {
 	var listenerAppName string
 	var logs *Session
 	interrupt := make(chan string)
-	serviceName := generator.RandomNameForResource("SVCINS")
+	serviceName := random_name.CATSRandomName("SVCINS")
 
 	Describe("Syslog drains", func() {
 		BeforeEach(func() {
-			listenerAppName = generator.RandomNameForResource("APP")
-			logWriterAppName = generator.RandomNameForResource("APP")
+			listenerAppName = random_name.CATSRandomName("APP")
+			logWriterAppName = random_name.CATSRandomName("APP")
 
 			Eventually(cf.Cf("push", listenerAppName, "--no-start", "--health-check-type", "port", "-b", config.GoBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().SyslogDrainListener, "-d", config.AppsDomain, "-f", assets.NewAssets().SyslogDrainListener+"/manifest.yml"), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to push app")
 			Eventually(cf.Cf("push", logWriterAppName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().RubySimple, "-d", config.AppsDomain), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to push app")
@@ -61,7 +61,7 @@ var _ = Describe("Logging", func() {
 			// We don't need to restage, because syslog service bindings don't change the app's environment variables
 
 			logs = cf.Cf("logs", listenerAppName)
-			randomMessage := "random-message-" + generator.RandomName()
+			randomMessage := random_name.CATSRandomName("RANDOM-MESSAGE")
 			go writeLogsUntilInterrupted(interrupt, randomMessage, logWriterAppName)
 
 			Eventually(logs, (DEFAULT_TIMEOUT + time.Minute)).Should(Say(randomMessage))

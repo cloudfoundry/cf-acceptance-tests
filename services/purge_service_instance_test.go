@@ -7,9 +7,9 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 )
 
@@ -25,7 +25,7 @@ var _ = Describe("Purging service instances", func() {
 	Context("for public brokers", func() {
 		BeforeEach(func() {
 			broker = NewServiceBroker(
-				generator.RandomNameForResource("BROKER"),
+				random_name.CATSRandomName("BROKER"),
 				assets.NewAssets().ServiceBroker,
 				context,
 			)
@@ -35,8 +35,8 @@ var _ = Describe("Purging service instances", func() {
 				broker.Create()
 				broker.PublicizePlans()
 			})
-			appName = generator.RandomNameForResource("APP")
-			instanceName = generator.RandomNameForResource("SVCINS")
+			appName = random_name.CATSRandomName("APP")
+			instanceName = random_name.CATSRandomName("SVCINS")
 		})
 
 		AfterEach(func() {
@@ -80,7 +80,7 @@ var _ = Describe("Purging service instances", func() {
 	Context("for space scoped brokers", func() {
 		BeforeEach(func() {
 			broker = NewServiceBroker(
-				generator.RandomNameForResource("BROKER"),
+				random_name.CATSRandomName("BROKER"),
 				assets.NewAssets().ServiceBroker,
 				context,
 			)
@@ -88,8 +88,8 @@ var _ = Describe("Purging service instances", func() {
 			broker.Push()
 			broker.Configure()
 			broker.CreateSpaceScoped()
-			appName = generator.RandomNameForResource("APP")
-			instanceName = generator.RandomNameForResource("SVCINS")
+			appName = random_name.CATSRandomName("APP")
+			instanceName = random_name.CATSRandomName("SVCINS")
 		})
 
 		AfterEach(func() {

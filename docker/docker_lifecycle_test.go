@@ -7,9 +7,9 @@ import (
 	"fmt"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -36,7 +36,7 @@ var _ = Describe(deaUnsupportedTag+"Docker Application Lifecycle", func() {
 
 	Describe("running a docker app with a start command", func() {
 		BeforeEach(func() {
-			appName = generator.RandomNameForResource("APP")
+			appName = random_name.CATSRandomName("APP")
 			Eventually(cf.Cf(
 				"push", appName,
 				"--no-start",
@@ -66,7 +66,7 @@ var _ = Describe(deaUnsupportedTag+"Docker Application Lifecycle", func() {
 
 	Describe("running a docker app without a start command", func() {
 		BeforeEach(func() {
-			appName = generator.RandomNameForResource("APP")
+			appName = random_name.CATSRandomName("APP")
 			Eventually(cf.Cf(
 				"push", appName,
 				"--no-start",

@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -62,7 +62,7 @@ exit 1
 		var envVarName, envVarValue string
 
 		BeforeEach(func() {
-			appName = generator.RandomNameForResource("APP")
+			appName = random_name.CATSRandomName("APP")
 			envVarName = fmt.Sprintf("CATS_STAGING_TEST_VAR_%s", strconv.Itoa(int(time.Now().UnixNano())))
 			envVarValue = fmt.Sprintf("staging_env_value_%s", strconv.Itoa(int(time.Now().UnixNano())))
 
@@ -98,7 +98,7 @@ exit 1
 		})
 
 		It("Applies environment variables while staging apps", func() {
-			buildpackName = generator.RandomNameForResource("BPK")
+			buildpackName = random_name.CATSRandomName("BPK")
 			buildpackZip := createBuildpack(envVarName)
 
 			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
@@ -130,7 +130,7 @@ exit 1
 		var envVarName, envVarValue string
 
 		BeforeEach(func() {
-			appName = generator.RandomNameForResource("APP")
+			appName = random_name.CATSRandomName("APP")
 			envVarName = fmt.Sprintf("CATS_RUNNING_TEST_VAR_%s", strconv.Itoa(int(time.Now().UnixNano())))
 			envVarValue = fmt.Sprintf("running_env_value_%s", strconv.Itoa(int(time.Now().UnixNano())))
 

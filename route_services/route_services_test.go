@@ -7,9 +7,9 @@ import (
 
 	. "github.com/cloudfoundry-incubator/cf-routing-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -29,13 +29,13 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 			)
 
 			BeforeEach(func() {
-				routeServiceName = generator.RandomNameForResource("APP")
-				brokerName = generator.RandomNameForResource("BROKER")
-				serviceInstanceName = generator.RandomNameForResource("SVCINS")
-				appName = generator.RandomNameForResource("APP")
+				routeServiceName = random_name.CATSRandomName("APP")
+				brokerName = random_name.CATSRandomName("BROKER")
+				serviceInstanceName = random_name.CATSRandomName("SVCINS")
+				appName = random_name.CATSRandomName("APP")
 
-				serviceName := generator.RandomNameForResource("SVC")
-				brokerAppName := generator.RandomNameForResource("APP")
+				serviceName := random_name.CATSRandomName("SVC")
+				brokerAppName := random_name.CATSRandomName("APP")
 
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
@@ -80,12 +80,12 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 			)
 
 			BeforeEach(func() {
-				appName = generator.RandomNameForResource("APP")
-				brokerName = generator.RandomNameForResource("BROKER")
-				serviceInstanceName = generator.RandomNameForResource("SVCINS")
+				appName = random_name.CATSRandomName("APP")
+				brokerName = random_name.CATSRandomName("BROKER")
+				serviceInstanceName = random_name.CATSRandomName("SVCINS")
 
-				brokerAppName := generator.RandomNameForResource("APP")
-				serviceName := generator.RandomNameForResource("SVC")
+				brokerAppName := random_name.CATSRandomName("APP")
+				serviceName := random_name.CATSRandomName("SVC")
 
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
@@ -124,12 +124,12 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 			)
 
 			BeforeEach(func() {
-				hostname = generator.RandomNameForResource("ROUTE")
-				brokerAppName = generator.RandomNameForResource("APP")
-				serviceInstanceName = generator.RandomNameForResource("SVCINS")
-				brokerName = generator.RandomNameForResource("BROKER")
+				hostname = random_name.CATSRandomName("ROUTE")
+				brokerAppName = random_name.CATSRandomName("APP")
+				serviceInstanceName = random_name.CATSRandomName("SVCINS")
+				brokerName = random_name.CATSRandomName("BROKER")
 
-				serviceName := generator.RandomNameForResource("SVC")
+				serviceName := random_name.CATSRandomName("SVC")
 
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
@@ -282,8 +282,8 @@ func initiateBrokerConfig(serviceName, serviceBrokerAppName string) {
 	err := json.Unmarshal([]byte(brokerConfigJson), &brokerConfigMap)
 	Expect(err).NotTo(HaveOccurred())
 
-	dashboardClientId := generator.RandomNameForResource("DASHBOARD-ID")
-	serviceId := generator.RandomNameForResource("SVC-ID")
+	dashboardClientId := random_name.CATSRandomName("DASHBOARD-ID")
+	serviceId := random_name.CATSRandomName("SVC-ID")
 
 	services := brokerConfigMap.key("behaviors").key("catalog").key("body")["services"].([]interface{})
 	service := services[0].(map[string]interface{})
@@ -294,7 +294,7 @@ func initiateBrokerConfig(serviceName, serviceBrokerAppName string) {
 	plans := service["plans"].([]interface{})
 
 	for i, plan := range plans {
-		servicePlanId := generator.RandomNameForResource(fmt.Sprintf("SVC-PLAN-ID-%d-", i))
+		servicePlanId := random_name.CATSRandomName(fmt.Sprintf("SVC-PLAN-ID-%d-", i))
 		plan.(map[string]interface{})["id"] = servicePlanId
 	}
 

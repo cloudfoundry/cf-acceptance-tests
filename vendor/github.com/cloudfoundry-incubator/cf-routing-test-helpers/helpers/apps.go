@@ -80,7 +80,7 @@ func PushApp(appName, asset, buildpackName, domain string, timeout time.Duration
 }
 
 func GenerateAppName() string {
-	return generator.PrefixedRandomName("RATS-APP-")
+	return generator.PrefixedRandomName("RATS", "APP")
 }
 
 func PushAppNoStart(appName, asset, buildpackName, domain string, timeout time.Duration, args ...string) {

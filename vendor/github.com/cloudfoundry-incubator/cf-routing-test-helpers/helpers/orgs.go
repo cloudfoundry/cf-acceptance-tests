@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 
-	"github.com/cloudfoundry-incubator/cf-routing-test-helpers/schema"
+	"code.cloudfoundry.org/cf-routing-test-helpers/schema"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 )
 

@@ -2,10 +2,10 @@ package services_test
 
 import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 
 	. "github.com/onsi/ginkgo"
@@ -20,7 +20,7 @@ var _ = Describe("Recursive Delete", func() {
 
 	BeforeEach(func() {
 		broker = NewServiceBroker(
-			generator.RandomNameForResource("BROKER"),
+			random_name.CATSRandomName("BROKER"),
 			assets.NewAssets().ServiceBroker,
 			context,
 		)
@@ -29,11 +29,11 @@ var _ = Describe("Recursive Delete", func() {
 		broker.Create()
 		broker.PublicizePlans()
 
-		orgName = generator.RandomNameForResource("ORG")
-		quotaName = generator.RandomNameForResource("QUOTA")
-		spaceName := generator.RandomNameForResource("SPACE")
-		appName := generator.RandomNameForResource("APP")
-		instanceName := generator.RandomNameForResource("SVCINS")
+		orgName = random_name.CATSRandomName("ORG")
+		quotaName = random_name.CATSRandomName("QUOTA")
+		spaceName := random_name.CATSRandomName("SPACE")
+		appName := random_name.CATSRandomName("APP")
+		instanceName := random_name.CATSRandomName("SVCINS")
 
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			createQuota := cf.Cf("create-quota", quotaName, "-m", "10G", "-r", "1000", "-s", "5").Wait(context.ShortTimeout())

@@ -2,9 +2,9 @@ package routing
 
 import (
 	. "github.com/cloudfoundry-incubator/cf-routing-test-helpers/helpers"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -24,11 +24,11 @@ var _ = Describe("Context Paths", func() {
 	BeforeEach(func() {
 		domain := config.AppsDomain
 
-		app1 = generator.RandomNameForResource("APP")
+		app1 = random_name.CATSRandomName("APP")
 		PushApp(app1, helloRoutingAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
-		app2 = generator.RandomNameForResource("APP")
+		app2 = random_name.CATSRandomName("APP")
 		PushApp(app2, helloRoutingAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
-		app3 = generator.RandomNameForResource("APP")
+		app3 = random_name.CATSRandomName("APP")
 		PushApp(app3, helloRoutingAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
 
 		hostname = app1

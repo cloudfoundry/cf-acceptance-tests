@@ -11,12 +11,12 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
 type Plan struct {
@@ -85,19 +85,19 @@ func NewServiceBroker(name string, path string, context helpers.SuiteContext) Se
 	b := ServiceBroker{}
 	b.Path = path
 	b.Name = name
-	b.Service.Name = generator.RandomNameForResource("SVC")
-	b.Service.ID = generator.RandomNameForResource("SVC-ID")
+	b.Service.Name = random_name.CATSRandomName("SVC")
+	b.Service.ID = random_name.CATSRandomName("SVC-ID")
 	b.SyncPlans = []Plan{
-		{Name: generator.RandomNameForResource("SVC-PLAN"), ID: generator.RandomNameForResource("SVC-PLAN-ID")},
-		{Name: generator.RandomNameForResource("SVC-PLAN"), ID: generator.RandomNameForResource("SVC-PLAN-ID")},
+		{Name: random_name.CATSRandomName("SVC-PLAN"), ID: random_name.CATSRandomName("SVC-PLAN-ID")},
+		{Name: random_name.CATSRandomName("SVC-PLAN"), ID: random_name.CATSRandomName("SVC-PLAN-ID")},
 	}
 	b.AsyncPlans = []Plan{
-		{Name: generator.RandomNameForResource("SVC-PLAN"), ID: generator.RandomNameForResource("SVC-PLAN-ID")},
-		{Name: generator.RandomNameForResource("SVC-PLAN"), ID: generator.RandomNameForResource("SVC-PLAN-ID")},
+		{Name: random_name.CATSRandomName("SVC-PLAN"), ID: random_name.CATSRandomName("SVC-PLAN-ID")},
+		{Name: random_name.CATSRandomName("SVC-PLAN"), ID: random_name.CATSRandomName("SVC-PLAN-ID")},
 	}
-	b.Service.DashboardClient.ID = generator.RandomNameForResource("DASHBOARD-ID")
-	b.Service.DashboardClient.Secret = generator.RandomNameForResource("DASHBOARD-SECRET")
-	b.Service.DashboardClient.RedirectUri = generator.RandomNameForResource("DASHBOARD-URI")
+	b.Service.DashboardClient.ID = random_name.CATSRandomName("DASHBOARD-ID")
+	b.Service.DashboardClient.Secret = random_name.CATSRandomName("DASHBOARD-SECRET")
+	b.Service.DashboardClient.RedirectUri = random_name.CATSRandomName("DASHBOARD-URI")
 	b.context = context
 	return b
 }
