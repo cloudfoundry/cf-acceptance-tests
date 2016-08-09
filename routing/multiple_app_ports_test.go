@@ -3,7 +3,7 @@ package routing
 import (
 	"fmt"
 
-	. "github.com/cloudfoundry-incubator/cf-routing-test-helpers/helpers"
+	. "code.cloudfoundry.org/cf-routing-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
