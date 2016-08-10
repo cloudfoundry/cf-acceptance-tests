@@ -17,7 +17,7 @@ pushd "${project_go_root}" > /dev/null
   project_gopath=$PWD
 popd > /dev/null
 
-export GOPATH="${project_gopath}":$GOPATH
+export GOPATH="${project_gopath}"
 export PATH="${project_gopath}/bin":$PATH
 
 go install -v github.com/cloudfoundry/cf-acceptance-tests/vendor/github.com/onsi/ginkgo/ginkgo
