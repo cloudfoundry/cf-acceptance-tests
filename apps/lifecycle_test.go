@@ -142,11 +142,11 @@ var _ = Describe("Application Lifecycle", func() {
 
 				Eventually(func() *Session {
 					return cf.Cf("app", appName).Wait(DEFAULT_TIMEOUT)
-				}).Should(Say("#0   running"))
+				}, DEFAULT_TIMEOUT).Should(Say("#0   running"))
 
 				Eventually(func() *Session {
-					return cf.Cf("app", appName).Wait(CF_PUSH_TIMEOUT)
-				}).Should(Say("#1   running"))
+					return cf.Cf("app", appName).Wait(DEFAULT_TIMEOUT)
+				}, DEFAULT_TIMEOUT).Should(Say("#1   running"))
 			})
 		})
 
