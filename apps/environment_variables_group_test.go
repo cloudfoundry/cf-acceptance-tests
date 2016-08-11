@@ -55,40 +55,59 @@ exit 1
 		return buildpackArchivePath
 	}
 
+	var fetchEnvironmentVariables = func(groupType string) map[string]string {
+		var session *Session
+		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			session = cf.Cf("curl", fmt.Sprintf("/v2/config/environment_variable_groups/%s", groupType)).Wait(DEFAULT_TIMEOUT)
+			Expect(session).To(Exit(0))
+		})
+
+		var envMap map[string]string
+		err := json.Unmarshal(session.Out.Contents(), &envMap)
+		Expect(err).NotTo(HaveOccurred())
+
+		return envMap
+	}
+
+	var marshalUpdatedEnv = func(envMap map[string]string) []byte {
+		jsonObj, err := json.Marshal(envMap)
+		Expect(err).NotTo(HaveOccurred())
+		return jsonObj
+	}
+
+	var extendEnv = func(groupType, envVarName, envVarValue string) {
+		envMap := fetchEnvironmentVariables(groupType)
+		envMap[envVarName] = envVarValue
+		jsonObj := marshalUpdatedEnv(envMap)
+
+		command := fmt.Sprintf("set-%s-environment-variable-group", groupType)
+		Expect(cf.Cf(command, string(jsonObj)).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	}
+
+	var revertExtendedEnv = func(groupType, envVarName string) {
+		envMap := fetchEnvironmentVariables(groupType)
+		delete(envMap, envVarName)
+		jsonObj := marshalUpdatedEnv(envMap)
+
+		apiUrl := fmt.Sprintf("/v2/config/environment_variable_groups/%s", groupType)
+		Expect(cf.Cf("curl", apiUrl, "-X", "PUT", "-d", string(jsonObj)).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	}
+
 	Context("Staging environment variable groups", func() {
-		var originalStagingEnv string
 		var appName string
 		var buildpackName string
-		var envVarName, envVarValue string
+		var envVarName string
 
 		BeforeEach(func() {
 			appName = random_name.CATSRandomName("APP")
 			envVarName = fmt.Sprintf("CATS_STAGING_TEST_VAR_%s", strconv.Itoa(int(time.Now().UnixNano())))
-			envVarValue = fmt.Sprintf("staging_env_value_%s", strconv.Itoa(int(time.Now().UnixNano())))
-
-			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-				session := cf.Cf("curl", "/v2/config/environment_variable_groups/staging").Wait(DEFAULT_TIMEOUT)
-				Expect(session).To(Exit(0))
-				originalStagingEnv = string(session.Out.Contents())
-			})
 		})
 
 		AfterEach(func() {
 			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 
 			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-				session := cf.Cf("curl", "/v2/config/environment_variable_groups/staging").Wait(DEFAULT_TIMEOUT)
-				Expect(session).To(Exit(0))
-				stagingEnv := string(session.Out.Contents())
-				stagingEnvMap := map[string]string{}
-				err := json.Unmarshal([]byte(stagingEnv), &stagingEnvMap)
-				Expect(err).NotTo(HaveOccurred())
-				delete(stagingEnvMap, envVarName)
-				jsonObj, err := json.Marshal(stagingEnvMap)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/staging", "-X", "PUT", "-d", string(jsonObj)).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-
+				revertExtendedEnv("staging", envVarName)
 				if buildpackName != "" {
 					Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 				}
@@ -100,16 +119,10 @@ exit 1
 		It("Applies environment variables while staging apps", func() {
 			buildpackName = random_name.CATSRandomName("BPK")
 			buildpackZip := createBuildpack(envVarName)
+			envVarValue := fmt.Sprintf("staging_env_value_%s", strconv.Itoa(int(time.Now().UnixNano())))
 
 			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-				originalStagingEnvMap := map[string]string{}
-				err := json.Unmarshal([]byte(originalStagingEnv), &originalStagingEnvMap)
-				Expect(err).NotTo(HaveOccurred())
-				originalStagingEnvMap[envVarName] = envVarValue
-				jsonObj, err := json.Marshal(originalStagingEnvMap)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(cf.Cf("set-staging-environment-variable-group", string(jsonObj)).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				extendEnv("staging", envVarName, envVarValue)
 				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 
@@ -124,54 +137,30 @@ exit 1
 			}, DEFAULT_TIMEOUT).Should(Say(envVarValue))
 		})
 	})
+
 	Context("Running environment variable groups", func() {
-		var originalRunningEnv string
 		var appName string
-		var envVarName, envVarValue string
+		var envVarName string
 
 		BeforeEach(func() {
 			appName = random_name.CATSRandomName("APP")
 			envVarName = fmt.Sprintf("CATS_RUNNING_TEST_VAR_%s", strconv.Itoa(int(time.Now().UnixNano())))
-			envVarValue = fmt.Sprintf("running_env_value_%s", strconv.Itoa(int(time.Now().UnixNano())))
-
-			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-				session := cf.Cf("curl", "/v2/config/environment_variable_groups/running").Wait(DEFAULT_TIMEOUT)
-				Expect(session).To(Exit(0))
-				runningEnv := string(session.Out.Contents())
-				runningEnvMap := map[string]string{}
-				err := json.Unmarshal([]byte(runningEnv), &runningEnvMap)
-				Expect(err).NotTo(HaveOccurred())
-				delete(runningEnvMap, envVarName)
-				jsonObj, err := json.Marshal(runningEnvMap)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/running", "-X", "PUT", "-d", string(jsonObj)).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-
-				Expect(session).To(Exit(0))
-				originalRunningEnv = string(session.Out.Contents())
-			})
 		})
 
 		AfterEach(func() {
 			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 
 			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-				Expect(cf.Cf("curl", "/v2/config/environment_variable_groups/running", "-X", "PUT", "-d", originalRunningEnv).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				revertExtendedEnv("running", envVarName)
 			})
 
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		})
 
 		It("Applies correct environment variables while running apps", func() {
+			envVarValue := fmt.Sprintf("running_env_value_%s", strconv.Itoa(int(time.Now().UnixNano())))
 			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-				originalRunningEnvMap := map[string]string{}
-				err := json.Unmarshal([]byte(originalRunningEnv), &originalRunningEnvMap)
-				Expect(err).NotTo(HaveOccurred())
-				originalRunningEnvMap[envVarName] = envVarValue
-				jsonObj, err := json.Marshal(originalRunningEnvMap)
-				Expect(err).NotTo(HaveOccurred())
-
-				Expect(cf.Cf("set-running-environment-variable-group", string(jsonObj)).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				extendEnv("running", envVarName, envVarValue)
 			})
 
 			Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
