@@ -232,6 +232,11 @@ var _ = Describe("Application Lifecycle", func() {
 			It("makes the app reachable again", func() {
 				Expect(cf.Cf("stop", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
+				Eventually(func() bool {
+					found, _ := lastAppUsageEvent(appName, "STOPPED")
+					return found
+				}, DEFAULT_TIMEOUT).Should(BeTrue())
+
 				Expect(cf.Cf("start", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
 				Eventually(func() string {
