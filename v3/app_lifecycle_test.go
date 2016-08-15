@@ -146,72 +146,73 @@ var _ = Describe("v3 buildpack app lifecycle", func() {
 })
 
 var _ = Describe("v3 docker app lifecycle", func() {
-	config := helpers.LoadConfig()
-	if config.IncludeDiegoDocker {
-		var (
-			appName                         string
-			appGuid                         string
-			packageGuid                     string
-			spaceGuid                       string
-			appCreationEnvironmentVariables string
-			token                           string
-		)
+	var (
+		appName                         string
+		appGuid                         string
+		packageGuid                     string
+		spaceGuid                       string
+		appCreationEnvironmentVariables string
+		token                           string
+	)
 
-		BeforeEach(func() {
-			appName = random_name.CATSRandomName("APP")
-			spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
-			appCreationEnvironmentVariables = `"foo":"bar"`
-			appGuid = CreateDockerApp(appName, spaceGuid, `{"foo":"bar"}`)
-			packageGuid = CreateDockerPackage(appGuid, "cloudfoundry/diego-docker-app:latest")
-			token = GetAuthToken()
-		})
+	BeforeEach(func() {
+		if !config.IncludeDiegoDocker {
+			Skip(`Skipping this test because config.IncludeDiegoDocker is set to 'false'
+			NOTE: Ensure Diego Docker containers are enabled on your platform before enabling these tests`)
+		}
+		appName = random_name.CATSRandomName("APP")
+		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
+		appCreationEnvironmentVariables = `"foo":"bar"`
+		appGuid = CreateDockerApp(appName, spaceGuid, `{"foo":"bar"}`)
+		packageGuid = CreateDockerPackage(appGuid, "cloudfoundry/diego-docker-app:latest")
+		token = GetAuthToken()
+	})
 
-		AfterEach(func() {
-			FetchRecentLogs(appGuid, token, config)
-			DeleteApp(appGuid)
-		})
+	AfterEach(func() {
+		FetchRecentLogs(appGuid, token, config)
+		DeleteApp(appGuid)
+	})
 
-		It("can run apps", func() {
-			dropletGuid := StageDockerPackage(packageGuid)
-			WaitForDropletToStage(dropletGuid)
+	It("can run apps", func() {
+		dropletGuid := StageDockerPackage(packageGuid)
+		WaitForDropletToStage(dropletGuid)
 
-			AssignDropletToApp(appGuid, dropletGuid)
+		AssignDropletToApp(appGuid, dropletGuid)
 
-			processes := GetProcesses(appGuid, appName)
-			webProcess := GetProcessByType(processes, "web")
+		processes := GetProcesses(appGuid, appName)
+		webProcess := GetProcessByType(processes, "web")
 
-			Expect(webProcess.Guid).ToNot(BeEmpty())
+		Expect(webProcess.Guid).ToNot(BeEmpty())
 
-			CreateAndMapRoute(appGuid, context.RegularUserContext().Space, helpers.LoadConfig().AppsDomain, webProcess.Name)
+		CreateAndMapRoute(appGuid, context.RegularUserContext().Space, helpers.LoadConfig().AppsDomain, webProcess.Name)
 
-			StartApp(appGuid)
+		StartApp(appGuid)
 
-			Eventually(func() string {
-				return helpers.CurlAppRoot(webProcess.Name)
-			}, DEFAULT_TIMEOUT).Should(Equal("0"))
+		Eventually(func() string {
+			return helpers.CurlAppRoot(webProcess.Name)
+		}, DEFAULT_TIMEOUT).Should(Equal("0"))
 
-			output := helpers.CurlApp(webProcess.Name, "/env")
-			Expect(output).To(ContainSubstring(fmt.Sprintf("application_name\\\":\\\"%s", appName)))
-			Expect(output).To(ContainSubstring(appCreationEnvironmentVariables))
+		output := helpers.CurlApp(webProcess.Name, "/env")
+		Expect(output).To(ContainSubstring(fmt.Sprintf("application_name\\\":\\\"%s", appName)))
+		Expect(output).To(ContainSubstring(appCreationEnvironmentVariables))
 
-			Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", webProcess.Name)))
+		Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", webProcess.Name)))
 
-			usageEvents := LastPageUsageEvents(context)
+		usageEvents := LastPageUsageEvents(context)
 
-			event := AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
-			Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
+		event := AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
+		Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
 
-			StopApp(appGuid)
+		StopApp(appGuid)
 
-			Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+stopped", webProcess.Name)))
+		Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+stopped", webProcess.Name)))
 
-			usageEvents = LastPageUsageEvents(context)
-			event = AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
-			Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
+		usageEvents = LastPageUsageEvents(context)
+		event = AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
+		Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
 
-			Eventually(func() string {
-				return helpers.CurlAppRoot(webProcess.Name)
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
-		})
-	}
+		Eventually(func() string {
+			return helpers.CurlAppRoot(webProcess.Name)
+		}, DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
+	})
 })
