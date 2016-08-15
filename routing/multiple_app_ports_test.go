@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe(deaUnsupportedTag+"Multiple App Ports", func() {
+var _ = Describe("Multiple App Ports", func() {
 	var (
 		app             string
 		secondRoute     string
@@ -19,6 +19,10 @@ var _ = Describe(deaUnsupportedTag+"Multiple App Ports", func() {
 	)
 
 	BeforeEach(func() {
+		if config.Backend != "diego" {
+			Skip(`Skipping this test because config.Backend is not set to 'diego'
+NOTE: Ensure your platform is running Diego before enabling this test`)
+		}
 		app = random_name.CATSRandomName("APP")
 		cmd := fmt.Sprintf("lattice-app --ports=7777,8888,8080")
 

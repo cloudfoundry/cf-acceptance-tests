@@ -307,4 +307,4 @@ or adding new suites.
 1. Document all changes to the config object in this repo's README.md.
 1. Document the compatible backends in this repo's README.md.
 1. If you add a test that requires a new minimum `cf` CLI version, update the `cli_compatibility_test`.
-1. If you add a test that is unsupported on a particular backend, add the appropriate prefix to the test description (e.g. `deaUnsupportedTag`).
+1. If you add a test that is unsupported on a particular backend, add a ginkgo Skip() in an if config.Backend != "your_backend" {} clause, [see Ginkgo's skip](https://onsi.github.io/ginkgo/#the-spec-runner).

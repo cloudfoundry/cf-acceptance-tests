@@ -16,7 +16,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe(deaUnsupportedTag+"Route Services", func() {
+var _ = Describe("Route Services", func() {
 	Context("when a route binds to a service", func() {
 		Context("when service broker returns a route service url", func() {
 			var (
@@ -29,6 +29,10 @@ var _ = Describe(deaUnsupportedTag+"Route Services", func() {
 			)
 
 			BeforeEach(func() {
+				if config.Backend != "diego" {
+					Skip(`Skipping this test because config.Backend is not set to 'diego'
+NOTE: Ensure your platform is running Diego before enabling this test`)
+				}
 				routeServiceName = random_name.CATSRandomName("APP")
 				brokerName = random_name.CATSRandomName("BROKER")
 				serviceInstanceName = random_name.CATSRandomName("SVCINS")

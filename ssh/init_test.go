@@ -15,8 +15,6 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 )
 
-const deaUnsupportedTag = "{NO_DEA_SUPPORT} "
-
 var (
 	DEFAULT_TIMEOUT      = 30 * time.Second
 	CF_PUSH_TIMEOUT      = 2 * time.Minute

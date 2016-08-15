@@ -23,10 +23,14 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe(deaUnsupportedTag+"SSH", func() {
+var _ = Describe("SSH", func() {
 	var appName string
 
 	BeforeEach(func() {
+		if config.Backend != "diego" {
+			Skip(`Skipping this test because config.Backend is not set to 'diego'
+NOTE: Ensure your platform is running Diego before enabling this test`)
+		}
 		appName = random_name.CATSRandomName("APP")
 		Eventually(cf.Cf(
 			"push", appName,

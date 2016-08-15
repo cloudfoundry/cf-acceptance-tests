@@ -13,10 +13,15 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-var _ = Describe(deaUnsupportedTag+"Healthcheck", func() {
+var _ = Describe("Healthcheck", func() {
 	var appName string
 
 	BeforeEach(func() {
+		if config.Backend != "diego" {
+			Skip(`Skipping this test because config.Backend is not set to 'diego'
+NOTE: Ensure your platform is running Diego before enabling this test`)
+		}
+
 		appName = random_name.CATSRandomName("APP")
 	})
 

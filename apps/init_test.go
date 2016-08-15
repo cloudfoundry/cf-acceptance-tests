@@ -19,9 +19,6 @@ var (
 	DEFAULT_MEMORY_LIMIT = "256M"
 )
 
-const diegoUnsupportedTag = "{NO_DIEGO_SUPPORT} "
-const deaUnsupportedTag = "{NO_DEA_SUPPORT} "
-
 var (
 	context helpers.SuiteContext
 	config  helpers.Config

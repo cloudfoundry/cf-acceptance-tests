@@ -25,7 +25,14 @@ var _ = Describe("Crashing", func() {
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 
-	Describe(deaUnsupportedTag+"a continuously crashing app", func() {
+	Describe("a continuously crashing app", func() {
+		BeforeEach(func() {
+			if config.Backend != "diego" {
+				Skip(`Skipping this test because config.Backend is not set to 'diego'
+NOTE: Ensure your platform is running Diego before enabling this test`)
+			}
+		})
+
 		It("emits crash events and reports as 'crashed' after enough crashes", func() {
 			Expect(cf.Cf(
 				"push",

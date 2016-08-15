@@ -36,8 +36,12 @@ var _ = Describe("A running application", func() {
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 
-	It(diegoUnsupportedTag+"can have its files inspected", func() {
+	It("can have its files inspected", func() {
 		// Currently cannot work with multiple instances since CF always checks instance 0
+		if config.Backend != "dea" {
+			Skip(`Skipping this test because config.Backend is not set to 'dea'
+NOTE: Ensure your platform is running DEAs before enabling this test`)
+		}
 		files := cf.Cf("files", appName).Wait(DEFAULT_TIMEOUT)
 		Expect(files).To(Exit(0))
 		Expect(files).To(Say("app/"))

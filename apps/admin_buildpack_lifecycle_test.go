@@ -355,7 +355,11 @@ exit 1
 		// This test used to be part of inigo and with the extraction of CC bridge, we want to ensure
 		// that user facing errors are correctly propagated from a garden container out of the system.
 
-		It(diegoUnsupportedTag+"the user receives a BuildpackCompileFailed error", func() {
+		It("the user receives a BuildpackCompileFailed error", func() {
+			if config.Backend != "dea" {
+				Skip(`Skipping this test because config.Backend is not set to 'dea'
+NOTE: Ensure your platform is running DEAs before enabling this test`)
+			}
 			setupBadCompileBuildpack(appConfig{Empty: false})
 			itRaisesBuildpackCompileFailedError()
 			deleteApp()
@@ -367,7 +371,11 @@ exit 1
 		// This test used to be part of inigo and with the extraction of CC bridge, we want to ensure
 		// that user facing errors are correctly propagated from a garden container out of the system.
 
-		It(diegoUnsupportedTag+"the user receives a BuildpackReleaseFailed error", func() {
+		It("the user receives a BuildpackReleaseFailed error", func() {
+			if config.Backend != "dea" {
+				Skip(`Skipping this test because config.Backend is not set to 'dea'
+NOTE: Ensure your platform is running DEAs before enabling this test`)
+			}
 			setupBadReleaseBuildpack(appConfig{Empty: false})
 			itRaisesBuildpackReleaseFailedError()
 			deleteApp()

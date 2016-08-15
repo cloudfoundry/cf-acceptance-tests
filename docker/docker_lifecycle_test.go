@@ -16,8 +16,14 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe(deaUnsupportedTag+"Docker Application Lifecycle", func() {
+var _ = Describe("Docker Application Lifecycle", func() {
 	var appName string
+	BeforeEach(func() {
+		if config.Backend != "diego" {
+			Skip(`Skipping this test because config.Backend is not set to 'diego'
+NOTE: Ensure your platform is running Diego before enabling this test`)
+		}
+	})
 
 	JustBeforeEach(func() {
 		app_helpers.SetBackend(appName)

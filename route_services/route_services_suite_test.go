@@ -10,8 +10,6 @@ import (
 	"testing"
 )
 
-const deaUnsupportedTag = "{NO_DEA_SUPPORT} "
-
 var (
 	DEFAULT_TIMEOUT = 30 * time.Second
 	CF_PUSH_TIMEOUT = 2 * time.Minute
