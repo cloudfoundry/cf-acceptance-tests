@@ -128,6 +128,7 @@ The full set of config parameters is explained below:
 * `test_password` (optional): Used to set the password for the test user. This may be needed if your CF installation has password policies.
 * `timeout_scale` (optional): Used primarily to scale default timeouts for test setup and teardown actions (e.g. creating an org) as opposed to main test actions (e.g. pushing an app).
 * `use_http` (optional): Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
+* `include_sso` (optional, default false): Set to true if you would like CF Acceptance Tests to run the SSO lifecycle test suite.
 * `staticfile_buildpack_name` (optional) [See below](#buildpack-names).
 * `java_buildpack_name` (optional) [See below](#buildpack-names).
 * `ruby_buildpack_name` (optional) [See below](#buildpack-names).
