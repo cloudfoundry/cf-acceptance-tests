@@ -36,6 +36,7 @@ type Config struct {
 	IncludeDiegoDocker                bool   `json:"include_diego_docker"`
 	IncludeTasks                      bool   `json:"include_tasks"`
 	IncludePrivilegedContainerSupport bool   `json:"include_privileged_container_support"`
+	IncludeSSO                        bool   `json:"include_sso"`
 
 	ArtifactsDirectory string `json:"artifacts_directory"`
 

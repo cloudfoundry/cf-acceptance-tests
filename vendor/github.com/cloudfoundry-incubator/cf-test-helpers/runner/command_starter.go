@@ -9,6 +9,10 @@ import (
 	"github.com/onsi/gomega/gexec"
 )
 
+var CommandInterceptor = func(cmd *exec.Cmd) *exec.Cmd {
+	return cmd
+}
+
 type CommandStarter struct {
 	reporter Reporter
 }

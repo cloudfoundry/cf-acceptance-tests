@@ -19,6 +19,10 @@ var _ = Describe("SSO Lifecycle", func() {
 	redirectUri := `http://example.com`
 
 	BeforeEach(func() {
+		if helpers.LoadConfig().IncludeSSO != true {
+			Skip(`Skipping this test because config.IncludeSSO is not set to 'true'
+			NOTE: Ensure your platform is running UAA with SSO enabled before enabling this test`)
+		}
 		broker = NewServiceBroker(
 			random_name.CATSRandomName("BROKER"),
 			assets.NewAssets().ServiceBroker,
