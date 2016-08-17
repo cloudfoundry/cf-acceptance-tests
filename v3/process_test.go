@@ -20,7 +20,7 @@ type ProcessStats struct {
 	} `json:"resources"`
 }
 
-var _ = Describe("process", func() {
+var _ = V3Describe("process", func() {
 	var (
 		appName     string
 		appGuid     string

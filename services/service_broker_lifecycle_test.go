@@ -18,7 +18,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 )
 
-var _ = Describe("Service Broker Lifecycle", func() {
+var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 	var broker ServiceBroker
 
 	Describe("public brokers", func() {

@@ -13,7 +13,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 )
 
-var _ = Describe("Purging service instances", func() {
+var _ = ServicesDescribe("Purging service instances", func() {
 	var broker ServiceBroker
 	var appName, instanceName string
 

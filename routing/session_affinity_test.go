@@ -22,7 +22,7 @@ const (
 	VCAP_ID = "__VCAP_ID__"
 )
 
-var _ = Describe("Session Affinity", func() {
+var _ = RoutingDescribe("Session Affinity", func() {
 	var stickyAsset = assets.NewAssets().HelloRouting
 
 	Context("when an app sets a JSESSIONID cookie", func() {

@@ -14,7 +14,7 @@ import (
 	. "github.com/onsi/gomega/gbytes"
 )
 
-var _ = Describe("v3 buildpack app lifecycle", func() {
+var _ = V3Describe("v3 buildpack app lifecycle", func() {
 	var (
 		appName                         string
 		appGuid                         string
@@ -156,9 +156,9 @@ var _ = Describe("v3 docker app lifecycle", func() {
 	)
 
 	BeforeEach(func() {
-		if !config.IncludeDiegoDocker {
-			Skip(`Skipping this test because config.IncludeDiegoDocker is set to 'false'
-			NOTE: Ensure Diego Docker containers are enabled on your platform before enabling these tests`)
+		if !config.IncludeDocker {
+			Skip(`Skipping this test because config.IncludeDocker is set to 'false'
+			NOTE: Ensure Docker containers are enabled on your platform before enabling these tests`)
 		}
 		appName = random_name.CATSRandomName("APP")
 		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)

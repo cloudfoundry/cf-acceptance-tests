@@ -19,7 +19,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-var _ = Describe("Security Groups", func() {
+var _ = SecurityGroupsDescribe("Security Groups", func() {
 
 	type AppResource struct {
 		Metadata struct {

@@ -14,7 +14,7 @@ import (
 
 const binaryHi = "Hello from a binary"
 
-var _ = Describe("Backend Compatibility", func() {
+var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
 	var appName string
 
 	BeforeEach(func() {

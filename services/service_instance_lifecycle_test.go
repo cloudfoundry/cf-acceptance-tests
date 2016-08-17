@@ -35,7 +35,7 @@ type Response struct {
 	Resources []Resource `json:"resources"`
 }
 
-var _ = Describe("Service Instance Lifecycle", func() {
+var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 	var broker ServiceBroker
 	var ASYNC_OPERATION_TIMEOUT = 2 * time.Minute
 	var ASYNC_OPERATION_POLL_INTERVAL = 5 * time.Second

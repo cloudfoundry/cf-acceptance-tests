@@ -62,3 +62,13 @@ func TestApplications(t *testing.T) {
 
 	RunSpecsWithDefaultAndCustomReporters(t, componentName, rs)
 }
+
+func BackendCompatibilityDescribe(description string, callback func()) bool {
+	BeforeEach(func() {
+		config = helpers.LoadConfig()
+		if !config.IncludeBackendCompatiblity {
+			Skip(`Skipping this test because config.IncludeBackendCompatibility is set to false.`)
+		}
+	})
+	return Describe("[backend_compatibility]"+description, callback)
+}

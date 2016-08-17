@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("Recursive Delete", func() {
+var _ = ServicesDescribe("Recursive Delete", func() {
 	var broker ServiceBroker
 	var orgName string
 	var quotaName string

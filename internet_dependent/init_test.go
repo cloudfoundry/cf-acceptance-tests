@@ -61,3 +61,13 @@ func TestApplications(t *testing.T) {
 
 	RunSpecsWithDefaultAndCustomReporters(t, componentName, rs)
 }
+
+func InternetDependentDescribe(description string, callback func()) bool {
+	BeforeEach(func() {
+		config = helpers.LoadConfig()
+		if !config.IncludeInternetDependent {
+			Skip(`Skipping this test because config.IncludeInternetDependent is set to false.`)
+		}
+	})
+	return Describe("[internet_dependent]"+description, callback)
+}

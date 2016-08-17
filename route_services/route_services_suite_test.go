@@ -53,3 +53,13 @@ func TestRouteServices(t *testing.T) {
 
 	RunSpecsWithDefaultAndCustomReporters(t, componentName, rs)
 }
+
+func RouteServicesDescribe(description string, callback func()) bool {
+	BeforeEach(func() {
+		config = helpers.LoadConfig()
+		if !config.IncludeRouteServices {
+			Skip(`Skipping this test because config.IncludeRouteServices is set to false.`)
+		}
+	})
+	return Describe("[route_services]"+description, callback)
+}

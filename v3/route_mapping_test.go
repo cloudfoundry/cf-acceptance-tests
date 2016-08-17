@@ -14,7 +14,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("route_mapping", func() {
+var _ = V3Describe("route_mapping", func() {
 	type RouteList struct {
 		Resources []struct {
 			Metadata struct {

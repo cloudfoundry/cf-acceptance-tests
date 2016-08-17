@@ -57,3 +57,13 @@ func TestDetect(t *testing.T) {
 
 	RunSpecsWithDefaultAndCustomReporters(t, componentName, rs)
 }
+
+func DetectDescribe(description string, callback func()) bool {
+	BeforeEach(func() {
+		config = helpers.LoadConfig()
+		if !config.IncludeDetect {
+			Skip(`Skipping this test because config.IncludeDetect is set to false.`)
+		}
+	})
+	return Describe("[detect]"+description, callback)
+}

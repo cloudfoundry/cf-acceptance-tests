@@ -18,7 +18,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("buildpack", func() {
+var _ = V3Describe("buildpack", func() {
 	var (
 		appName       string
 		appGuid       string

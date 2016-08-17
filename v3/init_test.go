@@ -58,3 +58,13 @@ func TestApplications(t *testing.T) {
 
 	RunSpecsWithDefaultAndCustomReporters(t, componentName, rs)
 }
+
+func V3Describe(description string, callback func()) bool {
+	BeforeEach(func() {
+		config = helpers.LoadConfig()
+		if !config.IncludeV3 {
+			Skip(`Skipping this test because config.IncludeV3 is set to false.`)
+		}
+	})
+	return Describe("[v3]"+description, callback)
+}

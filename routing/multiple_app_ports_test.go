@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Multiple App Ports", func() {
+var _ = RoutingDescribe("Multiple App Ports", func() {
 	var (
 		app             string
 		secondRoute     string

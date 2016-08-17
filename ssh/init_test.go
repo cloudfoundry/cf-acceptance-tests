@@ -102,3 +102,13 @@ func guidForAppName(appName string) string {
 	Expect(appGuid).NotTo(Equal(""))
 	return appGuid
 }
+
+func SshDescribe(description string, callback func()) bool {
+	BeforeEach(func() {
+		config = helpers.LoadConfig()
+		if !config.IncludeSsh {
+			Skip(`Skipping this test because config.IncludeSsh is set to false.`)
+		}
+	})
+	return Describe("[ssh]"+description, callback)
+}

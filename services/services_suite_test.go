@@ -55,3 +55,13 @@ func TestApplications(t *testing.T) {
 
 	RunSpecsWithDefaultAndCustomReporters(t, componentName, rs)
 }
+
+func ServicesDescribe(description string, callback func()) bool {
+	BeforeEach(func() {
+		config = helpers.LoadConfig()
+		if !config.IncludeServices {
+			Skip(`Skipping this test because config.IncludeServices is set to false.`)
+		}
+	})
+	return Describe("[services]"+description, callback)
+}

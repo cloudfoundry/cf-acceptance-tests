@@ -21,7 +21,7 @@ import (
 	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
 )
 
-var _ = Describe("service bindings", func() {
+var _ = V3Describe("service bindings", func() {
 	var (
 		appName     string
 		spaceGuid   string

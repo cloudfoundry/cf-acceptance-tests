@@ -19,7 +19,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("package features", func() {
+var _ = V3Describe("package features", func() {
 	var (
 		appName            string
 		appGuid            string

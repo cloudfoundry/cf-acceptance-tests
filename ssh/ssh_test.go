@@ -23,7 +23,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("SSH", func() {
+var _ = SshDescribe("SSH", func() {
 	var appName string
 
 	BeforeEach(func() {

@@ -11,7 +11,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 )
 
-var _ = Describe("SSO Lifecycle", func() {
+var _ = ServicesDescribe("SSO Lifecycle", func() {
 	var broker ServiceBroker
 	var config OAuthConfig
 	var apiEndpoint = helpers.LoadConfig().ApiEndpoint

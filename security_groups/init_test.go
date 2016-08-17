@@ -61,3 +61,13 @@ func TestApplications(t *testing.T) {
 
 	RunSpecsWithDefaultAndCustomReporters(t, componentName, rs)
 }
+
+func SecurityGroupsDescribe(description string, callback func()) bool {
+	BeforeEach(func() {
+		config = helpers.LoadConfig()
+		if !config.IncludeSecurityGroups {
+			Skip(`Skipping this test because config.IncludeSecurityGroups is set to false.`)
+		}
+	})
+	return Describe("[security_groups]"+description, callback)
+}

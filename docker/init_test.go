@@ -62,3 +62,13 @@ func TestApplications(t *testing.T) {
 
 	RunSpecsWithDefaultAndCustomReporters(t, componentName, rs)
 }
+
+func DockerDescribe(description string, callback func()) bool {
+	BeforeEach(func() {
+		config = helpers.LoadConfig()
+		if !config.IncludeDocker {
+			Skip(`Skipping this test because config.IncludeDocker is set to false.`)
+		}
+	})
+	return Describe("[docker]"+description, callback)
+}

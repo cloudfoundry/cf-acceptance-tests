@@ -16,7 +16,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("Docker Application Lifecycle", func() {
+var _ = DockerDescribe("Docker Application Lifecycle", func() {
 	var appName string
 	BeforeEach(func() {
 		if config.Backend != "diego" {

@@ -12,7 +12,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-var _ = Describe("GitBuildpack", func() {
+var _ = InternetDependentDescribe("GitBuildpack", func() {
 	var (
 		appName string
 	)

@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Context Paths", func() {
+var _ = RoutingDescribe("Context Paths", func() {
 	var (
 		app1              string
 		helloRoutingAsset = assets.NewAssets().HelloRouting

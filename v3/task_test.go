@@ -14,7 +14,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("v3 tasks", func() {
+var _ = V3Describe("v3 tasks", func() {
 	type Result struct {
 		FailureReason string `json:"failure_reason"`
 	}

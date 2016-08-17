@@ -14,7 +14,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-var _ = Describe("Buildpacks", func() {
+var _ = DetectDescribe("Buildpacks", func() {
 	var appName string
 
 	BeforeEach(func() {
