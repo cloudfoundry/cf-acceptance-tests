@@ -9,6 +9,7 @@ import (
 
 	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
@@ -63,6 +64,10 @@ var _ = V3Describe("buildpack", func() {
 	})
 
 	It("Downloads the correct user specified git buildpack", func() {
+		config = helpers.LoadConfig()
+		if !config.IncludeInternetDependent {
+			Skip("Skipping this test because config.IncludeInternetDependent is set to false.")
+		}
 		StageBuildpackPackage(packageGuid, "https://github.com/cloudfoundry/example-git-buildpack")
 
 		Eventually(func() *Session {
