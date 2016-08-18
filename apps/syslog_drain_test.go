@@ -19,11 +19,13 @@ var _ = Describe("Logging", func() {
 	var logWriterAppName string
 	var listenerAppName string
 	var logs *Session
-	interrupt := make(chan string)
-	serviceName := random_name.CATSRandomName("SVCINS")
+	var interrupt chan struct{}
+	var serviceName string
 
 	Describe("Syslog drains", func() {
 		BeforeEach(func() {
+			interrupt = make(chan struct{}, 1)
+			serviceName = random_name.CATSRandomName("SVCINS")
 			listenerAppName = random_name.CATSRandomName("APP")
 			logWriterAppName = random_name.CATSRandomName("APP")
 
@@ -39,7 +41,7 @@ var _ = Describe("Logging", func() {
 
 		AfterEach(func() {
 			logs.Kill()
-			interrupt <- "done"
+			close(interrupt)
 
 			app_helpers.AppReport(logWriterAppName, DEFAULT_TIMEOUT)
 			app_helpers.AppReport(listenerAppName, DEFAULT_TIMEOUT)
@@ -84,7 +86,8 @@ func getSyslogDrainAddress(appName string) string {
 	return string(address)
 }
 
-func writeLogsUntilInterrupted(interrupt chan string, randomMessage string, logWriterAppName string) {
+func writeLogsUntilInterrupted(interrupt chan struct{}, randomMessage string, logWriterAppName string) {
+	defer GinkgoRecover()
 	for {
 		select {
 		case <-interrupt:
