@@ -11,7 +11,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
 )
 
 var _ = V3Describe("v3 buildpack app lifecycle", func() {
@@ -196,8 +195,7 @@ var _ = Describe("v3 docker app lifecycle", func() {
 		Expect(output).To(ContainSubstring(fmt.Sprintf("application_name\\\":\\\"%s", appName)))
 		Expect(output).To(ContainSubstring(appCreationEnvironmentVariables))
 
-		Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+started", webProcess.Name)))
-
+		Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 		usageEvents := LastPageUsageEvents(context)
 
 		event := AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
@@ -205,7 +203,7 @@ var _ = Describe("v3 docker app lifecycle", func() {
 
 		StopApp(appGuid)
 
-		Expect(cf.Cf("apps").Wait(DEFAULT_TIMEOUT)).To(Say(fmt.Sprintf("%s\\s+stopped", webProcess.Name)))
+		Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", webProcess.Name)))
 
 		usageEvents = LastPageUsageEvents(context)
 		event = AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
