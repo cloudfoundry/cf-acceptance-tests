@@ -3,6 +3,7 @@ package apps
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -48,13 +49,8 @@ var _ = Describe("Changing an app's start command", func() {
 				return helpers.CurlApp(appName, "/env/FOO")
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("foo"))
 
-			var response cf.QueryResponse
-
-			cf.ApiRequest("GET", "/v2/apps?q=name:"+appName, &response, DEFAULT_TIMEOUT)
-
-			Expect(response.Resources).To(HaveLen(1))
-
-			appGuid := response.Resources[0].Metadata.Guid
+			guid := cf.Cf("app", appName, "--guid").Wait(DEFAULT_TIMEOUT).Out.Contents()
+			appGuid := strings.TrimSpace(string(guid))
 
 			cf.ApiRequest(
 				"PUT",
