@@ -262,21 +262,7 @@ exit 1
 
 	itDoesNotDetectWhenBuildpackDisabled := func() {
 		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			var response cf.QueryResponse
-
-			cf.ApiRequest("GET", "/v2/buildpacks?q=name:"+BuildpackName, &response, DEFAULT_TIMEOUT)
-
-			Expect(response.Resources).To(HaveLen(1))
-
-			buildpackGuid := response.Resources[0].Metadata.Guid
-
-			cf.ApiRequest(
-				"PUT",
-				"/v2/buildpacks/"+buildpackGuid,
-				nil,
-				DEFAULT_TIMEOUT,
-				`{"enabled":false}`,
-			)
+			Expect(cf.Cf("update-buildpack", BuildpackName, "--disable").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 
 		Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
