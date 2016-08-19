@@ -65,7 +65,6 @@ func TestApplications(t *testing.T) {
 
 func InternetDependentDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
-		config = helpers.LoadConfig()
 		if !config.IncludeInternetDependent {
 			Skip(`Skipping this test because config.IncludeInternetDependent is set to false.`)
 		}

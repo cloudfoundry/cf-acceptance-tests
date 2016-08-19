@@ -106,7 +106,6 @@ func guidForAppName(appName string) string {
 
 func SshDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
-		config = helpers.LoadConfig()
 		if !config.IncludeSsh {
 			Skip(`Skipping this test because config.IncludeSsh is set to false.`)
 		}

@@ -58,7 +58,6 @@ func TestRouting(t *testing.T) {
 
 func RoutingDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
-		config = helpers.LoadConfig()
 		if !config.IncludeRouting {
 			Skip(`Skipping this test because config.IncludeRouting is set to false.`)
 		}

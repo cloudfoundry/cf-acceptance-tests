@@ -65,7 +65,6 @@ func TestApplications(t *testing.T) {
 
 func SecurityGroupsDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
-		config = helpers.LoadConfig()
 		if !config.IncludeSecurityGroups {
 			Skip(`Skipping this test because config.IncludeSecurityGroups is set to false.`)
 		}

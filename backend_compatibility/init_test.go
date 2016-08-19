@@ -66,7 +66,6 @@ func TestApplications(t *testing.T) {
 
 func BackendCompatibilityDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
-		config = helpers.LoadConfig()
 		if !config.IncludeBackendCompatiblity {
 			Skip(`Skipping this test because config.IncludeBackendCompatibility is set to false.`)
 		}

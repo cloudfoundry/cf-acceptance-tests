@@ -66,7 +66,6 @@ func TestApplications(t *testing.T) {
 
 func DockerDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
-		config = helpers.LoadConfig()
 		if !config.IncludeDocker {
 			Skip(`Skipping this test because config.IncludeDocker is set to false.`)
 		}

@@ -61,7 +61,6 @@ func TestDetect(t *testing.T) {
 
 func DetectDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
-		config = helpers.LoadConfig()
 		if !config.IncludeDetect {
 			Skip(`Skipping this test because config.IncludeDetect is set to false.`)
 		}
