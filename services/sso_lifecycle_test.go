@@ -13,13 +13,13 @@ import (
 
 var _ = ServicesDescribe("SSO Lifecycle", func() {
 	var broker ServiceBroker
-	var config OAuthConfig
+	var oauthConfig OAuthConfig
 	var apiEndpoint = helpers.LoadConfig().ApiEndpoint
 
 	redirectUri := `http://example.com`
 
 	BeforeEach(func() {
-		if helpers.LoadConfig().IncludeSSO != true {
+		if config.IncludeSSO != true {
 			Skip(`Skipping this test because config.IncludeSSO is not set to 'true'
 			NOTE: Ensure your platform is running UAA with SSO enabled before enabling this test`)
 		}
@@ -32,13 +32,13 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 		broker.Service.DashboardClient.RedirectUri = redirectUri
 		broker.Configure()
 
-		config = OAuthConfig{}
-		config.ClientId = broker.Service.DashboardClient.ID
-		config.ClientSecret = broker.Service.DashboardClient.Secret
-		config.RedirectUri = redirectUri
-		config.RequestedScopes = `openid,cloud_controller_service_permissions.read`
+		oauthConfig = OAuthConfig{}
+		oauthConfig.ClientId = broker.Service.DashboardClient.ID
+		oauthConfig.ClientSecret = broker.Service.DashboardClient.Secret
+		oauthConfig.RedirectUri = redirectUri
+		oauthConfig.RequestedScopes = `openid,cloud_controller_service_permissions.read`
 
-		SetOauthEndpoints(apiEndpoint, &config)
+		SetOauthEndpoints(apiEndpoint, &oauthConfig)
 
 		broker.Create()
 	})
@@ -57,12 +57,12 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 			serviceInstanceGuid := broker.CreateServiceInstance(random_name.CATSRandomName("SVC"))
 
 			// perform the OAuth lifecycle to obtain an access token
-			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
+			userSessionCookie := AuthenticateUser(oauthConfig.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
 
-			authCode, _ := RequestScopes(userSessionCookie, config)
+			authCode, _ := RequestScopes(userSessionCookie, oauthConfig)
 			Expect(authCode).ToNot(BeNil(), `Failed to request and authorize scopes.`)
 
-			accessToken := GetAccessToken(authCode, config)
+			accessToken := GetAccessToken(authCode, oauthConfig)
 			Expect(accessToken).ToNot(BeNil(), `Failed to obtain an access token.`)
 
 			// use the access token to perform an operation on the user's behalf
@@ -75,8 +75,8 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 
 	Context("When a service broker is updated with a new dashboard client", func() {
 		It("can perform an operation on a user's behalf using sso", func() {
-			config.ClientId = random_name.CATSRandomName("CLIENT-ID")
-			broker.Service.DashboardClient.ID = config.ClientId
+			oauthConfig.ClientId = random_name.CATSRandomName("CLIENT-ID")
+			broker.Service.DashboardClient.ID = oauthConfig.ClientId
 			broker.Configure()
 
 			broker.Update()
@@ -86,12 +86,12 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 			serviceInstanceGuid := broker.CreateServiceInstance(random_name.CATSRandomName("SVC"))
 
 			// perform the OAuth lifecycle to obtain an access token
-			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
+			userSessionCookie := AuthenticateUser(oauthConfig.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
 
-			authCode, _ := RequestScopes(userSessionCookie, config)
+			authCode, _ := RequestScopes(userSessionCookie, oauthConfig)
 			Expect(authCode).ToNot(BeNil(), `Failed to request and authorize scopes.`)
 
-			accessToken := GetAccessToken(authCode, config)
+			accessToken := GetAccessToken(authCode, oauthConfig)
 			Expect(accessToken).ToNot(BeNil(), `Failed to obtain an access token.`)
 
 			// use the access token to perform an operation on the user's behalf
@@ -107,9 +107,9 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 			broker.Delete()
 
 			// perform the OAuth lifecycle to obtain an access token
-			userSessionCookie := AuthenticateUser(config.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
+			userSessionCookie := AuthenticateUser(oauthConfig.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
 
-			_, httpCode := RequestScopes(userSessionCookie, config)
+			_, httpCode := RequestScopes(userSessionCookie, oauthConfig)
 
 			// there should not be a client in uaa anymore, so the request for scopes should return an unauthorized
 			Expect(httpCode).To(Equal(`401`))
