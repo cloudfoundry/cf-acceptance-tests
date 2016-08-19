@@ -8,6 +8,7 @@ import (
 	. "code.cloudfoundry.org/cf-routing-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
@@ -259,8 +260,8 @@ func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 	brokerUrl := helpers.AppUri(brokerAppName, "")
 
 	config = helpers.LoadConfig()
-	context := helpers.NewContext(config)
-	cf.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
+	context := workflowhelpers.NewContext(config)
+	workflowhelpers.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
 		session := cf.Cf("create-service-broker", brokerName, "user", "password", brokerUrl)
 		Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
@@ -271,8 +272,8 @@ func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 }
 
 func deleteServiceBroker(brokerName string) {
-	context := helpers.NewContext(config)
-	cf.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
+	context := workflowhelpers.NewContext(config)
+	workflowhelpers.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
 		responseBuffer := cf.Cf("delete-service-broker", brokerName, "-f")
 		Expect(responseBuffer.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})

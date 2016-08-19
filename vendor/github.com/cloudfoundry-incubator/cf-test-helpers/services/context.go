@@ -12,14 +12,15 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 )
 
 type Context interface {
 	Setup()
 	Teardown()
 
-	AdminUserContext() cf.UserContext
-	RegularUserContext() cf.UserContext
+	AdminUserContext() workflowhelpers.UserContext
+	RegularUserContext() workflowhelpers.UserContext
 
 	ShortTimeout() time.Duration
 	LongTimeout() time.Duration
@@ -120,7 +121,7 @@ func (c context) LongTimeout() time.Duration {
 }
 
 func (c *context) Setup() {
-	cf.AsUser(c.AdminUserContext(), c.shortTimeout, func() {
+	workflowhelpers.AsUser(c.AdminUserContext(), c.shortTimeout, func() {
 		Eventually(cf.Cf("create-user", c.regularUserUsername, c.regularUserPassword), c.shortTimeout).Should(Exit(0))
 
 		if c.useExistingOrg == false {
@@ -138,8 +139,8 @@ func (c *context) Setup() {
 			definitionPayload, err := json.Marshal(definition)
 			Expect(err).ToNot(HaveOccurred())
 
-			var response cf.GenericResource
-			cf.ApiRequest("POST", "/v2/quota_definitions", &response, c.shortTimeout, string(definitionPayload))
+			var response workflowhelpers.GenericResource
+			workflowhelpers.ApiRequest("POST", "/v2/quota_definitions", &response, c.shortTimeout, string(definitionPayload))
 
 			c.quotaDefinitionGUID = response.Metadata.Guid
 
@@ -154,17 +155,17 @@ func (c *context) Setup() {
 		}
 	})
 
-	c.originalCfHomeDir, c.currentCfHomeDir = cf.InitiateUserContext(c.RegularUserContext(), c.shortTimeout)
-	cf.TargetSpace(c.RegularUserContext(), c.shortTimeout)
+	c.originalCfHomeDir, c.currentCfHomeDir = workflowhelpers.InitiateUserContext(c.RegularUserContext(), c.shortTimeout)
+	workflowhelpers.TargetSpace(c.RegularUserContext(), c.shortTimeout)
 }
 
 func (c *context) Teardown() {
 
 	userOrg := c.RegularUserContext().Org
 
-	cf.RestoreUserContext(c.RegularUserContext(), c.shortTimeout, c.originalCfHomeDir, c.currentCfHomeDir)
+	workflowhelpers.RestoreUserContext(c.RegularUserContext(), c.shortTimeout, c.originalCfHomeDir, c.currentCfHomeDir)
 
-	cf.AsUser(c.AdminUserContext(), c.shortTimeout, func() {
+	workflowhelpers.AsUser(c.AdminUserContext(), c.shortTimeout, func() {
 		Eventually(cf.Cf("delete-user", "-f", c.regularUserUsername), c.longTimeout).Should(Exit(0))
 
 		// delete-space does not provide an org flag, so we must target the Org first
@@ -177,7 +178,7 @@ func (c *context) Teardown() {
 		if !c.useExistingOrg {
 			Eventually(cf.Cf("delete-org", "-f", c.organizationName), c.longTimeout).Should(Exit(0))
 
-			cf.ApiRequest(
+			workflowhelpers.ApiRequest(
 				"DELETE",
 				"/v2/quota_definitions/"+c.quotaDefinitionGUID+"?recursive=true",
 				nil,
@@ -191,8 +192,8 @@ func (c *context) Teardown() {
 	})
 }
 
-func (c context) AdminUserContext() cf.UserContext {
-	return cf.NewUserContext(
+func (c context) AdminUserContext() workflowhelpers.UserContext {
+	return workflowhelpers.NewUserContext(
 		c.config.ApiEndpoint,
 		c.config.AdminUser,
 		c.config.AdminPassword,
@@ -202,8 +203,8 @@ func (c context) AdminUserContext() cf.UserContext {
 	)
 }
 
-func (c context) RegularUserContext() cf.UserContext {
-	return cf.NewUserContext(
+func (c context) RegularUserContext() workflowhelpers.UserContext {
+	return workflowhelpers.NewUserContext(
 		c.config.ApiEndpoint,
 		c.regularUserUsername,
 		c.regularUserPassword,
@@ -213,7 +214,7 @@ func (c context) RegularUserContext() cf.UserContext {
 	)
 }
 
-func (c context) setUpSpaceWithUserAccess(uc cf.UserContext) {
+func (c context) setUpSpaceWithUserAccess(uc workflowhelpers.UserContext) {
 	if !c.useExistingSpace {
 		Eventually(cf.Cf("create-space", "-o", uc.Org, uc.Space), c.shortTimeout).Should(Exit(0))
 	}

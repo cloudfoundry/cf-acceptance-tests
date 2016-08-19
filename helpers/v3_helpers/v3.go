@@ -7,7 +7,6 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -97,13 +96,13 @@ func GetSpaceGuidFromName(spaceName string) string {
 }
 
 func GetAuthToken() string {
-	bytes := runner.Run("bash", "-c", "cf oauth-token | grep bearer").Wait(DEFAULT_TIMEOUT).Out.Contents()
+	bytes := helpers.Run("bash", "-c", "cf oauth-token | grep bearer").Wait(DEFAULT_TIMEOUT).Out.Contents()
 	return strings.TrimSpace(string(bytes))
 }
 
 func UploadPackage(uploadUrl, packageZipPath, token string) {
 	bits := fmt.Sprintf(`bits=@%s`, packageZipPath)
-	curl := runner.Curl("-v", "-s", uploadUrl, "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).Wait(DEFAULT_TIMEOUT)
+	curl := helpers.Curl("-v", "-s", uploadUrl, "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).Wait(DEFAULT_TIMEOUT)
 	Expect(curl).To(Exit(0))
 }
 
@@ -166,7 +165,7 @@ func AssignDropletToApp(appGuid, dropletGuid string) {
 func FetchRecentLogs(appGuid, oauthToken string, config helpers.Config) *Session {
 	loggregatorEndpoint := strings.Replace(config.ApiEndpoint, "api", "loggregator", -1)
 	logUrl := fmt.Sprintf("%s/recent?app=%s", loggregatorEndpoint, appGuid)
-	session := runner.Curl(logUrl, "-H", fmt.Sprintf("Authorization: %s", oauthToken))
+	session := helpers.Curl(logUrl, "-H", fmt.Sprintf("Authorization: %s", oauthToken))
 	Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	return session
 }

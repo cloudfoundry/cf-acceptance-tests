@@ -10,7 +10,6 @@ import (
 
 	. "code.cloudfoundry.org/cf-routing-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
@@ -276,7 +275,7 @@ func parseInstanceIndex(body string) int {
 
 func curlAppWithCookies(appName, path string, cookieStorePath string) string {
 	uri := helpers.AppUri(appName, path)
-	curlCmd := runner.Curl(uri, "-b", cookieStorePath, "-c", cookieStorePath).Wait(helpers.CURL_TIMEOUT)
+	curlCmd := helpers.Curl(uri, "-b", cookieStorePath, "-c", cookieStorePath).Wait(helpers.CURL_TIMEOUT)
 	Expect(curlCmd).To(gexec.Exit(0))
 	return string(curlCmd.Out.Contents())
 }

@@ -12,7 +12,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
@@ -27,7 +27,7 @@ type Plan struct {
 type ServiceBroker struct {
 	Name    string
 	Path    string
-	context helpers.SuiteContext
+	context workflowhelpers.SuiteContext
 	Service struct {
 		Name            string `json:"name"`
 		ID              string `json:"id"`
@@ -81,7 +81,7 @@ type SpaceJson struct {
 	}
 }
 
-func NewServiceBroker(name string, path string, context helpers.SuiteContext) ServiceBroker {
+func NewServiceBroker(name string, path string, context workflowhelpers.SuiteContext) ServiceBroker {
 	b := ServiceBroker{}
 	b.Path = path
 	b.Name = name
@@ -117,7 +117,7 @@ func (b ServiceBroker) Push() {
 }
 
 func (b ServiceBroker) Configure() {
-	Expect(runner.Curl(helpers.AppUri(b.Name, "/config"), "-d", b.ToJSON()).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	Expect(helpers.Curl(helpers.AppUri(b.Name, "/config"), "-d", b.ToJSON()).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 }
 
 func (b ServiceBroker) Restart() {
@@ -125,27 +125,27 @@ func (b ServiceBroker) Restart() {
 }
 
 func (b ServiceBroker) Create() {
-	cf.AsUser(b.context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(b.context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 		Expect(cf.Cf("create-service-broker", b.Name, "username", "password", helpers.AppUri(b.Name, "")).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		Expect(cf.Cf("service-brokers").Wait(DEFAULT_TIMEOUT)).To(Say(b.Name))
 	})
 }
 
 func (b ServiceBroker) CreateSpaceScoped() {
-	cf.AsUser(b.context.RegularUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(b.context.RegularUserContext(), DEFAULT_TIMEOUT, func() {
 		Expect(cf.Cf("create-service-broker", b.Name, "username", "password", helpers.AppUri(b.Name, ""), "--space-scoped").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		Expect(cf.Cf("service-brokers").Wait(DEFAULT_TIMEOUT)).To(Say(b.Name))
 	})
 }
 
 func (b ServiceBroker) Update() {
-	cf.AsUser(b.context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(b.context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 		Expect(cf.Cf("update-service-broker", b.Name, "username", "password", helpers.AppUri(b.Name, "")).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 }
 
 func (b ServiceBroker) Delete() {
-	cf.AsUser(b.context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(b.context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 		Expect(cf.Cf("delete-service-broker", b.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
 		brokers := cf.Cf("service-brokers").Wait(DEFAULT_TIMEOUT)
@@ -155,7 +155,7 @@ func (b ServiceBroker) Delete() {
 }
 
 func (b ServiceBroker) Destroy() {
-	cf.AsUser(b.context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(b.context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 		Expect(cf.Cf("purge-service-offering", b.Service.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 	b.Delete()
@@ -188,7 +188,7 @@ func (b ServiceBroker) ToJSON() string {
 func (b ServiceBroker) PublicizePlans() {
 	url := fmt.Sprintf("/v2/services?inline-relations-depth=1&q=label:%s", b.Service.Name)
 	var session *Session
-	cf.AsUser(b.context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(b.context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 		session = cf.Cf("curl", url).Wait(DEFAULT_TIMEOUT)
 		Expect(session).To(Exit(0))
 	})
@@ -219,7 +219,7 @@ func (b ServiceBroker) PublicizePlan(url string) {
 	jsonMap := make(map[string]bool)
 	jsonMap["public"] = true
 	planJson, _ := json.Marshal(jsonMap)
-	cf.AsUser(b.context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(b.context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 		Expect(cf.Cf("curl", url, "-X", "PUT", "-d", string(planJson)).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 }

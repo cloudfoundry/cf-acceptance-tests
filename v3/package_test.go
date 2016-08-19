@@ -8,7 +8,7 @@ import (
 	"path"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
@@ -80,7 +80,7 @@ var _ = V3Describe("package features", func() {
 			session = cf.Cf("curl", fmt.Sprintf("/v3/packages/%s/download", copiedPackageGuid), "--output", app_package_path).Wait(DEFAULT_TIMEOUT)
 			Expect(session).To(Exit(0))
 
-			session = runner.Run("unzip", "-l", app_package_path)
+			session = helpers.Run("unzip", "-l", app_package_path)
 			Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			Expect(session.Out).To(Say("dora.rb"))
 		})

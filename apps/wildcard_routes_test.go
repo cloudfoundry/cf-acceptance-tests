@@ -7,7 +7,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -22,7 +22,7 @@ var _ = Describe("Wildcard Routes", func() {
 
 	curlRoute := func(hostName string, path string) string {
 		uri := config.Protocol() + hostName + "." + domainName + path
-		curlCmd := runner.CurlSkipSSL(true, uri).Wait(DEFAULT_TIMEOUT)
+		curlCmd := helpers.CurlSkipSSL(true, uri).Wait(DEFAULT_TIMEOUT)
 		Expect(curlCmd).To(Exit(0))
 
 		Expect(string(curlCmd.Err.Contents())).To(HaveLen(0))
@@ -34,7 +34,7 @@ var _ = Describe("Wildcard Routes", func() {
 		spaceName = context.RegularUserContext().Space
 
 		domainName = random_name.CATSRandomName("DOMAIN") + "." + helpers.LoadConfig().AppsDomain
-		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("create-shared-domain", domainName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		})
 
@@ -70,7 +70,7 @@ var _ = Describe("Wildcard Routes", func() {
 		app_helpers.AppReport(appNameDora, DEFAULT_TIMEOUT)
 		app_helpers.AppReport(appNameSimple, DEFAULT_TIMEOUT)
 
-		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("target", "-o", orgName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			Expect(cf.Cf("delete-shared-domain", domainName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
@@ -84,7 +84,7 @@ var _ = Describe("Wildcard Routes", func() {
 			wildCardRoute := "*"
 			regularRoute := "bar"
 
-			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				Expect(cf.Cf("target", "-o", orgName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 				Expect(cf.Cf("create-route", spaceName, domainName, "-n", wildCardRoute).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})

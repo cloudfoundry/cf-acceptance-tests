@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -31,7 +32,7 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 			)
 			broker.Push()
 			broker.Configure()
-			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				broker.Create()
 				broker.PublicizePlans()
 			})
@@ -69,7 +70,7 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 			Expect(cf.Cf("delete", broker.Name, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
 			By("Purging the service offering")
-			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				Expect(cf.Cf("purge-service-offering", broker.Service.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 
@@ -93,7 +94,7 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 				assets.NewAssets().ServiceBroker,
 				context,
 			)
-			cf.TargetSpace(context.RegularUserContext(), context.ShortTimeout())
+			workflowhelpers.TargetSpace(context.RegularUserContext(), context.ShortTimeout())
 			broker.Push()
 			broker.Configure()
 			broker.CreateSpaceScoped()
@@ -108,7 +109,7 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 		})
 
 		It("removes all instances and plans of the service, then removes the service offering", func() {
-			cf.AsUser(context.RegularUserContext(), context.ShortTimeout(), func() {
+			workflowhelpers.AsUser(context.RegularUserContext(), context.ShortTimeout(), func() {
 				By("Having bound service instances")
 				createApp := cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)
 				Expect(createApp).To(Exit(0), "failed creating app")

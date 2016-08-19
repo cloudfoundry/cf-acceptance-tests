@@ -11,6 +11,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/matchers"
@@ -147,7 +148,7 @@ type cfHomeConfig struct {
 func getCfHomeConfig() *cfHomeConfig {
 	myCfHomeConfig := &cfHomeConfig{}
 
-	cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 		path := filepath.Join(os.Getenv("CF_HOME"), ".cf", "config.json")
 
 		configFile, err := os.Open(path)

@@ -1,9 +1,6 @@
 package v3_helpers
 
-import (
-	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-)
+import "github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 
 type Entity struct {
 	AppName       string `json:"app_name"`
@@ -40,11 +37,11 @@ func UsageEventsInclude(events []AppUsageEvent, event AppUsageEvent) bool {
 	return found
 }
 
-func LastPageUsageEvents(context helpers.SuiteContext) []AppUsageEvent {
+func LastPageUsageEvents(context workflowhelpers.SuiteContext) []AppUsageEvent {
 	var response AppUsageEvents
 
-	cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-		cf.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1", &response, DEFAULT_TIMEOUT)
+	workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1", &response, DEFAULT_TIMEOUT)
 	})
 
 	return response.Resources

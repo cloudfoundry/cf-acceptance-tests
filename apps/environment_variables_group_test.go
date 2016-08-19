@@ -10,6 +10,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -57,7 +58,7 @@ exit 1
 
 	var fetchEnvironmentVariables = func(groupType string) map[string]string {
 		var session *Session
-		cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			session = cf.Cf("curl", fmt.Sprintf("/v2/config/environment_variable_groups/%s", groupType)).Wait(DEFAULT_TIMEOUT)
 			Expect(session).To(Exit(0))
 		})
@@ -106,7 +107,7 @@ exit 1
 		AfterEach(func() {
 			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 
-			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				revertExtendedEnv("staging", envVarName)
 				if buildpackName != "" {
 					Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
@@ -121,7 +122,7 @@ exit 1
 			buildpackZip := createBuildpack(envVarName)
 			envVarValue := fmt.Sprintf("staging_env_value_%s", strconv.Itoa(int(time.Now().UnixNano())))
 
-			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				extendEnv("staging", envVarName, envVarValue)
 				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
@@ -150,7 +151,7 @@ exit 1
 		AfterEach(func() {
 			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 
-			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				revertExtendedEnv("running", envVarName)
 			})
 
@@ -159,7 +160,7 @@ exit 1
 
 		It("Applies correct environment variables while running apps", func() {
 			envVarValue := fmt.Sprintf("running_env_value_%s", strconv.Itoa(int(time.Now().UnixNano())))
-			cf.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				extendEnv("running", envVarName, envVarValue)
 			})
 

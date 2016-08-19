@@ -66,7 +66,7 @@ var _ = Describe("Logging", func() {
 			randomMessage := random_name.CATSRandomName("RANDOM-MESSAGE")
 			go writeLogsUntilInterrupted(interrupt, randomMessage, logWriterAppName)
 
-			Eventually(logs, (DEFAULT_TIMEOUT + time.Minute)).Should(Say(randomMessage))
+			Eventually(logs, DEFAULT_TIMEOUT+1*time.Minute).Should(Say(randomMessage))
 		})
 	})
 })

@@ -11,6 +11,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -52,7 +53,7 @@ var _ = Describe("Changing an app's start command", func() {
 			guid := cf.Cf("app", appName, "--guid").Wait(DEFAULT_TIMEOUT).Out.Contents()
 			appGuid := strings.TrimSpace(string(guid))
 
-			cf.ApiRequest(
+			workflowhelpers.ApiRequest(
 				"PUT",
 				"/v2/apps/"+appGuid,
 				nil,

@@ -20,6 +20,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 )
@@ -27,11 +28,11 @@ import (
 var _ = Describe("An application that's already been pushed", func() {
 	var appName string
 	config := helpers.LoadConfig()
-	var environment *helpers.Environment
+	var environment *workflowhelpers.Environment
 
 	BeforeEach(func() {
-		persistentContext := helpers.NewPersistentAppContext(config)
-		environment = helpers.NewEnvironment(persistentContext)
+		persistentContext := workflowhelpers.NewPersistentAppContext(config)
+		environment = workflowhelpers.NewEnvironment(persistentContext)
 		environment.Setup()
 	})
 

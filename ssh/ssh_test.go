@@ -12,7 +12,6 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -140,7 +139,7 @@ NOTE: Ensure your platform is running Diego before enabling this test`)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() string {
-				curl := runner.Curl("http://127.0.0.1:61007/").Wait(DEFAULT_TIMEOUT)
+				curl := helpers.Curl("http://127.0.0.1:61007/").Wait(DEFAULT_TIMEOUT)
 				return string(curl.Out.Contents())
 			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora"))
 

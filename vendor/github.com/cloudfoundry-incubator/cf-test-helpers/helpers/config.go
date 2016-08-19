@@ -7,8 +7,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"time"
-
-	"github.com/cloudfoundry-incubator/cf-test-helpers/runner"
 )
 
 type Config struct {
@@ -147,7 +145,7 @@ func Load(path string, config interface{}) error {
 		c.TimeoutScale = 1.0
 	}
 
-	runner.SkipSSLValidation = c.SkipSSLValidation
+	SkipSSLValidation = c.SkipSSLValidation
 	return nil
 }
 

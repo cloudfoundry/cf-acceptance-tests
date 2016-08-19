@@ -10,9 +10,10 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 )
 
-var context helpers.SuiteContext
+var context workflowhelpers.SuiteContext
 var config helpers.Config
 
 func TestApplications(t *testing.T) {
@@ -36,8 +37,8 @@ func TestApplications(t *testing.T) {
 		LONG_CURL_TIMEOUT = config.LongCurlTimeout * time.Second
 	}
 
-	context = helpers.NewContext(config)
-	environment := helpers.NewEnvironment(context)
+	context = workflowhelpers.NewContext(config)
+	environment := workflowhelpers.NewEnvironment(context)
 
 	BeforeSuite(func() {
 		environment.Setup()

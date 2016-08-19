@@ -1,4 +1,4 @@
-package helpers
+package workflowhelpers
 
 import (
 	"fmt"
@@ -11,12 +11,13 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 )
 
 const RUNAWAY_QUOTA_MEM_LIMIT = "99999G"
 
 type ConfiguredContext struct {
-	config Config
+	config helpers.Config
 
 	shortTimeout time.Duration
 	longTimeout  time.Duration
@@ -42,7 +43,7 @@ type quotaDefinition struct {
 	NonBasicServicesAllowed bool
 }
 
-func NewContext(config Config) *ConfiguredContext {
+func NewContext(config helpers.Config) *ConfiguredContext {
 	node := ginkgoconfig.GinkgoConfig.ParallelNode
 	timeTag := time.Now().Format("2006_01_02-15h04m05.999s")
 
@@ -75,7 +76,7 @@ func NewContext(config Config) *ConfiguredContext {
 	}
 }
 
-func NewPersistentAppContext(config Config) *ConfiguredContext {
+func NewPersistentAppContext(config helpers.Config) *ConfiguredContext {
 	baseContext := NewContext(config)
 
 	baseContext.quotaDefinitionName = config.PersistentAppQuotaName
@@ -95,7 +96,7 @@ func (context ConfiguredContext) LongTimeout() time.Duration {
 }
 
 func (context *ConfiguredContext) Setup() {
-	cf.AsUser(context.AdminUserContext(), context.shortTimeout, func() {
+	AsUser(context.AdminUserContext(), context.shortTimeout, func() {
 		definition := quotaDefinition{
 			Name: context.quotaDefinitionName,
 
@@ -133,13 +134,13 @@ func (context *ConfiguredContext) Setup() {
 }
 
 func (context *ConfiguredContext) SetRunawayQuota() {
-	cf.AsUser(context.AdminUserContext(), context.shortTimeout, func() {
+	AsUser(context.AdminUserContext(), context.shortTimeout, func() {
 		Eventually(cf.Cf("update-quota", context.quotaDefinitionName, "-m", RUNAWAY_QUOTA_MEM_LIMIT, "-i=-1"), context.shortTimeout).Should(Exit(0))
 	})
 }
 
 func (context *ConfiguredContext) Teardown() {
-	cf.AsUser(context.AdminUserContext(), context.shortTimeout, func() {
+	AsUser(context.AdminUserContext(), context.shortTimeout, func() {
 
 		if !context.config.ShouldKeepUser {
 			Eventually(cf.Cf("delete-user", "-f", context.regularUserUsername), context.shortTimeout).Should(Exit(0))
@@ -152,8 +153,8 @@ func (context *ConfiguredContext) Teardown() {
 	})
 }
 
-func (context *ConfiguredContext) AdminUserContext() cf.UserContext {
-	return cf.NewUserContext(
+func (context *ConfiguredContext) AdminUserContext() UserContext {
+	return NewUserContext(
 		context.config.ApiEndpoint,
 		context.config.AdminUser,
 		context.config.AdminPassword,
@@ -163,8 +164,8 @@ func (context *ConfiguredContext) AdminUserContext() cf.UserContext {
 	)
 }
 
-func (context *ConfiguredContext) RegularUserContext() cf.UserContext {
-	return cf.NewUserContext(
+func (context *ConfiguredContext) RegularUserContext() UserContext {
+	return NewUserContext(
 		context.config.ApiEndpoint,
 		context.regularUserUsername,
 		context.regularUserPassword,

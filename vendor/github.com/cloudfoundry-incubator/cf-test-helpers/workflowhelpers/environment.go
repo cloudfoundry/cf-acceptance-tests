@@ -1,4 +1,4 @@
-package helpers
+package workflowhelpers
 
 import (
 	"time"
@@ -13,8 +13,8 @@ type SuiteContext interface {
 	Teardown()
 	SetRunawayQuota()
 
-	AdminUserContext() cf.UserContext
-	RegularUserContext() cf.UserContext
+	AdminUserContext() UserContext
+	RegularUserContext() UserContext
 
 	ShortTimeout() time.Duration
 	LongTimeout() time.Duration
@@ -33,21 +33,21 @@ func NewEnvironment(context SuiteContext) *Environment {
 func (e *Environment) Setup() {
 	e.context.Setup()
 
-	cf.AsUser(e.context.AdminUserContext(), e.context.ShortTimeout(), func() {
+	AsUser(e.context.AdminUserContext(), e.context.ShortTimeout(), func() {
 		e.setUpSpaceWithUserAccess(e.context.RegularUserContext())
 	})
 
-	e.originalCfHomeDir, e.currentCfHomeDir = cf.InitiateUserContext(e.context.RegularUserContext(), e.context.ShortTimeout())
-	cf.TargetSpace(e.context.RegularUserContext(), e.context.ShortTimeout())
+	e.originalCfHomeDir, e.currentCfHomeDir = InitiateUserContext(e.context.RegularUserContext(), e.context.ShortTimeout())
+	TargetSpace(e.context.RegularUserContext(), e.context.ShortTimeout())
 }
 
 func (e *Environment) Teardown() {
-	cf.RestoreUserContext(e.context.RegularUserContext(), e.context.ShortTimeout(), e.originalCfHomeDir, e.currentCfHomeDir)
+	RestoreUserContext(e.context.RegularUserContext(), e.context.ShortTimeout(), e.originalCfHomeDir, e.currentCfHomeDir)
 
 	e.context.Teardown()
 }
 
-func (e *Environment) setUpSpaceWithUserAccess(uc cf.UserContext) {
+func (e *Environment) setUpSpaceWithUserAccess(uc UserContext) {
 	Eventually(cf.Cf("create-space", "-o", uc.Org, uc.Space), e.context.ShortTimeout()).Should(Exit(0))
 	Eventually(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceManager"), e.context.ShortTimeout()).Should(Exit(0))
 	Eventually(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceDeveloper"), e.context.ShortTimeout()).Should(Exit(0))

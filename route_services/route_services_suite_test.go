@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -14,7 +15,7 @@ var (
 	DEFAULT_TIMEOUT = 30 * time.Second
 	CF_PUSH_TIMEOUT = 2 * time.Minute
 
-	context helpers.SuiteContext
+	context workflowhelpers.SuiteContext
 	config  helpers.Config
 )
 
@@ -35,8 +36,8 @@ func TestRouteServices(t *testing.T) {
 
 	rs := []Reporter{}
 
-	context = helpers.NewContext(config)
-	environment := helpers.NewEnvironment(context)
+	context = workflowhelpers.NewContext(config)
+	environment := workflowhelpers.NewEnvironment(context)
 
 	BeforeSuite(func() {
 		environment.Setup()

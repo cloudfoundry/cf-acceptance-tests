@@ -1,4 +1,4 @@
-package cf
+package workflowhelpers
 
 type UserContext struct {
 	ApiUrl   string

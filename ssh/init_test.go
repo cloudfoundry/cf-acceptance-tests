@@ -13,6 +13,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 )
 
 var (
@@ -21,7 +22,7 @@ var (
 	LONG_CURL_TIMEOUT    = 2 * time.Minute
 	DEFAULT_MEMORY_LIMIT = "256M"
 
-	context helpers.SuiteContext
+	context workflowhelpers.SuiteContext
 	config  helpers.Config
 
 	scpPath  string
@@ -45,8 +46,8 @@ func TestApplications(t *testing.T) {
 		LONG_CURL_TIMEOUT = config.LongCurlTimeout * time.Second
 	}
 
-	context = helpers.NewContext(config)
-	environment := helpers.NewEnvironment(context)
+	context = workflowhelpers.NewContext(config)
+	environment := workflowhelpers.NewEnvironment(context)
 
 	type sshPaths struct {
 		SCP  string `json:"scp"`

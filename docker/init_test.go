@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 )
 
 var (
@@ -19,7 +20,7 @@ var (
 )
 
 var (
-	context helpers.SuiteContext
+	context workflowhelpers.SuiteContext
 	config  helpers.Config
 )
 
@@ -40,8 +41,8 @@ func TestApplications(t *testing.T) {
 		LONG_CURL_TIMEOUT = config.LongCurlTimeout * time.Second
 	}
 
-	context = helpers.NewContext(config)
-	environment := helpers.NewEnvironment(context)
+	context = workflowhelpers.NewContext(config)
+	environment := workflowhelpers.NewEnvironment(context)
 
 	BeforeSuite(func() {
 		environment.Setup()
