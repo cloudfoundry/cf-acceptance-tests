@@ -9,15 +9,9 @@ type starter interface {
 	Start(runner.Reporter, string, ...string) (*gexec.Session, error)
 }
 
-var SkipSSLValidation bool
-
-func Curl(cmdStarter starter, args ...string) *gexec.Session {
-	return CurlSkipSSL(cmdStarter, SkipSSLValidation, args...)
-}
-
-func CurlSkipSSL(cmdStarter starter, skip bool, args ...string) *gexec.Session {
+func Curl(cmdStarter starter, skipSsl bool, args ...string) *gexec.Session {
 	curlArgs := append([]string{"-s"}, args...)
-	if skip {
+	if skipSsl {
 		curlArgs = append([]string{"-k"}, curlArgs...)
 	}
 

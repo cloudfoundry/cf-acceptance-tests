@@ -30,7 +30,7 @@
 			"importpath": "github.com/cloudfoundry-incubator/cf-test-helpers",
 			"repository": "https://github.com/cloudfoundry-incubator/cf-test-helpers",
 			"vcs": "git",
-			"revision": "1920aa06f92075292aa99effebe72804cbfc6baf",
+			"revision": "6e4ef45b771818714ab79354be1d12f24123467c",
 			"branch": "master",
 			"notests": true
 		},
