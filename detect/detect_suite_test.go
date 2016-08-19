@@ -65,5 +65,5 @@ func DetectDescribe(description string, callback func()) bool {
 			Skip(`Skipping this test because config.IncludeDetect is set to false.`)
 		}
 	})
-	return Describe("[detect]"+description, callback)
+	return Describe("[detect] "+description, callback)
 }

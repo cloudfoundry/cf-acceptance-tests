@@ -71,5 +71,5 @@ func BackendCompatibilityDescribe(description string, callback func()) bool {
 			Ensure that your deployment has deployed both DEA and Diego before running these tests.`)
 		}
 	})
-	return Describe("[backend_compatibility]"+description, callback)
+	return Describe("[backend_compatibility] "+description, callback)
 }

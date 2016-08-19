@@ -63,5 +63,5 @@ func ServicesDescribe(description string, callback func()) bool {
 			Skip(`Skipping this test because config.IncludeServices is set to false.`)
 		}
 	})
-	return Describe("[services]"+description, callback)
+	return Describe("[services] "+description, callback)
 }

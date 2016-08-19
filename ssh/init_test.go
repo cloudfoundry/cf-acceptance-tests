@@ -111,5 +111,5 @@ func SshDescribe(description string, callback func()) bool {
 			Ensure that your platform is deployed with a Diego SSH proxy in order to run these tests.`)
 		}
 	})
-	return Describe("[ssh]"+description, callback)
+	return Describe("[ssh] "+description, callback)
 }

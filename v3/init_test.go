@@ -66,5 +66,5 @@ func V3Describe(description string, callback func()) bool {
 			Skip(`Skipping this test because config.IncludeV3 is set to false.`)
 		}
 	})
-	return Describe("[v3]"+description, callback)
+	return Describe("[v3] "+description, callback)
 }

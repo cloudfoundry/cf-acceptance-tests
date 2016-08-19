@@ -70,5 +70,5 @@ func InternetDependentDescribe(description string, callback func()) bool {
 			Ensure that your deployment has access to the internet before running these tests.`)
 		}
 	})
-	return Describe("[internet_dependent]"+description, callback)
+	return Describe("[internet_dependent] "+description, callback)
 }

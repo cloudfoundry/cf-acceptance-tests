@@ -62,5 +62,5 @@ func RoutingDescribe(description string, callback func()) bool {
 			Skip(`Skipping this test because config.IncludeRouting is set to false.`)
 		}
 	})
-	return Describe("[routing]"+description, callback)
+	return Describe("[routing] "+description, callback)
 }

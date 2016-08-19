@@ -70,5 +70,5 @@ func SecurityGroupsDescribe(description string, callback func()) bool {
 			Ensure that your deployment restricts internal network traffic by default in order to run these tests.`)
 		}
 	})
-	return Describe("[security_groups]"+description, callback)
+	return Describe("[security_groups] "+description, callback)
 }

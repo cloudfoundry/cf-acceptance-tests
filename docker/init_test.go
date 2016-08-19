@@ -71,5 +71,5 @@ func DockerDescribe(description string, callback func()) bool {
 			NOTE: Ensure Docker containers are enabled on your platform before enabling these tests`)
 		}
 	})
-	return Describe("[docker]"+description, callback)
+	return Describe("[docker] "+description, callback)
 }
