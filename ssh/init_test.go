@@ -107,7 +107,8 @@ func guidForAppName(appName string) string {
 func SshDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
 		if !config.IncludeSsh {
-			Skip(`Skipping this test because config.IncludeSsh is set to false.`)
+			Skip(`Skipping this test because config.IncludeSsh is set to false.
+			Ensure that your platform is deployed with a Diego SSH proxy in order to run these tests.`)
 		}
 	})
 	return Describe("[ssh]"+description, callback)

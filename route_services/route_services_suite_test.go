@@ -58,7 +58,8 @@ func TestRouteServices(t *testing.T) {
 func RouteServicesDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
 		if !config.IncludeRouteServices {
-			Skip(`Skipping this test because config.IncludeRouteServices is set to false.`)
+			Skip(`Skipping this test because config.IncludeRouteServices is set to 'false'.
+			Ensure that route services are enabled in your deployment before running these tests.`)
 		}
 	})
 	return Describe("[route_services]"+description, callback)
