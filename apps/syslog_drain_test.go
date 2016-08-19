@@ -15,7 +15,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("Logging", func() {
+var _ = AppsDescribe("Logging", func() {
 	var logWriterAppName string
 	var listenerAppName string
 	var logs *Session

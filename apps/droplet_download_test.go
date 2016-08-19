@@ -19,7 +19,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-var _ = Describe("Downloading droplets", func() {
+var _ = AppsDescribe("Downloading droplets", func() {
 	var helloWorldAppName string
 	var out bytes.Buffer
 

@@ -17,7 +17,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("Buildpack Environment", func() {
+var _ = AppsDescribe("Buildpack Environment", func() {
 	var (
 		appName       string
 		BuildpackName string

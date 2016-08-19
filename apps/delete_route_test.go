@@ -12,7 +12,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-var _ = Describe("Delete Route", func() {
+var _ = AppsDescribe("Delete Route", func() {
 	var appName string
 
 	BeforeEach(func() {

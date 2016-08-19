@@ -17,7 +17,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("Admin Buildpacks", func() {
+var _ = AppsDescribe("Admin Buildpacks", func() {
 	var (
 		appName       string
 		BuildpackName string

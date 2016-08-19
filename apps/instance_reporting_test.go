@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("Getting instance information", func() {
+var _ = AppsDescribe("Getting instance information", func() {
 	var appName string
 
 	BeforeEach(func() {

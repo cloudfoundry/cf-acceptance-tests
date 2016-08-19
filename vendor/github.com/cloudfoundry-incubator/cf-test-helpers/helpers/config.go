@@ -29,11 +29,8 @@ type Config struct {
 	PersistentAppOrg       string `json:"persistent_app_org"`
 	PersistentAppQuotaName string `json:"persistent_app_quota_name"`
 
-	SkipSSLValidation                 bool   `json:"skip_ssl_validation"`
-	Backend                           string `json:"backend"`
-	IncludeTasks                      bool   `json:"include_tasks"`
-	IncludePrivilegedContainerSupport bool   `json:"include_privileged_container_support"`
-	IncludeSSO                        bool   `json:"include_sso"`
+	SkipSSLValidation bool   `json:"skip_ssl_validation"`
+	Backend           string `json:"backend"`
 
 	ArtifactsDirectory string `json:"artifacts_directory"`
 
@@ -65,16 +62,20 @@ type Config struct {
 	PhpBuildpackName        string `json:"php_buildpack_name"`
 	BinaryBuildpackName     string `json:"binary_buildpack_name"`
 
-	IncludeBackendCompatiblity bool `json:"include_backend_compatibility"`
-	IncludeDetect              bool `json:"include_detect"`
-	IncludeDocker              bool `json:"include_docker"`
-	IncludeInternetDependent   bool `json:"include_internet_dependent"`
-	IncludeRouteServices       bool `json:"include_route_services"`
-	IncludeRouting             bool `json:"include_routing"`
-	IncludeSecurityGroups      bool `json:"include_security_groups"`
-	IncludeServices            bool `json:"include_services"`
-	IncludeSsh                 bool `json:"include_ssh"`
-	IncludeV3                  bool `json:"include_v3"`
+	IncludeApps                       bool `json:"include_apps"`
+	IncludeBackendCompatiblity        bool `json:"include_backend_compatibility"`
+	IncludeDetect                     bool `json:"include_detect"`
+	IncludeDocker                     bool `json:"include_docker"`
+	IncludeInternetDependent          bool `json:"include_internet_dependent"`
+	IncludeRouteServices              bool `json:"include_route_services"`
+	IncludeRouting                    bool `json:"include_routing"`
+	IncludeSecurityGroups             bool `json:"include_security_groups"`
+	IncludeServices                   bool `json:"include_services"`
+	IncludeSsh                        bool `json:"include_ssh"`
+	IncludeV3                         bool `json:"include_v3"`
+	IncludeTasks                      bool `json:"include_tasks"`
+	IncludePrivilegedContainerSupport bool `json:"include_privileged_container_support"`
+	IncludeSSO                        bool `json:"include_sso"`
 
 	NamePrefix string `json:"name_prefix"`
 }
@@ -94,6 +95,7 @@ var defaults = Config{
 	PhpBuildpackName:        "php_buildpack",
 	BinaryBuildpackName:     "binary_buildpack",
 
+	IncludeApps:                true,
 	IncludeBackendCompatiblity: true,
 	IncludeDetect:              true,
 	IncludeDocker:              true,

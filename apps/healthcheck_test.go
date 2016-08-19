@@ -13,7 +13,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-var _ = Describe("Healthcheck", func() {
+var _ = AppsDescribe("Healthcheck", func() {
 	var appName string
 
 	BeforeEach(func() {

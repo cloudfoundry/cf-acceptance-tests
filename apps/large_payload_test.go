@@ -15,7 +15,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-var _ = Describe("Large_payload", func() {
+var _ = AppsDescribe("Large_payload", func() {
 	var appName string
 	AfterEach(func() {
 		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)

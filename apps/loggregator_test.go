@@ -27,7 +27,7 @@ import (
 	"path/filepath"
 )
 
-var _ = Describe("loggregator", func() {
+var _ = AppsDescribe("loggregator", func() {
 	var appName string
 	const hundredthOfOneSecond = 10000 // this app uses millionth of seconds
 

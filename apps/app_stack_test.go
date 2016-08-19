@@ -18,7 +18,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("Specifying a specific Stack", func() {
+var _ = AppsDescribe("Specifying a specific Stack", func() {
 	var (
 		appName       string
 		BuildpackName string

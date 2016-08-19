@@ -68,3 +68,12 @@ func TestApplications(t *testing.T) {
 
 	RunSpecsWithDefaultAndCustomReporters(t, componentName, rs)
 }
+
+func AppsDescribe(description string, callback func()) bool {
+	BeforeEach(func() {
+		if !config.IncludeApps {
+			Skip(`Skipping this test because config.IncludeApps is set to false.`)
+		}
+	})
+	return Describe("[apps] "+description, callback)
+}

@@ -19,7 +19,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("Buildpack cache", func() {
+var _ = AppsDescribe("Buildpack cache", func() {
 	var (
 		appName       string
 		BuildpackName string

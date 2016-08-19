@@ -23,7 +23,7 @@ import (
 	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
 )
 
-var _ = Describe("Environment Variables Groups", func() {
+var _ = AppsDescribe("Environment Variables Groups", func() {
 	var createBuildpack = func(envVarName string) string {
 		tmpPath, err := ioutil.TempDir("", "env-group-staging")
 		Expect(err).ToNot(HaveOccurred())

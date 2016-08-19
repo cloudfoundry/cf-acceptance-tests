@@ -46,7 +46,7 @@ func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
 	return false, AppUsageEvent{}
 }
 
-var _ = Describe("Application Lifecycle", func() {
+var _ = AppsDescribe("Application Lifecycle", func() {
 	var appName string
 
 	BeforeEach(func() {

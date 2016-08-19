@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = Describe("FUSE", func() {
+var _ = AppsDescribe("FUSE", func() {
 
 	var appName string
 

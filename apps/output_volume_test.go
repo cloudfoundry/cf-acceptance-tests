@@ -14,7 +14,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-var _ = Describe("An application printing a bunch of output", func() {
+var _ = AppsDescribe("An application printing a bunch of output", func() {
 	var appName string
 
 	BeforeEach(func() {

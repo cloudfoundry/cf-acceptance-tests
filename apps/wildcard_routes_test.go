@@ -13,7 +13,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-var _ = Describe("Wildcard Routes", func() {
+var _ = AppsDescribe("Wildcard Routes", func() {
 	var appNameDora string
 	var appNameSimple string
 	var domainName string

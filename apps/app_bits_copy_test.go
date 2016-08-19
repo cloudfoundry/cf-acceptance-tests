@@ -12,7 +12,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-var _ = Describe("Copy app bits", func() {
+var _ = AppsDescribe("Copy app bits", func() {
 	var golangAppName string
 	var helloWorldAppName string
 
