@@ -122,7 +122,7 @@ func (c context) LongTimeout() time.Duration {
 
 func (c *context) Setup() {
 	workflowhelpers.AsUser(c.AdminUserContext(), c.shortTimeout, func() {
-		Eventually(cf.Cf("create-user", c.regularUserUsername, c.regularUserPassword), c.shortTimeout).Should(Exit(0))
+		EventuallyWithOffset(1, cf.Cf("create-user", c.regularUserUsername, c.regularUserPassword), c.shortTimeout).Should(Exit(0))
 
 		if c.useExistingOrg == false {
 			definition := QuotaDefinition{
@@ -137,15 +137,15 @@ func (c *context) Setup() {
 			}
 
 			definitionPayload, err := json.Marshal(definition)
-			Expect(err).ToNot(HaveOccurred())
+			ExpectWithOffset(1, err).ToNot(HaveOccurred())
 
 			var response workflowhelpers.GenericResource
 			workflowhelpers.ApiRequest("POST", "/v2/quota_definitions", &response, c.shortTimeout, string(definitionPayload))
 
 			c.quotaDefinitionGUID = response.Metadata.Guid
 
-			Eventually(cf.Cf("create-org", c.organizationName), c.shortTimeout).Should(Exit(0))
-			Eventually(cf.Cf("set-quota", c.organizationName, c.quotaDefinitionName), c.shortTimeout).Should(Exit(0))
+			EventuallyWithOffset(1, cf.Cf("create-org", c.organizationName), c.shortTimeout).Should(Exit(0))
+			EventuallyWithOffset(1, cf.Cf("set-quota", c.organizationName, c.quotaDefinitionName), c.shortTimeout).Should(Exit(0))
 		}
 
 		c.setUpSpaceWithUserAccess(c.RegularUserContext())
@@ -166,17 +166,17 @@ func (c *context) Teardown() {
 	workflowhelpers.RestoreUserContext(c.RegularUserContext(), c.shortTimeout, c.originalCfHomeDir, c.currentCfHomeDir)
 
 	workflowhelpers.AsUser(c.AdminUserContext(), c.shortTimeout, func() {
-		Eventually(cf.Cf("delete-user", "-f", c.regularUserUsername), c.longTimeout).Should(Exit(0))
+		EventuallyWithOffset(1, cf.Cf("delete-user", "-f", c.regularUserUsername), c.longTimeout).Should(Exit(0))
 
 		// delete-space does not provide an org flag, so we must target the Org first
-		Eventually(cf.Cf("target", "-o", userOrg), c.longTimeout).Should(Exit(0))
+		EventuallyWithOffset(1, cf.Cf("target", "-o", userOrg), c.longTimeout).Should(Exit(0))
 
 		if !c.useExistingSpace {
-			Eventually(cf.Cf("delete-space", "-f", c.spaceName), c.longTimeout).Should(Exit(0))
+			EventuallyWithOffset(1, cf.Cf("delete-space", "-f", c.spaceName), c.longTimeout).Should(Exit(0))
 		}
 
 		if !c.useExistingOrg {
-			Eventually(cf.Cf("delete-org", "-f", c.organizationName), c.longTimeout).Should(Exit(0))
+			EventuallyWithOffset(1, cf.Cf("delete-org", "-f", c.organizationName), c.longTimeout).Should(Exit(0))
 
 			workflowhelpers.ApiRequest(
 				"DELETE",
@@ -187,7 +187,7 @@ func (c *context) Teardown() {
 		}
 
 		if c.config.CreatePermissiveSecurityGroup {
-			Eventually(cf.Cf("delete-security-group", "-f", c.securityGroupName), c.shortTimeout).Should(Exit(0))
+			EventuallyWithOffset(1, cf.Cf("delete-security-group", "-f", c.securityGroupName), c.shortTimeout).Should(Exit(0))
 		}
 	})
 }
@@ -216,11 +216,11 @@ func (c context) RegularUserContext() workflowhelpers.UserContext {
 
 func (c context) setUpSpaceWithUserAccess(uc workflowhelpers.UserContext) {
 	if !c.useExistingSpace {
-		Eventually(cf.Cf("create-space", "-o", uc.Org, uc.Space), c.shortTimeout).Should(Exit(0))
+		EventuallyWithOffset(1, cf.Cf("create-space", "-o", uc.Org, uc.Space), c.shortTimeout).Should(Exit(0))
 	}
-	Eventually(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceManager"), c.shortTimeout).Should(Exit(0))
-	Eventually(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceDeveloper"), c.shortTimeout).Should(Exit(0))
-	Eventually(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceAuditor"), c.shortTimeout).Should(Exit(0))
+	EventuallyWithOffset(1, cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceManager"), c.shortTimeout).Should(Exit(0))
+	EventuallyWithOffset(1, cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceDeveloper"), c.shortTimeout).Should(Exit(0))
+	EventuallyWithOffset(1, cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceAuditor"), c.shortTimeout).Should(Exit(0))
 }
 
 func (c context) createPermissiveSecurityGroup() {
@@ -233,10 +233,10 @@ func (c context) createPermissiveSecurityGroup() {
 
 	rulesFilePath, err := c.writeJSONToTempFile(rules, fmt.Sprintf("%s-rules.json", c.securityGroupName))
 	defer os.RemoveAll(rulesFilePath)
-	Expect(err).ToNot(HaveOccurred())
+	ExpectWithOffset(1, err).ToNot(HaveOccurred())
 
-	Eventually(cf.Cf("create-security-group", c.securityGroupName, rulesFilePath), c.shortTimeout).Should(Exit(0))
-	Eventually(cf.Cf("bind-security-group", c.securityGroupName, c.organizationName, c.spaceName), c.shortTimeout).Should(Exit(0))
+	EventuallyWithOffset(1, cf.Cf("create-security-group", c.securityGroupName, rulesFilePath), c.shortTimeout).Should(Exit(0))
+	EventuallyWithOffset(1, cf.Cf("bind-security-group", c.securityGroupName, c.organizationName, c.spaceName), c.shortTimeout).Should(Exit(0))
 }
 
 func (c context) writeJSONToTempFile(object interface{}, filePrefix string) (filePath string, err error) {

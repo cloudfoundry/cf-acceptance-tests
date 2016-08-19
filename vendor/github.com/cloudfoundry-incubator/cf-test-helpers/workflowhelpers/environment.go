@@ -48,8 +48,8 @@ func (e *Environment) Teardown() {
 }
 
 func (e *Environment) setUpSpaceWithUserAccess(uc UserContext) {
-	Eventually(cf.Cf("create-space", "-o", uc.Org, uc.Space), e.context.ShortTimeout()).Should(Exit(0))
-	Eventually(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceManager"), e.context.ShortTimeout()).Should(Exit(0))
-	Eventually(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceDeveloper"), e.context.ShortTimeout()).Should(Exit(0))
-	Eventually(cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceAuditor"), e.context.ShortTimeout()).Should(Exit(0))
+	EventuallyWithOffset(1, cf.Cf("create-space", "-o", uc.Org, uc.Space), e.context.ShortTimeout()).Should(Exit(0))
+	EventuallyWithOffset(1, cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceManager"), e.context.ShortTimeout()).Should(Exit(0))
+	EventuallyWithOffset(1, cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceDeveloper"), e.context.ShortTimeout()).Should(Exit(0))
+	EventuallyWithOffset(1, cf.Cf("set-space-role", uc.Username, uc.Org, uc.Space, "SpaceAuditor"), e.context.ShortTimeout()).Should(Exit(0))
 }

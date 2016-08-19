@@ -47,15 +47,15 @@ func InitiateUserContext(userContext UserContext, timeout time.Duration) (origin
 func TargetSpace(userContext UserContext, timeout time.Duration) {
 	if userContext.Org != "" {
 		if userContext.Space != "" {
-			Eventually(cf.Cf("target", "-o", userContext.Org, "-s", userContext.Space), timeout).Should(Exit(0))
+			EventuallyWithOffset(1, cf.Cf("target", "-o", userContext.Org, "-s", userContext.Space), timeout).Should(Exit(0))
 		} else {
-			Eventually(cf.Cf("target", "-o", userContext.Org), timeout).Should(Exit(0))
+			EventuallyWithOffset(1, cf.Cf("target", "-o", userContext.Org), timeout).Should(Exit(0))
 		}
 	}
 }
 
 func RestoreUserContext(_ UserContext, timeout time.Duration, originalCfHomeDir, currentCfHomeDir string) {
-	Eventually(cf.Cf("logout"), timeout).Should(Exit(0))
+	EventuallyWithOffset(1, cf.Cf("logout"), timeout).Should(Exit(0))
 	os.Setenv("CF_HOME", originalCfHomeDir)
 	os.RemoveAll(currentCfHomeDir)
 }
