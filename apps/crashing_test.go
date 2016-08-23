@@ -28,8 +28,8 @@ var _ = AppsDescribe("Crashing", func() {
 	Describe("a continuously crashing app", func() {
 		BeforeEach(func() {
 			if config.Backend != "diego" {
-				Skip(`Skipping this test because config.Backend is not set to 'diego'
-NOTE: Ensure your platform is running Diego before enabling this test`)
+				Skip(`Skipping this test because config.Backend is not set to 'diego'.
+NOTE: Ensure your platform is running Diego before enabling this test.`)
 			}
 		})
 

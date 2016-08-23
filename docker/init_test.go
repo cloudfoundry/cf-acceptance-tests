@@ -68,7 +68,7 @@ func DockerDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
 		if !config.IncludeDocker {
 			Skip(`Skipping this test because config.IncludeDocker is set to 'false'.
-			NOTE: Ensure Docker containers are enabled on your platform before enabling these tests`)
+			NOTE: Ensure Docker containers are enabled on your platform before enabling this test.`)
 		}
 	})
 	return Describe("[docker] "+description, callback)

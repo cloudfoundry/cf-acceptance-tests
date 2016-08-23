@@ -67,7 +67,7 @@ func InternetDependentDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
 		if !config.IncludeInternetDependent {
 			Skip(`Skipping this test because config.IncludeInternetDependent is set to 'false'.
-			Ensure that your deployment has access to the internet before running these tests.`)
+NOTE: Ensure that your deployment has access to the internet before running this test.`)
 		}
 	})
 	return Describe("[internet_dependent] "+description, callback)

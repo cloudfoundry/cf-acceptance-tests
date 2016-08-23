@@ -63,7 +63,7 @@ func TestApplications(t *testing.T) {
 func V3Describe(description string, callback func()) bool {
 	BeforeEach(func() {
 		if !config.IncludeV3 {
-			Skip(`Skipping this test because config.IncludeV3 is set to false.`)
+			Skip(`Skipping this test because config.IncludeV3 is set to 'false'.`)
 		}
 	})
 	return Describe("[v3] "+description, callback)

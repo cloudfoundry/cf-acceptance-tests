@@ -27,8 +27,8 @@ var _ = SshDescribe("SSH", func() {
 
 	BeforeEach(func() {
 		if config.Backend != "diego" {
-			Skip(`Skipping this test because config.Backend is not set to 'diego'
-NOTE: Ensure your platform is running Diego before enabling this test`)
+			Skip(`Skipping this test because config.Backend is not set to 'diego'.
+NOTE: Ensure your platform is running Diego before enabling this test.`)
 		}
 		appName = random_name.CATSRandomName("APP")
 		Eventually(cf.Cf(

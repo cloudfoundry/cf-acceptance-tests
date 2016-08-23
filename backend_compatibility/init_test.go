@@ -68,7 +68,7 @@ func BackendCompatibilityDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
 		if !config.IncludeBackendCompatiblity {
 			Skip(`Skipping this test because config.IncludeBackendCompatibility is set to 'false'.
-			Ensure that your deployment has deployed both DEA and Diego before running these tests.`)
+			NOTE: Ensure that your deployment has deployed both DEA and Diego before running this test.`)
 		}
 	})
 	return Describe("[backend_compatibility] "+description, callback)

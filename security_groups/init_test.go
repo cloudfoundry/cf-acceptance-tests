@@ -66,8 +66,8 @@ func TestApplications(t *testing.T) {
 func SecurityGroupsDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
 		if !config.IncludeSecurityGroups {
-			Skip(`Skipping this test because config.IncludeSecurityGroups is set to false.
-			Ensure that your deployment restricts internal network traffic by default in order to run these tests.`)
+			Skip(`Skipping this test because config.IncludeSecurityGroups is set to 'false'.
+			NOTE: Ensure that your deployment restricts internal network traffic by default in order to run this test.`)
 		}
 	})
 	return Describe("[security_groups] "+description, callback)

@@ -20,8 +20,8 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 	var appName string
 	BeforeEach(func() {
 		if config.Backend != "diego" {
-			Skip(`Skipping this test because config.Backend is not set to 'diego'
-NOTE: Ensure your platform is running Diego before enabling this test`)
+			Skip(`Skipping this test because config.Backend is not set to 'diego'.
+NOTE: Ensure your platform is running Diego before enabling this test.`)
 		}
 	})
 

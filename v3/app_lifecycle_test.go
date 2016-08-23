@@ -156,8 +156,8 @@ var _ = Describe("v3 docker app lifecycle", func() {
 
 	BeforeEach(func() {
 		if !config.IncludeDocker {
-			Skip(`Skipping this test because config.IncludeDocker is set to 'false'
-			NOTE: Ensure Docker containers are enabled on your platform before enabling these tests`)
+			Skip(`Skipping this test because config.IncludeDocker is set to 'false'.
+			NOTE: Ensure Docker containers are enabled on your platform before enabling this test.`)
 		}
 		appName = random_name.CATSRandomName("APP")
 		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)

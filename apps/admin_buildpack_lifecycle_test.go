@@ -344,8 +344,8 @@ exit 1
 
 		It("the user receives a BuildpackCompileFailed error", func() {
 			if config.Backend != "dea" {
-				Skip(`Skipping this test because config.Backend is not set to 'dea'
-NOTE: Ensure your platform is running DEAs before enabling this test`)
+				Skip(`Skipping this test because config.Backend is not set to 'dea'.
+NOTE: Ensure your platform is running DEAs before enabling this test.`)
 			}
 			setupBadCompileBuildpack(appConfig{Empty: false})
 			itRaisesBuildpackCompileFailedError()
@@ -360,8 +360,8 @@ NOTE: Ensure your platform is running DEAs before enabling this test`)
 
 		It("the user receives a BuildpackReleaseFailed error", func() {
 			if config.Backend != "dea" {
-				Skip(`Skipping this test because config.Backend is not set to 'dea'
-NOTE: Ensure your platform is running DEAs before enabling this test`)
+				Skip(`Skipping this test because config.Backend is not set to 'dea'.
+NOTE: Ensure your platform is running DEAs before enabling this test.`)
 			}
 			setupBadReleaseBuildpack(appConfig{Empty: false})
 			itRaisesBuildpackReleaseFailedError()

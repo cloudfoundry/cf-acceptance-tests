@@ -19,8 +19,8 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 
 	BeforeEach(func() {
 		if config.IncludeSSO != true {
-			Skip(`Skipping this test because config.IncludeSSO is not set to 'true'
-			NOTE: Ensure your platform is running UAA with SSO enabled before enabling this test`)
+			Skip(`Skipping this test because config.IncludeSSO is not set to 'true'.
+			NOTE: Ensure your platform is running UAA with SSO enabled before enabling this test.`)
 		}
 		broker = NewServiceBroker(
 			random_name.CATSRandomName("BROKER"),

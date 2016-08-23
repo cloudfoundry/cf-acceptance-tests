@@ -39,8 +39,8 @@ var _ = AppsDescribe("A running application", func() {
 	It("can have its files inspected", func() {
 		// Currently cannot work with multiple instances since CF always checks instance 0
 		if config.Backend != "dea" {
-			Skip(`Skipping this test because config.Backend is not set to 'dea'
-NOTE: Ensure your platform is running DEAs before enabling this test`)
+			Skip(`Skipping this test because config.Backend is not set to 'dea'.
+NOTE: Ensure your platform is running DEAs before enabling this test.`)
 		}
 		files := cf.Cf("files", appName).Wait(DEFAULT_TIMEOUT)
 		Expect(files).To(Exit(0))

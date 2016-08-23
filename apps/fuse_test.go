@@ -18,8 +18,8 @@ var _ = AppsDescribe("FUSE", func() {
 
 	BeforeEach(func() {
 		if !config.IncludePrivilegedContainerSupport {
-			Skip(`Skipping this test because config.IncludePrivilegedContainerSupport is set to 'false'
-Note: Ensure privileged containers are allowed on your platform before enabling these tests`)
+			Skip(`Skipping this test because config.IncludePrivilegedContainerSupport is set to 'false'.
+NOTE: Ensure privileged containers are allowed on your platform before enabling these tests.`)
 		}
 		appName = random_name.CATSRandomName("APP")
 	})

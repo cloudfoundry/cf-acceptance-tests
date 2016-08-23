@@ -38,8 +38,8 @@ var _ = V3Describe("v3 tasks", func() {
 
 	BeforeEach(func() {
 		if !config.IncludeTasks {
-			Skip(`Skipping this test because config.IncludeTasks is set to 'false'
-NOTE: Ensure tasks are enabled on your platform before enabling these tests`)
+			Skip(`Skipping this test because config.IncludeTasks is set to 'false'.
+NOTE: Ensure tasks are enabled on your platform before enabling this test.`)
 		}
 		appName = random_name.CATSRandomName("APP")
 		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)

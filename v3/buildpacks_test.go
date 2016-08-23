@@ -65,8 +65,8 @@ var _ = V3Describe("buildpack", func() {
 
 	It("Downloads the correct user specified git buildpack", func() {
 		if !config.IncludeInternetDependent {
-			Skip(`Skipping this test because config.IncludeInternetDependent is set to false.
-			Ensure that your deployment has access to the internet before running this test.`)
+			Skip(`Skipping this test because config.IncludeInternetDependent is set to 'false'.
+			NOTE: Ensure that your deployment has access to the internet before running this test.`)
 		}
 		StageBuildpackPackage(packageGuid, "https://github.com/cloudfoundry/example-git-buildpack")
 
