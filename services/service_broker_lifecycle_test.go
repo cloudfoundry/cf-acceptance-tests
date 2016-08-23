@@ -35,7 +35,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				context,
 			)
 			workflowhelpers.TargetSpace(context.RegularUserContext(), context.ShortTimeout())
-			broker.Push()
+			broker.Push(config)
 			broker.Configure()
 
 			workflowhelpers.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
@@ -201,7 +201,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				context,
 			)
 			workflowhelpers.TargetSpace(context.RegularUserContext(), context.ShortTimeout())
-			broker.Push()
+			broker.Push(config)
 			broker.Configure()
 		})
 

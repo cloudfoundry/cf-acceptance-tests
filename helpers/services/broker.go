@@ -102,8 +102,7 @@ func NewServiceBroker(name string, path string, context workflowhelpers.SuiteCon
 	return b
 }
 
-func (b ServiceBroker) Push() {
-	config := helpers.LoadConfig()
+func (b ServiceBroker) Push(config helpers.Config) {
 	Expect(cf.Cf(
 		"push", b.Name,
 		"--no-start",

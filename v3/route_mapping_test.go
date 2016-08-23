@@ -52,7 +52,7 @@ var _ = V3Describe("route_mapping", func() {
 		processes := GetProcesses(appGuid, appName)
 		webProcess = GetProcessByType(processes, "web")
 
-		CreateRoute(spaceName, helpers.LoadConfig().AppsDomain, appName)
+		CreateRoute(spaceName, config.AppsDomain, appName)
 	})
 
 	AfterEach(func() {

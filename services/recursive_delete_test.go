@@ -25,7 +25,7 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 			assets.NewAssets().ServiceBroker,
 			context,
 		)
-		broker.Push()
+		broker.Push(config)
 		broker.Configure()
 		broker.Create()
 		broker.PublicizePlans()

@@ -27,7 +27,6 @@ import (
 
 var _ = AppsDescribe("An application that's already been pushed", func() {
 	var appName string
-	config := helpers.LoadConfig()
 	var environment *workflowhelpers.Environment
 
 	BeforeEach(func() {

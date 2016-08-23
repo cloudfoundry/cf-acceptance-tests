@@ -30,7 +30,7 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 				assets.NewAssets().ServiceBroker,
 				context,
 			)
-			broker.Push()
+			broker.Push(config)
 			broker.Configure()
 			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				broker.Create()
@@ -95,7 +95,7 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 				context,
 			)
 			workflowhelpers.TargetSpace(context.RegularUserContext(), context.ShortTimeout())
-			broker.Push()
+			broker.Push(config)
 			broker.Configure()
 			broker.CreateSpaceScoped()
 			appName = random_name.CATSRandomName("APP")

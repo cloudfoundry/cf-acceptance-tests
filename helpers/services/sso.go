@@ -34,9 +34,9 @@ func ParseJsonResponse(response []byte) (resultMap map[string]interface{}) {
 	return
 }
 
-func SetOauthEndpoints(apiEndpoint string, config *OAuthConfig) {
+func setOauthEndpoints(apiEndpoint string, oAuthConfig *OAuthConfig, config helpers.Config) {
 	args := []string{}
-	if helpers.LoadConfig().SkipSSLValidation {
+	if config.SkipSSLValidation {
 		args = append(args, "--insecure")
 	}
 	args = append(args, fmt.Sprintf("%v/info", apiEndpoint))
@@ -45,8 +45,8 @@ func SetOauthEndpoints(apiEndpoint string, config *OAuthConfig) {
 	apiResponse := curl.Out.Contents()
 	jsonResult := ParseJsonResponse(apiResponse)
 
-	config.TokenEndpoint = fmt.Sprintf("%v", jsonResult[`token_endpoint`])
-	config.AuthorizationEndpoint = fmt.Sprintf("%v", jsonResult[`authorization_endpoint`])
+	oAuthConfig.TokenEndpoint = fmt.Sprintf("%v", jsonResult[`token_endpoint`])
+	oAuthConfig.AuthorizationEndpoint = fmt.Sprintf("%v", jsonResult[`authorization_endpoint`])
 	return
 }
 

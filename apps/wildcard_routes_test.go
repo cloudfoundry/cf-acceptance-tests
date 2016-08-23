@@ -33,7 +33,7 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 		orgName = context.RegularUserContext().Org
 		spaceName = context.RegularUserContext().Space
 
-		domainName = random_name.CATSRandomName("DOMAIN") + "." + helpers.LoadConfig().AppsDomain
+		domainName = random_name.CATSRandomName("DOMAIN") + "." + config.AppsDomain
 		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("create-shared-domain", domainName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		})

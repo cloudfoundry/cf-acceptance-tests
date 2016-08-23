@@ -61,7 +61,7 @@ var _ = V3Describe("process", func() {
 			processes := GetProcesses(appGuid, appName)
 			webProcess = GetProcessByType(processes, "web")
 
-			CreateAndMapRoute(appGuid, context.RegularUserContext().Space, helpers.LoadConfig().AppsDomain, webProcess.Name)
+			CreateAndMapRoute(appGuid, context.RegularUserContext().Space, config.AppsDomain, webProcess.Name)
 
 			StartApp(appGuid)
 

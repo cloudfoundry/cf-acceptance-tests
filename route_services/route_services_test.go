@@ -262,7 +262,6 @@ func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 
 	brokerUrl := helpers.AppUri(brokerAppName, "")
 
-	config = helpers.LoadConfig()
 	context := workflowhelpers.NewContext(config)
 	workflowhelpers.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
 		session := cf.Cf("create-service-broker", brokerName, "user", "password", brokerUrl)

@@ -63,7 +63,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 				assets.NewAssets().ServiceBroker,
 				context,
 			)
-			broker.Push()
+			broker.Push(config)
 			broker.Configure()
 			broker.Create()
 			broker.PublicizePlans()
@@ -280,7 +280,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 				assets.NewAssets().ServiceBroker,
 				context,
 			)
-			broker.Push()
+			broker.Push(config)
 			broker.Configure()
 			broker.Create()
 			broker.PublicizePlans()

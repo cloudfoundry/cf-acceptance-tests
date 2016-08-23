@@ -38,7 +38,7 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 				"-b", config.RubyBuildpackName,
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Dora,
-				"-d", helpers.LoadConfig().AppsDomain,
+				"-d", config.AppsDomain,
 				"-c", "FOO=foo bundle exec rackup config.ru -p $PORT",
 			).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			app_helpers.SetBackend(appName)

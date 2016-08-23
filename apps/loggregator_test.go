@@ -92,8 +92,6 @@ var _ = AppsDescribe("loggregator", func() {
 
 	Context("firehose data", func() {
 		It("shows logs and metrics", func() {
-			config := helpers.LoadConfig()
-
 			noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: config.SkipSSLValidation}, nil)
 			msgChan := make(chan *events.Envelope, 100000)
 			errorChan := make(chan error)
@@ -110,7 +108,6 @@ var _ = AppsDescribe("loggregator", func() {
 		})
 
 		It("shows container metrics", func() {
-			config := helpers.LoadConfig()
 			appGuid := strings.TrimSpace(string(cf.Cf("app", appName, "--guid").Wait(DEFAULT_TIMEOUT).Out.Contents()))
 
 			noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: config.SkipSSLValidation}, nil)

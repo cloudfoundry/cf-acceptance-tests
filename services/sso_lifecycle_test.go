@@ -4,7 +4,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -14,7 +13,7 @@ import (
 var _ = ServicesDescribe("SSO Lifecycle", func() {
 	var broker ServiceBroker
 	var oauthConfig OAuthConfig
-	var apiEndpoint = helpers.LoadConfig().ApiEndpoint
+	var apiEndpoint = config.ApiEndpoint
 
 	redirectUri := `http://example.com`
 
@@ -28,7 +27,7 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 			assets.NewAssets().ServiceBroker,
 			context,
 		)
-		broker.Push()
+		broker.Push(config)
 		broker.Service.DashboardClient.RedirectUri = redirectUri
 		broker.Configure()
 
@@ -38,7 +37,7 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 		oauthConfig.RedirectUri = redirectUri
 		oauthConfig.RequestedScopes = `openid,cloud_controller_service_permissions.read`
 
-		SetOauthEndpoints(apiEndpoint, &oauthConfig)
+		setOauthEndpoints(apiEndpoint, &oauthConfig, config)
 
 		broker.Create()
 	})
