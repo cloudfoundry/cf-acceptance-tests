@@ -21,9 +21,10 @@ const SkipSecurityGroupsMessage string = `Skipping this test because config.Incl
 NOTE: Ensure that your platform restricts internal network traffic by default in order to run this test.`
 const SkipServicesMessage string = `Skipping this test because config.IncludeServices is set to 'false'.`
 const SkipSSHMessage string = `Skipping this test because config.IncludeSsh is set to 'false'.
-NOTE: Ensure that your platform is deployed with a Diego SSH proxy in order to run this tests.`
+NOTE: Ensure that your platform is deployed with a Diego SSH proxy in order to run this test.`
 const SkipSSOMessage string = `Skipping this test because config.IncludeSSO is not set to 'true'.
 NOTE: Ensure that your platform is running UAA with SSO enabled before enabling this test.`
 const SkipTasksMessage string = `Skipping this test because config.IncludeTasks is set to 'false'.
 NOTE: Ensure tasks are enabled on your platform before enabling this test.`
-const SkipV3Message string = `Skipping this test because config.IncludeV3 is set to 'false'.`
+const SkipV3Message string = `Skipping this test because config.IncludeV3 is set to 'false'.
+NOTE: Ensure that the v3 api features are enabled on your platform before running this test.`
