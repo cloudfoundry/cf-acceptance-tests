@@ -37,13 +37,12 @@ type Response struct {
 
 var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 	var broker ServiceBroker
-	var ASYNC_OPERATION_TIMEOUT = 2 * time.Minute
 	var ASYNC_OPERATION_POLL_INTERVAL = 5 * time.Second
 
 	waitForAsyncDeletionToComplete := func(broker ServiceBroker, instanceName string) {
 		Eventually(func() *Session {
 			return cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
-		}, ASYNC_OPERATION_TIMEOUT, ASYNC_OPERATION_POLL_INTERVAL).Should(Say("not found"))
+		}, ASYNC_SERVICE_OPERATION_TIMEOUT, ASYNC_OPERATION_POLL_INTERVAL).Should(Say("not found"))
 	}
 
 	waitForAsyncOperationToComplete := func(broker ServiceBroker, instanceName string) {
@@ -51,7 +50,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 			serviceDetails := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
 			Expect(serviceDetails).To(Exit(0), "failed getting service instance details")
 			return serviceDetails
-		}, ASYNC_OPERATION_TIMEOUT, ASYNC_OPERATION_POLL_INTERVAL).Should(Say("succeeded"))
+		}, ASYNC_SERVICE_OPERATION_TIMEOUT, ASYNC_OPERATION_POLL_INTERVAL).Should(Say("succeeded"))
 	}
 
 	type Params struct{ Param1 string }

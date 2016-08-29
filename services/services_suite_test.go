@@ -34,6 +34,10 @@ func TestApplications(t *testing.T) {
 		BROKER_START_TIMEOUT = config.BrokerStartTimeout * time.Second
 	}
 
+	if config.AsyncServiceOperationTimeout > 0 {
+		ASYNC_SERVICE_OPERATION_TIMEOUT = config.AsyncServiceOperationTimeout * time.Second
+	}
+
 	context = workflowhelpers.NewContext(config)
 	environment := workflowhelpers.NewEnvironment(context)
 
