@@ -107,7 +107,7 @@ The full set of config parameters is explained below:
 * `api` (required): Cloud Controller API endpoint.
 * `admin_user` (required): Name of a user in your CF instance with admin credentials.  This admin user must have the `doppler.firehose` scope.
 * `admin_password` (required): Password of the admin user above.
-* `apps_domain` (required): A shared domain that tests can use to create subdomains that will route to applications also craeted in the tests.
+* `apps_domain` (required): A shared domain that tests can use to create subdomains that will route to applications also created in the tests.
 * `skip_ssl_validation`: Set to true if using an invalid (e.g. self-signed) cert for traffic routed to your CF instance; this is generally always true for BOSH-Lite deployments of CF.
 * `use_existing_user` (optional): The admin user configured above will normally be used to create a temporary user (with lesser permissions) to perform actions (such as push applications) during tests, and then delete said user after the tests have run; set this to `true` if you want to use an existing user, configured via the following properties.
 * `keep_user_at_suite_end` (optional): If using an existing user (see above), set this to `true` unless you are okay having your existing user being deleted at the end. You can also set this to `true` when not using an existing user if you want to leave the temporary user around for debugging purposes after the test teardown.
@@ -125,6 +125,7 @@ The full set of config parameters is explained below:
 * `cf_push_timeout` (optional): Default time (in seconds) to wait for `cf push` commands to succeed.
 * `long_curl_timeout` (optional): Default time (in seconds) to wait for assertions that `curl` slow endpoints of test applications.
 * `broker_start_timeout` (optional, only relevant for `services` suite): Time (in seconds) to wait for service broker test app to start.
+* `async_service_operation_timeout` (optional, only relevant for the `services` suite): Time (in seconds) to wait for an asynchronous service operation to complete.
 * `test_password` (optional): Used to set the password for the test user. This may be needed if your CF installation has password policies.
 * `timeout_scale` (optional): Used primarily to scale default timeouts for test setup and teardown actions (e.g. creating an org) as opposed to main test actions (e.g. pushing an app).
 * `use_http` (optional): Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
