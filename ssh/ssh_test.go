@@ -15,6 +15,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	ginkgoconfig "github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
@@ -27,8 +28,7 @@ var _ = SshDescribe("SSH", func() {
 
 	BeforeEach(func() {
 		if config.Backend != "diego" {
-			Skip(`Skipping this test because config.Backend is not set to 'diego'.
-NOTE: Ensure your platform is running Diego before enabling this test.`)
+			Skip(skip_messages.SkipDiegoMessage)
 		}
 		appName = random_name.CATSRandomName("APP")
 		Eventually(cf.Cf(

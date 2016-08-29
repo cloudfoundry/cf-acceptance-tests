@@ -7,6 +7,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 
 	. "github.com/onsi/ginkgo"
@@ -156,8 +157,7 @@ var _ = Describe("v3 docker app lifecycle", func() {
 
 	BeforeEach(func() {
 		if !config.IncludeDocker {
-			Skip(`Skipping this test because config.IncludeDocker is set to 'false'.
-			NOTE: Ensure Docker containers are enabled on your platform before enabling this test.`)
+			Skip(skip_messages.SkipDockerMessage)
 		}
 		appName = random_name.CATSRandomName("APP")
 		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)

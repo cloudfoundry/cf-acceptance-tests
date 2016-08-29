@@ -11,6 +11,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
 var _ = AppsDescribe("Crashing", func() {
@@ -28,8 +29,7 @@ var _ = AppsDescribe("Crashing", func() {
 	Describe("a continuously crashing app", func() {
 		BeforeEach(func() {
 			if config.Backend != "diego" {
-				Skip(`Skipping this test because config.Backend is not set to 'diego'.
-NOTE: Ensure your platform is running Diego before enabling this test.`)
+				Skip(skip_messages.SkipDiegoMessage)
 			}
 		})
 

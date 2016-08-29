@@ -11,6 +11,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -344,8 +345,7 @@ exit 1
 
 		It("the user receives a BuildpackCompileFailed error", func() {
 			if config.Backend != "dea" {
-				Skip(`Skipping this test because config.Backend is not set to 'dea'.
-NOTE: Ensure your platform is running DEAs before enabling this test.`)
+				Skip(skip_messages.SkipDeaMessage)
 			}
 			setupBadCompileBuildpack(appConfig{Empty: false})
 			itRaisesBuildpackCompileFailedError()
@@ -360,8 +360,7 @@ NOTE: Ensure your platform is running DEAs before enabling this test.`)
 
 		It("the user receives a BuildpackReleaseFailed error", func() {
 			if config.Backend != "dea" {
-				Skip(`Skipping this test because config.Backend is not set to 'dea'.
-NOTE: Ensure your platform is running DEAs before enabling this test.`)
+				Skip(skip_messages.SkipDeaMessage)
 			}
 			setupBadReleaseBuildpack(appConfig{Empty: false})
 			itRaisesBuildpackReleaseFailedError()

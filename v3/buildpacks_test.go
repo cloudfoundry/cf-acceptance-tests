@@ -12,6 +12,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -65,8 +66,7 @@ var _ = V3Describe("buildpack", func() {
 
 	It("Downloads the correct user specified git buildpack", func() {
 		if !config.IncludeInternetDependent {
-			Skip(`Skipping this test because config.IncludeInternetDependent is set to 'false'.
-			NOTE: Ensure that your deployment has access to the internet before running this test.`)
+			Skip(skip_messages.SkipInternetDependentMessage)
 		}
 		StageBuildpackPackage(packageGuid, "https://github.com/cloudfoundry/example-git-buildpack")
 

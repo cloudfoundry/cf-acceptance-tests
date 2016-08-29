@@ -10,6 +10,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
 var (
@@ -64,7 +65,7 @@ func TestApplications(t *testing.T) {
 func ServicesDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
 		if !config.IncludeServices {
-			Skip(`Skipping this test because config.IncludeServices is set to 'false'.`)
+			Skip(skip_messages.SkipServicesMessage)
 		}
 	})
 	return Describe("[services] "+description, callback)

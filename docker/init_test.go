@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -67,8 +68,7 @@ func TestApplications(t *testing.T) {
 func DockerDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
 		if !config.IncludeDocker {
-			Skip(`Skipping this test because config.IncludeDocker is set to 'false'.
-			NOTE: Ensure Docker containers are enabled on your platform before enabling this test.`)
+			Skip(skip_messages.SkipDockerMessage)
 		}
 	})
 	return Describe("[docker] "+description, callback)

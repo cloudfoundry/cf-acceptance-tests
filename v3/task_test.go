@@ -7,6 +7,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 
 	. "github.com/onsi/ginkgo"
@@ -38,8 +39,7 @@ var _ = V3Describe("v3 tasks", func() {
 
 	BeforeEach(func() {
 		if !config.IncludeTasks {
-			Skip(`Skipping this test because config.IncludeTasks is set to 'false'.
-NOTE: Ensure tasks are enabled on your platform before enabling this test.`)
+			Skip(skip_messages.SkipTasksMessage)
 		}
 		appName = random_name.CATSRandomName("APP")
 		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)

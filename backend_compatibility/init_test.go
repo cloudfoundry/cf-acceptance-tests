@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -67,8 +68,7 @@ func TestApplications(t *testing.T) {
 func BackendCompatibilityDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
 		if !config.IncludeBackendCompatiblity {
-			Skip(`Skipping this test because config.IncludeBackendCompatibility is set to 'false'.
-			NOTE: Ensure that your deployment has deployed both DEA and Diego before running this test.`)
+			Skip(skip_messages.SkipBackendCompatibilityMessage)
 		}
 	})
 	return Describe("[backend_compatibility] "+description, callback)

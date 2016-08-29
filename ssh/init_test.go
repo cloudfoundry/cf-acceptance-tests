@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
@@ -107,8 +108,7 @@ func guidForAppName(appName string) string {
 func SshDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
 		if !config.IncludeSsh {
-			Skip(`Skipping this test because config.IncludeSsh is set to 'false'.
-			NOTE: Ensure that your platform is deployed with a Diego SSH proxy in order to run this test.`)
+			Skip(skip_messages.SkipSSHMessage)
 		}
 	})
 	return Describe("[ssh] "+description, callback)

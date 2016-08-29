@@ -7,6 +7,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -20,8 +21,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 
 	BeforeEach(func() {
 		if config.Backend != "diego" {
-			Skip(`Skipping this test because config.Backend is not set to 'diego'.
-NOTE: Ensure your platform is running Diego before enabling this test.`)
+			Skip(skip_messages.SkipDiegoMessage)
 		}
 		app = random_name.CATSRandomName("APP")
 		cmd := fmt.Sprintf("lattice-app --ports=7777,8888,8080")

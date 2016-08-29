@@ -5,6 +5,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -59,7 +60,7 @@ func TestRouting(t *testing.T) {
 func RoutingDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
 		if !config.IncludeRouting {
-			Skip(`Skipping this test because config.IncludeRouting is set to 'false'.`)
+			Skip(skip_messages.SkipRoutingMessage)
 		}
 	})
 	return Describe("[routing] "+description, callback)

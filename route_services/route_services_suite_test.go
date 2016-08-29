@@ -5,6 +5,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -58,8 +59,7 @@ func TestRouteServices(t *testing.T) {
 func RouteServicesDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
 		if !config.IncludeRouteServices {
-			Skip(`Skipping this test because config.IncludeRouteServices is set to 'false'.
-			NOTE: Ensure that route services are enabled in your deployment before running this test.`)
+			Skip(skip_messages.SkipRouteServicesMessage)
 		}
 	})
 	return Describe("[route_services] "+description, callback)

@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
@@ -63,7 +64,7 @@ func TestApplications(t *testing.T) {
 func V3Describe(description string, callback func()) bool {
 	BeforeEach(func() {
 		if !config.IncludeV3 {
-			Skip(`Skipping this test because config.IncludeV3 is set to 'false'.`)
+			Skip(skip_messages.SkipV3Message)
 		}
 	})
 	return Describe("[v3] "+description, callback)

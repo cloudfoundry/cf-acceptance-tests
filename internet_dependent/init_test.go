@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -66,8 +67,7 @@ func TestApplications(t *testing.T) {
 func InternetDependentDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
 		if !config.IncludeInternetDependent {
-			Skip(`Skipping this test because config.IncludeInternetDependent is set to 'false'.
-NOTE: Ensure that your deployment has access to the internet before running this test.`)
+			Skip(skip_messages.SkipInternetDependentMessage)
 		}
 	})
 	return Describe("[internet_dependent] "+description, callback)

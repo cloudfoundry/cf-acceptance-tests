@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -66,8 +67,7 @@ func TestApplications(t *testing.T) {
 func SecurityGroupsDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
 		if !config.IncludeSecurityGroups {
-			Skip(`Skipping this test because config.IncludeSecurityGroups is set to 'false'.
-			NOTE: Ensure that your deployment restricts internal network traffic by default in order to run this test.`)
+			Skip(skip_messages.SkipSecurityGroupsMessage)
 		}
 	})
 	return Describe("[security_groups] "+description, callback)

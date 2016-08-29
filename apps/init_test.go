@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -72,7 +73,7 @@ func TestApplications(t *testing.T) {
 func AppsDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
 		if !config.IncludeApps {
-			Skip(`Skipping this test because config.IncludeApps is set to 'false'.`)
+			Skip(skip_messages.SkipAppsMessage)
 		}
 	})
 	return Describe("[apps] "+description, callback)

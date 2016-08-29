@@ -3,6 +3,7 @@ package apps
 import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
@@ -18,8 +19,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 
 	BeforeEach(func() {
 		if config.Backend != "diego" {
-			Skip(`Skipping this test because config.Backend is not set to 'diego'.
-NOTE: Ensure your platform is running Diego before enabling this test.`)
+			Skip(skip_messages.SkipDiegoMessage)
 		}
 
 		appName = random_name.CATSRandomName("APP")

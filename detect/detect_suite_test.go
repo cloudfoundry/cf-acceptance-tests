@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -62,7 +63,7 @@ func TestDetect(t *testing.T) {
 func DetectDescribe(description string, callback func()) bool {
 	BeforeEach(func() {
 		if !config.IncludeDetect {
-			Skip(`Skipping this test because config.IncludeDetect is set to 'false'.`)
+			Skip(skip_messages.SkipDetectMessage)
 		}
 	})
 	return Describe("[detect] "+description, callback)

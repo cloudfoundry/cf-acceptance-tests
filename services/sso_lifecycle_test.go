@@ -8,6 +8,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
 var _ = ServicesDescribe("SSO Lifecycle", func() {
@@ -19,8 +20,7 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 
 	BeforeEach(func() {
 		if config.IncludeSSO != true {
-			Skip(`Skipping this test because config.IncludeSSO is not set to 'true'.
-			NOTE: Ensure your platform is running UAA with SSO enabled before enabling this test.`)
+			Skip(skip_messages.SkipSSOMessage)
 		}
 		broker = NewServiceBroker(
 			random_name.CATSRandomName("BROKER"),

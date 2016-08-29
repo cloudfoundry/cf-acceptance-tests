@@ -6,6 +6,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -18,8 +19,7 @@ var _ = AppsDescribe("FUSE", func() {
 
 	BeforeEach(func() {
 		if !config.IncludePrivilegedContainerSupport {
-			Skip(`Skipping this test because config.IncludePrivilegedContainerSupport is set to 'false'.
-NOTE: Ensure privileged containers are allowed on your platform before enabling these tests.`)
+			Skip(skip_messages.SkipPrivilegedContainerSupportMessage)
 		}
 		appName = random_name.CATSRandomName("APP")
 	})

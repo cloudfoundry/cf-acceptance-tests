@@ -11,6 +11,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
 var _ = AppsDescribe("A running application", func() {
@@ -39,8 +40,7 @@ var _ = AppsDescribe("A running application", func() {
 	It("can have its files inspected", func() {
 		// Currently cannot work with multiple instances since CF always checks instance 0
 		if config.Backend != "dea" {
-			Skip(`Skipping this test because config.Backend is not set to 'dea'.
-NOTE: Ensure your platform is running DEAs before enabling this test.`)
+			Skip(skip_messages.SkipDeaMessage)
 		}
 		files := cf.Cf("files", appName).Wait(DEFAULT_TIMEOUT)
 		Expect(files).To(Exit(0))
