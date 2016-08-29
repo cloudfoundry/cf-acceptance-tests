@@ -6,7 +6,7 @@ import (
 )
 
 type starter interface {
-	Start(runner.Reporter, string, ...string) (*gexec.Session, error)
+	Start(commandstarter.Reporter, string, ...string) (*gexec.Session, error)
 }
 
 func Curl(cmdStarter starter, skipSsl bool, args ...string) *gexec.Session {
@@ -15,7 +15,7 @@ func Curl(cmdStarter starter, skipSsl bool, args ...string) *gexec.Session {
 		curlArgs = append([]string{"-k"}, curlArgs...)
 	}
 
-	reporter := runner.NewDefaultReporter()
+	reporter := commandstarter.NewDefaultReporter()
 	request, err := cmdStarter.Start(reporter, "curl", curlArgs...)
 
 	if err != nil {

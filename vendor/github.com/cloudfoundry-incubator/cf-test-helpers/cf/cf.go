@@ -7,6 +7,6 @@ import (
 )
 
 var Cf = func(args ...string) *gexec.Session {
-	cmdStarter := runner.NewCommandStarter()
+	cmdStarter := commandstarter.NewCommandStarter()
 	return cfinternal.Cf(cmdStarter, args...)
 }

@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/commandstarter"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers/internal"
 	ginkgoconfig "github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
@@ -39,7 +41,9 @@ func InitiateUserContext(userContext UserContext, timeout time.Duration) (origin
 	}
 
 	cf.Cf(cfSetApiArgs...).Wait(timeout)
-	cf.CfAuth(userContext.Username, userContext.Password).Wait(timeout)
+
+	cmdStarter := commandstarter.NewCommandStarter()
+	internal.CfAuth(userContext.Username, userContext.Password, cmdStarter).Wait(timeout)
 
 	return
 }

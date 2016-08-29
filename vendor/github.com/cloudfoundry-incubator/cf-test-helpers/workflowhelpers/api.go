@@ -18,5 +18,5 @@ type QueryResponse struct {
 }
 
 var ApiRequest = func(method, endpoint string, response interface{}, timeout time.Duration, data ...string) {
-	internal.ApiRequest(runner.NewCommandStarter(), method, endpoint, response, timeout, data...)
+	internal.ApiRequest(commandstarter.NewCommandStarter(), method, endpoint, response, timeout, data...)
 }

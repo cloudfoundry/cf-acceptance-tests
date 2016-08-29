@@ -22,7 +22,7 @@ func ApiRequest(cmdStarter starter, method, endpoint string, response interface{
 		args = append(args, "-d", dataArg)
 	}
 
-	reporter := runner.NewDefaultReporter()
+	reporter := commandstarter.NewDefaultReporter()
 	request, err := cmdStarter.Start(reporter, "cf", args...)
 	ExpectWithOffset(2, err).NotTo(HaveOccurred())
 

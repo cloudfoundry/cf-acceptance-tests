@@ -6,5 +6,5 @@ import (
 )
 
 type starter interface {
-	Start(runner.Reporter, string, ...string) (*gexec.Session, error)
+	Start(commandstarter.Reporter, string, ...string) (*gexec.Session, error)
 }

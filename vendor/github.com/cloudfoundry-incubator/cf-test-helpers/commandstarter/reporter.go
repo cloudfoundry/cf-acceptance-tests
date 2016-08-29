@@ -1,7 +1,8 @@
-package runner
+package commandstarter
 
 import (
 	"fmt"
+	"io"
 	"os/exec"
 	"strings"
 	"time"
@@ -16,10 +17,24 @@ type Reporter interface {
 	Report(time.Time, *exec.Cmd)
 }
 
-type DefaultReporter struct{}
+type DefaultReporter struct {
+	Writer io.Writer
+}
 
-func NewDefaultReporter() *DefaultReporter {
-	return &DefaultReporter{}
+func NewDefaultReporter(writers ...io.Writer) *DefaultReporter {
+	var writer io.Writer
+	switch len(writers) {
+	case 0:
+		writer = ginkgo.GinkgoWriter
+	case 1:
+		writer = writers[0]
+	default:
+		panic("NewDefaultReporter should only take one writer")
+	}
+
+	return &DefaultReporter{
+		Writer: writer,
+	}
 }
 
 func (r *DefaultReporter) Report(startTime time.Time, cmd *exec.Cmd) {
@@ -29,5 +44,13 @@ func (r *DefaultReporter) Report(startTime time.Time, cmd *exec.Cmd) {
 		startColor = "\x1b[32m"
 		endColor = "\x1b[0m"
 	}
-	fmt.Fprintf(ginkgo.GinkgoWriter, "\n%s[%s]> %s %s\n", startColor, startTime.UTC().Format(timeFormat), strings.Join(cmd.Args, " "), endColor)
+
+	fmt.Fprintf(
+		r.Writer,
+		"\n%s[%s]> %s %s\n",
+		startColor,
+		startTime.UTC().Format(timeFormat),
+		strings.Join(cmd.Args, " "),
+		endColor,
+	)
 }
