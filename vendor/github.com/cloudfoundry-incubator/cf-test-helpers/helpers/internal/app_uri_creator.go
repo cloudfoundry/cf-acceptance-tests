@@ -11,7 +11,7 @@ type AppUriCreator struct {
 }
 
 func (uriCreator *AppUriCreator) AppUri(appName string, path string) string {
-	if !strings.HasPrefix(path, "/") {
+	if path != "" && !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
 
