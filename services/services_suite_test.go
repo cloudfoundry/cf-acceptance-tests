@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	cats_config "github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
@@ -15,13 +16,13 @@ import (
 
 var (
 	context workflowhelpers.SuiteContext
-	config  helpers.Config
+	config  cats_config.Config
 )
 
 func TestApplications(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	config = helpers.LoadConfig()
+	config = cats_config.LoadConfig()
 
 	if config.DefaultTimeout > 0 {
 		DEFAULT_TIMEOUT = config.DefaultTimeout * time.Second

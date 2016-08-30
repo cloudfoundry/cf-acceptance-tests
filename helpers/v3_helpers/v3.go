@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 
 	. "github.com/onsi/gomega"
@@ -162,7 +163,7 @@ func AssignDropletToApp(appGuid, dropletGuid string) {
 	}
 }
 
-func FetchRecentLogs(appGuid, oauthToken string, config helpers.Config) *Session {
+func FetchRecentLogs(appGuid, oauthToken string, config config.Config) *Session {
 	loggregatorEndpoint := strings.Replace(config.ApiEndpoint, "api", "loggregator", -1)
 	logUrl := fmt.Sprintf("%s/recent?app=%s", loggregatorEndpoint, appGuid)
 	session := helpers.Curl(logUrl, "-H", fmt.Sprintf("Authorization: %s", oauthToken))

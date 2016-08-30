@@ -10,17 +10,18 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 
+	cf_config "github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 )
 
 var context workflowhelpers.SuiteContext
-var config helpers.Config
+var config cf_config.Config
 
 func TestApplications(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	config = helpers.LoadConfig()
+	config = cf_config.LoadConfig()
 
 	if config.DefaultTimeout > 0 {
 		DEFAULT_TIMEOUT = config.DefaultTimeout * time.Second

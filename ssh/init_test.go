@@ -13,6 +13,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	cf_config "github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 )
@@ -24,7 +25,7 @@ var (
 	DEFAULT_MEMORY_LIMIT = "256M"
 
 	context workflowhelpers.SuiteContext
-	config  helpers.Config
+	config  cf_config.Config
 
 	scpPath  string
 	sftpPath string
@@ -33,7 +34,7 @@ var (
 func TestApplications(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	config = helpers.LoadConfig()
+	config = cf_config.LoadConfig()
 
 	if config.DefaultTimeout > 0 {
 		DEFAULT_TIMEOUT = config.DefaultTimeout * time.Second

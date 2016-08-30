@@ -9,8 +9,8 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/onsi/gomega"
 )
 
@@ -24,7 +24,7 @@ func GetAppGuid(appName string, timeout time.Duration) string {
 }
 
 func SetBackend(appName string, timeout time.Duration) {
-	config := helpers.LoadConfig()
+	config := config.LoadConfig()
 	if config.Backend == "diego" {
 		EnableDiego(appName, timeout)
 	} else if config.Backend == "dea" {

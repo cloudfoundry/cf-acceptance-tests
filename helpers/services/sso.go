@@ -14,6 +14,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 
+	cats_config "github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 )
 
@@ -34,7 +35,7 @@ func ParseJsonResponse(response []byte) (resultMap map[string]interface{}) {
 	return
 }
 
-func SetOauthEndpoints(apiEndpoint string, oAuthConfig *OAuthConfig, config helpers.Config) {
+func SetOauthEndpoints(apiEndpoint string, oAuthConfig *OAuthConfig, config cats_config.Config) {
 	args := []string{}
 	if config.SkipSSLValidation {
 		args = append(args, "--insecure")

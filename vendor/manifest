@@ -14,7 +14,7 @@
 			"importpath": "code.cloudfoundry.org/cf-routing-test-helpers",
 			"repository": "https://github.com/cloudfoundry-incubator/cf-routing-test-helpers",
 			"vcs": "git",
-			"revision": "480b43ec0bb53f8135fda080dd7dfa242d799544",
+			"revision": "1fc063fb59243861b6f8e2ce3ec3e239695e5ef2",
 			"branch": "master",
 			"notests": true
 		},
@@ -30,7 +30,7 @@
 			"importpath": "github.com/cloudfoundry-incubator/cf-test-helpers",
 			"repository": "https://github.com/cloudfoundry-incubator/cf-test-helpers",
 			"vcs": "git",
-			"revision": "04075ebecc457bbe1a4d3a535248130a21ba2a3b",
+			"revision": "339dcc394d741dadce3e0763067b12f13ce10259",
 			"branch": "master",
 			"notests": true
 		},

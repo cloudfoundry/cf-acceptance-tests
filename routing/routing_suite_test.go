@@ -3,6 +3,7 @@ package routing
 import (
 	"time"
 
+	cats_config "github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
@@ -18,13 +19,13 @@ var (
 	APP_START_TIMEOUT = 2 * time.Minute
 
 	context workflowhelpers.SuiteContext
-	config  helpers.Config
+	config  cats_config.Config
 )
 
 func TestRouting(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	config = helpers.LoadConfig()
+	config = cats_config.LoadConfig()
 
 	if config.DefaultTimeout > 0 {
 		DEFAULT_TIMEOUT = config.DefaultTimeout * time.Second

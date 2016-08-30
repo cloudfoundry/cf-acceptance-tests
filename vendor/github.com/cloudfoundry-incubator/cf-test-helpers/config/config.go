@@ -1,4 +1,4 @@
-package helpers
+package config
 
 import (
 	"encoding/json"
@@ -148,7 +148,6 @@ func Load(path string, config interface{}) error {
 		c.TimeoutScale = 1.0
 	}
 
-	SkipSSLValidation = c.SkipSSLValidation
 	return nil
 }
 

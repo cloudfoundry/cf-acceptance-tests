@@ -10,14 +10,14 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 )
 
 const RUNAWAY_QUOTA_MEM_LIMIT = "99999G"
 
 type ConfiguredContext struct {
-	config helpers.Config
+	config config.Config
 
 	shortTimeout time.Duration
 	longTimeout  time.Duration
@@ -43,7 +43,7 @@ type quotaDefinition struct {
 	NonBasicServicesAllowed bool
 }
 
-func NewContext(config helpers.Config) *ConfiguredContext {
+func NewContext(config config.Config) *ConfiguredContext {
 	node := ginkgoconfig.GinkgoConfig.ParallelNode
 	timeTag := time.Now().Format("2006_01_02-15h04m05.999s")
 
@@ -76,7 +76,7 @@ func NewContext(config helpers.Config) *ConfiguredContext {
 	}
 }
 
-func NewPersistentAppContext(config helpers.Config) *ConfiguredContext {
+func NewPersistentAppContext(config config.Config) *ConfiguredContext {
 	baseContext := NewContext(config)
 
 	baseContext.quotaDefinitionName = config.PersistentAppQuotaName

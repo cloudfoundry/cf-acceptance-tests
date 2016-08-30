@@ -11,6 +11,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	cats_config "github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 
@@ -102,7 +103,7 @@ func NewServiceBroker(name string, path string, context workflowhelpers.SuiteCon
 	return b
 }
 
-func (b ServiceBroker) Push(config helpers.Config) {
+func (b ServiceBroker) Push(config cats_config.Config) {
 	Expect(cf.Cf(
 		"push", b.Name,
 		"--no-start",

@@ -8,6 +8,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	cf_config "github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 )
@@ -21,13 +22,13 @@ var (
 
 var (
 	context workflowhelpers.SuiteContext
-	config  helpers.Config
+	config  cf_config.Config
 )
 
 func TestDetect(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	config = helpers.LoadConfig()
+	config = cf_config.LoadConfig()
 
 	if config.DefaultTimeout > 0 {
 		DEFAULT_TIMEOUT = config.DefaultTimeout * time.Second
