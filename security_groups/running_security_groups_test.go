@@ -66,7 +66,7 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 		json.Unmarshal(cfResponse, &appsResponse)
 		serverAppUrl := appsResponse.Resources[0].Metadata.Url
 
-		// gather app stats for dea ip and app port
+		// gather app stats for execution vm ip and app port
 		var statsResponse StatsResponse
 		cfResponse = cf.Cf("curl", fmt.Sprintf("%s/stats", serverAppUrl)).Wait(DEFAULT_TIMEOUT).Out.Contents()
 		json.Unmarshal(cfResponse, &statsResponse)
@@ -81,9 +81,9 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 		Expect(cf.Cf("delete", serverAppName, "-f", "-r").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})
 
-	// this test assumes the default running security groups block access to the DEAs
-	// the test takes advantage of the fact that the DEA ip address and internal container ip address
-	// are discoverable via the cc api and dora's myip endpoint
+	// This test assumes the default running security groups block access to the vms that execute apps.
+	// The test takes advantage of the fact that the execution vm's ip address and internal container ip address
+	//   are discoverable via the cc api and dora's myip endpoint.
 	It("allows previously-blocked ip traffic after applying a security group, and re-blocks it when the group is removed", func() {
 
 		clientAppName := random_name.CATSRandomName("APP")
