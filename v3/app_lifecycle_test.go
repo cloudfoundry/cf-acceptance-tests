@@ -145,7 +145,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 	})
 })
 
-var _ = Describe("v3 docker app lifecycle", func() {
+var _ = V3Describe("v3 docker app lifecycle", func() {
 	var (
 		appName                         string
 		appGuid                         string
