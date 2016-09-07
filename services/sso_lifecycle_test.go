@@ -19,7 +19,7 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 	redirectUri := `http://example.com`
 
 	BeforeEach(func() {
-		if config.IncludeSSO != true {
+		if !config.IncludeSSO {
 			Skip(skip_messages.SkipSSOMessage)
 		}
 		broker = NewServiceBroker(
