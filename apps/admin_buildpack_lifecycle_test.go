@@ -20,8 +20,10 @@ import (
 
 var _ = AppsDescribe("Admin Buildpacks", func() {
 	var (
-		appName       string
-		BuildpackName string
+		appName        string
+		appNames       []string
+		buildpackName  string
+		buildpackNames []string
 
 		appPath string
 
@@ -35,6 +37,18 @@ var _ = AppsDescribe("Admin Buildpacks", func() {
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+		for _, name := range buildpackNames {
+			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+				Expect(cf.Cf("delete-buildpack", name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			})
+		}
+		for _, name := range appNames {
+			command := cf.Cf("delete", name, "-f", "-r").Wait(DEFAULT_TIMEOUT)
+			Expect(command).To(Exit(0))
+			Expect(command).To(Say(fmt.Sprintf("Deleting app %s", name)))
+		}
+		buildpackNames = []string{}
+		appNames = []string{}
 	})
 
 	type appConfig struct {
@@ -43,8 +57,10 @@ var _ = AppsDescribe("Admin Buildpacks", func() {
 
 	setupBadDetectBuildpack := func(appConfig appConfig) {
 		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			BuildpackName = CATSRandomName("BPK")
+			buildpackName = CATSRandomName("BPK")
+			buildpackNames = append(buildpackNames, buildpackName)
 			appName = CATSRandomName("APP")
+			appNames = append(appNames, appName)
 
 			tmpdir, err := ioutil.TempDir(os.TempDir(), "matching-app")
 			Expect(err).ToNot(HaveOccurred())
@@ -101,7 +117,7 @@ EOF
 			_, err = os.Create(path.Join(appPath, "some-file"))
 			Expect(err).ToNot(HaveOccurred())
 
-			createBuildpack := cf.Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0").Wait(DEFAULT_TIMEOUT)
+			createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "0").Wait(DEFAULT_TIMEOUT)
 			Expect(createBuildpack).Should(Exit(0))
 			Expect(createBuildpack).Should(Say("Creating"))
 			Expect(createBuildpack).Should(Say("OK"))
@@ -112,8 +128,10 @@ EOF
 
 	setupBadCompileBuildpack := func(appConfig appConfig) {
 		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			BuildpackName = CATSRandomName("BPK")
+			buildpackName = CATSRandomName("BPK")
+			buildpackNames = append(buildpackNames, buildpackName)
 			appName = CATSRandomName("APP")
+			appNames = append(appNames, appName)
 
 			tmpdir, err := ioutil.TempDir(os.TempDir(), "matching-app")
 			Expect(err).ToNot(HaveOccurred())
@@ -165,7 +183,7 @@ EOF
 			_, err = os.Create(path.Join(appPath, "some-file"))
 			Expect(err).ToNot(HaveOccurred())
 
-			createBuildpack := cf.Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0").Wait(DEFAULT_TIMEOUT)
+			createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "0").Wait(DEFAULT_TIMEOUT)
 			Expect(createBuildpack).Should(Exit(0))
 			Expect(createBuildpack).Should(Say("Creating"))
 			Expect(createBuildpack).Should(Say("OK"))
@@ -176,8 +194,10 @@ EOF
 
 	setupBadReleaseBuildpack := func(appConfig appConfig) {
 		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			BuildpackName = CATSRandomName("BPK")
+			buildpackName = CATSRandomName("BPK")
+			buildpackNames = append(buildpackNames, buildpackName)
 			appName = CATSRandomName("APP")
+			appNames = append(appNames, appName)
 
 			tmpdir, err := ioutil.TempDir(os.TempDir(), "matching-app")
 			Expect(err).ToNot(HaveOccurred())
@@ -222,25 +242,13 @@ exit 1
 			_, err = os.Create(path.Join(appPath, "some-file"))
 			Expect(err).ToNot(HaveOccurred())
 
-			createBuildpack := cf.Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0").Wait(DEFAULT_TIMEOUT)
+			createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "0").Wait(DEFAULT_TIMEOUT)
 			Expect(createBuildpack).Should(Exit(0))
 			Expect(createBuildpack).Should(Say("Creating"))
 			Expect(createBuildpack).Should(Say("OK"))
 			Expect(createBuildpack).Should(Say("Uploading"))
 			Expect(createBuildpack).Should(Say("OK"))
 		})
-	}
-
-	deleteBuildpack := func() {
-		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			Expect(cf.Cf("delete-buildpack", BuildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-		})
-	}
-
-	deleteApp := func() {
-		command := cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)
-		Expect(command).To(Exit(0))
-		Expect(command).To(Say(fmt.Sprintf("Deleting app %s", appName)))
 	}
 
 	itIsUsedForTheApp := func() {
@@ -264,7 +272,7 @@ exit 1
 
 	itDoesNotDetectWhenBuildpackDisabled := func() {
 		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			Expect(cf.Cf("update-buildpack", BuildpackName, "--disable").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("update-buildpack", buildpackName, "--disable").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 
 		Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
@@ -277,7 +285,7 @@ exit 1
 
 	itDoesNotDetectWhenBuildpackDeleted := func() {
 		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			Expect(cf.Cf("delete-buildpack", BuildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 		Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		app_helpers.SetBackend(appName)
@@ -291,7 +299,7 @@ exit 1
 		Expect(cf.Cf("push",
 			appName,
 			"--no-start",
-			"-b", BuildpackName,
+			"-b", buildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", appPath,
 			"-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
@@ -303,7 +311,7 @@ exit 1
 	}
 
 	itRaisesBuildpackReleaseFailedError := func() {
-		Expect(cf.Cf("push", appName, "--no-start", "-b", BuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "--no-start", "-b", buildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		app_helpers.SetBackend(appName)
 
 		start := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)
@@ -319,23 +327,15 @@ exit 1
 
 			setupBadDetectBuildpack(appConfig{Empty: false})
 			itIsUsedForTheApp()
-			deleteApp()
-			deleteBuildpack()
 
 			setupBadDetectBuildpack(appConfig{Empty: true})
 			itDoesNotDetectForEmptyApp()
-			deleteApp()
-			deleteBuildpack()
 
 			setupBadDetectBuildpack(appConfig{Empty: false})
 			itDoesNotDetectWhenBuildpackDisabled()
-			deleteApp()
-			deleteBuildpack()
 
 			setupBadDetectBuildpack(appConfig{Empty: false})
 			itDoesNotDetectWhenBuildpackDeleted()
-			deleteApp()
-			deleteBuildpack()
 		})
 	})
 
@@ -349,8 +349,6 @@ exit 1
 			}
 			setupBadCompileBuildpack(appConfig{Empty: false})
 			itRaisesBuildpackCompileFailedError()
-			deleteApp()
-			deleteBuildpack()
 		})
 	})
 
@@ -364,8 +362,6 @@ exit 1
 			}
 			setupBadReleaseBuildpack(appConfig{Empty: false})
 			itRaisesBuildpackReleaseFailedError()
-			deleteApp()
-			deleteBuildpack()
 		})
 	})
 })
