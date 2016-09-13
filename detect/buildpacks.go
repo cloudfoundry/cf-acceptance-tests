@@ -119,7 +119,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("binary", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-b", config.BinaryBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Binary, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.BinaryBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Binary, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			app_helpers.SetBackend(appName)
 			Expect(cf.Cf("start", appName).Wait(DETECT_TIMEOUT)).To(Exit(0))
 
