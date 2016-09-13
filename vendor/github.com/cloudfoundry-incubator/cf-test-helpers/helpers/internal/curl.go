@@ -10,7 +10,7 @@ type starter interface {
 }
 
 func Curl(cmdStarter starter, skipSsl bool, args ...string) *gexec.Session {
-	curlArgs := append([]string{"-s", "--fail"}, args...)
+	curlArgs := append([]string{"-s"}, args...)
 	if skipSsl {
 		curlArgs = append([]string{"-k"}, curlArgs...)
 	}
