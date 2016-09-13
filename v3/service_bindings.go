@@ -38,7 +38,7 @@ var _ = V3Describe("service bindings", func() {
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 		upsName = random_name.CATSRandomName("SVC")
-		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
+		spaceGuid = GetSpaceGuidFromName(UserContext.RegularUserContext().Space)
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()
@@ -97,7 +97,7 @@ var _ = V3Describe("service bindings", func() {
 		dropletGuid := StageBuildpackPackage(packageGuid, Config.RubyBuildpackName)
 		WaitForDropletToStage(dropletGuid)
 		AssignDropletToApp(appGuid, dropletGuid)
-		CreateAndMapRoute(appGuid, context.RegularUserContext().Space, Config.AppsDomain, appName)
+		CreateAndMapRoute(appGuid, UserContext.RegularUserContext().Space, Config.AppsDomain, appName)
 
 		StartApp(appGuid)
 

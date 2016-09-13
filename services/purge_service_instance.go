@@ -67,7 +67,7 @@ var _ = ServicesDescribe("Purging service instances", func() {
 
 			By("Purging the service instance")
 			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-				workflowhelpers.TargetSpace(context.RegularUserContext(), context.ShortTimeout())
+				workflowhelpers.TargetSpace(UserContext.RegularUserContext(), context.ShortTimeout())
 				Expect(cf.Cf("purge-service-instance", instanceName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 
@@ -86,7 +86,7 @@ var _ = ServicesDescribe("Purging service instances", func() {
 				assets.NewAssets().ServiceBroker,
 				context,
 			)
-			workflowhelpers.TargetSpace(context.RegularUserContext(), context.ShortTimeout())
+			workflowhelpers.TargetSpace(UserContext.RegularUserContext(), context.ShortTimeout())
 			broker.Push(config)
 			broker.Configure()
 			broker.CreateSpaceScoped()
@@ -100,7 +100,7 @@ var _ = ServicesDescribe("Purging service instances", func() {
 		})
 
 		It("removes the service instance", func() {
-			workflowhelpers.AsUser(context.RegularUserContext(), context.ShortTimeout(), func() {
+			workflowhelpers.AsUser(UserContext.RegularUserContext(), context.ShortTimeout(), func() {
 				By("Having a bound service instance")
 				createApp := cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)
 				Expect(createApp).To(Exit(0), "failed creating app")

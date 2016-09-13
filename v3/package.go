@@ -34,7 +34,7 @@ var _ = V3Describe("package features", func() {
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
-		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
+		spaceGuid = GetSpaceGuidFromName(UserContext.RegularUserContext().Space)
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()

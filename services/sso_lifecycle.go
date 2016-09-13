@@ -58,7 +58,7 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 			serviceInstanceGuid := broker.CreateServiceInstance(random_name.CATSRandomName("SVC"))
 
 			// perform the OAuth lifecycle to obtain an access token
-			userSessionCookie := AuthenticateUser(oauthConfig.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
+			userSessionCookie := AuthenticateUser(oauthConfig.AuthorizationEndpoint, UserContext.RegularUserContext().Username, UserContext.RegularUserContext().Password)
 
 			authCode, _ := RequestScopes(userSessionCookie, oauthConfig)
 			Expect(authCode).ToNot(BeNil(), `Failed to request and authorize scopes.`)
@@ -87,7 +87,7 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 			serviceInstanceGuid := broker.CreateServiceInstance(random_name.CATSRandomName("SVC"))
 
 			// perform the OAuth lifecycle to obtain an access token
-			userSessionCookie := AuthenticateUser(oauthConfig.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
+			userSessionCookie := AuthenticateUser(oauthConfig.AuthorizationEndpoint, UserContext.RegularUserContext().Username, UserContext.RegularUserContext().Password)
 
 			authCode, _ := RequestScopes(userSessionCookie, oauthConfig)
 			Expect(authCode).ToNot(BeNil(), `Failed to request and authorize scopes.`)
@@ -108,7 +108,7 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 			broker.Delete()
 
 			// perform the OAuth lifecycle to obtain an access token
-			userSessionCookie := AuthenticateUser(oauthConfig.AuthorizationEndpoint, context.RegularUserContext().Username, context.RegularUserContext().Password)
+			userSessionCookie := AuthenticateUser(oauthConfig.AuthorizationEndpoint, UserContext.RegularUserContext().Username, UserContext.RegularUserContext().Password)
 
 			_, httpCode := RequestScopes(userSessionCookie, oauthConfig)
 

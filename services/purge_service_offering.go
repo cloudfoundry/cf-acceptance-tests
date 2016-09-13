@@ -95,7 +95,7 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 				assets.NewAssets().ServiceBroker,
 				context,
 			)
-			workflowhelpers.TargetSpace(context.RegularUserContext(), context.ShortTimeout())
+			workflowhelpers.TargetSpace(UserContext.RegularUserContext(), context.ShortTimeout())
 			broker.Push(config)
 			broker.Configure()
 			broker.CreateSpaceScoped()
@@ -110,7 +110,7 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 		})
 
 		It("removes all instances and plans of the service, then removes the service offering", func() {
-			workflowhelpers.AsUser(context.RegularUserContext(), context.ShortTimeout(), func() {
+			workflowhelpers.AsUser(UserContext.RegularUserContext(), context.ShortTimeout(), func() {
 				By("Having bound service instances")
 				createApp := cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)
 				Expect(createApp).To(Exit(0), "failed creating app")

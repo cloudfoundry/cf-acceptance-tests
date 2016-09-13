@@ -144,7 +144,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
 
-				CreateRoute(hostname, "", context.RegularUserContext().Space, Config.AppsDomain, DEFAULT_TIMEOUT)
+				CreateRoute(hostname, "", UserContext.RegularUserContext().Space, Config.AppsDomain, DEFAULT_TIMEOUT)
 
 				configureBroker(brokerAppName, "")
 			})

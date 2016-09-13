@@ -31,8 +31,8 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 	}
 
 	BeforeEach(func() {
-		orgName = context.RegularUserContext().Org
-		spaceName = context.RegularUserContext().Space
+		orgName = UserContext.RegularUserContext().Org
+		spaceName = UserContext.RegularUserContext().Space
 
 		domainName = random_name.CATSRandomName("DOMAIN") + "." + Config.AppsDomain
 		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {

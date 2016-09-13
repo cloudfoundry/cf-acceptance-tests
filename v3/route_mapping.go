@@ -37,7 +37,7 @@ var _ = V3Describe("route_mapping", func() {
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
-		spaceName = context.RegularUserContext().Space
+		spaceName = UserContext.RegularUserContext().Space
 		spaceGuid = GetSpaceGuidFromName(spaceName)
 		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
 		packageGuid = CreatePackage(appGuid)

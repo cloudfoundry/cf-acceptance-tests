@@ -129,8 +129,8 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 			Expect(
 				cf.Cf("bind-security-group",
 					securityGroupName,
-					context.RegularUserContext().Org,
-					context.RegularUserContext().Space).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+					UserContext.RegularUserContext().Org,
+					UserContext.RegularUserContext().Space).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 		defer func() {
 			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
@@ -147,7 +147,7 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 
 		By("Unapplying security group")
 		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			Expect(cf.Cf("unbind-security-group", securityGroupName, context.RegularUserContext().Org, context.RegularUserContext().Space).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("unbind-security-group", securityGroupName, UserContext.RegularUserContext().Org, UserContext.RegularUserContext().Space).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 		Expect(cf.Cf("restart", clientAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 

@@ -44,7 +44,7 @@ var _ = V3Describe("v3 tasks", func() {
 			Skip(skip_messages.SkipTasksMessage)
 		}
 		appName = random_name.CATSRandomName("APP")
-		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
+		spaceGuid = GetSpaceGuidFromName(UserContext.RegularUserContext().Space)
 		appCreationEnvironmentVariables = `"foo"=>"bar"`
 		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
 		packageGuid = CreatePackage(appGuid)

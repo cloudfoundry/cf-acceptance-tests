@@ -28,7 +28,7 @@ var _ = V3Describe("droplet features", func() {
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
-		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
+		spaceGuid = GetSpaceGuidFromName(UserContext.RegularUserContext().Space)
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()
@@ -77,7 +77,7 @@ var _ = V3Describe("droplet features", func() {
 			Expect(webProcess.Guid).ToNot(BeEmpty())
 			Expect(workerProcess.Guid).ToNot(BeEmpty())
 
-			CreateAndMapRoute(destinationAppGuid, context.RegularUserContext().Space, Config.AppsDomain, webProcess.Name)
+			CreateAndMapRoute(destinationAppGuid, UserContext.RegularUserContext().Space, Config.AppsDomain, webProcess.Name)
 			StartApp(destinationAppGuid)
 			Eventually(func() string {
 				return helpers.CurlAppRoot(webProcess.Name)

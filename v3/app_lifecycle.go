@@ -29,7 +29,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
-		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
+		spaceGuid = GetSpaceGuidFromName(UserContext.RegularUserContext().Space)
 		appCreationEnvironmentVariables = `"foo"=>"bar"`
 		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
 		packageGuid = CreatePackage(appGuid)
@@ -61,7 +61,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 			Expect(webProcess.Guid).ToNot(BeEmpty())
 			Expect(workerProcess.Guid).ToNot(BeEmpty())
 
-			CreateAndMapRoute(appGuid, context.RegularUserContext().Space, Config.AppsDomain, webProcess.Name)
+			CreateAndMapRoute(appGuid, UserContext.RegularUserContext().Space, Config.AppsDomain, webProcess.Name)
 
 			StartApp(appGuid)
 
@@ -117,7 +117,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			Expect(webProcess.Guid).ToNot(BeEmpty())
 
-			CreateAndMapRoute(appGuid, context.RegularUserContext().Space, Config.AppsDomain, webProcess.Name)
+			CreateAndMapRoute(appGuid, UserContext.RegularUserContext().Space, Config.AppsDomain, webProcess.Name)
 
 			StartApp(appGuid)
 
@@ -162,7 +162,7 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 			Skip(skip_messages.SkipDockerMessage)
 		}
 		appName = random_name.CATSRandomName("APP")
-		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
+		spaceGuid = GetSpaceGuidFromName(UserContext.RegularUserContext().Space)
 		appCreationEnvironmentVariables = `"foo":"bar"`
 		appGuid = CreateDockerApp(appName, spaceGuid, `{"foo":"bar"}`)
 		packageGuid = CreateDockerPackage(appGuid, "cloudfoundry/diego-docker-app:latest")
@@ -185,7 +185,7 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 
 		Expect(webProcess.Guid).ToNot(BeEmpty())
 
-		CreateAndMapRoute(appGuid, context.RegularUserContext().Space, Config.AppsDomain, webProcess.Name)
+		CreateAndMapRoute(appGuid, UserContext.RegularUserContext().Space, Config.AppsDomain, webProcess.Name)
 
 		StartApp(appGuid)
 
