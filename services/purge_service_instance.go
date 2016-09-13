@@ -29,9 +29,9 @@ var _ = ServicesDescribe("Purging service instances", func() {
 			broker = NewServiceBroker(
 				random_name.CATSRandomName("BROKER"),
 				assets.NewAssets().ServiceBroker,
-				context,
+				UserContext,
 			)
-			broker.Push(config)
+			broker.Push(Config)
 			broker.Configure()
 			workflowhelpers.AsUser(UserContext.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				broker.Create()
@@ -67,7 +67,7 @@ var _ = ServicesDescribe("Purging service instances", func() {
 
 			By("Purging the service instance")
 			workflowhelpers.AsUser(UserContext.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-				workflowhelpers.TargetSpace(UserContext.RegularUserContext(), context.ShortTimeout())
+				workflowhelpers.TargetSpace(UserContext.RegularUserContext(), UserContext.ShortTimeout())
 				Expect(cf.Cf("purge-service-instance", instanceName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 
@@ -84,10 +84,10 @@ var _ = ServicesDescribe("Purging service instances", func() {
 			broker = NewServiceBroker(
 				random_name.CATSRandomName("BROKER"),
 				assets.NewAssets().ServiceBroker,
-				context,
+				UserContext,
 			)
-			workflowhelpers.TargetSpace(UserContext.RegularUserContext(), context.ShortTimeout())
-			broker.Push(config)
+			workflowhelpers.TargetSpace(UserContext.RegularUserContext(), UserContext.ShortTimeout())
+			broker.Push(Config)
 			broker.Configure()
 			broker.CreateSpaceScoped()
 			appName = random_name.CATSRandomName("APP")
@@ -100,7 +100,7 @@ var _ = ServicesDescribe("Purging service instances", func() {
 		})
 
 		It("removes the service instance", func() {
-			workflowhelpers.AsUser(UserContext.RegularUserContext(), context.ShortTimeout(), func() {
+			workflowhelpers.AsUser(UserContext.RegularUserContext(), UserContext.ShortTimeout(), func() {
 				By("Having a bound service instance")
 				createApp := cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)
 				Expect(createApp).To(Exit(0), "failed creating app")

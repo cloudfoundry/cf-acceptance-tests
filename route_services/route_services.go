@@ -265,7 +265,7 @@ func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 	brokerUrl := helpers.AppUri(brokerAppName, "")
 
 	context := workflowhelpers.NewContext(Config)
-	workflowhelpers.AsUser(UserContext.AdminUserContext(), context.ShortTimeout(), func() {
+	workflowhelpers.AsUser(UserContext.AdminUserContext(), UserContext.ShortTimeout(), func() {
 		session := cf.Cf("create-service-broker", brokerName, "user", "password", brokerUrl)
 		Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
@@ -277,7 +277,7 @@ func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 
 func deleteServiceBroker(brokerName string) {
 	context := workflowhelpers.NewContext(Config)
-	workflowhelpers.AsUser(UserContext.AdminUserContext(), context.ShortTimeout(), func() {
+	workflowhelpers.AsUser(UserContext.AdminUserContext(), UserContext.ShortTimeout(), func() {
 		responseBuffer := cf.Cf("delete-service-broker", brokerName, "-f")
 		Expect(responseBuffer.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})

@@ -34,13 +34,13 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 			broker = NewServiceBroker(
 				random_name.CATSRandomName("BROKER"),
 				assets.NewAssets().ServiceBroker,
-				context,
+				UserContext,
 			)
-			workflowhelpers.TargetSpace(UserContext.RegularUserContext(), context.ShortTimeout())
-			broker.Push(config)
+			workflowhelpers.TargetSpace(UserContext.RegularUserContext(), UserContext.ShortTimeout())
+			broker.Push(Config)
 			broker.Configure()
 
-			workflowhelpers.AsUser(UserContext.AdminUserContext(), context.ShortTimeout(), func() {
+			workflowhelpers.AsUser(UserContext.AdminUserContext(), UserContext.ShortTimeout(), func() {
 				broker.Create()
 			})
 		})
@@ -77,7 +77,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				Expect(plans).To(Say(broker.Plans()[0].Name))
 
 				// Deleting the service broker and confirming the plans no longer display
-				workflowhelpers.AsUser(UserContext.AdminUserContext(), context.ShortTimeout(), func() {
+				workflowhelpers.AsUser(UserContext.AdminUserContext(), UserContext.ShortTimeout(), func() {
 					broker.Delete()
 				})
 
@@ -105,7 +105,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 
 			Describe("enabling", func() {
 				It("is visible to a regular user", func() {
-					workflowhelpers.AsUser(UserContext.AdminUserContext(), context.ShortTimeout(), func() {
+					workflowhelpers.AsUser(UserContext.AdminUserContext(), UserContext.ShortTimeout(), func() {
 						commandResult := cf.Cf("enable-service-access", broker.Service.Name, "-p", globallyPublicPlan.Name).Wait(DEFAULT_TIMEOUT)
 						Expect(commandResult).To(Exit(0))
 						commandResult = cf.Cf("enable-service-access", broker.Service.Name, "-p", orgPublicPlan.Name, "-o", UserContext.RegularUserContext().Org).Wait(DEFAULT_TIMEOUT)
@@ -121,7 +121,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				})
 
 				It("is visible to an admin user", func() {
-					workflowhelpers.AsUser(UserContext.AdminUserContext(), context.ShortTimeout(), func() {
+					workflowhelpers.AsUser(UserContext.AdminUserContext(), UserContext.ShortTimeout(), func() {
 						commandResult := cf.Cf("enable-service-access", broker.Service.Name, "-p", globallyPublicPlan.Name).Wait(DEFAULT_TIMEOUT)
 						Expect(commandResult).To(Exit(0))
 						commandResult = cf.Cf("enable-service-access", broker.Service.Name, "-p", orgPublicPlan.Name, "-o", UserContext.RegularUserContext().Org).Wait(DEFAULT_TIMEOUT)
@@ -144,7 +144,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 			Describe("disabling", func() {
 
 				BeforeEach(func() {
-					workflowhelpers.AsUser(UserContext.AdminUserContext(), context.ShortTimeout(), func() {
+					workflowhelpers.AsUser(UserContext.AdminUserContext(), UserContext.ShortTimeout(), func() {
 						commandResult := cf.Cf("enable-service-access", broker.Service.Name, "-p", globallyPublicPlan.Name).Wait(DEFAULT_TIMEOUT)
 						Expect(commandResult).To(Exit(0))
 						commandResult = cf.Cf("enable-service-access", broker.Service.Name, "-p", orgPublicPlan.Name, "-o", UserContext.RegularUserContext().Org).Wait(DEFAULT_TIMEOUT)
@@ -153,7 +153,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				})
 
 				It("is not visible to a regular user", func() {
-					workflowhelpers.AsUser(UserContext.AdminUserContext(), context.ShortTimeout(), func() {
+					workflowhelpers.AsUser(UserContext.AdminUserContext(), UserContext.ShortTimeout(), func() {
 						commandResult := cf.Cf("disable-service-access", broker.Service.Name, "-p", orgPublicPlan.Name, "-o", UserContext.RegularUserContext().Org).Wait(DEFAULT_TIMEOUT)
 						Expect(commandResult).To(Exit(0))
 						commandResult = cf.Cf("disable-service-access", broker.Service.Name, "-p", globallyPublicPlan.Name).Wait(DEFAULT_TIMEOUT)
@@ -169,7 +169,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				})
 
 				It("is visible as having no access to an admin user", func() {
-					workflowhelpers.AsUser(UserContext.AdminUserContext(), context.ShortTimeout(), func() {
+					workflowhelpers.AsUser(UserContext.AdminUserContext(), UserContext.ShortTimeout(), func() {
 						commandResult := cf.Cf("disable-service-access", broker.Service.Name, "-p", orgPublicPlan.Name, "-o", UserContext.RegularUserContext().Org).Wait(DEFAULT_TIMEOUT)
 						Expect(commandResult).To(Exit(0))
 						commandResult = cf.Cf("disable-service-access", broker.Service.Name, "-p", globallyPublicPlan.Name).Wait(DEFAULT_TIMEOUT)
@@ -202,7 +202,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				assets.NewAssets().ServiceBroker,
 				context,
 			)
-			workflowhelpers.TargetSpace(UserContext.RegularUserContext(), context.ShortTimeout())
+			workflowhelpers.TargetSpace(UserContext.RegularUserContext(), UserContext.ShortTimeout())
 			broker.Push(config)
 			broker.Configure()
 		})
@@ -212,7 +212,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 		})
 
 		It("can be created, viewed (in list), updated, and deleted by SpaceDevelopers", func() {
-			workflowhelpers.AsUser(UserContext.RegularUserContext(), context.ShortTimeout(), func() {
+			workflowhelpers.AsUser(UserContext.RegularUserContext(), UserContext.ShortTimeout(), func() {
 				spaceCmd := cf.Cf("space", UserContext.RegularUserContext().Space, "--guid").Wait(DEFAULT_TIMEOUT)
 				spaceGuid := string(spaceCmd.Out.Contents())
 				spaceGuid = strings.Trim(spaceGuid, "\n")
@@ -254,7 +254,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 		})
 
 		It("exposes the services and plans of the private broker in the space", func() {
-			workflowhelpers.AsUser(UserContext.RegularUserContext(), context.ShortTimeout(), func() {
+			workflowhelpers.AsUser(UserContext.RegularUserContext(), UserContext.ShortTimeout(), func() {
 				spaceCmd := cf.Cf("space", UserContext.RegularUserContext().Space, "--guid").Wait(DEFAULT_TIMEOUT)
 				spaceGuid := string(spaceCmd.Out.Contents())
 				spaceGuid = strings.Trim(spaceGuid, "\n")

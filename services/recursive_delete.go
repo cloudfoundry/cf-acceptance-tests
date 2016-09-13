@@ -24,9 +24,9 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 		broker = NewServiceBroker(
 			random_name.CATSRandomName("BROKER"),
 			assets.NewAssets().ServiceBroker,
-			context,
+			UserContext,
 		)
-		broker.Push(config)
+		broker.Push(Config)
 		broker.Configure()
 		broker.Create()
 		broker.PublicizePlans()
@@ -38,13 +38,13 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 		instanceName := random_name.CATSRandomName("SVCINS")
 
 		workflowhelpers.AsUser(UserContext.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			createQuota := cf.Cf("create-quota", quotaName, "-m", "10G", "-r", "1000", "-s", "5").Wait(context.ShortTimeout())
+			createQuota := cf.Cf("create-quota", quotaName, "-m", "10G", "-r", "1000", "-s", "5").Wait(UserContext.ShortTimeout())
 			Expect(createQuota).To(Exit(0))
 
 			createOrg := cf.Cf("create-org", orgName).Wait(DEFAULT_TIMEOUT)
 			Expect(createOrg).To(Exit(0), "failed to create org")
 
-			setQuota := cf.Cf("set-quota", orgName, quotaName).Wait(context.ShortTimeout())
+			setQuota := cf.Cf("set-quota", orgName, quotaName).Wait(UserContext.ShortTimeout())
 			Expect(setQuota).To(Exit(0))
 
 			createSpace := cf.Cf("create-space", spaceName, "-o", orgName).Wait(DEFAULT_TIMEOUT)
@@ -68,7 +68,7 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 
 		broker.Destroy()
 		workflowhelpers.AsUser(UserContext.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			deleteQuota := cf.Cf("delete-quota", "-f", quotaName).Wait(context.ShortTimeout())
+			deleteQuota := cf.Cf("delete-quota", "-f", quotaName).Wait(UserContext.ShortTimeout())
 			Expect(deleteQuota).To(Exit(0))
 		})
 	})
