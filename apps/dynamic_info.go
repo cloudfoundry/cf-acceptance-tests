@@ -40,7 +40,7 @@ var _ = AppsDescribe("A running application", func() {
 
 	It("can have its files inspected", func() {
 		// Currently cannot work with multiple instances since CF always checks instance 0
-		if config.Backend != "dea" {
+		if Config.Backend != "dea" {
 			Skip(skip_messages.SkipDeaMessage)
 		}
 		files := cf.Cf("files", appName).Wait(DEFAULT_TIMEOUT)

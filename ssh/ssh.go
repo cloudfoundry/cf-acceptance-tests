@@ -29,7 +29,7 @@ var _ = SshDescribe("SSH", func() {
 	var appName string
 
 	BeforeEach(func() {
-		if config.Backend != "diego" {
+		if Config.Backend != "diego" {
 			Skip(skip_messages.SkipDiegoMessage)
 		}
 		appName = random_name.CATSRandomName("APP")

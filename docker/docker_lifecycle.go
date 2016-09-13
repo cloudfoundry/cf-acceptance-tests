@@ -22,7 +22,7 @@ import (
 var _ = DockerDescribe("Docker Application Lifecycle", func() {
 	var appName string
 	BeforeEach(func() {
-		if config.Backend != "diego" {
+		if Config.Backend != "diego" {
 			Skip(skip_messages.SkipDiegoMessage)
 		}
 	})

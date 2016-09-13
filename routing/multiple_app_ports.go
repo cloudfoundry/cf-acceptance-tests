@@ -22,7 +22,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 	)
 
 	BeforeEach(func() {
-		if config.Backend != "diego" {
+		if Config.Backend != "diego" {
 			Skip(skip_messages.SkipDiegoMessage)
 		}
 		app = random_name.CATSRandomName("APP")

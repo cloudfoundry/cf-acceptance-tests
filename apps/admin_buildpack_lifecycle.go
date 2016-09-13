@@ -346,7 +346,7 @@ exit 1
 		// that user facing errors are correctly propagated from a garden container out of the system.
 
 		It("the user receives a BuildpackCompileFailed error", func() {
-			if config.Backend != "dea" {
+			if Config.Backend != "dea" {
 				Skip(skip_messages.SkipDeaMessage)
 			}
 			setupBadCompileBuildpack(appConfig{Empty: false})
@@ -359,7 +359,7 @@ exit 1
 		// that user facing errors are correctly propagated from a garden container out of the system.
 
 		It("the user receives a BuildpackReleaseFailed error", func() {
-			if config.Backend != "dea" {
+			if Config.Backend != "dea" {
 				Skip(skip_messages.SkipDeaMessage)
 			}
 			setupBadReleaseBuildpack(appConfig{Empty: false})

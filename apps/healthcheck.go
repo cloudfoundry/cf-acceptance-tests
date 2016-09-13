@@ -19,7 +19,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 	var appName string
 
 	BeforeEach(func() {
-		if config.Backend != "diego" {
+		if Config.Backend != "diego" {
 			Skip(skip_messages.SkipDiegoMessage)
 		}
 

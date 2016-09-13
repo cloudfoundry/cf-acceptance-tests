@@ -22,7 +22,7 @@ import (
 
 var _ = RouteServicesDescribe("Route Services", func() {
 	BeforeEach(func() {
-		if config.Backend != "diego" {
+		if Config.Backend != "diego" {
 			Skip(skip_messages.SkipDiegoMessage)
 		}
 	})
