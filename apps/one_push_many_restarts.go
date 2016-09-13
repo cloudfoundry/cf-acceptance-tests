@@ -44,7 +44,7 @@ var _ = AppsDescribe("An application that's already been pushed", func() {
 	})
 
 	BeforeEach(func() {
-		appName = config.PersistentAppHost
+		appName = Config.PersistentAppHost
 
 		appQuery := cf.Cf("app", appName).Wait(DEFAULT_TIMEOUT)
 		// might exit with 1 or 0, depending on app status
