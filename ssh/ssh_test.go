@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
+
 	"golang.org/x/crypto/ssh"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"

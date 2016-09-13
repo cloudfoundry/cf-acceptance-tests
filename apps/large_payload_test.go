@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"

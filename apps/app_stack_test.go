@@ -6,6 +6,8 @@ import (
 	"os"
 	"path"
 
+	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
+
 	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"

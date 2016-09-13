@@ -3,6 +3,8 @@ package v3
 import (
 	"fmt"
 
+	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
+
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
