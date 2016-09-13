@@ -32,7 +32,7 @@ var _ = AppsDescribe("An application that's already been pushed", func() {
 	var environment *workflowhelpers.Environment
 
 	BeforeEach(func() {
-		persistentContext := workflowhelpers.NewPersistentAppContext(config)
+		persistentContext := workflowhelpers.NewPersistentAppContext(Config)
 		environment = workflowhelpers.NewEnvironment(persistentContext)
 		environment.Setup()
 	})
