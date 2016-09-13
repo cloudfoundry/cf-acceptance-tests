@@ -156,7 +156,7 @@ var _ = SshDescribe("SSH", func() {
 			password := sshAccessCode()
 
 			clientConfig := &ssh.ClientConfig{
-				User: fmt.Sprintf("cf:%s/%d", guidForAppName(appName), 0),
+				User: fmt.Sprintf("cf:%s/%d", GuidForAppName(appName), 0),
 				Auth: []ssh.AuthMethod{ssh.Password(password)},
 			}
 
@@ -181,7 +181,7 @@ var _ = SshDescribe("SSH", func() {
 
 			password := sshAccessCode()
 			clientConfig := &ssh.ClientConfig{
-				User: fmt.Sprintf("cf:%s/%d", guidForAppName(appName), 0),
+				User: fmt.Sprintf("cf:%s/%d", GuidForAppName(appName), 0),
 				Auth: []ssh.AuthMethod{ssh.Password(password)},
 			}
 
