@@ -37,7 +37,7 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 		appName := random_name.CATSRandomName("APP")
 		instanceName := random_name.CATSRandomName("SVCINS")
 
-		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(UserContext.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			createQuota := cf.Cf("create-quota", quotaName, "-m", "10G", "-r", "1000", "-s", "5").Wait(context.ShortTimeout())
 			Expect(createQuota).To(Exit(0))
 
@@ -67,14 +67,14 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 		app_helpers.AppReport(broker.Name, DEFAULT_TIMEOUT)
 
 		broker.Destroy()
-		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(UserContext.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			deleteQuota := cf.Cf("delete-quota", "-f", quotaName).Wait(context.ShortTimeout())
 			Expect(deleteQuota).To(Exit(0))
 		})
 	})
 
 	It("deletes all apps and services in all spaces in an org", func() {
-		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(UserContext.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			deleteOrg := cf.Cf("delete-org", orgName, "-f").Wait(DEFAULT_TIMEOUT)
 			Expect(deleteOrg).To(Exit(0), "failed deleting org")
 		})

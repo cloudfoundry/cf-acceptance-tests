@@ -124,7 +124,7 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 		rulesPath := file.Name()
 		securityGroupName = random_name.CATSRandomName("SG")
 
-		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(UserContext.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("create-security-group", securityGroupName, rulesPath).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			Expect(
 				cf.Cf("bind-security-group",
@@ -133,7 +133,7 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 					UserContext.RegularUserContext().Space).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 		defer func() {
-			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(UserContext.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				Expect(cf.Cf("delete-security-group", securityGroupName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 		}()
@@ -146,7 +146,7 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 		Expect(doraCurlResponse.ReturnCode).To(Equal(0))
 
 		By("Unapplying security group")
-		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(UserContext.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("unbind-security-group", securityGroupName, UserContext.RegularUserContext().Org, UserContext.RegularUserContext().Space).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 		Expect(cf.Cf("restart", clientAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
@@ -164,11 +164,11 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 
 		buildpackZip := assets.NewAssets().SecurityGroupBuildpack
 
-		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(UserContext.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("create-buildpack", buildpack, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 		defer func() {
-			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(UserContext.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				Expect(cf.Cf("delete-buildpack", buildpack, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 		}()

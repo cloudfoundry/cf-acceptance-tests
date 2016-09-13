@@ -33,7 +33,7 @@ var _ = ServicesDescribe("Purging service instances", func() {
 			)
 			broker.Push(config)
 			broker.Configure()
-			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(UserContext.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				broker.Create()
 				broker.PublicizePlans()
 			})
@@ -66,7 +66,7 @@ var _ = ServicesDescribe("Purging service instances", func() {
 			Expect(cf.Cf("delete", broker.Name, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
 			By("Purging the service instance")
-			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(UserContext.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				workflowhelpers.TargetSpace(UserContext.RegularUserContext(), context.ShortTimeout())
 				Expect(cf.Cf("purge-service-instance", instanceName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})

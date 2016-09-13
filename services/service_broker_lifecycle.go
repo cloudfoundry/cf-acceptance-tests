@@ -40,7 +40,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 			broker.Push(config)
 			broker.Configure()
 
-			workflowhelpers.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
+			workflowhelpers.AsUser(UserContext.AdminUserContext(), context.ShortTimeout(), func() {
 				broker.Create()
 			})
 		})
@@ -77,7 +77,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				Expect(plans).To(Say(broker.Plans()[0].Name))
 
 				// Deleting the service broker and confirming the plans no longer display
-				workflowhelpers.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
+				workflowhelpers.AsUser(UserContext.AdminUserContext(), context.ShortTimeout(), func() {
 					broker.Delete()
 				})
 
@@ -105,7 +105,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 
 			Describe("enabling", func() {
 				It("is visible to a regular user", func() {
-					workflowhelpers.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
+					workflowhelpers.AsUser(UserContext.AdminUserContext(), context.ShortTimeout(), func() {
 						commandResult := cf.Cf("enable-service-access", broker.Service.Name, "-p", globallyPublicPlan.Name).Wait(DEFAULT_TIMEOUT)
 						Expect(commandResult).To(Exit(0))
 						commandResult = cf.Cf("enable-service-access", broker.Service.Name, "-p", orgPublicPlan.Name, "-o", UserContext.RegularUserContext().Org).Wait(DEFAULT_TIMEOUT)
@@ -121,7 +121,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				})
 
 				It("is visible to an admin user", func() {
-					workflowhelpers.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
+					workflowhelpers.AsUser(UserContext.AdminUserContext(), context.ShortTimeout(), func() {
 						commandResult := cf.Cf("enable-service-access", broker.Service.Name, "-p", globallyPublicPlan.Name).Wait(DEFAULT_TIMEOUT)
 						Expect(commandResult).To(Exit(0))
 						commandResult = cf.Cf("enable-service-access", broker.Service.Name, "-p", orgPublicPlan.Name, "-o", UserContext.RegularUserContext().Org).Wait(DEFAULT_TIMEOUT)
@@ -144,7 +144,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 			Describe("disabling", func() {
 
 				BeforeEach(func() {
-					workflowhelpers.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
+					workflowhelpers.AsUser(UserContext.AdminUserContext(), context.ShortTimeout(), func() {
 						commandResult := cf.Cf("enable-service-access", broker.Service.Name, "-p", globallyPublicPlan.Name).Wait(DEFAULT_TIMEOUT)
 						Expect(commandResult).To(Exit(0))
 						commandResult = cf.Cf("enable-service-access", broker.Service.Name, "-p", orgPublicPlan.Name, "-o", UserContext.RegularUserContext().Org).Wait(DEFAULT_TIMEOUT)
@@ -153,7 +153,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				})
 
 				It("is not visible to a regular user", func() {
-					workflowhelpers.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
+					workflowhelpers.AsUser(UserContext.AdminUserContext(), context.ShortTimeout(), func() {
 						commandResult := cf.Cf("disable-service-access", broker.Service.Name, "-p", orgPublicPlan.Name, "-o", UserContext.RegularUserContext().Org).Wait(DEFAULT_TIMEOUT)
 						Expect(commandResult).To(Exit(0))
 						commandResult = cf.Cf("disable-service-access", broker.Service.Name, "-p", globallyPublicPlan.Name).Wait(DEFAULT_TIMEOUT)
@@ -169,7 +169,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				})
 
 				It("is visible as having no access to an admin user", func() {
-					workflowhelpers.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
+					workflowhelpers.AsUser(UserContext.AdminUserContext(), context.ShortTimeout(), func() {
 						commandResult := cf.Cf("disable-service-access", broker.Service.Name, "-p", orgPublicPlan.Name, "-o", UserContext.RegularUserContext().Org).Wait(DEFAULT_TIMEOUT)
 						Expect(commandResult).To(Exit(0))
 						commandResult = cf.Cf("disable-service-access", broker.Service.Name, "-p", globallyPublicPlan.Name).Wait(DEFAULT_TIMEOUT)
