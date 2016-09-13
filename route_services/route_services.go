@@ -50,11 +50,11 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
 
-				PushAppNoStart(appName, golangAsset, config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT)
+				PushAppNoStart(appName, golangAsset, Config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT)
 				EnableDiego(appName, DEFAULT_TIMEOUT)
 				StartApp(appName, CF_PUSH_TIMEOUT)
 
-				PushApp(routeServiceName, loggingRouteServiceAsset, config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT)
+				PushApp(routeServiceName, loggingRouteServiceAsset, Config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT)
 				configureBroker(brokerAppName, routeServiceName)
 
 				bindRouteToService(appName, serviceInstanceName)
@@ -100,7 +100,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
 
-				PushAppNoStart(appName, golangAsset, config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT)
+				PushAppNoStart(appName, golangAsset, Config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT)
 				EnableDiego(appName, DEFAULT_TIMEOUT)
 				StartApp(appName, CF_PUSH_TIMEOUT)
 

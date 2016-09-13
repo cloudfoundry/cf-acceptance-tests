@@ -28,7 +28,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 		app = random_name.CATSRandomName("APP")
 		cmd := fmt.Sprintf("lattice-app --ports=7777,8888,8080")
 
-		PushAppNoStart(app, latticeAppAsset, config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT, "-c", cmd)
+		PushAppNoStart(app, latticeAppAsset, Config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT, "-c", cmd)
 		EnableDiego(app, DEFAULT_TIMEOUT)
 		StartApp(app, APP_START_TIMEOUT)
 	})
