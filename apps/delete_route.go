@@ -19,7 +19,7 @@ var _ = AppsDescribe("Delete Route", func() {
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		app_helpers.SetBackend(appName)
 		Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		Eventually(func() string {
@@ -38,17 +38,17 @@ var _ = AppsDescribe("Delete Route", func() {
 			secondHost := random_name.CATSRandomName("ROUTE")
 
 			By("adding a route")
-			Eventually(cf.Cf("map-route", appName, config.AppsDomain, "-n", secondHost), DEFAULT_TIMEOUT).Should(Exit(0))
+			Eventually(cf.Cf("map-route", appName, Config.AppsDomain, "-n", secondHost), DEFAULT_TIMEOUT).Should(Exit(0))
 			Eventually(helpers.CurlingAppRoot(appName), DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
 			Eventually(helpers.CurlingAppRoot(secondHost), DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
 
 			By("removing a route")
-			Eventually(cf.Cf("unmap-route", appName, config.AppsDomain, "-n", secondHost), DEFAULT_TIMEOUT).Should(Exit(0))
+			Eventually(cf.Cf("unmap-route", appName, Config.AppsDomain, "-n", secondHost), DEFAULT_TIMEOUT).Should(Exit(0))
 			Eventually(helpers.CurlingAppRoot(secondHost), DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
 			Eventually(helpers.CurlingAppRoot(appName), DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
 
 			By("deleting the original route")
-			Expect(cf.Cf("delete-route", config.AppsDomain, "-n", appName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("delete-route", Config.AppsDomain, "-n", appName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			Eventually(helpers.CurlingAppRoot(appName), DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
 		})
 	})

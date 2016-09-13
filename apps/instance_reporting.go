@@ -25,7 +25,7 @@ var _ = AppsDescribe("Getting instance information", func() {
 			"--no-start",
 			"-b", "binary_buildpack",
 			"-m", DEFAULT_MEMORY_LIMIT,
-			"-d", config.AppsDomain,
+			"-d", Config.AppsDomain,
 			"-c", "./app"),
 			CF_PUSH_TIMEOUT).Should(Exit(0))
 

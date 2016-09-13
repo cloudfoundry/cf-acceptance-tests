@@ -26,7 +26,7 @@ var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
 			"--no-start",
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-b", "binary_buildpack",
-			"-d", config.AppsDomain,
+			"-d", Config.AppsDomain,
 			"-c", "./app"),
 			CF_PUSH_TIMEOUT).Should(Exit(0))
 	})

@@ -27,7 +27,7 @@ var _ = AppsDescribe("A running application", func() {
 			"-b", config.RubyBuildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Dora,
-			"-d", config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			"-d", Config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		app_helpers.SetBackend(appName)
 		Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 	})

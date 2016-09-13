@@ -61,7 +61,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 			Expect(webProcess.Guid).ToNot(BeEmpty())
 			Expect(workerProcess.Guid).ToNot(BeEmpty())
 
-			CreateAndMapRoute(appGuid, context.RegularUserContext().Space, config.AppsDomain, webProcess.Name)
+			CreateAndMapRoute(appGuid, context.RegularUserContext().Space, Config.AppsDomain, webProcess.Name)
 
 			StartApp(appGuid)
 
@@ -117,7 +117,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			Expect(webProcess.Guid).ToNot(BeEmpty())
 
-			CreateAndMapRoute(appGuid, context.RegularUserContext().Space, config.AppsDomain, webProcess.Name)
+			CreateAndMapRoute(appGuid, context.RegularUserContext().Space, Config.AppsDomain, webProcess.Name)
 
 			StartApp(appGuid)
 
@@ -185,7 +185,7 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 
 		Expect(webProcess.Guid).ToNot(BeEmpty())
 
-		CreateAndMapRoute(appGuid, context.RegularUserContext().Space, config.AppsDomain, webProcess.Name)
+		CreateAndMapRoute(appGuid, context.RegularUserContext().Space, Config.AppsDomain, webProcess.Name)
 
 		StartApp(appGuid)
 

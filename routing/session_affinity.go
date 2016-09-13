@@ -33,7 +33,7 @@ var _ = RoutingDescribe("Session Affinity", func() {
 		)
 		BeforeEach(func() {
 			appName = random_name.CATSRandomName("APP")
-			PushApp(appName, stickyAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
+			PushApp(appName, stickyAsset, config.RubyBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT)
 
 			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
 			Expect(err).ToNot(HaveOccurred())
@@ -83,7 +83,7 @@ var _ = RoutingDescribe("Session Affinity", func() {
 
 		BeforeEach(func() {
 			appName = random_name.CATSRandomName("APP")
-			PushApp(appName, helloWorldAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
+			PushApp(appName, helloWorldAsset, config.RubyBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT)
 		})
 
 		AfterEach(func() {
@@ -128,12 +128,12 @@ var _ = RoutingDescribe("Session Affinity", func() {
 		)
 
 		BeforeEach(func() {
-			domain := config.AppsDomain
+			domain := Config.AppsDomain
 
 			app1 = random_name.CATSRandomName("APP")
-			PushApp(app1, stickyAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
+			PushApp(app1, stickyAsset, config.RubyBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT)
 			app2 = random_name.CATSRandomName("APP")
-			PushApp(app2, stickyAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
+			PushApp(app2, stickyAsset, config.RubyBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT)
 
 			ScaleAppInstances(app1, 2, DEFAULT_TIMEOUT)
 			ScaleAppInstances(app2, 2, DEFAULT_TIMEOUT)
@@ -199,12 +199,12 @@ var _ = RoutingDescribe("Session Affinity", func() {
 		)
 
 		BeforeEach(func() {
-			domain := config.AppsDomain
+			domain := Config.AppsDomain
 
 			app1 = random_name.CATSRandomName("APP")
-			PushApp(app1, stickyAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
+			PushApp(app1, stickyAsset, config.RubyBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT)
 			app2 = random_name.CATSRandomName("APP")
-			PushApp(app2, stickyAsset, config.RubyBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT)
+			PushApp(app2, stickyAsset, config.RubyBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT)
 
 			ScaleAppInstances(app1, 2, DEFAULT_TIMEOUT)
 			ScaleAppInstances(app2, 2, DEFAULT_TIMEOUT)

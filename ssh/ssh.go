@@ -39,7 +39,7 @@ var _ = SshDescribe("SSH", func() {
 			"--no-start",
 			"-b", "ruby_buildpack",
 			"-m", DEFAULT_MEMORY_LIMIT,
-			"-d", config.AppsDomain,
+			"-d", Config.AppsDomain,
 			"-i", "1"),
 			DEFAULT_TIMEOUT,
 		).Should(Exit(0))

@@ -270,7 +270,7 @@ unless the test specifically needs to test a different value,
   * set the **buildpack** unless the test specifically needs to test the case where
 a buildpack is unspecified, and use one of `config.RubyBuildpack`, `config.JavaBuildpack`, etc.
 unless the test specifically needs to use a buildpack name or URL specific to the test,
-  * set the **domain**, and use the `config.AppsDomain` unless the test specifically
+  * set the **domain**, and use the `Config.AppsDomain` unless the test specifically
 needs to test a different app domain.
 
   For example:
@@ -280,7 +280,7 @@ needs to test a different app domain.
       "--no-start"                          // don't start before setting backend
       "-b", buildpackName,                  // specify buildpack
       "-m", DEFAULT_MEMORY_LIMIT,           // specify memory limit
-      "-d", config.AppsDomain,              // specify app domain
+      "-d", Config.AppsDomain,              // specify app domain
   ).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
   //use the config-file specified backend when starting this app

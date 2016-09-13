@@ -28,7 +28,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 		app = random_name.CATSRandomName("APP")
 		cmd := fmt.Sprintf("lattice-app --ports=7777,8888,8080")
 
-		PushAppNoStart(app, latticeAppAsset, config.GoBuildpackName, config.AppsDomain, CF_PUSH_TIMEOUT, "-c", cmd)
+		PushAppNoStart(app, latticeAppAsset, config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT, "-c", cmd)
 		EnableDiego(app, DEFAULT_TIMEOUT)
 		StartApp(app, APP_START_TIMEOUT)
 	})
@@ -54,7 +54,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 			// create 2nd route
 			spacename := context.RegularUserContext().Space
 			secondRoute = fmt.Sprintf("%s-two", app)
-			CreateRoute(secondRoute, "", spacename, config.AppsDomain, DEFAULT_TIMEOUT)
+			CreateRoute(secondRoute, "", spacename, Config.AppsDomain, DEFAULT_TIMEOUT)
 
 			// map app route to other port
 			CreateRouteMapping(app, secondRoute, 0, 7777, DEFAULT_TIMEOUT)

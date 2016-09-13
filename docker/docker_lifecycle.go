@@ -51,7 +51,7 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 				// app is defined by cloudfoundry-incubator/diego-dockerfiles
 				"-o", "cloudfoundry/diego-docker-app-custom:latest",
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-d", config.AppsDomain,
+				"-d", Config.AppsDomain,
 				"-i", "1",
 				"-c", fmt.Sprintf("/myapp/dockerapp -name=%s", appName)),
 				DEFAULT_TIMEOUT,
@@ -81,7 +81,7 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 				// app is defined by cloudfoundry-incubator/diego-dockerfiles
 				"-o", "cloudfoundry/diego-docker-app-custom:latest",
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-d", config.AppsDomain,
+				"-d", Config.AppsDomain,
 				"-i", "1"),
 				DEFAULT_TIMEOUT,
 			).Should(Exit(0))

@@ -97,7 +97,7 @@ var _ = V3Describe("service bindings", func() {
 		dropletGuid := StageBuildpackPackage(packageGuid, config.RubyBuildpackName)
 		WaitForDropletToStage(dropletGuid)
 		AssignDropletToApp(appGuid, dropletGuid)
-		CreateAndMapRoute(appGuid, context.RegularUserContext().Space, config.AppsDomain, appName)
+		CreateAndMapRoute(appGuid, context.RegularUserContext().Space, Config.AppsDomain, appName)
 
 		StartApp(appGuid)
 

@@ -129,7 +129,7 @@ EOF
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", appPath,
 			"-s", stackName,
-			"-d", config.AppsDomain,
+			"-d", Config.AppsDomain,
 		).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		app_helpers.SetBackend(appName)
 

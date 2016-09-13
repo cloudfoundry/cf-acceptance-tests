@@ -43,7 +43,7 @@ var _ = AppsDescribe("Crashing", func() {
 				"-b", config.RubyBuildpackName,
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Dora,
-				"-d", config.AppsDomain,
+				"-d", Config.AppsDomain,
 			).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 
 			app_helpers.SetBackend(appName)
@@ -66,7 +66,7 @@ var _ = AppsDescribe("Crashing", func() {
 				"-b", config.RubyBuildpackName,
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Dora,
-				"-d", config.AppsDomain,
+				"-d", Config.AppsDomain,
 			).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
 			app_helpers.SetBackend(appName)
