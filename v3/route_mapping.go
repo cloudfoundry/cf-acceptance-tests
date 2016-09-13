@@ -58,7 +58,7 @@ var _ = V3Describe("route_mapping", func() {
 	})
 
 	AfterEach(func() {
-		FetchRecentLogs(appGuid, token, config)
+		FetchRecentLogs(appGuid, token, Config)
 		DeleteApp(appGuid)
 	})
 

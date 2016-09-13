@@ -42,7 +42,7 @@ var _ = V3Describe("package features", func() {
 	})
 
 	AfterEach(func() {
-		FetchRecentLogs(appGuid, token, config)
+		FetchRecentLogs(appGuid, token, Config)
 		DeleteApp(appGuid)
 	})
 

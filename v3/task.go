@@ -40,7 +40,7 @@ var _ = V3Describe("v3 tasks", func() {
 	)
 
 	BeforeEach(func() {
-		if !config.IncludeTasks {
+		if !Config.IncludeTasks {
 			Skip(skip_messages.SkipTasksMessage)
 		}
 		appName = random_name.CATSRandomName("APP")
@@ -58,7 +58,7 @@ var _ = V3Describe("v3 tasks", func() {
 	})
 
 	AfterEach(func() {
-		FetchRecentLogs(appGuid, token, config)
+		FetchRecentLogs(appGuid, token, Config)
 		DeleteApp(appGuid)
 	})
 
@@ -76,7 +76,7 @@ var _ = V3Describe("v3 tasks", func() {
 			Expect(createOutput.State).To(Equal("RUNNING"))
 
 			By("TASK_STARTED AppUsageEvent")
-			usageEvents := LastPageUsageEvents(context)
+			usageEvents := LastPageUsageEvents(UserContext)
 			start_event := AppUsageEvent{Entity{State: "TASK_STARTED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: createOutput.Guid}}
 			Expect(UsageEventsInclude(usageEvents, start_event)).To(BeTrue())
 
@@ -91,7 +91,7 @@ var _ = V3Describe("v3 tasks", func() {
 			}, DEFAULT_TIMEOUT).Should(Equal("SUCCEEDED"))
 
 			By("TASK_STOPPED AppUsageEvent")
-			usageEvents = LastPageUsageEvents(context)
+			usageEvents = LastPageUsageEvents(UserContext)
 			stop_event := AppUsageEvent{Entity{State: "TASK_STOPPED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: createOutput.Guid}}
 			Expect(UsageEventsInclude(usageEvents, stop_event)).To(BeTrue())
 		})

@@ -61,7 +61,7 @@ var _ = V3Describe("service bindings", func() {
 	})
 
 	AfterEach(func() {
-		FetchRecentLogs(appGuid, token, config)
+		FetchRecentLogs(appGuid, token, Config)
 		DeleteApp(appGuid)
 		Expect(cf.Cf("delete-service", upsName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
@@ -87,7 +87,7 @@ var _ = V3Describe("service bindings", func() {
 		PIt("exposes them during staging", func() {
 			StageBuildpackPackage(packageGuid, buildpackName)
 			Eventually(func() *Session {
-				return FetchRecentLogs(appGuid, token, config)
+				return FetchRecentLogs(appGuid, token, Config)
 			}, 1*time.Minute, 10*time.Second).Should(Say("my-service"))
 		})
 	})

@@ -38,7 +38,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 	})
 
 	AfterEach(func() {
-		FetchRecentLogs(appGuid, token, config)
+		FetchRecentLogs(appGuid, token, Config)
 		DeleteApp(appGuid)
 	})
 
@@ -76,7 +76,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 			Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 			Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", workerProcess.Name)))
 
-			usageEvents := LastPageUsageEvents(context)
+			usageEvents := LastPageUsageEvents(UserContext)
 
 			event1 := AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
 			event2 := AppUsageEvent{Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
@@ -88,7 +88,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 			Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", webProcess.Name)))
 			Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", workerProcess.Name)))
 
-			usageEvents = LastPageUsageEvents(context)
+			usageEvents = LastPageUsageEvents(UserContext)
 			event1 = AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
 			event2 = AppUsageEvent{Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
 			Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
@@ -127,7 +127,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 
-			usageEvents := LastPageUsageEvents(context)
+			usageEvents := LastPageUsageEvents(UserContext)
 
 			event1 := AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
 			Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
@@ -136,7 +136,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", webProcess.Name)))
 
-			usageEvents = LastPageUsageEvents(context)
+			usageEvents = LastPageUsageEvents(UserContext)
 			event1 = AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
 			Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
 
@@ -158,7 +158,7 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 	)
 
 	BeforeEach(func() {
-		if !config.IncludeDocker {
+		if !Config.IncludeDocker {
 			Skip(skip_messages.SkipDockerMessage)
 		}
 		appName = random_name.CATSRandomName("APP")
@@ -170,7 +170,7 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 	})
 
 	AfterEach(func() {
-		FetchRecentLogs(appGuid, token, config)
+		FetchRecentLogs(appGuid, token, Config)
 		DeleteApp(appGuid)
 	})
 
@@ -198,7 +198,7 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 		Expect(output).To(ContainSubstring(appCreationEnvironmentVariables))
 
 		Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
-		usageEvents := LastPageUsageEvents(context)
+		usageEvents := LastPageUsageEvents(UserContext)
 
 		event := AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
 		Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
@@ -207,7 +207,7 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 
 		Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", webProcess.Name)))
 
-		usageEvents = LastPageUsageEvents(context)
+		usageEvents = LastPageUsageEvents(UserContext)
 		event = AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
 		Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
 

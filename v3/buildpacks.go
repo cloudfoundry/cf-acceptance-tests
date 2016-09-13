@@ -51,7 +51,7 @@ var _ = V3Describe("buildpack", func() {
 	})
 
 	AfterEach(func() {
-		FetchRecentLogs(appGuid, token, config)
+		FetchRecentLogs(appGuid, token, Config)
 
 		workflowhelpers.AsUser(UserContext.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
@@ -62,18 +62,18 @@ var _ = V3Describe("buildpack", func() {
 	It("Stages with a user specified admin buildpack", func() {
 		StageBuildpackPackage(packageGuid, buildpackName)
 		Eventually(func() *Session {
-			return FetchRecentLogs(appGuid, token, config)
+			return FetchRecentLogs(appGuid, token, Config)
 		}, 1*time.Minute, 10*time.Second).Should(Say("STAGED WITH CUSTOM BUILDPACK"))
 	})
 
 	It("Downloads the correct user specified git buildpack", func() {
-		if !config.IncludeInternetDependent {
+		if !Config.IncludeInternetDependent {
 			Skip(skip_messages.SkipInternetDependentMessage)
 		}
 		StageBuildpackPackage(packageGuid, "https://github.com/cloudfoundry/example-git-buildpack")
 
 		Eventually(func() *Session {
-			return FetchRecentLogs(appGuid, token, config)
+			return FetchRecentLogs(appGuid, token, Config)
 		}, 3*time.Minute, 10*time.Second).Should(Say("I'm a buildpack!"))
 	})
 
