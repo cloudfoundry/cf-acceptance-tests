@@ -34,7 +34,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()
-		uploadUrl = fmt.Sprintf("%s%s/v3/packages/%s/upload", config.Protocol(), config.ApiEndpoint, packageGuid)
+		uploadUrl = fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), config.ApiEndpoint, packageGuid)
 	})
 
 	AfterEach(func() {

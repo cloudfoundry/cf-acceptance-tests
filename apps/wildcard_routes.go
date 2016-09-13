@@ -22,7 +22,7 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 	var spaceName string
 
 	curlRoute := func(hostName string, path string) string {
-		uri := config.Protocol() + hostName + "." + domainName + path
+		uri := Config.Protocol() + hostName + "." + domainName + path
 		curlCmd := helpers.CurlSkipSSL(true, uri).Wait(DEFAULT_TIMEOUT)
 		Expect(curlCmd).To(Exit(0))
 

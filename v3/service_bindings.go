@@ -42,7 +42,7 @@ var _ = V3Describe("service bindings", func() {
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()
-		uploadUrl := fmt.Sprintf("%s%s/v3/packages/%s/upload", config.Protocol(), config.ApiEndpoint, packageGuid)
+		uploadUrl := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), config.ApiEndpoint, packageGuid)
 		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
 		WaitForPackageToBeReady(packageGuid)
 		Expect(cf.Cf("create-user-provided-service", upsName, "-p", "{\"username\":\"admin\",\"password\":\"my-service\"}").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
