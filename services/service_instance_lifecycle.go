@@ -62,9 +62,9 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 			broker = NewServiceBroker(
 				random_name.CATSRandomName("BROKER"),
 				assets.NewAssets().ServiceBroker,
-				context,
+				UserContext,
 			)
-			broker.Push(config)
+			broker.Push(Config)
 			broker.Configure()
 			broker.Create()
 			broker.PublicizePlans()
@@ -279,9 +279,9 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 			broker = NewServiceBroker(
 				random_name.CATSRandomName("BROKER"),
 				assets.NewAssets().ServiceBroker,
-				context,
+				UserContext,
 			)
-			broker.Push(config)
+			broker.Push(Config)
 			broker.Configure()
 			broker.Create()
 			broker.PublicizePlans()

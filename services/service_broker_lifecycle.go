@@ -200,10 +200,10 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 			broker = NewServiceBroker(
 				random_name.CATSRandomName("BROKER"),
 				assets.NewAssets().ServiceBroker,
-				context,
+				UserContext,
 			)
 			workflowhelpers.TargetSpace(UserContext.RegularUserContext(), UserContext.ShortTimeout())
-			broker.Push(config)
+			broker.Push(Config)
 			broker.Configure()
 		})
 

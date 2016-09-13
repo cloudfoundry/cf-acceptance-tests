@@ -20,15 +20,15 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 	redirectUri := `http://example.com`
 
 	BeforeEach(func() {
-		if !config.IncludeSSO {
+		if !Config.IncludeSSO {
 			Skip(skip_messages.SkipSSOMessage)
 		}
 		broker = NewServiceBroker(
 			random_name.CATSRandomName("BROKER"),
 			assets.NewAssets().ServiceBroker,
-			context,
+			UserContext,
 		)
-		broker.Push(config)
+		broker.Push(Config)
 		broker.Service.DashboardClient.RedirectUri = redirectUri
 		broker.Configure()
 
@@ -38,8 +38,8 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 		oauthConfig.RedirectUri = redirectUri
 		oauthConfig.RequestedScopes = `openid,cloud_controller_service_permissions.read`
 
-		apiEndpoint = config.ApiEndpoint
-		SetOauthEndpoints(apiEndpoint, &oauthConfig, config)
+		apiEndpoint = Config.ApiEndpoint
+		SetOauthEndpoints(apiEndpoint, &oauthConfig, Config)
 
 		broker.Create()
 	})
