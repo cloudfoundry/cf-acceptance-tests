@@ -50,11 +50,11 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
 
-				PushAppNoStart(appName, golangAsset, Config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT)
+				PushAppNoStart(appName, golangAsset, Config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT, DEFAULT_MEMORY_LIMIT)
 				EnableDiego(appName, DEFAULT_TIMEOUT)
 				StartApp(appName, CF_PUSH_TIMEOUT)
 
-				PushApp(routeServiceName, loggingRouteServiceAsset, Config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT)
+				PushApp(routeServiceName, loggingRouteServiceAsset, Config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT, DEFAULT_MEMORY_LIMIT)
 				configureBroker(brokerAppName, routeServiceName)
 
 				bindRouteToService(appName, serviceInstanceName)
@@ -100,7 +100,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
 
-				PushAppNoStart(appName, golangAsset, Config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT)
+				PushAppNoStart(appName, golangAsset, Config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT, DEFAULT_MEMORY_LIMIT)
 				EnableDiego(appName, DEFAULT_TIMEOUT)
 				StartApp(appName, CF_PUSH_TIMEOUT)
 
@@ -258,26 +258,25 @@ func configureBroker(serviceBrokerAppName, routeServiceName string) {
 
 func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 	serviceBrokerAsset := assets.NewAssets().ServiceBroker
-	PushApp(brokerAppName, serviceBrokerAsset, Config.RubyBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT)
+	PushApp(brokerAppName, serviceBrokerAsset, Config.RubyBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT, DEFAULT_MEMORY_LIMIT)
 
 	initiateBrokerConfig(serviceName, brokerAppName)
 
 	brokerUrl := helpers.AppUri(brokerAppName, "")
 
 	context := workflowhelpers.NewContext(Config)
-	workflowhelpers.AsUser(UserContext.AdminUserContext(), UserContext.ShortTimeout(), func() {
+	workflowhelpers.AsUser(UserContext.AdminUserContext(), context.ShortTimeout(), func() {
 		session := cf.Cf("create-service-broker", brokerName, "user", "password", brokerUrl)
 		Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
 		session = cf.Cf("enable-service-access", serviceName)
 		Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-
 	})
 }
 
 func deleteServiceBroker(brokerName string) {
 	context := workflowhelpers.NewContext(Config)
-	workflowhelpers.AsUser(UserContext.AdminUserContext(), UserContext.ShortTimeout(), func() {
+	workflowhelpers.AsUser(UserContext.AdminUserContext(), context.ShortTimeout(), func() {
 		responseBuffer := cf.Cf("delete-service-broker", brokerName, "-f")
 		Expect(responseBuffer.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})

@@ -22,7 +22,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
-	// . "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/cli_version_check"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -57,16 +57,16 @@ func TestCATS(t *testing.T) {
 	UserContext = workflowhelpers.NewContext(Config)
 	environment := workflowhelpers.NewEnvironment(UserContext)
 
-	var _ = SynchronizedBeforeSuite(setup, func(encodedSSHPaths []byte) {
+	var _ = BeforeSuite(func() {
 		installedVersion, err := GetInstalledCliVersionString()
 		Expect(err).ToNot(HaveOccurred(), "Error trying to determine CF CLI version")
 
 		Expect(ParseRawCliVersionString(installedVersion).AtLeast(ParseRawCliVersionString(minCliVersion))).To(BeTrue(), "CLI version "+minCliVersion+" is required")
 		if Config.IncludeSsh {
-			ScpPath, err := exec.LookPath("scp")
+			ScpPath, err = exec.LookPath("scp")
 			Expect(err).NotTo(HaveOccurred())
 
-			SftpPath, err := exec.LookPath("sftp")
+			SftpPath, err = exec.LookPath("sftp")
 			Expect(err).NotTo(HaveOccurred())
 		}
 		environment.Setup()
