@@ -45,7 +45,7 @@ var _ = V3Describe("droplet features", func() {
 		)
 
 		BeforeEach(func() {
-			sourceDropletGuid = StageBuildpackPackage(packageGuid, config.RubyBuildpackName)
+			sourceDropletGuid = StageBuildpackPackage(packageGuid, Config.RubyBuildpackName)
 			WaitForDropletToStage(sourceDropletGuid)
 
 			destinationAppName = random_name.CATSRandomName("APP")

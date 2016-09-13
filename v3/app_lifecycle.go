@@ -49,7 +49,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 		})
 
 		It("can run apps with processes from the Procfile", func() {
-			dropletGuid := StageBuildpackPackage(packageGuid, config.RubyBuildpackName)
+			dropletGuid := StageBuildpackPackage(packageGuid, Config.RubyBuildpackName)
 			WaitForDropletToStage(dropletGuid)
 
 			AssignDropletToApp(appGuid, dropletGuid)

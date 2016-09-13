@@ -66,7 +66,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 				"push", appName,
 				"-p", assets.NewAssets().Dora,
 				"--no-start",
-				"-b", config.RubyBuildpackName,
+				"-b", Config.RubyBuildpackName,
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-d", Config.AppsDomain,
 				"-i", "1",

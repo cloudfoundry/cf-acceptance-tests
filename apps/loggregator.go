@@ -39,7 +39,7 @@ var _ = AppsDescribe("loggregator", func() {
 		Expect(cf.Cf("push",
 			appName,
 			"--no-start",
-			"-b", config.RubyBuildpackName,
+			"-b", Config.RubyBuildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().LoggregatorLoadGenerator,
 			"-d", Config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))

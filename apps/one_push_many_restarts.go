@@ -51,7 +51,7 @@ var _ = AppsDescribe("An application that's already been pushed", func() {
 		output := string(appQuery.Out.Contents())
 
 		if appQuery.ExitCode() == 1 && strings.Contains(output, "not found") {
-			pushCommand := cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)
+			pushCommand := cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)
 			if pushCommand.ExitCode() != 0 {
 				Expect(cf.Cf("delete", "-f", "-r", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 				Fail("failed to create app")

@@ -32,7 +32,7 @@ var _ = AppsDescribe("Logging", func() {
 			logWriterAppName = random_name.CATSRandomName("APP")
 
 			Eventually(cf.Cf("push", listenerAppName, "--no-start", "--health-check-type", "port", "-b", config.GoBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().SyslogDrainListener, "-d", Config.AppsDomain, "-f", assets.NewAssets().SyslogDrainListener+"/manifest.yml"), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to push app")
-			Eventually(cf.Cf("push", logWriterAppName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().RubySimple, "-d", Config.AppsDomain), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to push app")
+			Eventually(cf.Cf("push", logWriterAppName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().RubySimple, "-d", Config.AppsDomain), DEFAULT_TIMEOUT).Should(Exit(0), "Failed to push app")
 
 			app_helpers.SetBackend(listenerAppName)
 			app_helpers.SetBackend(logWriterAppName)

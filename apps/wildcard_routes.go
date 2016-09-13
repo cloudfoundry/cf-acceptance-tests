@@ -45,7 +45,7 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 		Expect(cf.Cf(
 			"push", appNameDora,
 			"--no-start",
-			"-b", config.RubyBuildpackName,
+			"-b", Config.RubyBuildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Dora,
 			"-d", Config.AppsDomain,
@@ -57,7 +57,7 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 		Expect(cf.Cf(
 			"push", appNameSimple,
 			"--no-start",
-			"-b", config.RubyBuildpackName,
+			"-b", Config.RubyBuildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().HelloWorld,
 			"-d", Config.AppsDomain,

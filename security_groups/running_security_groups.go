@@ -55,7 +55,7 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 		Expect(cf.Cf("push",
 			serverAppName,
 			"--no-start",
-			"-b", config.RubyBuildpackName,
+			"-b", Config.RubyBuildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Dora,
 			"-d", Config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
@@ -89,7 +89,7 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 	It("allows previously-blocked ip traffic after applying a security group, and re-blocks it when the group is removed", func() {
 
 		clientAppName := random_name.CATSRandomName("APP")
-		Expect(cf.Cf("push", clientAppName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", clientAppName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		app_helpers.SetBackend(clientAppName)
 		Expect(cf.Cf("start", clientAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		defer func() { cf.Cf("delete", clientAppName, "-f", "-r").Wait(CF_PUSH_TIMEOUT) }()
@@ -173,7 +173,7 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 			})
 		}()
 
-		Expect(cf.Cf("push", testAppName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpack, "-p", assets.NewAssets().HelloWorld, "-d", Config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", testAppName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpack, "-p", assets.NewAssets().HelloWorld, "-d", Config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		app_helpers.SetBackend(testAppName)
 		defer func() { cf.Cf("delete", testAppName, "-f", "-r").Wait(CF_PUSH_TIMEOUT) }()
 

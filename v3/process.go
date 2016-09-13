@@ -55,7 +55,7 @@ var _ = V3Describe("process", func() {
 		)
 
 		BeforeEach(func() {
-			dropletGuid := StageBuildpackPackage(packageGuid, config.RubyBuildpackName)
+			dropletGuid := StageBuildpackPackage(packageGuid, Config.RubyBuildpackName)
 			WaitForDropletToStage(dropletGuid)
 
 			AssignDropletToApp(appGuid, dropletGuid)

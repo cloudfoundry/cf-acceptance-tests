@@ -37,7 +37,7 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 			Expect(cf.Cf(
 				"push", appName,
 				"--no-start",
-				"-b", config.RubyBuildpackName,
+				"-b", Config.RubyBuildpackName,
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Dora,
 				"-d", Config.AppsDomain,

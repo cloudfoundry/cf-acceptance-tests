@@ -258,7 +258,7 @@ func configureBroker(serviceBrokerAppName, routeServiceName string) {
 
 func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 	serviceBrokerAsset := assets.NewAssets().ServiceBroker
-	PushApp(brokerAppName, serviceBrokerAsset, config.RubyBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT)
+	PushApp(brokerAppName, serviceBrokerAsset, Config.RubyBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT)
 
 	initiateBrokerConfig(serviceName, brokerAppName)
 
