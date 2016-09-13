@@ -40,7 +40,7 @@ var _ = AppsDescribe("Getting instance information", func() {
 
 	Context("scaling memory", func() {
 		BeforeEach(func() {
-			context.SetRunawayQuota()
+			UserContext.SetRunawayQuota()
 			scale := cf.Cf("scale", appName, "-m", workflowhelpers.RUNAWAY_QUOTA_MEM_LIMIT, "-f")
 			Eventually(scale, DEFAULT_TIMEOUT).Should(Or(Say("insufficient"), Say("down")))
 			scale.Kill()
