@@ -19,7 +19,7 @@ var _ = AppsDescribe("FUSE", func() {
 	var appName string
 
 	BeforeEach(func() {
-		if !config.IncludePrivilegedContainerSupport {
+		if !Config.IncludePrivilegedContainerSupport {
 			Skip(skip_messages.SkipPrivilegedContainerSupportMessage)
 		}
 		appName = random_name.CATSRandomName("APP")
