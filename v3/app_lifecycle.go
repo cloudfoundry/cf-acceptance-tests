@@ -107,7 +107,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 		})
 
 		It("can run spring apps", func() {
-			dropletGuid := StageBuildpackPackage(packageGuid, config.JavaBuildpackName)
+			dropletGuid := StageBuildpackPackage(packageGuid, Config.JavaBuildpackName)
 			WaitForDropletToStage(dropletGuid)
 
 			AssignDropletToApp(appGuid, dropletGuid)

@@ -95,7 +95,7 @@ var _ = V3Describe("package features", func() {
 		})
 
 		It("can still stage the package", func() {
-			dropletGuid := StageBuildpackPackage(packageGuid, config.JavaBuildpackName)
+			dropletGuid := StageBuildpackPackage(packageGuid, Config.JavaBuildpackName)
 			dropletPath := fmt.Sprintf("/v3/droplets/%s", dropletGuid)
 
 			Eventually(func() *Session {

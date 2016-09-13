@@ -21,7 +21,7 @@ var _ = AppsDescribe("Encoding", func() {
 		Expect(cf.Cf("push",
 			appName,
 			"--no-start",
-			"-b", config.JavaBuildpackName,
+			"-b", Config.JavaBuildpackName,
 			"-p", assets.NewAssets().Java,
 			"-m", "512M",
 			"-d", Config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
