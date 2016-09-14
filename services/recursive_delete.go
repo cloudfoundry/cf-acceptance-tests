@@ -35,7 +35,7 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 		quotaName = random_name.CATSRandomName("QUOTA")
 		spaceName := random_name.CATSRandomName("SPACE")
 		appName := random_name.CATSRandomName("APP")
-		instanceName := random_name.CATSRandomName("SVCINS")
+		instanceName := random_name.CATSRandomName("SVIN")
 
 		workflowhelpers.AsUser(UserContext.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			createQuota := cf.Cf("create-quota", quotaName, "-m", "10G", "-r", "1000", "-s", "5").Wait(UserContext.ShortTimeout())

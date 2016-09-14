@@ -38,8 +38,8 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 				broker.PublicizePlans()
 			})
 			appName = random_name.CATSRandomName("APP")
-			instanceName = random_name.CATSRandomName("SVCINS")
-			asyncInstanceName = random_name.CATSRandomName("SVCINS")
+			instanceName = random_name.CATSRandomName("SVIN")
+			asyncInstanceName = random_name.CATSRandomName("SVIN")
 		})
 
 		AfterEach(func() {
@@ -100,8 +100,8 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 			broker.Configure()
 			broker.CreateSpaceScoped()
 			appName = random_name.CATSRandomName("APP")
-			instanceName = random_name.CATSRandomName("SVCINS")
-			asyncInstanceName = random_name.CATSRandomName("SVCINS")
+			instanceName = random_name.CATSRandomName("SVIN")
+			asyncInstanceName = random_name.CATSRandomName("SVIN")
 		})
 
 		AfterEach(func() {

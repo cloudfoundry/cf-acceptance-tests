@@ -27,7 +27,7 @@ var _ = AppsDescribe("Logging", func() {
 	Describe("Syslog drains", func() {
 		BeforeEach(func() {
 			interrupt = make(chan struct{}, 1)
-			serviceName = random_name.CATSRandomName("SVCINS")
+			serviceName = random_name.CATSRandomName("SVIN")
 			listenerAppName = random_name.CATSRandomName("APP")
 			logWriterAppName = random_name.CATSRandomName("APP")
 

@@ -82,7 +82,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 				type Params struct{ Param1 string }
 				params, _ := json.Marshal(Params{Param1: "value"})
 
-				instanceName := random_name.CATSRandomName("SVCINS")
+				instanceName := random_name.CATSRandomName("SVIN")
 				createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName, "-c", string(params), "-t", tags).Wait(DEFAULT_TIMEOUT)
 				Expect(createService).To(Exit(0))
 
@@ -96,7 +96,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 			Context("when there is an existing service instance", func() {
 				var instanceName string
 				BeforeEach(func() {
-					instanceName = random_name.CATSRandomName("SVCINS")
+					instanceName = random_name.CATSRandomName("SVIN")
 					createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
 					Expect(createService).To(Exit(0), "failed creating service")
 				})
@@ -220,7 +220,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 				checkForEvents(appName, []string{"audit.app.create"})
 
-				instanceName = random_name.CATSRandomName("SVCINS")
+				instanceName = random_name.CATSRandomName("SVIN")
 				createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
 				Expect(createService).To(Exit(0), "failed creating service")
 			})
@@ -296,7 +296,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 			type Params struct{ Param1 string }
 			params, _ := json.Marshal(Params{Param1: "value"})
 
-			instanceName := random_name.CATSRandomName("SVCINS")
+			instanceName := random_name.CATSRandomName("SVIN")
 			createService := cf.Cf("create-service", broker.Service.Name, broker.AsyncPlans[0].Name, instanceName, "-t", tags, "-c", string(params)).Wait(DEFAULT_TIMEOUT)
 			Expect(createService).To(Exit(0))
 			Expect(createService).To(Say("Create in progress."))

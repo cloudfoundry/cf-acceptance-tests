@@ -41,7 +41,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 			BeforeEach(func() {
 				routeServiceName = random_name.CATSRandomName("APP")
 				brokerName = random_name.CATSRandomName("BRKR")
-				serviceInstanceName = random_name.CATSRandomName("SVCINS")
+				serviceInstanceName = random_name.CATSRandomName("SVIN")
 				appName = random_name.CATSRandomName("APP")
 
 				serviceName := random_name.CATSRandomName("SVC")
@@ -92,7 +92,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 			BeforeEach(func() {
 				appName = random_name.CATSRandomName("APP")
 				brokerName = random_name.CATSRandomName("BRKR")
-				serviceInstanceName = random_name.CATSRandomName("SVCINS")
+				serviceInstanceName = random_name.CATSRandomName("SVIN")
 
 				brokerAppName := random_name.CATSRandomName("APP")
 				serviceName := random_name.CATSRandomName("SVC")
@@ -136,7 +136,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 			BeforeEach(func() {
 				hostname = random_name.CATSRandomName("ROUTE")
 				brokerAppName = random_name.CATSRandomName("APP")
-				serviceInstanceName = random_name.CATSRandomName("SVCINS")
+				serviceInstanceName = random_name.CATSRandomName("SVIN")
 				brokerName = random_name.CATSRandomName("BRKR")
 
 				serviceName := random_name.CATSRandomName("SVC")
