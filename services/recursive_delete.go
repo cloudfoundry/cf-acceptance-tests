@@ -22,7 +22,7 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 
 	BeforeEach(func() {
 		broker = NewServiceBroker(
-			random_name.CATSRandomName("BROKER"),
+			random_name.CATSRandomName("BRKR"),
 			assets.NewAssets().ServiceBroker,
 			UserContext,
 		)

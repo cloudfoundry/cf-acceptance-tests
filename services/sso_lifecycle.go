@@ -24,7 +24,7 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 			Skip(skip_messages.SkipSSOMessage)
 		}
 		broker = NewServiceBroker(
-			random_name.CATSRandomName("BROKER"),
+			random_name.CATSRandomName("BRKR"),
 			assets.NewAssets().ServiceBroker,
 			UserContext,
 		)

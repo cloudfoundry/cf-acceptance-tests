@@ -27,7 +27,7 @@ var _ = ServicesDescribe("Purging service instances", func() {
 	Context("for public brokers", func() {
 		BeforeEach(func() {
 			broker = NewServiceBroker(
-				random_name.CATSRandomName("BROKER"),
+				random_name.CATSRandomName("BRKR"),
 				assets.NewAssets().ServiceBroker,
 				UserContext,
 			)
@@ -82,7 +82,7 @@ var _ = ServicesDescribe("Purging service instances", func() {
 	Context("for space scoped brokers", func() {
 		BeforeEach(func() {
 			broker = NewServiceBroker(
-				random_name.CATSRandomName("BROKER"),
+				random_name.CATSRandomName("BRKR"),
 				assets.NewAssets().ServiceBroker,
 				UserContext,
 			)

@@ -32,7 +32,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 
 		BeforeEach(func() {
 			broker = NewServiceBroker(
-				random_name.CATSRandomName("BROKER"),
+				random_name.CATSRandomName("BRKR"),
 				assets.NewAssets().ServiceBroker,
 				UserContext,
 			)
@@ -198,7 +198,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 	Describe("private brokers", func() {
 		BeforeEach(func() {
 			broker = NewServiceBroker(
-				random_name.CATSRandomName("BROKER"),
+				random_name.CATSRandomName("BRKR"),
 				assets.NewAssets().ServiceBroker,
 				UserContext,
 			)

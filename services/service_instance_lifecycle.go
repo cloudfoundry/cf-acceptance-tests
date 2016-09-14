@@ -60,7 +60,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 	Context("Synchronous operations", func() {
 		BeforeEach(func() {
 			broker = NewServiceBroker(
-				random_name.CATSRandomName("BROKER"),
+				random_name.CATSRandomName("BRKR"),
 				assets.NewAssets().ServiceBroker,
 				UserContext,
 			)
@@ -277,7 +277,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 	Context("Asynchronous operations", func() {
 		BeforeEach(func() {
 			broker = NewServiceBroker(
-				random_name.CATSRandomName("BROKER"),
+				random_name.CATSRandomName("BRKR"),
 				assets.NewAssets().ServiceBroker,
 				UserContext,
 			)
