@@ -82,7 +82,7 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 			Expect(services).NotTo(Say(appName))
 
 			By("Ensuring service offerings are gone")
-			marketplace := cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
+			marketplace := cf.Cf("marketplace").Wait(CF_MARKETPLACE_TIMEOUT)
 			Expect(marketplace).To(Exit(0))
 			Expect(marketplace).NotTo(Say(broker.Service.Name))
 		})
@@ -143,7 +143,7 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 				Expect(services).NotTo(Say(appName))
 
 				By("Ensuring service offerings are gone")
-				marketplace := cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
+				marketplace := cf.Cf("marketplace").Wait(CF_MARKETPLACE_TIMEOUT)
 				Expect(marketplace).To(Exit(0))
 				Expect(marketplace).NotTo(Say(broker.Service.Name))
 			})

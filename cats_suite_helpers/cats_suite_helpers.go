@@ -15,14 +15,15 @@ import (
 )
 
 var (
-	APP_START_TIMEOUT    = 2 * time.Minute
-	CF_JAVA_TIMEOUT      = 10 * time.Minute
-	CF_PUSH_TIMEOUT      = 2 * time.Minute
-	DEFAULT_MEMORY_LIMIT = "256M"
-	DEFAULT_TIMEOUT      = 90 * time.Second
-	DETECT_TIMEOUT       = 5 * time.Minute
-	LONG_CURL_TIMEOUT    = 2 * time.Minute
-	SLEEP_TIMEOUT        = 30 * time.Second
+	APP_START_TIMEOUT      = 2 * time.Minute
+	CF_JAVA_TIMEOUT        = 10 * time.Minute
+	CF_PUSH_TIMEOUT        = 2 * time.Minute
+	DEFAULT_MEMORY_LIMIT   = "256M"
+	DEFAULT_TIMEOUT        = 30 * time.Second
+	DETECT_TIMEOUT         = 5 * time.Minute
+	LONG_CURL_TIMEOUT      = 2 * time.Minute
+	SLEEP_TIMEOUT          = 30 * time.Second
+	CF_MARKETPLACE_TIMEOUT = 200 * time.Second
 )
 
 var (

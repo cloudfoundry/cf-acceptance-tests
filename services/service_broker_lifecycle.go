@@ -53,7 +53,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 
 			It("updates the broker and sees catalog changes", func() {
 				// Confirming plans show up in the marketplace for regular user
-				plans := cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
+				plans := cf.Cf("marketplace").Wait(CF_MARKETPLACE_TIMEOUT)
 				Expect(plans).To(Exit(0))
 				Expect(plans).To(Say(broker.Service.Name))
 
@@ -69,7 +69,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				broker.Update()
 
 				// Confirming the changes to the broker show up in the marketplace
-				plans = cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
+				plans = cf.Cf("marketplace").Wait(CF_MARKETPLACE_TIMEOUT)
 				Expect(plans).To(Exit(0))
 				Expect(plans).NotTo(Say(oldServiceName))
 				Expect(plans).NotTo(Say(oldPlanName))
@@ -81,7 +81,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 					broker.Delete()
 				})
 
-				plans = cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
+				plans = cf.Cf("marketplace").Wait(CF_MARKETPLACE_TIMEOUT)
 				Expect(plans).To(Exit(0))
 				Expect(plans).NotTo(Say(oldServiceName))
 				Expect(plans).NotTo(Say(oldPlanName))
@@ -112,7 +112,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 						Expect(commandResult).To(Exit(0))
 					})
 
-					plans := cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
+					plans := cf.Cf("marketplace").Wait(CF_MARKETPLACE_TIMEOUT)
 					Expect(plans).To(Exit(0))
 					Expect(plans).To(Say(broker.Service.Name))
 
@@ -160,7 +160,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 						Expect(commandResult).To(Exit(0))
 					})
 
-					plans := cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
+					plans := cf.Cf("marketplace").Wait(CF_MARKETPLACE_TIMEOUT)
 					Expect(plans).To(Exit(0))
 					Expect(plans).NotTo(Say(broker.Service.Name))
 
@@ -270,7 +270,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				createBrokerCommand := cf.Cf("curl", "/v2/service_brokers", "-X", "POST", "-d", string(jsonBody)).Wait(DEFAULT_TIMEOUT)
 				Expect(createBrokerCommand).To(Exit(0))
 
-				marketplaceOutput := cf.Cf("marketplace").Wait(DEFAULT_TIMEOUT)
+				marketplaceOutput := cf.Cf("marketplace").Wait(CF_MARKETPLACE_TIMEOUT)
 
 				Expect(marketplaceOutput).To(Exit(0))
 				Expect(marketplaceOutput).To(Say(broker.Service.Name))
