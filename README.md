@@ -270,7 +270,7 @@ unless the test specifically needs to test a different value,
   * set the **buildpack** unless the test specifically needs to test the case where
 a buildpack is unspecified, and use one of `config.RubyBuildpack`, `config.JavaBuildpack`, etc.
 unless the test specifically needs to use a buildpack name or URL specific to the test,
-  * set the **domain**, and use the `Config.AppsDomain` unless the test specifically
+  * set the **domain**, and use the `config.AppsDomain` unless the test specifically
 needs to test a different app domain.
 
   For example:
@@ -280,7 +280,7 @@ needs to test a different app domain.
       "--no-start"                          // don't start before setting backend
       "-b", buildpackName,                  // specify buildpack
       "-m", DEFAULT_MEMORY_LIMIT,           // specify memory limit
-      "-d", Config.AppsDomain,              // specify app domain
+      "-d", config.AppsDomain,              // specify app domain
   ).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
   //use the config-file specified backend when starting this app
@@ -309,4 +309,4 @@ or adding new suites.
 1. Document all changes to the config object in this repo's README.md.
 1. Document the compatible backends in this repo's README.md.
 1. If you add a test that requires a new minimum `cf` CLI version, update the `cli_compatibility_test`.
-1. If you add a test that is unsupported on a particular backend, add a ginkgo Skip() in an if Config.Backend != "your_backend" {} clause, [see Ginkgo's skip](https://onsi.github.io/ginkgo/#the-spec-runner).
+1. If you add a test that is unsupported on a particular backend, add a ginkgo Skip() in an if config.Backend != "your_backend" {} clause, [see Ginkgo's skip](https://onsi.github.io/ginkgo/#the-spec-runner).

@@ -73,8 +73,8 @@ func InstancesRunning(appName string, instances int, timeout time.Duration) {
 		Should(ContainSubstring(fmt.Sprintf("instances: %d/%d", instances, instances)))
 }
 
-func PushApp(appName, asset, buildpackName, domain string, timeout time.Duration, memoryLimit string) {
-	PushAppNoStart(appName, asset, buildpackName, domain, timeout, memoryLimit)
+func PushApp(appName, asset, buildpackName, domain string, timeout time.Duration) {
+	PushAppNoStart(appName, asset, buildpackName, domain, timeout)
 	SetBackend(appName, timeout)
 	StartApp(appName, timeout)
 }
@@ -83,11 +83,11 @@ func GenerateAppName() string {
 	return generator.PrefixedRandomName("RATS", "APP")
 }
 
-func PushAppNoStart(appName, asset, buildpackName, domain string, timeout time.Duration, memoryLimit string, args ...string) {
+func PushAppNoStart(appName, asset, buildpackName, domain string, timeout time.Duration, args ...string) {
 	allArgs := []string{"push", appName,
 		"-b", buildpackName,
 		"--no-start",
-		"-m", memoryLimit,
+		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", asset,
 		"-d", domain}
 	for _, v := range args {

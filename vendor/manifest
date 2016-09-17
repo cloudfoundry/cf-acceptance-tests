@@ -14,7 +14,7 @@
 			"importpath": "code.cloudfoundry.org/cf-routing-test-helpers",
 			"repository": "https://github.com/cloudfoundry-incubator/cf-routing-test-helpers",
 			"vcs": "git",
-			"revision": "2034fd3fca2ebfabf9f75c1d2015c3fd9e9bebea",
+			"revision": "1fc063fb59243861b6f8e2ce3ec3e239695e5ef2",
 			"branch": "master",
 			"notests": true
 		},

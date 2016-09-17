@@ -13,7 +13,8 @@ import (
 )
 
 const (
-	deaUnsupportedTag = "{NO_DEA_SUPPORT} "
+	DEFAULT_MEMORY_LIMIT = "256M"
+	deaUnsupportedTag    = "{NO_DEA_SUPPORT} "
 )
 
 func MapRouteToApp(app, domain, host, path string, timeout time.Duration) {

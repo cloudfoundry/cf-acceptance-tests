@@ -3,16 +3,16 @@ package skip_messages
 const SkipAppsMessage string = `Skipping this test because config.IncludeApps is set to 'false'.`
 const SkipBackendCompatibilityMessage string = `Skipping this test because config.IncludeBackendCompatibility is set to 'false'.
 NOTE: Ensure that your platform is running both DEA and Diego before running this test.`
-const SkipDeaMessage string = `Skipping this test because Config.Backend is not set to 'dea'.
+const SkipDeaMessage string = `Skipping this test because config.Backend is not set to 'dea'.
 NOTE: Ensure that your platform is running DEAs before enabling this test.`
 const SkipDetectMessage string = `Skipping this test because config.IncludeDetect is set to 'false'.`
-const SkipDiegoMessage string = `Skipping this test because Config.Backend is not set to 'diego'.
+const SkipDiegoMessage string = `Skipping this test because config.Backend is not set to 'diego'.
 NOTE: Ensure that your platform is running Diego before enabling this test.`
 const SkipDockerMessage string = `Skipping this test because config.IncludeDocker is set to 'false'.
 NOTE: Ensure Docker containers are enabled on your platform before enabling this test.`
 const SkipInternetDependentMessage string = `Skipping this test because config.IncludeInternetDependent is set to 'false'.
 NOTE: Ensure that your platform has access to the internet before running this test.`
-const SkipPrivilegedContainerSupportMessage string = `Skipping this test because Config.IncludePrivilegedContainerSupport is set to 'false'.
+const SkipPrivilegedContainerSupportMessage string = `Skipping this test because config.IncludePrivilegedContainerSupport is set to 'false'.
 NOTE: Ensure privileged containers are allowed on your platform before enabling this test.`
 const SkipRouteServicesMessage string = `Skipping this test because config.IncludeRouteServices is set to 'false'.
 NOTE: Ensure that route services are enabled on your platform before running this test.`
