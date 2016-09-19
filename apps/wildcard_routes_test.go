@@ -30,11 +30,11 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 	}
 
 	BeforeEach(func() {
-		orgName = context.RegularUserContext().Org
-		spaceName = context.RegularUserContext().Space
+		orgName = testSetup.RegularUserContext().Org
+		spaceName = testSetup.RegularUserContext().Space
 
 		domainName = random_name.CATSRandomName("DOMAIN") + "." + config.AppsDomain
-		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("create-shared-domain", domainName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		})
 
@@ -70,7 +70,7 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 		app_helpers.AppReport(appNameDora, DEFAULT_TIMEOUT)
 		app_helpers.AppReport(appNameSimple, DEFAULT_TIMEOUT)
 
-		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("target", "-o", orgName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			Expect(cf.Cf("delete-shared-domain", domainName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
@@ -84,7 +84,7 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 			wildCardRoute := "*"
 			regularRoute := "bar"
 
-			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				Expect(cf.Cf("target", "-o", orgName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 				Expect(cf.Cf("create-route", spaceName, domainName, "-n", wildCardRoute).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})

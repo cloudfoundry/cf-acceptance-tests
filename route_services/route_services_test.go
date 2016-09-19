@@ -142,7 +142,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
 
-				CreateRoute(hostname, "", context.RegularUserContext().Space, config.AppsDomain, DEFAULT_TIMEOUT)
+				CreateRoute(hostname, "", testSetup.RegularUserContext().Space, config.AppsDomain, DEFAULT_TIMEOUT)
 
 				configureBroker(brokerAppName, "")
 			})
@@ -262,8 +262,8 @@ func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 
 	brokerUrl := helpers.AppUri(brokerAppName, "")
 
-	context := workflowhelpers.NewContext(config)
-	workflowhelpers.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
+	testSetup := workflowhelpers.NewTestSuiteSetup(config)
+	workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
 		session := cf.Cf("create-service-broker", brokerName, "user", "password", brokerUrl)
 		Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
@@ -274,8 +274,8 @@ func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 }
 
 func deleteServiceBroker(brokerName string) {
-	context := workflowhelpers.NewContext(config)
-	workflowhelpers.AsUser(context.AdminUserContext(), context.ShortTimeout(), func() {
+	testSetup := workflowhelpers.NewTestSuiteSetup(config)
+	workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
 		responseBuffer := cf.Cf("delete-service-broker", brokerName, "-f")
 		Expect(responseBuffer.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})

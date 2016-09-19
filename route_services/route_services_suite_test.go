@@ -17,8 +17,8 @@ var (
 	DEFAULT_TIMEOUT = 30 * time.Second
 	CF_PUSH_TIMEOUT = 2 * time.Minute
 
-	context workflowhelpers.SuiteContext
-	config  cats_config.Config
+	testSetup *workflowhelpers.ReproducibleTestSuiteSetup
+	config    cats_config.Config
 )
 
 func TestRouteServices(t *testing.T) {
@@ -38,15 +38,14 @@ func TestRouteServices(t *testing.T) {
 
 	rs := []Reporter{}
 
-	context = workflowhelpers.NewContext(config)
-	environment := workflowhelpers.NewEnvironment(context)
+	testSetup = workflowhelpers.NewTestSuiteSetup(config)
 
 	BeforeSuite(func() {
-		environment.Setup()
+		testSetup.Setup()
 	})
 
 	AfterSuite(func() {
-		environment.Teardown()
+		testSetup.Teardown()
 	})
 
 	if config.ArtifactsDirectory != "" {

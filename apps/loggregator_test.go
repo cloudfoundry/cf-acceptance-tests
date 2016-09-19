@@ -145,7 +145,7 @@ type cfHomeConfig struct {
 func getCfHomeConfig() *cfHomeConfig {
 	myCfHomeConfig := &cfHomeConfig{}
 
-	workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 		path := filepath.Join(os.Getenv("CF_HOME"), ".cf", "config.json")
 
 		configFile, err := os.Open(path)

@@ -36,7 +36,7 @@ var _ = V3Describe("service bindings", func() {
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 		upsName = random_name.CATSRandomName("SVC")
-		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
+		spaceGuid = GetSpaceGuidFromName(testSetup.RegularUserContext().Space)
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()
@@ -70,13 +70,13 @@ var _ = V3Describe("service bindings", func() {
 		BeforeEach(func() {
 			buildpackName = random_name.CATSRandomName("BPK")
 			buildpackZip := createEnvBuildpack()
-			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 		})
 
 		AfterEach(func() {
-			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 		})
@@ -95,7 +95,7 @@ var _ = V3Describe("service bindings", func() {
 		dropletGuid := StageBuildpackPackage(packageGuid, config.RubyBuildpackName)
 		WaitForDropletToStage(dropletGuid)
 		AssignDropletToApp(appGuid, dropletGuid)
-		CreateAndMapRoute(appGuid, context.RegularUserContext().Space, config.AppsDomain, appName)
+		CreateAndMapRoute(appGuid, testSetup.RegularUserContext().Space, config.AppsDomain, appName)
 
 		StartApp(appGuid)
 

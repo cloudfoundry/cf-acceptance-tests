@@ -32,7 +32,7 @@ var _ = V3Describe("buildpack", func() {
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
-		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
+		spaceGuid = GetSpaceGuidFromName(testSetup.RegularUserContext().Space)
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()
@@ -43,7 +43,7 @@ var _ = V3Describe("buildpack", func() {
 		buildpackName = random_name.CATSRandomName("BPK")
 		buildpackZip := createBuildpack()
 
-		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 	})
@@ -51,7 +51,7 @@ var _ = V3Describe("buildpack", func() {
 	AfterEach(func() {
 		FetchRecentLogs(appGuid, token, config)
 
-		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 		DeleteApp(appGuid)

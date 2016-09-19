@@ -22,8 +22,8 @@ var (
 )
 
 var (
-	context workflowhelpers.SuiteContext
-	config  cf_config.Config
+	testSetup *workflowhelpers.ReproducibleTestSuiteSetup
+	config    cf_config.Config
 )
 
 func TestApplications(t *testing.T) {
@@ -43,15 +43,14 @@ func TestApplications(t *testing.T) {
 		LONG_CURL_TIMEOUT = config.LongCurlTimeout * time.Second
 	}
 
-	context = workflowhelpers.NewContext(config)
-	environment := workflowhelpers.NewEnvironment(context)
+	testSetup = workflowhelpers.NewTestSuiteSetup(config)
 
 	BeforeSuite(func() {
-		environment.Setup()
+		testSetup.Setup()
 	})
 
 	AfterSuite(func() {
-		environment.Teardown()
+		testSetup.Teardown()
 	})
 
 	componentName := "Backend Compatibility"

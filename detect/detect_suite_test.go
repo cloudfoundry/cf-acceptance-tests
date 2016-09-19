@@ -21,8 +21,8 @@ var (
 )
 
 var (
-	context workflowhelpers.SuiteContext
-	config  cf_config.Config
+	testSetup *workflowhelpers.ReproducibleTestSuiteSetup
+	config    cf_config.Config
 )
 
 func TestDetect(t *testing.T) {
@@ -38,15 +38,14 @@ func TestDetect(t *testing.T) {
 		DETECT_TIMEOUT = config.DetectTimeout * time.Second
 	}
 
-	context = workflowhelpers.NewContext(config)
-	environment := workflowhelpers.NewEnvironment(context)
+	testSetup = workflowhelpers.NewTestSuiteSetup(config)
 
 	BeforeSuite(func() {
-		environment.Setup()
+		testSetup.Setup()
 	})
 
 	AfterSuite(func() {
-		environment.Teardown()
+		testSetup.Teardown()
 	})
 
 	componentName := "Buildpack Detection"

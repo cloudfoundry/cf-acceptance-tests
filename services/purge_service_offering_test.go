@@ -28,11 +28,11 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 			broker = NewServiceBroker(
 				random_name.CATSRandomName("BROKER"),
 				assets.NewAssets().ServiceBroker,
-				context,
+				testSetup,
 			)
 			broker.Push(config)
 			broker.Configure()
-			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				broker.Create()
 				broker.PublicizePlans()
 			})
@@ -70,7 +70,7 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 			Expect(cf.Cf("delete", broker.Name, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
 			By("Purging the service offering")
-			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				Expect(cf.Cf("purge-service-offering", broker.Service.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 
@@ -92,9 +92,9 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 			broker = NewServiceBroker(
 				random_name.CATSRandomName("BROKER"),
 				assets.NewAssets().ServiceBroker,
-				context,
+				testSetup,
 			)
-			workflowhelpers.TargetSpace(context.RegularUserContext(), context.ShortTimeout())
+			testSetup.RegularUserContext().TargetSpace()
 			broker.Push(config)
 			broker.Configure()
 			broker.CreateSpaceScoped()
@@ -109,7 +109,7 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 		})
 
 		It("removes all instances and plans of the service, then removes the service offering", func() {
-			workflowhelpers.AsUser(context.RegularUserContext(), context.ShortTimeout(), func() {
+			workflowhelpers.AsUser(testSetup.RegularUserContext(), testSetup.ShortTimeout(), func() {
 				By("Having bound service instances")
 				createApp := cf.Cf("push", appName, "--no-start", "-b", config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)
 				Expect(createApp).To(Exit(0), "failed creating app")

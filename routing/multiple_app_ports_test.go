@@ -50,7 +50,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 		BeforeEach(func() {
 			UpdatePorts(app, []uint16{7777, 8888, 8080}, DEFAULT_TIMEOUT)
 			// create 2nd route
-			spacename := context.RegularUserContext().Space
+			spacename := testSetup.RegularUserContext().Space
 			secondRoute = fmt.Sprintf("%s-two", app)
 			CreateRoute(secondRoute, "", spacename, config.AppsDomain, DEFAULT_TIMEOUT)
 

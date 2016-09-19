@@ -38,7 +38,7 @@ var _ = AppsDescribe("Admin Buildpacks", func() {
 	AfterEach(func() {
 		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 		for _, name := range buildpackNames {
-			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				Expect(cf.Cf("delete-buildpack", name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 		}
@@ -56,7 +56,7 @@ var _ = AppsDescribe("Admin Buildpacks", func() {
 	}
 
 	setupBadDetectBuildpack := func(appConfig appConfig) {
-		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			buildpackName = CATSRandomName("BPK")
 			buildpackNames = append(buildpackNames, buildpackName)
 			appName = CATSRandomName("APP")
@@ -127,7 +127,7 @@ EOF
 	}
 
 	setupBadCompileBuildpack := func(appConfig appConfig) {
-		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			buildpackName = CATSRandomName("BPK")
 			buildpackNames = append(buildpackNames, buildpackName)
 			appName = CATSRandomName("APP")
@@ -193,7 +193,7 @@ EOF
 	}
 
 	setupBadReleaseBuildpack := func(appConfig appConfig) {
-		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			buildpackName = CATSRandomName("BPK")
 			buildpackNames = append(buildpackNames, buildpackName)
 			appName = CATSRandomName("APP")
@@ -271,7 +271,7 @@ exit 1
 	}
 
 	itDoesNotDetectWhenBuildpackDisabled := func() {
-		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("update-buildpack", buildpackName, "--disable").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 
@@ -284,7 +284,7 @@ exit 1
 	}
 
 	itDoesNotDetectWhenBuildpackDeleted := func() {
-		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 		Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))

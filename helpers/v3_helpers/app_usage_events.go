@@ -37,10 +37,10 @@ func UsageEventsInclude(events []AppUsageEvent, event AppUsageEvent) bool {
 	return found
 }
 
-func LastPageUsageEvents(context workflowhelpers.SuiteContext) []AppUsageEvent {
+func LastPageUsageEvents(testSetup *workflowhelpers.ReproducibleTestSuiteSetup) []AppUsageEvent {
 	var response AppUsageEvents
 
-	workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 		workflowhelpers.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1", &response, DEFAULT_TIMEOUT)
 	})
 

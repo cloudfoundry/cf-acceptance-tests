@@ -5,12 +5,13 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/cloudfoundry-incubator/cf-test-helpers/internal"
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/config"
 	"github.com/onsi/gomega/gexec"
 )
 
-func CfAuth(user string, password string, cmdStarter starter) *gexec.Session {
+func CfAuth(cmdStarter internal.Starter, user string, password string) *gexec.Session {
 	reporter := &sanitizedReporter{}
 	auth, err := cmdStarter.Start(reporter, "cf", "auth", user, password)
 	if err != nil {

@@ -58,7 +58,7 @@ exit 1
 
 	var fetchEnvironmentVariables = func(groupType string) map[string]string {
 		var session *Session
-		workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			session = cf.Cf("curl", fmt.Sprintf("/v2/config/environment_variable_groups/%s", groupType)).Wait(DEFAULT_TIMEOUT)
 			Expect(session).To(Exit(0))
 		})
@@ -107,7 +107,7 @@ exit 1
 		AfterEach(func() {
 			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 
-			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				revertExtendedEnv("staging", envVarName)
 				if buildpackName != "" {
 					Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
@@ -122,7 +122,7 @@ exit 1
 			buildpackZip := createBuildpack(envVarName)
 			envVarValue := fmt.Sprintf("staging_env_value_%s", strconv.Itoa(int(time.Now().UnixNano())))
 
-			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				extendEnv("staging", envVarName, envVarValue)
 				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
@@ -151,7 +151,7 @@ exit 1
 		AfterEach(func() {
 			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 
-			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				revertExtendedEnv("running", envVarName)
 			})
 
@@ -160,7 +160,7 @@ exit 1
 
 		It("Applies correct environment variables while running apps", func() {
 			envVarValue := fmt.Sprintf("running_env_value_%s", strconv.Itoa(int(time.Now().UnixNano())))
-			workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 				extendEnv("running", envVarName, envVarValue)
 			})
 

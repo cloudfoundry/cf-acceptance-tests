@@ -24,8 +24,8 @@ var (
 	LONG_CURL_TIMEOUT    = 2 * time.Minute
 	DEFAULT_MEMORY_LIMIT = "256M"
 
-	context workflowhelpers.SuiteContext
-	config  cf_config.Config
+	testSetup *workflowhelpers.ReproducibleTestSuiteSetup
+	config    cf_config.Config
 
 	scpPath  string
 	sftpPath string
@@ -48,8 +48,7 @@ func TestApplications(t *testing.T) {
 		LONG_CURL_TIMEOUT = config.LongCurlTimeout * time.Second
 	}
 
-	context = workflowhelpers.NewContext(config)
-	environment := workflowhelpers.NewEnvironment(context)
+	testSetup = workflowhelpers.NewTestSuiteSetup(config)
 
 	type sshPaths struct {
 		SCP  string `json:"scp"`
@@ -78,11 +77,11 @@ func TestApplications(t *testing.T) {
 		scpPath = sshPaths.SCP
 		sftpPath = sshPaths.SFTP
 
-		environment.Setup()
+		testSetup.Setup()
 	})
 
 	AfterSuite(func() {
-		environment.Teardown()
+		testSetup.Teardown()
 	})
 
 	componentName := "SSH"

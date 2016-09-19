@@ -1,4 +1,4 @@
-package commandstarter
+package commandreporter
 
 import (
 	"fmt"
@@ -13,15 +13,11 @@ import (
 
 const timeFormat = "2006-01-02 15:04:05.00 (MST)"
 
-type Reporter interface {
-	Report(time.Time, *exec.Cmd)
-}
-
-type DefaultReporter struct {
+type CommandReporter struct {
 	Writer io.Writer
 }
 
-func NewDefaultReporter(writers ...io.Writer) *DefaultReporter {
+func NewCommandReporter(writers ...io.Writer) *CommandReporter {
 	var writer io.Writer
 	switch len(writers) {
 	case 0:
@@ -29,15 +25,15 @@ func NewDefaultReporter(writers ...io.Writer) *DefaultReporter {
 	case 1:
 		writer = writers[0]
 	default:
-		panic("NewDefaultReporter should only take one writer")
+		panic("NewCommandReporter should only take one writer")
 	}
 
-	return &DefaultReporter{
+	return &CommandReporter{
 		Writer: writer,
 	}
 }
 
-func (r *DefaultReporter) Report(startTime time.Time, cmd *exec.Cmd) {
+func (r *CommandReporter) Report(startTime time.Time, cmd *exec.Cmd) {
 	startColor := ""
 	endColor := ""
 	if !config.DefaultReporterConfig.NoColor {

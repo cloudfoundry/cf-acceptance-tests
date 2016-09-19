@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	context workflowhelpers.SuiteContext
-	config  cats_config.Config
+	testSetup *workflowhelpers.ReproducibleTestSuiteSetup
+	config    cats_config.Config
 )
 
 func TestApplications(t *testing.T) {
@@ -40,15 +40,14 @@ func TestApplications(t *testing.T) {
 		ASYNC_SERVICE_OPERATION_TIMEOUT = config.AsyncServiceOperationTimeout * time.Second
 	}
 
-	context = workflowhelpers.NewContext(config)
-	environment := workflowhelpers.NewEnvironment(context)
+	testSetup = workflowhelpers.NewTestSuiteSetup(config)
 
 	BeforeSuite(func() {
-		environment.Setup()
+		testSetup.Setup()
 	})
 
 	AfterSuite(func() {
-		environment.Teardown()
+		testSetup.Teardown()
 	})
 
 	componentName := "Services"

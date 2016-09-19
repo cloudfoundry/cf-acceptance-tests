@@ -15,7 +15,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 )
 
-var context workflowhelpers.SuiteContext
+var testSetup *workflowhelpers.ReproducibleTestSuiteSetup
 var config cf_config.Config
 
 func TestApplications(t *testing.T) {
@@ -39,15 +39,14 @@ func TestApplications(t *testing.T) {
 		LONG_CURL_TIMEOUT = config.LongCurlTimeout * time.Second
 	}
 
-	context = workflowhelpers.NewContext(config)
-	environment := workflowhelpers.NewEnvironment(context)
+	testSetup = workflowhelpers.NewTestSuiteSetup(config)
 
 	BeforeSuite(func() {
-		environment.Setup()
+		testSetup.Setup()
 	})
 
 	AfterSuite(func() {
-		environment.Teardown()
+		testSetup.Teardown()
 	})
 
 	componentName := "V3"

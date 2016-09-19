@@ -33,7 +33,7 @@ type AppUsageEvents struct {
 
 func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
 	var response AppUsageEvents
-	workflowhelpers.AsUser(context.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 		workflowhelpers.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1&results-per-page=150", &response, DEFAULT_TIMEOUT)
 	})
 

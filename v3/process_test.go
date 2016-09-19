@@ -31,7 +31,7 @@ var _ = V3Describe("process", func() {
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
-		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
+		spaceGuid = GetSpaceGuidFromName(testSetup.RegularUserContext().Space)
 		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()
@@ -61,7 +61,7 @@ var _ = V3Describe("process", func() {
 			processes := GetProcesses(appGuid, appName)
 			webProcess = GetProcessByType(processes, "web")
 
-			CreateAndMapRoute(appGuid, context.RegularUserContext().Space, config.AppsDomain, webProcess.Name)
+			CreateAndMapRoute(appGuid, testSetup.RegularUserContext().Space, config.AppsDomain, webProcess.Name)
 
 			StartApp(appGuid)
 

@@ -27,18 +27,17 @@ import (
 
 var _ = AppsDescribe("An application that's already been pushed", func() {
 	var appName string
-	var environment *workflowhelpers.Environment
+	var persistentTestSetup *workflowhelpers.ReproducibleTestSuiteSetup
 
 	BeforeEach(func() {
-		persistentContext := workflowhelpers.NewPersistentAppContext(config)
-		environment = workflowhelpers.NewEnvironment(persistentContext)
-		environment.Setup()
+		persistentTestSetup = workflowhelpers.NewPersistentAppTestSuiteSetup(config)
+		persistentTestSetup.Setup()
 	})
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 
-		environment.Teardown()
+		persistentTestSetup.Teardown()
 	})
 
 	BeforeEach(func() {

@@ -42,7 +42,7 @@ var _ = V3Describe("v3 tasks", func() {
 			Skip(skip_messages.SkipTasksMessage)
 		}
 		appName = random_name.CATSRandomName("APP")
-		spaceGuid = GetSpaceGuidFromName(context.RegularUserContext().Space)
+		spaceGuid = GetSpaceGuidFromName(testSetup.RegularUserContext().Space)
 		appCreationEnvironmentVariables = `"foo"=>"bar"`
 		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
 		packageGuid = CreatePackage(appGuid)
@@ -74,7 +74,7 @@ var _ = V3Describe("v3 tasks", func() {
 			Expect(createOutput.State).To(Equal("RUNNING"))
 
 			By("TASK_STARTED AppUsageEvent")
-			usageEvents := LastPageUsageEvents(context)
+			usageEvents := LastPageUsageEvents(testSetup)
 			start_event := AppUsageEvent{Entity{State: "TASK_STARTED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: createOutput.Guid}}
 			Expect(UsageEventsInclude(usageEvents, start_event)).To(BeTrue())
 
@@ -89,7 +89,7 @@ var _ = V3Describe("v3 tasks", func() {
 			}, DEFAULT_TIMEOUT).Should(Equal("SUCCEEDED"))
 
 			By("TASK_STOPPED AppUsageEvent")
-			usageEvents = LastPageUsageEvents(context)
+			usageEvents = LastPageUsageEvents(testSetup)
 			stop_event := AppUsageEvent{Entity{State: "TASK_STOPPED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: createOutput.Guid}}
 			Expect(UsageEventsInclude(usageEvents, stop_event)).To(BeTrue())
 		})
