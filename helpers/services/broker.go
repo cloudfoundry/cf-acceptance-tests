@@ -15,6 +15,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 
+	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -28,7 +29,7 @@ type Plan struct {
 type ServiceBroker struct {
 	Name      string
 	Path      string
-	testSetup *workflowhelpers.ReproducibleTestSuiteSetup
+	TestSetup *workflowhelpers.ReproducibleTestSuiteSetup
 	Service   struct {
 		Name            string `json:"name"`
 		ID              string `json:"id"`
@@ -82,7 +83,7 @@ type SpaceJson struct {
 	}
 }
 
-func NewServiceBroker(name string, path string, testSetup *workflowhelpers.ReproducibleTestSuiteSetup) ServiceBroker {
+func NewServiceBroker(name string, path string, TestSetup *workflowhelpers.ReproducibleTestSuiteSetup) ServiceBroker {
 	b := ServiceBroker{}
 	b.Path = path
 	b.Name = name
@@ -99,7 +100,7 @@ func NewServiceBroker(name string, path string, testSetup *workflowhelpers.Repro
 	b.Service.DashboardClient.ID = random_name.CATSRandomName("DASHBOARD-ID")
 	b.Service.DashboardClient.Secret = random_name.CATSRandomName("DASHBOARD-SECRET")
 	b.Service.DashboardClient.RedirectUri = random_name.CATSRandomName("DASHBOARD-URI")
-	b.testSetup = testSetup
+	b.TestSetup = TestSetup
 	return b
 }
 
@@ -125,27 +126,27 @@ func (b ServiceBroker) Restart() {
 }
 
 func (b ServiceBroker) Create() {
-	workflowhelpers.AsUser(b.testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(b.TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 		Expect(cf.Cf("create-service-broker", b.Name, "username", "password", helpers.AppUri(b.Name, "")).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		Expect(cf.Cf("service-brokers").Wait(DEFAULT_TIMEOUT)).To(Say(b.Name))
 	})
 }
 
 func (b ServiceBroker) CreateSpaceScoped() {
-	workflowhelpers.AsUser(b.testSetup.RegularUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(b.TestSetup.RegularUserContext(), DEFAULT_TIMEOUT, func() {
 		Expect(cf.Cf("create-service-broker", b.Name, "username", "password", helpers.AppUri(b.Name, ""), "--space-scoped").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		Expect(cf.Cf("service-brokers").Wait(DEFAULT_TIMEOUT)).To(Say(b.Name))
 	})
 }
 
 func (b ServiceBroker) Update() {
-	workflowhelpers.AsUser(b.testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(b.TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 		Expect(cf.Cf("update-service-broker", b.Name, "username", "password", helpers.AppUri(b.Name, "")).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 }
 
 func (b ServiceBroker) Delete() {
-	workflowhelpers.AsUser(b.testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(b.TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 		Expect(cf.Cf("delete-service-broker", b.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 
 		brokers := cf.Cf("service-brokers").Wait(DEFAULT_TIMEOUT)
@@ -155,7 +156,7 @@ func (b ServiceBroker) Delete() {
 }
 
 func (b ServiceBroker) Destroy() {
-	workflowhelpers.AsUser(b.testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(b.TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 		Expect(cf.Cf("purge-service-offering", b.Service.Name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 	b.Delete()
@@ -188,7 +189,7 @@ func (b ServiceBroker) ToJSON() string {
 func (b ServiceBroker) PublicizePlans() {
 	url := fmt.Sprintf("/v2/services?inline-relations-depth=1&q=label:%s", b.Service.Name)
 	var session *Session
-	workflowhelpers.AsUser(b.testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(b.TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 		session = cf.Cf("curl", url).Wait(DEFAULT_TIMEOUT)
 		Expect(session).To(Exit(0))
 	})
@@ -219,7 +220,7 @@ func (b ServiceBroker) PublicizePlan(url string) {
 	jsonMap := make(map[string]bool)
 	jsonMap["public"] = true
 	planJson, _ := json.Marshal(jsonMap)
-	workflowhelpers.AsUser(b.testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(b.TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 		Expect(cf.Cf("curl", url, "-X", "PUT", "-d", string(planJson)).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 	})
 }
@@ -235,7 +236,7 @@ func (b ServiceBroker) CreateServiceInstance(instanceName string) string {
 }
 
 func (b ServiceBroker) GetSpaceGuid() string {
-	url := fmt.Sprintf("/v2/spaces?q=name%%3A%s", b.testSetup.RegularUserContext().Space)
+	url := fmt.Sprintf("/v2/spaces?q=name%%3A%s", b.TestSetup.RegularUserContext().Space)
 	jsonResults := SpaceJson{}
 	curl := cf.Cf("curl", url).Wait(DEFAULT_TIMEOUT)
 	Expect(curl).To(Exit(0))

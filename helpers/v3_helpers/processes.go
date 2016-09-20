@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 )
 
 type ProcessList struct {
