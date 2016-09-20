@@ -17,7 +17,7 @@ import (
 var _ = ServicesDescribe("Recursive Delete", func() {
 	var broker ServiceBroker
 	var orgName string
-	var quotaName string
+	var quotaName, spaceName, appName, instanceName string
 
 	BeforeEach(func() {
 		broker = NewServiceBroker(
@@ -32,9 +32,9 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 
 		orgName = random_name.CATSRandomName("ORG")
 		quotaName = random_name.CATSRandomName("QUOTA")
-		spaceName := random_name.CATSRandomName("SPACE")
-		appName := random_name.CATSRandomName("APP")
-		instanceName := random_name.CATSRandomName("SVCINS")
+		spaceName = random_name.CATSRandomName("SPACE")
+		appName = random_name.CATSRandomName("APP")
+		instanceName = random_name.CATSRandomName("SVCINS")
 
 		workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
 			createQuota := cf.Cf("create-quota", quotaName, "-m", "10G", "-r", "1000", "-s", "5").Wait(testSetup.ShortTimeout())
@@ -67,8 +67,17 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 
 		broker.Destroy()
 		workflowhelpers.AsUser(testSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			deleteQuota := cf.Cf("delete-quota", "-f", quotaName).Wait(testSetup.ShortTimeout())
-			Expect(deleteQuota).To(Exit(0))
+			targetOrg := cf.Cf("target", "-o", orgName).Wait(DEFAULT_TIMEOUT)
+			if targetOrg.ExitCode() == 0 {
+				targetSpace := cf.Cf("target", "-s", spaceName).Wait(DEFAULT_TIMEOUT)
+				if targetSpace.ExitCode() == 0 {
+					Expect(cf.Cf("delete", appName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+					Expect(cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+					Expect(cf.Cf("delete-space", spaceName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				}
+				Expect(cf.Cf("delete-quota", "-f", quotaName).Wait(testSetup.ShortTimeout())).To(Exit(0))
+				Expect(cf.Cf("delete-org", orgName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			}
 		})
 	})
 

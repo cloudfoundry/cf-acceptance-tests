@@ -44,6 +44,7 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 		AfterEach(func() {
 			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 
 		It("removes all instances and plans of the service, then removes the service offering", func() {
@@ -106,6 +107,7 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 		AfterEach(func() {
 			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		})
 
 		It("removes all instances and plans of the service, then removes the service offering", func() {

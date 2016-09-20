@@ -1,8 +1,10 @@
 package services_test
 
 import (
+	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
@@ -50,11 +52,20 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 	})
 
 	Context("When a service broker is created with a dashboard client", func() {
+		var instanceName string
+
+		BeforeEach(func() {
+			instanceName = random_name.CATSRandomName("SVC")
+		})
+
+		AfterEach(func() {
+			Expect(cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)).To(gexec.Exit(0))
+		})
 
 		It("can perform an operation on a user's behalf using sso", func() {
 			//create a service instance
 			broker.PublicizePlans()
-			serviceInstanceGuid := broker.CreateServiceInstance(random_name.CATSRandomName("SVC"))
+			serviceInstanceGuid := broker.CreateServiceInstance(instanceName)
 
 			// perform the OAuth lifecycle to obtain an access token
 			userSessionCookie := AuthenticateUser(oauthConfig.AuthorizationEndpoint, testSetup.RegularUserContext().Username, testSetup.RegularUserContext().Password)
@@ -74,6 +85,16 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 	})
 
 	Context("When a service broker is updated with a new dashboard client", func() {
+		var instanceName string
+
+		BeforeEach(func() {
+			instanceName = random_name.CATSRandomName("SVC")
+		})
+
+		AfterEach(func() {
+			Expect(cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)).To(gexec.Exit(0))
+		})
+
 		It("can perform an operation on a user's behalf using sso", func() {
 			oauthConfig.ClientId = random_name.CATSRandomName("CLIENT-ID")
 			broker.Service.DashboardClient.ID = oauthConfig.ClientId
@@ -83,7 +104,7 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 
 			//create a service instance
 			broker.PublicizePlans()
-			serviceInstanceGuid := broker.CreateServiceInstance(random_name.CATSRandomName("SVC"))
+			serviceInstanceGuid := broker.CreateServiceInstance(instanceName)
 
 			// perform the OAuth lifecycle to obtain an access token
 			userSessionCookie := AuthenticateUser(oauthConfig.AuthorizationEndpoint, testSetup.RegularUserContext().Username, testSetup.RegularUserContext().Password)

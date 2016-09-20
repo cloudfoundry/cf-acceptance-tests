@@ -75,12 +75,19 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 		})
 
 		Context("just service instances", func() {
+			var instanceName string
+			AfterEach(func() {
+				if instanceName != "" {
+					Expect(cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				}
+			})
+
 			It("can create a service instance", func() {
 				tags := "['tag1', 'tag2']"
 				type Params struct{ Param1 string }
 				params, _ := json.Marshal(Params{Param1: "value"})
 
-				instanceName := random_name.CATSRandomName("SVCINS")
+				instanceName = random_name.CATSRandomName("SVCINS")
 				createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName, "-c", string(params), "-t", tags).Wait(DEFAULT_TIMEOUT)
 				Expect(createService).To(Exit(0))
 
@@ -92,7 +99,6 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 			})
 
 			Context("when there is an existing service instance", func() {
-				var instanceName string
 				BeforeEach(func() {
 					instanceName = random_name.CATSRandomName("SVCINS")
 					createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
@@ -123,6 +129,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 						serviceInfo = cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
 						Expect(serviceInfo).To(Exit(1))
 					})
+
 					It("can update a service plan", func() {
 						updateService := cf.Cf("update-service", instanceName, "-p", broker.SyncPlans[1].Name).Wait(DEFAULT_TIMEOUT)
 						Expect(updateService).To(Exit(0))
@@ -130,6 +137,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 						serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
 						Expect(serviceInfo).To(Say(fmt.Sprintf("Plan: %s", broker.SyncPlans[1].Name)))
 					})
+
 					It("can update service tags", func() {
 						updateService := cf.Cf("update-service", instanceName, "-t", tags).Wait(DEFAULT_TIMEOUT)
 						Expect(updateService).To(Exit(0))
@@ -145,6 +153,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 						Expect(updateService).To(Exit(0), "Failed updating service")
 						//Note: We don't necessarily get these back through a service instance lookup
 					})
+
 					It("can update all available parameters at once", func() {
 						updateService := cf.Cf(
 							"update-service", instanceName,
@@ -161,11 +170,17 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					})
 
 				})
+
 				Describe("service keys", func() {
 					var keyName string
 					BeforeEach(func() {
 						keyName = random_name.CATSRandomName("SVC-KEY")
 					})
+
+					AfterEach(func() {
+						Expect(cf.Cf("delete-service-key", instanceName, keyName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+					})
+
 					It("can create service keys", func() {
 						createKey := cf.Cf("create-service-key", instanceName, keyName).Wait(DEFAULT_TIMEOUT)
 						Expect(createKey).To(Exit(0), "failed to create key")
@@ -226,6 +241,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 			AfterEach(func() {
 				app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
 				Expect(cf.Cf("delete", appName, "-f", "-r").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+				Expect(cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			})
 
 			Describe("bindings", func() {
@@ -273,6 +289,8 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 	})
 
 	Context("Asynchronous operations", func() {
+		var instanceName string
+
 		BeforeEach(func() {
 			broker = NewServiceBroker(
 				random_name.CATSRandomName("BROKER"),
@@ -287,6 +305,10 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 		AfterEach(func() {
 			app_helpers.AppReport(broker.Name, DEFAULT_TIMEOUT)
+
+			Expect(cf.Cf("delete-service", instanceName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			waitForAsyncDeletionToComplete(broker, instanceName)
+
 			broker.Destroy()
 		})
 
@@ -295,7 +317,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 			type Params struct{ Param1 string }
 			params, _ := json.Marshal(Params{Param1: "value"})
 
-			instanceName := random_name.CATSRandomName("SVCINS")
+			instanceName = random_name.CATSRandomName("SVCINS")
 			createService := cf.Cf("create-service", broker.Service.Name, broker.AsyncPlans[0].Name, instanceName, "-t", tags, "-c", string(params)).Wait(DEFAULT_TIMEOUT)
 			Expect(createService).To(Exit(0))
 			Expect(createService).To(Say("Create in progress."))
@@ -317,7 +339,6 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 			type Params struct{ Param1 string }
 			params, _ := json.Marshal(Params{Param1: "value"})
 
-			var instanceName string
 			BeforeEach(func() {
 				instanceName = random_name.CATSRandomName("SVC")
 				createService := cf.Cf("create-service", broker.Service.Name, broker.AsyncPlans[0].Name, instanceName).Wait(DEFAULT_TIMEOUT)
@@ -422,6 +443,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 						bindService := cf.Cf("bind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
 						Expect(bindService).To(Exit(0), "failed binding app to service")
 					})
+
 					It("can unbind a service instance", func() {
 						unbindService := cf.Cf("unbind-service", appName, instanceName).Wait(DEFAULT_TIMEOUT)
 						Expect(unbindService).To(Exit(0), "failed unbinding app to service")
