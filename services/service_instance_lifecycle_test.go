@@ -286,6 +286,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 		})
 
 		AfterEach(func() {
+			app_helpers.AppReport(broker.Name, DEFAULT_TIMEOUT)
 			broker.Destroy()
 		})
 
@@ -302,12 +303,13 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 			waitForAsyncOperationToComplete(broker, instanceName)
 
 			os.Setenv("CF_TRACE", "true")
+			defer os.Setenv("CF_TRACE", "false")
+
 			serviceInfo := cf.Cf("service", instanceName).Wait(DEFAULT_TIMEOUT)
 			Expect(serviceInfo).To(Say(fmt.Sprintf("Plan: %s", broker.AsyncPlans[0].Name)))
 			Expect(serviceInfo).To(Say("Status: create succeeded"))
 			Expect(serviceInfo).To(Say("Message: 100 percent done"))
 			Expect(serviceInfo.Out.Contents()).To(MatchRegexp(`"tags":\s*\[\n.*tag1.*\n.*tag2.*\n.*\]`))
-			os.Setenv("CF_TRACE", "false")
 		})
 
 		Context("when there is an existing service instance", func() {
