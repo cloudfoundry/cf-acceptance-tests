@@ -87,29 +87,26 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 	// The test takes advantage of the fact that the execution vm's ip address and internal container ip address
 	//   are discoverable via the cc api and dora's myip endpoint.
 	It("allows previously-blocked ip traffic after applying a security group, and re-blocks it when the group is removed", func() {
-
 		clientAppName := random_name.CATSRandomName("APP")
 		Expect(cf.Cf("push", clientAppName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		app_helpers.SetBackend(clientAppName)
 		Expect(cf.Cf("start", clientAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
 		defer func() { cf.Cf("delete", clientAppName, "-f", "-r").Wait(CF_PUSH_TIMEOUT) }()
 
-		By("Gathering container ip")
 		curlResponse := helpers.CurlApp(serverAppName, "/myip")
 		containerIp := strings.TrimSpace(curlResponse)
 
-		By("Gathering container port")
 		curlResponse = helpers.CurlApp(serverAppName, "/env/VCAP_APPLICATION")
 		var env map[string]interface{}
 		err := json.Unmarshal([]byte(curlResponse), &env)
 		Expect(err).NotTo(HaveOccurred())
 		containerPort := int(env["port"].(float64))
 
-		By("Testing app egress rules")
+		By("Asserting default running security-group configuration")
 		var doraCurlResponse DoraCurlResponse
 		curlResponse = helpers.CurlApp(clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort))
 		json.Unmarshal([]byte(curlResponse), &doraCurlResponse)
-		Expect(doraCurlResponse.ReturnCode).ToNot(Equal(0))
+		Expect(doraCurlResponse.ReturnCode).ToNot(Equal(0), "Expected running security groups not to allow internal communication between app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
 
 		By("Applying security group")
 		rules := fmt.Sprintf(
@@ -177,6 +174,14 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 		app_helpers.SetBackend(testAppName)
 		defer func() { cf.Cf("delete", testAppName, "-f", "-r").Wait(CF_PUSH_TIMEOUT) }()
 
+		Expect(cf.Cf("set-env", testAppName, "TESTURI", privateUri).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("restart", testAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(1))
+		Eventually(func() *Session {
+			appLogsSession := cf.Cf("logs", "--recent", testAppName)
+			Expect(appLogsSession.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			return appLogsSession
+		}, 5).Should(Say("CURL_EXIT=[^0]"), "Expected staging security groups not to allow internal communication between app containers. Configure your staging security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
+
 		Expect(cf.Cf("set-env", testAppName, "TESTURI", "www.google.com").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 		Expect(cf.Cf("start", testAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(1))
 		Eventually(func() *Session {
@@ -184,13 +189,5 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 			Expect(appLogsSession.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
 			return appLogsSession
 		}, 5).Should(Say("CURL_EXIT=0"))
-
-		Expect(cf.Cf("set-env", testAppName, "TESTURI", privateUri).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-		Expect(cf.Cf("restart", testAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(1))
-		Eventually(func() *Session {
-			appLogsSession := cf.Cf("logs", "--recent", testAppName)
-			Expect(appLogsSession.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-			return appLogsSession
-		}, 5).Should(Say("CURL_EXIT=[^0]"))
 	})
 })
