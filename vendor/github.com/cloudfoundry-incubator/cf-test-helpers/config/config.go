@@ -34,13 +34,13 @@ type Config struct {
 
 	ArtifactsDirectory string `json:"artifacts_directory"`
 
-	DefaultTimeout               time.Duration `json:"default_timeout"`
-	SleepTimeout                 time.Duration `json:"sleep_timeout"`
-	DetectTimeout                time.Duration `json:"detect_timeout"`
-	CfPushTimeout                time.Duration `json:"cf_push_timeout"`
-	LongCurlTimeout              time.Duration `json:"long_curl_timeout"`
-	BrokerStartTimeout           time.Duration `json:"broker_start_timeout"`
-	AsyncServiceOperationTimeout time.Duration `json:"async_service_operation_timeout"`
+	DefaultTimeout               int `json:"default_timeout"`
+	SleepTimeout                 int `json:"sleep_timeout"`
+	DetectTimeout                int `json:"detect_timeout"`
+	CfPushTimeout                int `json:"cf_push_timeout"`
+	LongCurlTimeout              int `json:"long_curl_timeout"`
+	BrokerStartTimeout           int `json:"broker_start_timeout"`
+	AsyncServiceOperationTimeout int `json:"async_service_operation_timeout"`
 
 	TimeoutScale float64 `json:"timeout_scale"`
 
@@ -107,6 +107,14 @@ var defaults = Config{
 	IncludeServices:            true,
 	IncludeSsh:                 true,
 	IncludeV3:                  true,
+
+	DefaultTimeout:               30,
+	CfPushTimeout:                2,
+	LongCurlTimeout:              2,
+	BrokerStartTimeout:           5,
+	AsyncServiceOperationTimeout: 2,
+	DetectTimeout:                5,
+	SleepTimeout:                 30,
 
 	ArtifactsDirectory: filepath.Join("..", "results"),
 
@@ -193,4 +201,31 @@ func ConfigPath() string {
 	}
 
 	return path
+}
+
+func (c *Config) DefaultTimeoutDuration() time.Duration {
+	return time.Duration(c.DefaultTimeout) * time.Second
+}
+func (c *Config) SleepTimeoutDuration() time.Duration {
+	return time.Duration(c.SleepTimeout) * time.Second
+}
+
+func (c *Config) DetectTimeoutDuration() time.Duration {
+	return time.Duration(c.DetectTimeout) * time.Minute
+}
+
+func (c *Config) CfPushTimeoutDuration() time.Duration {
+	return time.Duration(c.CfPushTimeout) * time.Minute
+}
+
+func (c *Config) LongCurlTimeoutDuration() time.Duration {
+	return time.Duration(c.LongCurlTimeout) * time.Minute
+}
+
+func (c *Config) BrokerStartTimeoutDuration() time.Duration {
+	return time.Duration(c.BrokerStartTimeout) * time.Minute
+}
+
+func (c *Config) AsyncServiceOperationTimeoutDuration() time.Duration {
+	return time.Duration(c.AsyncServiceOperationTimeout) * time.Minute
 }

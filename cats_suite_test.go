@@ -3,7 +3,6 @@ package cats_test
 import (
 	"os/exec"
 	"testing"
-	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
@@ -34,25 +33,11 @@ func TestCATS(t *testing.T) {
 
 	Config = config.LoadConfig()
 
-	if Config.DefaultTimeout > 0 {
-		DEFAULT_TIMEOUT = Config.DefaultTimeout * time.Second
-	}
-
-	if Config.SleepTimeout > 0 {
-		SLEEP_TIMEOUT = Config.SleepTimeout * time.Second
-	}
-
-	if Config.CfPushTimeout > 0 {
-		CF_PUSH_TIMEOUT = Config.CfPushTimeout * time.Second
-	}
-
-	if Config.LongCurlTimeout > 0 {
-		LONG_CURL_TIMEOUT = Config.LongCurlTimeout * time.Second
-	}
-
-	if Config.DetectTimeout > 0 {
-		DETECT_TIMEOUT = Config.DetectTimeout * time.Second
-	}
+	DEFAULT_TIMEOUT = Config.DefaultTimeoutDuration()
+	SLEEP_TIMEOUT = Config.SleepTimeoutDuration()
+	CF_PUSH_TIMEOUT = Config.CfPushTimeoutDuration()
+	LONG_CURL_TIMEOUT = Config.LongCurlTimeoutDuration()
+	DETECT_TIMEOUT = Config.DetectTimeoutDuration()
 
 	TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
 
