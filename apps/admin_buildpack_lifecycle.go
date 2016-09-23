@@ -38,14 +38,14 @@ var _ = AppsDescribe("Admin Buildpacks", func() {
 	}
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
 		for _, name := range buildpackNames {
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-				Expect(cf.Cf("delete-buildpack", name, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				Expect(cf.Cf("delete-buildpack", name, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			})
 		}
 		for _, name := range appNames {
-			command := cf.Cf("delete", name, "-f", "-r").Wait(DEFAULT_TIMEOUT)
+			command := cf.Cf("delete", name, "-f", "-r").Wait(Config.DefaultTimeoutDuration())
 			Expect(command).To(Exit(0))
 			Expect(command).To(Say(fmt.Sprintf("Deleting app %s", name)))
 		}
@@ -58,7 +58,7 @@ var _ = AppsDescribe("Admin Buildpacks", func() {
 	}
 
 	setupBadDetectBuildpack := func(appConfig appConfig) {
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 			buildpackName = CATSRandomName("BPK")
 			buildpackNames = append(buildpackNames, buildpackName)
 			appName = CATSRandomName("APP")
@@ -119,7 +119,7 @@ EOF
 			_, err = os.Create(path.Join(appPath, "some-file"))
 			Expect(err).ToNot(HaveOccurred())
 
-			createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "0").Wait(DEFAULT_TIMEOUT)
+			createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "0").Wait(Config.DefaultTimeoutDuration())
 			Expect(createBuildpack).Should(Exit(0))
 			Expect(createBuildpack).Should(Say("Creating"))
 			Expect(createBuildpack).Should(Say("OK"))
@@ -129,7 +129,7 @@ EOF
 	}
 
 	setupBadCompileBuildpack := func(appConfig appConfig) {
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 			buildpackName = CATSRandomName("BPK")
 			buildpackNames = append(buildpackNames, buildpackName)
 			appName = CATSRandomName("APP")
@@ -185,7 +185,7 @@ EOF
 			_, err = os.Create(path.Join(appPath, "some-file"))
 			Expect(err).ToNot(HaveOccurred())
 
-			createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "0").Wait(DEFAULT_TIMEOUT)
+			createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "0").Wait(Config.DefaultTimeoutDuration())
 			Expect(createBuildpack).Should(Exit(0))
 			Expect(createBuildpack).Should(Say("Creating"))
 			Expect(createBuildpack).Should(Say("OK"))
@@ -195,7 +195,7 @@ EOF
 	}
 
 	setupBadReleaseBuildpack := func(appConfig appConfig) {
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 			buildpackName = CATSRandomName("BPK")
 			buildpackNames = append(buildpackNames, buildpackName)
 			appName = CATSRandomName("APP")
@@ -244,7 +244,7 @@ exit 1
 			_, err = os.Create(path.Join(appPath, "some-file"))
 			Expect(err).ToNot(HaveOccurred())
 
-			createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "0").Wait(DEFAULT_TIMEOUT)
+			createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "0").Wait(Config.DefaultTimeoutDuration())
 			Expect(createBuildpack).Should(Exit(0))
 			Expect(createBuildpack).Should(Say("Creating"))
 			Expect(createBuildpack).Should(Say("OK"))
@@ -254,45 +254,45 @@ exit 1
 	}
 
 	itIsUsedForTheApp := func() {
-		Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
 
-		start := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)
+		start := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
 		Expect(start).To(Exit(0))
-		appOutput := cf.Cf("app", appName).Wait(DEFAULT_TIMEOUT)
+		appOutput := cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
 		Expect(appOutput).To(Say("buildpack: Simple"))
 	}
 
 	itDoesNotDetectForEmptyApp := func() {
-		Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
 
-		start := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)
+		start := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
 		Expect(start).To(Exit(1))
 		Expect(start).To(Say("NoAppDetectedError"))
 	}
 
 	itDoesNotDetectWhenBuildpackDisabled := func() {
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			Expect(cf.Cf("update-buildpack", buildpackName, "--disable").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			Expect(cf.Cf("update-buildpack", buildpackName, "--disable").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		})
 
-		Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
 
-		start := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)
+		start := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
 		Expect(start).To(Exit(1))
 		Expect(start).To(Say("NoAppDetectedError"))
 	}
 
 	itDoesNotDetectWhenBuildpackDeleted := func() {
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		})
-		Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
 
-		start := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)
+		start := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
 		Expect(start).To(Exit(1))
 		Expect(start).To(Say("NoAppDetectedError"))
 	}
@@ -304,19 +304,19 @@ exit 1
 			"-b", buildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", appPath,
-			"-d", Config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			"-d", Config.AppsDomain).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
 
-		start := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)
+		start := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
 		Expect(start).To(Exit(1))
 		Expect(start).To(Say("BuildpackCompileFailed"))
 	}
 
 	itRaisesBuildpackReleaseFailedError := func() {
-		Expect(cf.Cf("push", appName, "--no-start", "-b", buildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", appName, "--no-start", "-b", buildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
 
-		start := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)
+		start := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
 		Expect(start).To(Exit(1))
 		Expect(start).To(Say("BuildpackReleaseFailed"))
 	}

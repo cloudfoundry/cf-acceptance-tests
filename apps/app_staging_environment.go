@@ -37,7 +37,7 @@ var _ = AppsDescribe("Buildpack Environment", func() {
 	}
 
 	BeforeEach(func() {
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 			BuildpackName = CATSRandomName("BPK")
 			appName = CATSRandomName("APP")
 
@@ -98,7 +98,7 @@ EOF
 			_, err = os.Create(path.Join(appPath, "some-file"))
 			Expect(err).ToNot(HaveOccurred())
 
-			createBuildpack := cf.Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0").Wait(DEFAULT_TIMEOUT)
+			createBuildpack := cf.Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0").Wait(Config.DefaultTimeoutDuration())
 			Expect(createBuildpack).Should(Exit(0))
 			Expect(createBuildpack).Should(Say("Creating"))
 			Expect(createBuildpack).Should(Say("OK"))
@@ -108,12 +108,12 @@ EOF
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			Expect(cf.Cf("delete-buildpack", BuildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			Expect(cf.Cf("delete-buildpack", BuildpackName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		})
 
 		os.RemoveAll(tmpdir)
@@ -126,10 +126,10 @@ EOF
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", appPath,
 			"-d", Config.AppsDomain,
-		).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
 
-		start := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)
+		start := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
 		Expect(start).To(Exit(0))
 		Expect(start).To(Say("RUBY_LOCATION=/usr/bin/ruby"))
 	})

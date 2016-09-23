@@ -28,14 +28,14 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 		app = random_name.CATSRandomName("APP")
 		cmd := fmt.Sprintf("lattice-app --ports=7777,8888,8080")
 
-		PushAppNoStart(app, latticeAppAsset, Config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT, DEFAULT_MEMORY_LIMIT, "-c", cmd)
-		EnableDiego(app, DEFAULT_TIMEOUT)
+		PushAppNoStart(app, latticeAppAsset, Config.GoBuildpackName, Config.AppsDomain, Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT, "-c", cmd)
+		EnableDiego(app, Config.DefaultTimeoutDuration())
 		StartApp(app, APP_START_TIMEOUT)
 	})
 
 	AfterEach(func() {
-		AppReport(app, DEFAULT_TIMEOUT)
-		DeleteApp(app, DEFAULT_TIMEOUT)
+		AppReport(app, Config.DefaultTimeoutDuration())
+		DeleteApp(app, Config.DefaultTimeoutDuration())
 	})
 
 	Context("when app only has single route", func() {
@@ -43,35 +43,35 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 			It("should listen on the default app port", func() {
 				Eventually(func() string {
 					return helpers.CurlApp(app, "/port")
-				}, DEFAULT_TIMEOUT, "5s").Should(ContainSubstring("8080"))
+				}, Config.DefaultTimeoutDuration(), "5s").Should(ContainSubstring("8080"))
 			})
 		})
 	})
 
 	Context("when app has multiple ports mapped", func() {
 		BeforeEach(func() {
-			UpdatePorts(app, []uint16{7777, 8888, 8080}, DEFAULT_TIMEOUT)
+			UpdatePorts(app, []uint16{7777, 8888, 8080}, Config.DefaultTimeoutDuration())
 			// create 2nd route
 			spacename := TestSetup.RegularUserContext().Space
 			secondRoute = fmt.Sprintf("%s-two", app)
-			CreateRoute(secondRoute, "", spacename, Config.AppsDomain, DEFAULT_TIMEOUT)
+			CreateRoute(secondRoute, "", spacename, Config.AppsDomain, Config.DefaultTimeoutDuration())
 
 			// map app route to other port
-			CreateRouteMapping(app, secondRoute, 0, 7777, DEFAULT_TIMEOUT)
+			CreateRouteMapping(app, secondRoute, 0, 7777, Config.DefaultTimeoutDuration())
 		})
 
 		It("should listen on multiple ports", func() {
 			Eventually(func() string {
 				return helpers.CurlApp(app, "/")
-			}, DEFAULT_TIMEOUT, "5s").Should(ContainSubstring("Lattice"))
+			}, Config.DefaultTimeoutDuration(), "5s").Should(ContainSubstring("Lattice"))
 
 			Consistently(func() string {
 				return helpers.CurlApp(app, "/port")
-			}, DEFAULT_TIMEOUT, "5s").Should(ContainSubstring("8080"))
+			}, Config.DefaultTimeoutDuration(), "5s").Should(ContainSubstring("8080"))
 
 			Eventually(func() string {
 				return helpers.CurlApp(secondRoute, "/port")
-			}, DEFAULT_TIMEOUT, "5s").Should(ContainSubstring("7777"))
+			}, Config.DefaultTimeoutDuration(), "5s").Should(ContainSubstring("7777"))
 		})
 	})
 })

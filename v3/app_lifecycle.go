@@ -67,14 +67,14 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(webProcess.Name)
-			}, CF_PUSH_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
+			}, Config.CfPushTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 
 			output := helpers.CurlApp(webProcess.Name, "/env")
 			Expect(output).To(ContainSubstring(fmt.Sprintf("application_name\\\":\\\"%s", appName)))
 			Expect(output).To(ContainSubstring(appCreationEnvironmentVariables))
 
-			Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
-			Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", workerProcess.Name)))
+			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
+			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", workerProcess.Name)))
 
 			usageEvents := LastPageUsageEvents(TestSetup)
 
@@ -85,8 +85,8 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			StopApp(appGuid)
 
-			Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", webProcess.Name)))
-			Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", workerProcess.Name)))
+			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", webProcess.Name)))
+			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", workerProcess.Name)))
 
 			usageEvents = LastPageUsageEvents(TestSetup)
 			event1 = AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
@@ -96,7 +96,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(webProcess.Name)
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
 		})
 	})
 
@@ -123,9 +123,9 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(webProcess.Name)
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring("ok"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("ok"))
 
-			Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
+			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 
 			usageEvents := LastPageUsageEvents(TestSetup)
 
@@ -134,7 +134,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			StopApp(appGuid)
 
-			Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", webProcess.Name)))
+			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", webProcess.Name)))
 
 			usageEvents = LastPageUsageEvents(TestSetup)
 			event1 = AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
@@ -142,7 +142,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(webProcess.Name)
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
 		})
 	})
 })
@@ -191,13 +191,13 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(webProcess.Name)
-		}, DEFAULT_TIMEOUT).Should(Equal("0"))
+		}, Config.DefaultTimeoutDuration()).Should(Equal("0"))
 
 		output := helpers.CurlApp(webProcess.Name, "/env")
 		Expect(output).To(ContainSubstring(fmt.Sprintf("application_name\\\":\\\"%s", appName)))
 		Expect(output).To(ContainSubstring(appCreationEnvironmentVariables))
 
-		Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
+		Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 		usageEvents := LastPageUsageEvents(TestSetup)
 
 		event := AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
@@ -205,7 +205,7 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 
 		StopApp(appGuid)
 
-		Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", webProcess.Name)))
+		Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", webProcess.Name)))
 
 		usageEvents = LastPageUsageEvents(TestSetup)
 		event = AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
@@ -213,6 +213,6 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(webProcess.Name)
-		}, DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
+		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
 	})
 })

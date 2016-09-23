@@ -22,7 +22,7 @@ type Process struct {
 func GetProcesses(appGuid, appName string) []Process {
 	processesURL := fmt.Sprintf("/v3/apps/%s/processes", appGuid)
 	session := cf.Cf("curl", processesURL)
-	bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
+	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 
 	processes := ProcessList{}
 	json.Unmarshal(bytes, &processes)

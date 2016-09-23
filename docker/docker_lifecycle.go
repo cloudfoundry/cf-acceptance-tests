@@ -31,15 +31,15 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 		app_helpers.SetBackend(appName)
 
 		By("downloading from dockerhub (starting the app)")
-		Eventually(cf.Cf("start", appName), CF_PUSH_TIMEOUT).Should(Exit(0))
+		Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 		Eventually(func() string {
 			return helpers.CurlApp(appName, "/env/INSTANCE_INDEX")
-		}, DEFAULT_TIMEOUT).Should(Equal("0"))
+		}, Config.DefaultTimeoutDuration()).Should(Equal("0"))
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
-		Eventually(cf.Cf("delete", appName, "-f"), DEFAULT_TIMEOUT).Should(Exit(0))
+		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+		Eventually(cf.Cf("delete", appName, "-f"), Config.DefaultTimeoutDuration()).Should(Exit(0))
 	})
 
 	Describe("running a docker app with a start command", func() {
@@ -54,21 +54,21 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 				"-d", Config.AppsDomain,
 				"-i", "1",
 				"-c", fmt.Sprintf("/myapp/dockerapp -name=%s", appName)),
-				DEFAULT_TIMEOUT,
+				Config.DefaultTimeoutDuration(),
 			).Should(Exit(0))
 		})
 
 		It("retains its start command through starts and stops", func() {
-			Eventually(helpers.CurlingAppRoot(appName), DEFAULT_TIMEOUT).Should(Equal("0"))
-			Eventually(helpers.CurlApp(appName, "/name"), DEFAULT_TIMEOUT).Should(Equal(appName))
+			Eventually(helpers.CurlingAppRoot(appName), Config.DefaultTimeoutDuration()).Should(Equal("0"))
+			Eventually(helpers.CurlApp(appName, "/name"), Config.DefaultTimeoutDuration()).Should(Equal(appName))
 
 			By("making the app unreachable when it's stopped")
-			Eventually(cf.Cf("stop", appName), DEFAULT_TIMEOUT).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(appName), DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
+			Eventually(cf.Cf("stop", appName), Config.DefaultTimeoutDuration()).Should(Exit(0))
+			Eventually(helpers.CurlingAppRoot(appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
 
-			Eventually(cf.Cf("start", appName), CF_PUSH_TIMEOUT).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(appName), DEFAULT_TIMEOUT).Should(Equal("0"))
-			Eventually(helpers.CurlApp(appName, "/name"), DEFAULT_TIMEOUT).Should(Equal(appName))
+			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
+			Eventually(helpers.CurlingAppRoot(appName), Config.DefaultTimeoutDuration()).Should(Equal("0"))
+			Eventually(helpers.CurlApp(appName, "/name"), Config.DefaultTimeoutDuration()).Should(Equal(appName))
 		})
 	})
 
@@ -83,12 +83,12 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-d", Config.AppsDomain,
 				"-i", "1"),
-				DEFAULT_TIMEOUT,
+				Config.DefaultTimeoutDuration(),
 			).Should(Exit(0))
 		})
 
 		It("handles docker-defined metadata and environment variables correctly", func() {
-			Eventually(helpers.CurlingAppRoot(appName), DEFAULT_TIMEOUT).Should(Equal("0"))
+			Eventually(helpers.CurlingAppRoot(appName), Config.DefaultTimeoutDuration()).Should(Equal("0"))
 
 			env_json := helpers.CurlApp(appName, "/env")
 			var env_vars map[string]string
@@ -115,16 +115,16 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 				Eventually(cf.Cf(
 					"set-env", appName,
 					"HOME", "/tmp/fakehome"),
-					DEFAULT_TIMEOUT).Should(Exit(0))
+					Config.DefaultTimeoutDuration()).Should(Exit(0))
 
 				Eventually(cf.Cf(
 					"set-env", appName,
 					"TMPDIR", "/tmp/dir"),
-					DEFAULT_TIMEOUT).Should(Exit(0))
+					Config.DefaultTimeoutDuration()).Should(Exit(0))
 			})
 
 			It("prefers the env vars from cf set-env over those in the Dockerfile", func() {
-				Eventually(helpers.CurlingAppRoot(appName), DEFAULT_TIMEOUT).Should(Equal("0"))
+				Eventually(helpers.CurlingAppRoot(appName), Config.DefaultTimeoutDuration()).Should(Equal("0"))
 
 				env_json := helpers.CurlApp(appName, "/env")
 				var env_vars map[string]string

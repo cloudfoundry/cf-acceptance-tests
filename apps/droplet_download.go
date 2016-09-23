@@ -28,19 +28,19 @@ var _ = AppsDescribe("Downloading droplets", func() {
 	BeforeEach(func() {
 		helloWorldAppName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Cf("push", helloWorldAppName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", helloWorldAppName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(helloWorldAppName)
-		Expect(cf.Cf("start", helloWorldAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("start", helloWorldAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(helloWorldAppName, DEFAULT_TIMEOUT)
+		app_helpers.AppReport(helloWorldAppName, Config.DefaultTimeoutDuration())
 
-		Expect(cf.Cf("delete", helloWorldAppName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("delete", helloWorldAppName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
 	It("Downloads the droplet for the app", func() {
-		guid := cf.Cf("app", helloWorldAppName, "--guid").Wait(DEFAULT_TIMEOUT).Out.Contents()
+		guid := cf.Cf("app", helloWorldAppName, "--guid").Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 		appGuid := strings.TrimSpace(string(guid))
 
 		tmpdir, err := ioutil.TempDir(os.TempDir(), "droplet-download")
@@ -48,7 +48,7 @@ var _ = AppsDescribe("Downloading droplets", func() {
 
 		app_droplet_path := path.Join(tmpdir, helloWorldAppName)
 
-		cf.Cf("curl", fmt.Sprintf("/v2/apps/%s/droplet/download", appGuid), "--output", app_droplet_path).Wait(DEFAULT_TIMEOUT)
+		cf.Cf("curl", fmt.Sprintf("/v2/apps/%s/droplet/download", appGuid), "--output", app_droplet_path).Wait(Config.DefaultTimeoutDuration())
 
 		cmd := exec.Command("tar", "-ztf", app_droplet_path)
 		cmd.Stdout = &out

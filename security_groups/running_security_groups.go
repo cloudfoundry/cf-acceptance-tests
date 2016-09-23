@@ -58,19 +58,19 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 			"-b", Config.RubyBuildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Dora,
-			"-d", Config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			"-d", Config.AppsDomain).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(serverAppName)
-		Expect(cf.Cf("start", serverAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("start", serverAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		// gather app url
 		var appsResponse AppsResponse
-		cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/apps?q=name:%s", serverAppName)).Wait(DEFAULT_TIMEOUT).Out.Contents()
+		cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/apps?q=name:%s", serverAppName)).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 		json.Unmarshal(cfResponse, &appsResponse)
 		serverAppUrl := appsResponse.Resources[0].Metadata.Url
 
 		// gather app stats for execution vm ip and app port
 		var statsResponse StatsResponse
-		cfResponse = cf.Cf("curl", fmt.Sprintf("%s/stats", serverAppUrl)).Wait(DEFAULT_TIMEOUT).Out.Contents()
+		cfResponse = cf.Cf("curl", fmt.Sprintf("%s/stats", serverAppUrl)).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 		json.Unmarshal(cfResponse, &statsResponse)
 
 		privateHost = statsResponse["0"].Stats.Host
@@ -78,9 +78,9 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(serverAppName, DEFAULT_TIMEOUT)
+		app_helpers.AppReport(serverAppName, Config.DefaultTimeoutDuration())
 
-		Expect(cf.Cf("delete", serverAppName, "-f", "-r").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("delete", serverAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	// This test assumes the default running security groups block access to the vms that execute apps.
@@ -88,10 +88,10 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 	//   are discoverable via the cc api and dora's myip endpoint.
 	It("allows previously-blocked ip traffic after applying a security group, and re-blocks it when the group is removed", func() {
 		clientAppName := random_name.CATSRandomName("APP")
-		Expect(cf.Cf("push", clientAppName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", clientAppName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(clientAppName)
-		Expect(cf.Cf("start", clientAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
-		defer func() { cf.Cf("delete", clientAppName, "-f", "-r").Wait(CF_PUSH_TIMEOUT) }()
+		Expect(cf.Cf("start", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		defer func() { cf.Cf("delete", clientAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration()) }()
 
 		curlResponse := helpers.CurlApp(serverAppName, "/myip")
 		containerIp := strings.TrimSpace(curlResponse)
@@ -121,21 +121,21 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 		rulesPath := file.Name()
 		securityGroupName = random_name.CATSRandomName("SG")
 
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			Expect(cf.Cf("create-security-group", securityGroupName, rulesPath).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			Expect(cf.Cf("create-security-group", securityGroupName, rulesPath).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			Expect(
 				cf.Cf("bind-security-group",
 					securityGroupName,
 					TestSetup.RegularUserContext().Org,
-					TestSetup.RegularUserContext().Space).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+					TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		})
 		defer func() {
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-				Expect(cf.Cf("delete-security-group", securityGroupName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				Expect(cf.Cf("delete-security-group", securityGroupName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			})
 		}()
 
-		Expect(cf.Cf("restart", clientAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		By("Testing app egress rules")
 		curlResponse = helpers.CurlApp(clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort))
@@ -143,10 +143,10 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 		Expect(doraCurlResponse.ReturnCode).To(Equal(0))
 
 		By("Unapplying security group")
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			Expect(cf.Cf("unbind-security-group", securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			Expect(cf.Cf("unbind-security-group", securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		})
-		Expect(cf.Cf("restart", clientAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		By("Testing app egress rules")
 		curlResponse = helpers.CurlApp(clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort))
@@ -161,32 +161,32 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 
 		buildpackZip := assets.NewAssets().SecurityGroupBuildpack
 
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			Expect(cf.Cf("create-buildpack", buildpack, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			Expect(cf.Cf("create-buildpack", buildpack, buildpackZip, "999").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		})
 		defer func() {
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-				Expect(cf.Cf("delete-buildpack", buildpack, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				Expect(cf.Cf("delete-buildpack", buildpack, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			})
 		}()
 
-		Expect(cf.Cf("push", testAppName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpack, "-p", assets.NewAssets().HelloWorld, "-d", Config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("push", testAppName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpack, "-p", assets.NewAssets().HelloWorld, "-d", Config.AppsDomain).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(testAppName)
-		defer func() { cf.Cf("delete", testAppName, "-f", "-r").Wait(CF_PUSH_TIMEOUT) }()
+		defer func() { cf.Cf("delete", testAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration()) }()
 
-		Expect(cf.Cf("set-env", testAppName, "TESTURI", privateUri).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-		Expect(cf.Cf("restart", testAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(1))
+		Expect(cf.Cf("set-env", testAppName, "TESTURI", privateUri).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("restart", testAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 		Eventually(func() *Session {
 			appLogsSession := cf.Cf("logs", "--recent", testAppName)
-			Expect(appLogsSession.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			return appLogsSession
 		}, 5).Should(Say("CURL_EXIT=[^0]"), "Expected staging security groups not to allow internal communication between app containers. Configure your staging security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
 
-		Expect(cf.Cf("set-env", testAppName, "TESTURI", "www.google.com").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-		Expect(cf.Cf("start", testAppName).Wait(CF_PUSH_TIMEOUT)).To(Exit(1))
+		Expect(cf.Cf("set-env", testAppName, "TESTURI", "www.google.com").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("start", testAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 		Eventually(func() *Session {
 			appLogsSession := cf.Cf("logs", "--recent", testAppName)
-			Expect(appLogsSession.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			return appLogsSession
 		}, 5).Should(Say("CURL_EXIT=0"))
 	})

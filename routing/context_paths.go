@@ -26,41 +26,41 @@ var _ = RoutingDescribe("Context Paths", func() {
 		domain := Config.AppsDomain
 
 		app1 = random_name.CATSRandomName("APP")
-		PushApp(app1, helloRoutingAsset, Config.RubyBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT, DEFAULT_MEMORY_LIMIT)
+		PushApp(app1, helloRoutingAsset, Config.RubyBuildpackName, Config.AppsDomain, Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
 		app2 = random_name.CATSRandomName("APP")
-		PushApp(app2, helloRoutingAsset, Config.RubyBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT, DEFAULT_MEMORY_LIMIT)
+		PushApp(app2, helloRoutingAsset, Config.RubyBuildpackName, Config.AppsDomain, Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
 		app3 = random_name.CATSRandomName("APP")
-		PushApp(app3, helloRoutingAsset, Config.RubyBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT, DEFAULT_MEMORY_LIMIT)
+		PushApp(app3, helloRoutingAsset, Config.RubyBuildpackName, Config.AppsDomain, Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
 
 		hostname = app1
 
-		MapRouteToApp(app2, domain, hostname, app2Path, DEFAULT_TIMEOUT)
-		MapRouteToApp(app3, domain, hostname, app3Path, DEFAULT_TIMEOUT)
+		MapRouteToApp(app2, domain, hostname, app2Path, Config.DefaultTimeoutDuration())
+		MapRouteToApp(app3, domain, hostname, app3Path, Config.DefaultTimeoutDuration())
 	})
 
 	AfterEach(func() {
-		AppReport(app1, DEFAULT_TIMEOUT)
-		AppReport(app2, DEFAULT_TIMEOUT)
-		AppReport(app3, DEFAULT_TIMEOUT)
+		AppReport(app1, Config.DefaultTimeoutDuration())
+		AppReport(app2, Config.DefaultTimeoutDuration())
+		AppReport(app3, Config.DefaultTimeoutDuration())
 
-		DeleteApp(app1, DEFAULT_TIMEOUT)
-		DeleteApp(app2, DEFAULT_TIMEOUT)
-		DeleteApp(app3, DEFAULT_TIMEOUT)
+		DeleteApp(app1, Config.DefaultTimeoutDuration())
+		DeleteApp(app2, Config.DefaultTimeoutDuration())
+		DeleteApp(app3, Config.DefaultTimeoutDuration())
 	})
 
 	Context("when another app has a route with a context path", func() {
 		It("routes to app with context path", func() {
 			Eventually(func() string {
 				return helpers.CurlAppRoot(hostname)
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring(app1))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(app1))
 
 			Eventually(func() string {
 				return helpers.CurlApp(hostname, app2Path)
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring(app2))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(app2))
 
 			Eventually(func() string {
 				return helpers.CurlApp(hostname, app3Path)
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring(app3))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(app3))
 		})
 	})
 })

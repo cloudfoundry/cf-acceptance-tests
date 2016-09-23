@@ -27,15 +27,15 @@ var _ = AppsDescribe("A running application", func() {
 			"-b", Config.RubyBuildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Dora,
-			"-d", Config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			"-d", Config.AppsDomain).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
-		Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
 	It("can have its files inspected", func() {
@@ -43,15 +43,15 @@ var _ = AppsDescribe("A running application", func() {
 		if Config.Backend != "dea" {
 			Skip(skip_messages.SkipDeaMessage)
 		}
-		files := cf.Cf("files", appName).Wait(DEFAULT_TIMEOUT)
+		files := cf.Cf("files", appName).Wait(Config.DefaultTimeoutDuration())
 		Expect(files).To(Exit(0))
 		Expect(files).To(Say("app/"))
 
-		files = cf.Cf("files", appName, "app/").Wait(DEFAULT_TIMEOUT)
+		files = cf.Cf("files", appName, "app/").Wait(Config.DefaultTimeoutDuration())
 		Expect(files).To(Exit(0))
 		Expect(files).To(Say("config.ru"))
 
-		files = cf.Cf("files", appName, "app/config.ru").Wait(DEFAULT_TIMEOUT)
+		files = cf.Cf("files", appName, "app/config.ru").Wait(Config.DefaultTimeoutDuration())
 		Expect(files).To(Exit(0))
 		Expect(files).To(Say("run Dora"))
 	})
@@ -61,19 +61,19 @@ var _ = AppsDescribe("A running application", func() {
 		helpers.CurlApp(appName, "/sigterm/KILL")
 
 		Eventually(func() string {
-			return string(cf.Cf("events", appName).Wait(DEFAULT_TIMEOUT).Out.Contents())
-		}, DEFAULT_TIMEOUT).Should(MatchRegexp("[eE]xited"))
+			return string(cf.Cf("events", appName).Wait(Config.DefaultTimeoutDuration()).Out.Contents())
+		}, Config.DefaultTimeoutDuration()).Should(MatchRegexp("[eE]xited"))
 
 		Eventually(func() string { return helpers.CurlApp(appName, "/id") }).Should(Not(Equal(id)))
 	})
 
 	Context("with multiple instances", func() {
 		BeforeEach(func() {
-			Expect(cf.Cf("scale", appName, "-i", "2").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("scale", appName, "-i", "2").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		It("can be queried for state by instance", func() {
-			app := cf.Cf("app", appName).Wait(DEFAULT_TIMEOUT)
+			app := cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
 			Expect(app).To(Exit(0))
 			Expect(app).To(Say("#0"))
 			Expect(app).To(Say("#1"))

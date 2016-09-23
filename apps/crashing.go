@@ -23,8 +23,8 @@ var _ = AppsDescribe("Crashing", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
 	Describe("a continuously crashing app", func() {
@@ -44,16 +44,16 @@ var _ = AppsDescribe("Crashing", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Dora,
 				"-d", Config.AppsDomain,
-			).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			app_helpers.SetBackend(appName)
-			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(1))
+			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 
 			Eventually(func() string {
-				return string(cf.Cf("events", appName).Wait(DEFAULT_TIMEOUT).Out.Contents())
-			}, DEFAULT_TIMEOUT).Should(MatchRegexp("[eE]xited"))
+				return string(cf.Cf("events", appName).Wait(Config.DefaultTimeoutDuration()).Out.Contents())
+			}, Config.DefaultTimeoutDuration()).Should(MatchRegexp("[eE]xited"))
 
-			Eventually(cf.Cf("app", appName), DEFAULT_TIMEOUT).Should(Say("crashed"))
+			Eventually(cf.Cf("app", appName), Config.DefaultTimeoutDuration()).Should(Say("crashed"))
 		})
 	})
 
@@ -67,18 +67,18 @@ var _ = AppsDescribe("Crashing", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Dora,
 				"-d", Config.AppsDomain,
-			).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 			app_helpers.SetBackend(appName)
-			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		It("shows crash events", func() {
 			helpers.CurlApp(appName, "/sigterm/KILL")
 
 			Eventually(func() string {
-				return string(cf.Cf("events", appName).Wait(DEFAULT_TIMEOUT).Out.Contents())
-			}, DEFAULT_TIMEOUT).Should(MatchRegexp("[eE]xited"))
+				return string(cf.Cf("events", appName).Wait(Config.DefaultTimeoutDuration()).Out.Contents())
+			}, Config.DefaultTimeoutDuration()).Should(MatchRegexp("[eE]xited"))
 		})
 
 		It("recovers", func() {
@@ -87,7 +87,7 @@ var _ = AppsDescribe("Crashing", func() {
 
 			Eventually(func() string {
 				return helpers.CurlApp(appName, "/id")
-			}, DEFAULT_TIMEOUT).Should(Not(Equal(id)))
+			}, Config.DefaultTimeoutDuration()).Should(Not(Equal(id)))
 		})
 	})
 })

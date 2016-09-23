@@ -281,18 +281,18 @@ needs to test a different app domain.
       "-b", buildpackName,                  // specify buildpack
       "-m", DEFAULT_MEMORY_LIMIT,           // specify memory limit
       "-d", Config.AppsDomain,              // specify app domain
-  ).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+  ).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
   //use the config-file specified backend when starting this app
   app_helpers.SetBackend(appName)
 
-  Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+  Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
   ```
 1. Delete all resources that are created, e.g. apps, routes, quotas, etc.
 This is in order to leave the system in the same state it was found in.
 For example, to delete apps and their associated routes:
     ```
-		Expect(cf.Cf("delete", myAppName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("delete", myAppName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
     ```
 1. Specifically for apps, before tearing them down, print the app guid and
 recent application logs. There is a helper method `AppReport` provided in the
@@ -300,7 +300,7 @@ recent application logs. There is a helper method `AppReport` provided in the
 
     ```go
     AfterEach(func() {
-      app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+      app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
     })
     ```
 1. Document the purpose of your test suite in this repo's README.md.

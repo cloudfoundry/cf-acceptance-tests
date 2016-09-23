@@ -28,40 +28,40 @@ var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
 			"-b", "binary_buildpack",
 			"-d", Config.AppsDomain,
 			"-c", "./app"),
-			CF_PUSH_TIMEOUT).Should(Exit(0))
+			Config.CfPushTimeoutDuration()).Should(Exit(0))
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
-		Eventually(cf.Cf("delete", appName, "-f"), DEFAULT_TIMEOUT).Should(Exit(0))
+		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+		Eventually(cf.Cf("delete", appName, "-f"), Config.DefaultTimeoutDuration()).Should(Exit(0))
 	})
 
 	Describe("An app staged on Diego", func() {
 		BeforeEach(func() {
 			app_helpers.EnableDiego(appName)
 
-			Eventually(cf.Cf("start", appName), CF_PUSH_TIMEOUT).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(appName), DEFAULT_TIMEOUT).Should(ContainSubstring(binaryHi))
+			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
+			Eventually(helpers.CurlingAppRoot(appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(binaryHi))
 		})
 
 		It("runs on the DEAs", func() {
 			app_helpers.DisableDiego(appName)
-			Eventually(cf.Cf("restart", appName), CF_PUSH_TIMEOUT).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(appName), DEFAULT_TIMEOUT).Should(ContainSubstring(binaryHi))
+			Eventually(cf.Cf("restart", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
+			Eventually(helpers.CurlingAppRoot(appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(binaryHi))
 		})
 	})
 
 	Describe("An app staged on the DEA", func() {
 		BeforeEach(func() {
 			app_helpers.DisableDiego(appName)
-			Eventually(cf.Cf("start", appName), CF_PUSH_TIMEOUT).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(appName), DEFAULT_TIMEOUT).Should(ContainSubstring(binaryHi))
+			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
+			Eventually(helpers.CurlingAppRoot(appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(binaryHi))
 		})
 
 		It("runs on Diego", func() {
 			app_helpers.EnableDiego(appName)
-			Eventually(cf.Cf("restart", appName), CF_PUSH_TIMEOUT).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(appName), DEFAULT_TIMEOUT).Should(ContainSubstring(binaryHi))
+			Eventually(cf.Cf("restart", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
+			Eventually(helpers.CurlingAppRoot(appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(binaryHi))
 		})
 	})
 })

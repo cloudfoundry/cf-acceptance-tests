@@ -14,16 +14,10 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var (
-	APP_START_TIMEOUT      = 2 * time.Minute
-	CF_JAVA_TIMEOUT        = 10 * time.Minute
-	CF_PUSH_TIMEOUT        = 2 * time.Minute
-	DEFAULT_MEMORY_LIMIT   = "256M"
-	DEFAULT_TIMEOUT        = 30 * time.Second
-	DETECT_TIMEOUT         = 5 * time.Minute
-	LONG_CURL_TIMEOUT      = 2 * time.Minute
-	SLEEP_TIMEOUT          = 30 * time.Second
-	CF_MARKETPLACE_TIMEOUT = 200 * time.Second
+const (
+	APP_START_TIMEOUT    = 2 * time.Minute
+	CF_JAVA_TIMEOUT      = 10 * time.Minute
+	DEFAULT_MEMORY_LIMIT = "256M"
 )
 
 var (
@@ -167,7 +161,7 @@ func V3Describe(description string, callback func()) bool {
 
 func GuidForAppName(appName string) string {
 	cfApp := cf.Cf("app", appName, "--guid")
-	Expect(cfApp.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	Expect(cfApp.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 	appGuid := strings.TrimSpace(string(cfApp.Out.Contents()))
 	Expect(appGuid).NotTo(Equal(""))

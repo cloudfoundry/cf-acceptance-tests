@@ -69,9 +69,9 @@ var _ = V3Describe("process", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(webProcess.Name)
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 
-			Expect(string(cf.Cf("apps").Wait(DEFAULT_TIMEOUT).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
+			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 		})
 
 		Context("/v3/apps/:guid/processes/:type/instances/:index", func() {
@@ -79,26 +79,26 @@ var _ = V3Describe("process", func() {
 				statsUrl := fmt.Sprintf("/v3/apps/%s/processes/web/stats", appGuid)
 
 				By("ensuring the instance is running")
-				statsBody := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
+				statsBody := cf.Cf("curl", statsUrl).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 				statsJSON := ProcessStats{}
 				json.Unmarshal(statsBody, &statsJSON)
 				Expect(statsJSON.Instance[0].State).To(Equal("RUNNING"))
 
 				By("terminating the instance")
 				terminateUrl := fmt.Sprintf("/v3/apps/%s/processes/%s/instances/%d", appGuid, processType, index)
-				cf.Cf("curl", terminateUrl, "-X", "DELETE").Wait(DEFAULT_TIMEOUT)
+				cf.Cf("curl", terminateUrl, "-X", "DELETE").Wait(Config.DefaultTimeoutDuration())
 
 				By("ensuring the instance is no longer running")
 				// Note that this depends on a 30s run loop waking up in Diego.
 				Eventually(func() string {
-					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
+					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
 					return statsJSON.Instance[0].State
 				}, 35*time.Second).ShouldNot(Equal("RUNNING"))
 
 				By("ensuring the instance is running again")
 				Eventually(func() string {
-					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
+					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
 					return statsJSON.Instance[0].State
 				}, 35*time.Second).Should(Equal("RUNNING"))
@@ -110,26 +110,26 @@ var _ = V3Describe("process", func() {
 				statsUrl := fmt.Sprintf("/v3/apps/%s/processes/web/stats", appGuid)
 
 				By("ensuring the instance is running")
-				statsBody := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
+				statsBody := cf.Cf("curl", statsUrl).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 				statsJSON := ProcessStats{}
 				json.Unmarshal(statsBody, &statsJSON)
 				Expect(statsJSON.Instance[0].State).To(Equal("RUNNING"))
 
 				By("terminating the instance")
 				terminateUrl := fmt.Sprintf("/v3/processes/%s/instances/%d", webProcess.Guid, index)
-				cf.Cf("curl", terminateUrl, "-X", "DELETE").Wait(DEFAULT_TIMEOUT)
+				cf.Cf("curl", terminateUrl, "-X", "DELETE").Wait(Config.DefaultTimeoutDuration())
 
 				By("ensuring the instance is no longer running")
 				// Note that this depends on a 30s run loop waking up in Diego.
 				Eventually(func() string {
-					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
+					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
 					return statsJSON.Instance[0].State
 				}, 35*time.Second).ShouldNot(Equal("RUNNING"))
 
 				By("ensuring the instance is running again")
 				Eventually(func() string {
-					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(DEFAULT_TIMEOUT).Out.Contents()
+					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
 					return statsJSON.Instance[0].State
 				}, 35*time.Second).Should(Equal("RUNNING"))

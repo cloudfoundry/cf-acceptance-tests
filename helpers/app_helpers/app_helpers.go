@@ -7,15 +7,14 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/config"
+	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 )
 
-var DEFAULT_TIMEOUT = 30 * time.Second
-
 func GetAppGuid(appName string) string {
 	cfApp := cf.Cf("app", appName, "--guid")
-	Eventually(cfApp, DEFAULT_TIMEOUT).Should(Exit(0))
+	Eventually(cfApp, Config.DefaultTimeoutDuration()).Should(Exit(0))
 
 	appGuid := strings.TrimSpace(string(cfApp.Out.Contents()))
 	Expect(appGuid).NotTo(Equal(""))
@@ -33,22 +32,22 @@ func SetBackend(appName string) {
 
 func EnableDiego(appName string) {
 	guid := GetAppGuid(appName)
-	Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": true}`), DEFAULT_TIMEOUT).Should(Exit(0))
+	Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": true}`), Config.DefaultTimeoutDuration()).Should(Exit(0))
 }
 
 func DisableDiego(appName string) {
 	guid := GetAppGuid(appName)
-	Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": false}`), DEFAULT_TIMEOUT).Should(Exit(0))
+	Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": false}`), Config.DefaultTimeoutDuration()).Should(Exit(0))
 }
 
 func DisableDiegoAndCheckResponse(appName, expectedSubstring string) {
 	guid := GetAppGuid(appName)
 	Eventually(func() string {
 		response := cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego":false}`)
-		Expect(response.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(response.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 		return string(response.Out.Contents())
-	}, DEFAULT_TIMEOUT, "1s").Should(ContainSubstring(expectedSubstring))
+	}, Config.DefaultTimeoutDuration(), "1s").Should(ContainSubstring(expectedSubstring))
 }
 
 func AppReport(appName string, timeout time.Duration) {

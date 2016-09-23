@@ -33,12 +33,6 @@ func TestCATS(t *testing.T) {
 
 	Config = config.LoadConfig()
 
-	DEFAULT_TIMEOUT = Config.DefaultTimeoutDuration()
-	SLEEP_TIMEOUT = Config.SleepTimeoutDuration()
-	CF_PUSH_TIMEOUT = Config.CfPushTimeoutDuration()
-	LONG_CURL_TIMEOUT = Config.LongCurlTimeoutDuration()
-	DETECT_TIMEOUT = Config.DetectTimeoutDuration()
-
 	TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
 
 	var _ = BeforeSuite(func() {

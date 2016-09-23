@@ -60,8 +60,8 @@ exit 1
 
 	var fetchEnvironmentVariables = func(groupType string) map[string]string {
 		var session *Session
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			session = cf.Cf("curl", fmt.Sprintf("/v2/config/environment_variable_groups/%s", groupType)).Wait(DEFAULT_TIMEOUT)
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			session = cf.Cf("curl", fmt.Sprintf("/v2/config/environment_variable_groups/%s", groupType)).Wait(Config.DefaultTimeoutDuration())
 			Expect(session).To(Exit(0))
 		})
 
@@ -84,7 +84,7 @@ exit 1
 		jsonObj := marshalUpdatedEnv(envMap)
 
 		command := fmt.Sprintf("set-%s-environment-variable-group", groupType)
-		Expect(cf.Cf(command, string(jsonObj)).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf(command, string(jsonObj)).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	}
 
 	var revertExtendedEnv = func(groupType, envVarName string) {
@@ -93,7 +93,7 @@ exit 1
 		jsonObj := marshalUpdatedEnv(envMap)
 
 		apiUrl := fmt.Sprintf("/v2/config/environment_variable_groups/%s", groupType)
-		Expect(cf.Cf("curl", apiUrl, "-X", "PUT", "-d", string(jsonObj)).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("curl", apiUrl, "-X", "PUT", "-d", string(jsonObj)).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	}
 
 	Context("Staging environment variable groups", func() {
@@ -107,16 +107,16 @@ exit 1
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+			app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
 
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				revertExtendedEnv("staging", envVarName)
 				if buildpackName != "" {
-					Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+					Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				}
 			})
 
-			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		It("Applies environment variables while staging apps", func() {
@@ -124,20 +124,20 @@ exit 1
 			buildpackZip := createBuildpack(envVarName)
 			envVarValue := fmt.Sprintf("staging_env_value_%s", strconv.Itoa(int(time.Now().UnixNano())))
 
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				extendEnv("staging", envVarName, envVarValue)
-				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			})
 
-			Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
-			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(1))
+			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 
 			Eventually(func() *Session {
 				appLogsSession := cf.Cf("logs", "--recent", appName)
-				Expect(appLogsSession.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				return appLogsSession
-			}, DEFAULT_TIMEOUT).Should(Say(envVarValue))
+			}, Config.DefaultTimeoutDuration()).Should(Say(envVarValue))
 		})
 	})
 
@@ -151,24 +151,24 @@ exit 1
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+			app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
 
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				revertExtendedEnv("running", envVarName)
 			})
 
-			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		It("Applies correct environment variables while running apps", func() {
 			envVarValue := fmt.Sprintf("running_env_value_%s", strconv.Itoa(int(time.Now().UnixNano())))
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				extendEnv("running", envVarName, envVarValue)
 			})
 
-			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
-			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			env := helpers.CurlApp(appName, "/env")
 

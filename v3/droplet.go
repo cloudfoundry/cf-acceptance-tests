@@ -57,7 +57,7 @@ var _ = V3Describe("droplet features", func() {
 			copyUrl := fmt.Sprintf("/v3/droplets/%s/copy", sourceDropletGuid)
 			session := cf.Cf("curl", copyUrl, "-X", "POST", "-d", copyRequestBody)
 
-			bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
+			bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 			var droplet struct {
 				Guid string `json:"guid"`
 			}
@@ -81,7 +81,7 @@ var _ = V3Describe("droplet features", func() {
 			StartApp(destinationAppGuid)
 			Eventually(func() string {
 				return helpers.CurlAppRoot(webProcess.Name)
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 
 		It("creates an audit.app.droplet.create event for the copied droplet", func() {
@@ -89,7 +89,7 @@ var _ = V3Describe("droplet features", func() {
 			copyUrl := fmt.Sprintf("/v3/droplets/%s/copy", sourceDropletGuid)
 			session := cf.Cf("curl", copyUrl, "-X", "POST", "-d", copyRequestBody)
 
-			bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
+			bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 			var droplet struct {
 				Guid string `json:"guid"`
 			}
@@ -103,7 +103,7 @@ var _ = V3Describe("droplet features", func() {
 			AssignDropletToApp(destinationAppGuid, copiedDropletGuid)
 			eventsQuery := fmt.Sprintf("v2/events?q=type:audit.app.droplet.create&q=actee:%s", destinationAppGuid)
 			session = cf.Cf("curl", eventsQuery, "-X", "GET")
-			bytes = session.Wait(DEFAULT_TIMEOUT).Out.Contents()
+			bytes = session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 
 			type request struct {
 				SourceDropletGuid string `json:"source_droplet_guid"`

@@ -45,16 +45,16 @@ var _ = V3Describe("buildpack", func() {
 		buildpackName = random_name.CATSRandomName("BPK")
 		buildpackZip := createBuildpack()
 
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		})
 	})
 
 	AfterEach(func() {
 		FetchRecentLogs(appGuid, token, Config)
 
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-			Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		})
 		DeleteApp(appGuid)
 	})
@@ -81,20 +81,20 @@ var _ = V3Describe("buildpack", func() {
 		firstDropletGuid := StageBuildpackPackage(packageGuid, buildpackName)
 		dropletPath := fmt.Sprintf("/v3/droplets/%s", firstDropletGuid)
 		Eventually(func() *Session {
-			result := cf.Cf("curl", dropletPath).Wait(DEFAULT_TIMEOUT)
+			result := cf.Cf("curl", dropletPath).Wait(Config.DefaultTimeoutDuration())
 			if strings.Contains(string(result.Out.Contents()), "FAILED") {
 				Fail("staging failed")
 			}
 			return result
-		}, CF_PUSH_TIMEOUT).Should(Say("custom buildpack contents - cache not found"))
+		}, Config.CfPushTimeoutDuration()).Should(Say("custom buildpack contents - cache not found"))
 
 		// Wait for buildpack cache to be uploaded to blobstore.
-		time.Sleep(SLEEP_TIMEOUT)
+		time.Sleep(Config.SleepTimeoutDuration())
 
 		secondDropletGuid := StageBuildpackPackage(packageGuid, buildpackName)
 		dropletPath = fmt.Sprintf("/v3/droplets/%s", secondDropletGuid)
 		Eventually(func() *Session {
-			result := cf.Cf("curl", dropletPath).Wait(DEFAULT_TIMEOUT)
+			result := cf.Cf("curl", dropletPath).Wait(Config.DefaultTimeoutDuration())
 			if strings.Contains(string(result.Out.Contents()), "FAILED") {
 				Fail("staging failed")
 			}
@@ -102,7 +102,7 @@ var _ = V3Describe("buildpack", func() {
 				Fail("cache was not found")
 			}
 			return result
-		}, CF_PUSH_TIMEOUT).Should(Say("custom buildpack contents - here's a cache"))
+		}, Config.CfPushTimeoutDuration()).Should(Say("custom buildpack contents - here's a cache"))
 
 		Expect(secondDropletGuid).NotTo(Equal(firstDropletGuid))
 	})

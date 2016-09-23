@@ -50,34 +50,34 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
 
-				PushAppNoStart(appName, golangAsset, Config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT, DEFAULT_MEMORY_LIMIT)
-				EnableDiego(appName, DEFAULT_TIMEOUT)
-				StartApp(appName, CF_PUSH_TIMEOUT)
+				PushAppNoStart(appName, golangAsset, Config.GoBuildpackName, Config.AppsDomain, Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
+				EnableDiego(appName, Config.DefaultTimeoutDuration())
+				StartApp(appName, Config.CfPushTimeoutDuration())
 
-				PushApp(routeServiceName, loggingRouteServiceAsset, Config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT, DEFAULT_MEMORY_LIMIT)
+				PushApp(routeServiceName, loggingRouteServiceAsset, Config.GoBuildpackName, Config.AppsDomain, Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
 				configureBroker(brokerAppName, routeServiceName)
 
 				bindRouteToService(appName, serviceInstanceName)
 			})
 
 			AfterEach(func() {
-				AppReport(appName, DEFAULT_TIMEOUT)
-				AppReport(routeServiceName, DEFAULT_TIMEOUT)
+				AppReport(appName, Config.DefaultTimeoutDuration())
+				AppReport(routeServiceName, Config.DefaultTimeoutDuration())
 
 				unbindRouteFromService(appName, serviceInstanceName)
 				deleteServiceInstance(serviceInstanceName)
 				deleteServiceBroker(brokerName)
-				DeleteApp(appName, DEFAULT_TIMEOUT)
-				DeleteApp(routeServiceName, DEFAULT_TIMEOUT)
+				DeleteApp(appName, Config.DefaultTimeoutDuration())
+				DeleteApp(routeServiceName, Config.DefaultTimeoutDuration())
 			})
 
 			It("a request to the app is routed through the route service", func() {
 				Eventually(func() *Session {
 					helpers.CurlAppRoot(appName)
 					logs := cf.Cf("logs", "--recent", routeServiceName)
-					Expect(logs.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+					Expect(logs.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 					return logs
-				}, DEFAULT_TIMEOUT).Should(Say("Response Body: go, world"))
+				}, Config.DefaultTimeoutDuration()).Should(Say("Response Body: go, world"))
 			})
 		})
 
@@ -100,9 +100,9 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
 
-				PushAppNoStart(appName, golangAsset, Config.GoBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT, DEFAULT_MEMORY_LIMIT)
-				EnableDiego(appName, DEFAULT_TIMEOUT)
-				StartApp(appName, CF_PUSH_TIMEOUT)
+				PushAppNoStart(appName, golangAsset, Config.GoBuildpackName, Config.AppsDomain, Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
+				EnableDiego(appName, Config.DefaultTimeoutDuration())
+				StartApp(appName, Config.CfPushTimeoutDuration())
 
 				configureBroker(brokerAppName, "")
 
@@ -110,18 +110,18 @@ var _ = RouteServicesDescribe("Route Services", func() {
 			})
 
 			AfterEach(func() {
-				AppReport(appName, DEFAULT_TIMEOUT)
+				AppReport(appName, Config.DefaultTimeoutDuration())
 
 				unbindRouteFromService(appName, serviceInstanceName)
 				deleteServiceInstance(serviceInstanceName)
 				deleteServiceBroker(brokerName)
-				DeleteApp(appName, DEFAULT_TIMEOUT)
+				DeleteApp(appName, Config.DefaultTimeoutDuration())
 			})
 
 			It("routes to an app", func() {
 				Eventually(func() string {
 					return helpers.CurlAppRoot(appName)
-				}, DEFAULT_TIMEOUT).Should(ContainSubstring("go, world"))
+				}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("go, world"))
 			})
 		})
 
@@ -144,7 +144,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
 
-				CreateRoute(hostname, "", TestSetup.RegularUserContext().Space, Config.AppsDomain, DEFAULT_TIMEOUT)
+				CreateRoute(hostname, "", TestSetup.RegularUserContext().Space, Config.AppsDomain, Config.DefaultTimeoutDuration())
 
 				configureBroker(brokerAppName, "")
 			})
@@ -153,7 +153,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				unbindRouteFromService(hostname, serviceInstanceName)
 				deleteServiceInstance(serviceInstanceName)
 				deleteServiceBroker(brokerName)
-				DeleteRoute(hostname, "", Config.AppsDomain, DEFAULT_TIMEOUT)
+				DeleteRoute(hostname, "", Config.AppsDomain, Config.DefaultTimeoutDuration())
 			})
 
 			It("passes them to the service broker", func() {
@@ -161,9 +161,9 @@ var _ = RouteServicesDescribe("Route Services", func() {
 
 				Eventually(func() *Session {
 					logs := cf.Cf("logs", "--recent", brokerAppName)
-					Expect(logs.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+					Expect(logs.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 					return logs
-				}, DEFAULT_TIMEOUT).Should(Say("irynaparam"))
+				}, Config.DefaultTimeoutDuration()).Should(Say("irynaparam"))
 			})
 		})
 	})
@@ -176,58 +176,58 @@ func (c customMap) key(key string) customMap {
 }
 
 func bindRouteToService(hostname, serviceInstanceName string) {
-	routeGuid := GetRouteGuid(hostname, "", DEFAULT_TIMEOUT)
+	routeGuid := GetRouteGuid(hostname, "", Config.DefaultTimeoutDuration())
 
 	Expect(cf.Cf("bind-route-service", Config.AppsDomain, serviceInstanceName,
 		"-f",
 		"--hostname", hostname,
-	).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 	Eventually(func() string {
 		response := cf.Cf("curl", fmt.Sprintf("/v2/routes/%s", routeGuid))
-		Expect(response.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(response.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 		return string(response.Out.Contents())
-	}, DEFAULT_TIMEOUT, "1s").ShouldNot(ContainSubstring(`"service_instance_guid": null`))
+	}, Config.DefaultTimeoutDuration(), "1s").ShouldNot(ContainSubstring(`"service_instance_guid": null`))
 }
 
 func bindRouteToServiceWithParams(hostname, serviceInstanceName string, params string) {
-	routeGuid := GetRouteGuid(hostname, "", DEFAULT_TIMEOUT)
+	routeGuid := GetRouteGuid(hostname, "", Config.DefaultTimeoutDuration())
 	Expect(cf.Cf("bind-route-service", Config.AppsDomain, serviceInstanceName,
 		"-f",
 		"--hostname", hostname,
 		"-c", fmt.Sprintf("{\"parameters\": %s}", params),
-	).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 	Eventually(func() string {
 		response := cf.Cf("curl", fmt.Sprintf("/v2/routes/%s", routeGuid))
-		Expect(response.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(response.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 		return string(response.Out.Contents())
-	}, DEFAULT_TIMEOUT, "1s").ShouldNot(ContainSubstring(`"service_instance_guid": null`))
+	}, Config.DefaultTimeoutDuration(), "1s").ShouldNot(ContainSubstring(`"service_instance_guid": null`))
 }
 
 func unbindRouteFromService(hostname, serviceInstanceName string) {
-	routeGuid := GetRouteGuid(hostname, "", DEFAULT_TIMEOUT)
+	routeGuid := GetRouteGuid(hostname, "", Config.DefaultTimeoutDuration())
 	Expect(cf.Cf("unbind-route-service", Config.AppsDomain, serviceInstanceName,
 		"-f",
 		"--hostname", hostname,
-	).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 	Eventually(func() string {
 		response := cf.Cf("curl", fmt.Sprintf("/v2/routes/%s", routeGuid))
-		Expect(response.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(response.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 		return string(response.Out.Contents())
-	}, DEFAULT_TIMEOUT, "1s").Should(ContainSubstring(`"service_instance_guid": null`))
+	}, Config.DefaultTimeoutDuration(), "1s").Should(ContainSubstring(`"service_instance_guid": null`))
 }
 
 func createServiceInstance(serviceInstanceName, serviceName string) {
-	Expect(cf.Cf("create-service", serviceName, "fake-plan", serviceInstanceName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	Expect(cf.Cf("create-service", serviceName, "fake-plan", serviceInstanceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 }
 
 func deleteServiceInstance(serviceInstanceName string) {
-	Expect(cf.Cf("delete-service", serviceInstanceName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	Expect(cf.Cf("delete-service", serviceInstanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 }
 
 func configureBroker(serviceBrokerAppName, routeServiceName string) {
@@ -258,7 +258,7 @@ func configureBroker(serviceBrokerAppName, routeServiceName string) {
 
 func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 	serviceBrokerAsset := assets.NewAssets().ServiceBroker
-	PushApp(brokerAppName, serviceBrokerAsset, Config.RubyBuildpackName, Config.AppsDomain, CF_PUSH_TIMEOUT, DEFAULT_MEMORY_LIMIT)
+	PushApp(brokerAppName, serviceBrokerAsset, Config.RubyBuildpackName, Config.AppsDomain, Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
 
 	initiateBrokerConfig(serviceName, brokerAppName)
 
@@ -266,17 +266,17 @@ func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 		session := cf.Cf("create-service-broker", brokerName, "user", "password", brokerUrl)
-		Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 		session = cf.Cf("enable-service-access", serviceName)
-		Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 }
 
 func deleteServiceBroker(brokerName string) {
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 		responseBuffer := cf.Cf("delete-service-broker", brokerName, "-f")
-		Expect(responseBuffer.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(responseBuffer.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 }
 

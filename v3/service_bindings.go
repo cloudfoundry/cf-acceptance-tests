@@ -45,9 +45,9 @@ var _ = V3Describe("service bindings", func() {
 		uploadUrl := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.ApiEndpoint, packageGuid)
 		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
 		WaitForPackageToBeReady(packageGuid)
-		Expect(cf.Cf("create-user-provided-service", upsName, "-p", "{\"username\":\"admin\",\"password\":\"my-service\"}").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("create-user-provided-service", upsName, "-p", "{\"username\":\"admin\",\"password\":\"my-service\"}").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		session := cf.Cf("service", upsName, "--guid")
-		Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		upsGuid = strings.Trim(string(session.Out.Contents()), "\n")
 
 		Expect(cf.Cf("curl", "/v3/service_bindings", "-X", "POST", "-d", fmt.Sprintf(`
@@ -57,13 +57,13 @@ var _ = V3Describe("service bindings", func() {
 			  "app": { "guid": "%s" },
 			  "service_instance": { "guid": "%s" }
 			}
-		}`, appGuid, upsGuid)).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		}`, appGuid, upsGuid)).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {
 		FetchRecentLogs(appGuid, token, Config)
 		DeleteApp(appGuid)
-		Expect(cf.Cf("delete-service", upsName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("delete-service", upsName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
 	Describe("staging", func() {
@@ -72,14 +72,14 @@ var _ = V3Describe("service bindings", func() {
 		BeforeEach(func() {
 			buildpackName = random_name.CATSRandomName("BPK")
 			buildpackZip := createEnvBuildpack()
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			})
 		})
 
 		AfterEach(func() {
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-				Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			})
 		})
 
@@ -103,7 +103,7 @@ var _ = V3Describe("service bindings", func() {
 
 		Eventually(func() string {
 			return helpers.CurlApp(appName, "/env")
-		}, DEFAULT_TIMEOUT).Should(ContainSubstring("my-service"))
+		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("my-service"))
 	})
 })
 

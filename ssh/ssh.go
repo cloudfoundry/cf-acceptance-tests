@@ -41,33 +41,33 @@ var _ = SshDescribe("SSH", func() {
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-d", Config.AppsDomain,
 			"-i", "1"),
-			DEFAULT_TIMEOUT,
+			Config.DefaultTimeoutDuration(),
 		).Should(Exit(0))
 
 		app_helpers.SetBackend(appName)
 
 		enableSSH(appName)
 
-		Eventually(cf.Cf("start", appName), CF_PUSH_TIMEOUT).Should(Exit(0))
+		Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
-		Eventually(cf.Cf("delete", appName, "-f"), DEFAULT_TIMEOUT).Should(Exit(0))
+		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+		Eventually(cf.Cf("delete", appName, "-f"), Config.DefaultTimeoutDuration()).Should(Exit(0))
 	})
 
 	Describe("ssh", func() {
 		Context("with multiple instances", func() {
 			BeforeEach(func() {
-				Eventually(cf.Cf("scale", appName, "-i", "2"), CF_PUSH_TIMEOUT).Should(Exit(0))
+				Eventually(cf.Cf("scale", appName, "-i", "2"), Config.CfPushTimeoutDuration()).Should(Exit(0))
 				Eventually(func() string {
 					return helpers.CurlApp(appName, "/env/INSTANCE_INDEX")
-				}, DEFAULT_TIMEOUT).Should(Equal("1"))
+				}, Config.DefaultTimeoutDuration()).Should(Equal("1"))
 			})
 
 			It("can ssh to the second instance", func() {
 				envCmd := cf.Cf("ssh", "-v", "-i", "1", appName, "-c", "/usr/bin/env && /usr/bin/env >&2")
-				Expect(envCmd.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				Expect(envCmd.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 				output := string(envCmd.Out.Contents())
 				stdErr := string(envCmd.Err.Contents())
@@ -78,14 +78,14 @@ var _ = SshDescribe("SSH", func() {
 				Expect(string(stdErr)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 				Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=1"))
 
-				Eventually(cf.Cf("logs", appName, "--recent"), DEFAULT_TIMEOUT).Should(Say("Successful remote access"))
-				Eventually(cf.Cf("events", appName), DEFAULT_TIMEOUT).Should(Say("audit.app.ssh-authorized"))
+				Eventually(cf.Cf("logs", appName, "--recent"), Config.DefaultTimeoutDuration()).Should(Say("Successful remote access"))
+				Eventually(cf.Cf("events", appName), Config.DefaultTimeoutDuration()).Should(Say("audit.app.ssh-authorized"))
 			})
 		})
 
 		It("can execute a remote command in the container", func() {
 			envCmd := cf.Cf("ssh", "-v", appName, "-c", "/usr/bin/env && /usr/bin/env >&2")
-			Expect(envCmd.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(envCmd.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 			output := string(envCmd.Out.Contents())
 			stdErr := string(envCmd.Err.Contents())
@@ -96,8 +96,8 @@ var _ = SshDescribe("SSH", func() {
 			Expect(string(stdErr)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 			Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
-			Eventually(cf.Cf("logs", appName, "--recent"), DEFAULT_TIMEOUT).Should(Say("Successful remote access"))
-			Eventually(cf.Cf("events", appName), DEFAULT_TIMEOUT).Should(Say("audit.app.ssh-authorized"))
+			Eventually(cf.Cf("logs", appName, "--recent"), Config.DefaultTimeoutDuration()).Should(Say("Successful remote access"))
+			Eventually(cf.Cf("events", appName), Config.DefaultTimeoutDuration()).Should(Say("audit.app.ssh-authorized"))
 		})
 
 		It("runs an interactive session when no command is provided", func() {
@@ -127,8 +127,8 @@ var _ = SshDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
-			Eventually(cf.Cf("logs", appName, "--recent"), DEFAULT_TIMEOUT).Should(Say("Successful remote access"))
-			Eventually(cf.Cf("events", appName), DEFAULT_TIMEOUT).Should(Say("audit.app.ssh-authorized"))
+			Eventually(cf.Cf("logs", appName, "--recent"), Config.DefaultTimeoutDuration()).Should(Say("Successful remote access"))
+			Eventually(cf.Cf("events", appName), Config.DefaultTimeoutDuration()).Should(Say("audit.app.ssh-authorized"))
 		})
 
 		It("allows local port forwarding", func() {
@@ -141,9 +141,9 @@ var _ = SshDescribe("SSH", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() string {
-				curl := helpers.Curl("http://127.0.0.1:61007/").Wait(DEFAULT_TIMEOUT)
+				curl := helpers.Curl("http://127.0.0.1:61007/").Wait(Config.DefaultTimeoutDuration())
 				return string(curl.Out.Contents())
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora"))
 
 			err = stdin.Close()
 			Expect(err).NotTo(HaveOccurred())
@@ -172,12 +172,12 @@ var _ = SshDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
-			Eventually(cf.Cf("logs", appName, "--recent"), DEFAULT_TIMEOUT).Should(Say("Successful remote access"))
-			Eventually(cf.Cf("events", appName), DEFAULT_TIMEOUT).Should(Say("audit.app.ssh-authorized"))
+			Eventually(cf.Cf("logs", appName, "--recent"), Config.DefaultTimeoutDuration()).Should(Say("Successful remote access"))
+			Eventually(cf.Cf("events", appName), Config.DefaultTimeoutDuration()).Should(Say("audit.app.ssh-authorized"))
 		})
 
 		It("records failed ssh attempts", func() {
-			Eventually(cf.Cf("disable-ssh", appName), DEFAULT_TIMEOUT).Should(Exit(0))
+			Eventually(cf.Cf("disable-ssh", appName), Config.DefaultTimeoutDuration()).Should(Exit(0))
 
 			password := sshAccessCode()
 			clientConfig := &ssh.ClientConfig{
@@ -188,19 +188,19 @@ var _ = SshDescribe("SSH", func() {
 			_, err := ssh.Dial("tcp", sshProxyAddress(), clientConfig)
 			Expect(err).To(HaveOccurred())
 
-			Eventually(cf.Cf("events", appName), DEFAULT_TIMEOUT).Should(Say("audit.app.ssh-unauthorized"))
+			Eventually(cf.Cf("events", appName), Config.DefaultTimeoutDuration()).Should(Say("audit.app.ssh-unauthorized"))
 		})
 	})
 
 })
 
 func enableSSH(appName string) {
-	Eventually(cf.Cf("enable-ssh", appName), DEFAULT_TIMEOUT).Should(Exit(0))
+	Eventually(cf.Cf("enable-ssh", appName), Config.DefaultTimeoutDuration()).Should(Exit(0))
 }
 
 func sshAccessCode() string {
 	getCode := cf.Cf("ssh-code")
-	Eventually(getCode, DEFAULT_TIMEOUT).Should(Exit(0))
+	Eventually(getCode, Config.DefaultTimeoutDuration()).Should(Exit(0))
 	return strings.TrimSpace(string(getCode.Buffer().Contents()))
 }
 
@@ -218,7 +218,7 @@ func sayCommandRun(cmd *exec.Cmd) {
 
 func sshProxyAddress() string {
 	infoCommand := cf.Cf("curl", "/v2/info")
-	Expect(infoCommand.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+	Expect(infoCommand.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 	type infoResponse struct {
 		AppSSHEndpoint string `json:"app_ssh_endpoint"`

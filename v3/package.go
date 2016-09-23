@@ -65,7 +65,7 @@ var _ = V3Describe("package features", func() {
 			// COPY
 			copyUrl := fmt.Sprintf("/v3/apps/%s/packages?source_package_guid=%s", destinationAppGuid, packageGuid)
 			session := cf.Cf("curl", copyUrl, "-X", "POST")
-			bytes := session.Wait(DEFAULT_TIMEOUT).Out.Contents()
+			bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 			var pac struct {
 				Guid string `json:"guid"`
 			}
@@ -79,11 +79,11 @@ var _ = V3Describe("package features", func() {
 			app_package_path := path.Join(tmpdir, destinationAppName)
 
 			// DOWNLOAD
-			session = cf.Cf("curl", fmt.Sprintf("/v3/packages/%s/download", copiedPackageGuid), "--output", app_package_path).Wait(DEFAULT_TIMEOUT)
+			session = cf.Cf("curl", fmt.Sprintf("/v3/packages/%s/download", copiedPackageGuid), "--output", app_package_path).Wait(Config.DefaultTimeoutDuration())
 			Expect(session).To(Exit(0))
 
 			session = helpers.Run("unzip", "-l", app_package_path)
-			Expect(session.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			Expect(session.Out).To(Say("dora.rb"))
 		})
 	})
@@ -99,8 +99,8 @@ var _ = V3Describe("package features", func() {
 			dropletPath := fmt.Sprintf("/v3/droplets/%s", dropletGuid)
 
 			Eventually(func() *Session {
-				return cf.Cf("curl", dropletPath).Wait(DEFAULT_TIMEOUT)
-			}, CF_PUSH_TIMEOUT).Should(Say("STAGED"))
+				return cf.Cf("curl", dropletPath).Wait(Config.DefaultTimeoutDuration())
+			}, Config.CfPushTimeoutDuration()).Should(Say("STAGED"))
 		})
 	})
 })

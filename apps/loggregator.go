@@ -42,15 +42,15 @@ var _ = AppsDescribe("loggregator", func() {
 			"-b", Config.RubyBuildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().LoggregatorLoadGenerator,
-			"-d", Config.AppsDomain).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			"-d", Config.AppsDomain).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
-		Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
 	Context("cf logs", func() {
@@ -63,18 +63,18 @@ var _ = AppsDescribe("loggregator", func() {
 		AfterEach(func() {
 			// logs might be nil if the BeforeEach panics
 			if logs != nil {
-				logs.Interrupt().Wait(DEFAULT_TIMEOUT)
+				logs.Interrupt().Wait(Config.DefaultTimeoutDuration())
 			}
 		})
 
 		It("exercises basic loggregator behavior", func() {
-			Eventually(logs, (DEFAULT_TIMEOUT + time.Minute)).Should(Say("Connected, tailing logs for app"))
+			Eventually(logs, (Config.DefaultTimeoutDuration() + time.Minute)).Should(Say("Connected, tailing logs for app"))
 
 			Eventually(func() string {
 				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Muahaha"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Muahaha"))
 
-			Eventually(logs, (DEFAULT_TIMEOUT + time.Minute)).Should(Say("Muahaha"))
+			Eventually(logs, (Config.DefaultTimeoutDuration() + time.Minute)).Should(Say("Muahaha"))
 		})
 	})
 
@@ -82,13 +82,13 @@ var _ = AppsDescribe("loggregator", func() {
 		It("makes loggregator buffer and dump log messages", func() {
 			Eventually(func() string {
 				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Muahaha"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Muahaha"))
 
 			Eventually(func() *Session {
 				appLogsSession := cf.Cf("logs", "--recent", appName)
-				Expect(appLogsSession.Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				return appLogsSession
-			}, DEFAULT_TIMEOUT).Should(Say("Muahaha"))
+			}, Config.DefaultTimeoutDuration()).Should(Say("Muahaha"))
 		})
 	})
 
@@ -104,13 +104,13 @@ var _ = AppsDescribe("loggregator", func() {
 
 			Eventually(func() string {
 				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring("Muahaha"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Muahaha"))
 
 			Eventually(msgChan, 10*time.Second).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
 		})
 
 		It("shows container metrics", func() {
-			appGuid := strings.TrimSpace(string(cf.Cf("app", appName, "--guid").Wait(DEFAULT_TIMEOUT).Out.Contents()))
+			appGuid := strings.TrimSpace(string(cf.Cf("app", appName, "--guid").Wait(Config.DefaultTimeoutDuration()).Out.Contents()))
 
 			noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.SkipSSLValidation}, nil)
 			msgChan := make(chan *events.Envelope, 100000)
@@ -134,7 +134,7 @@ var _ = AppsDescribe("loggregator", func() {
 						return false
 					}
 				}
-			}, 2*DEFAULT_TIMEOUT).Should(BeTrue())
+			}, 2*Config.DefaultTimeoutDuration()).Should(BeTrue())
 		})
 	})
 })
@@ -147,7 +147,7 @@ type cfHomeConfig struct {
 func getCfHomeConfig() *cfHomeConfig {
 	myCfHomeConfig := &cfHomeConfig{}
 
-	workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
+	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 		path := filepath.Join(os.Getenv("CF_HOME"), ".cf", "config.json")
 
 		configFile, err := os.Open(path)

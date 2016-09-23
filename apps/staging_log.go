@@ -23,15 +23,15 @@ var _ = AppsDescribe("An application being staged", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
 
-		cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)
+		cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())
 	})
 
 	It("has its staging log streamed during a push", func() {
-		Eventually(cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain), DEFAULT_TIMEOUT).Should(Exit(0))
+		Eventually(cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain), Config.DefaultTimeoutDuration()).Should(Exit(0))
 		app_helpers.SetBackend(appName)
-		start := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)
+		start := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
 
 		output := string(start.Buffer().Contents())
 		expected := []string{"Installing dependencies", "Uploading droplet", "App started"}

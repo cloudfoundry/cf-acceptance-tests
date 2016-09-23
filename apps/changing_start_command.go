@@ -27,9 +27,9 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
 	Context("by using the command flag", func() {
@@ -42,38 +42,38 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 				"-p", assets.NewAssets().Dora,
 				"-d", Config.AppsDomain,
 				"-c", "FOO=foo bundle exec rackup config.ru -p $PORT",
-			).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
-			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		It("takes effect after a restart, not requiring a push", func() {
 			Eventually(func() string {
 				return helpers.CurlApp(appName, "/env/FOO")
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring("foo"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("foo"))
 
-			guid := cf.Cf("app", appName, "--guid").Wait(DEFAULT_TIMEOUT).Out.Contents()
+			guid := cf.Cf("app", appName, "--guid").Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 			appGuid := strings.TrimSpace(string(guid))
 
 			workflowhelpers.ApiRequest(
 				"PUT",
 				"/v2/apps/"+appGuid,
 				nil,
-				DEFAULT_TIMEOUT,
+				Config.DefaultTimeoutDuration(),
 				`{"command":"FOO=bar bundle exec rackup config.ru -p $PORT"}`,
 			)
 
-			Expect(cf.Cf("stop", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("stop", appName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlApp(appName, "/env/FOO")
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
 
-			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlApp(appName, "/env/FOO")
-			}, DEFAULT_TIMEOUT).Should(ContainSubstring("bar"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("bar"))
 		})
 	})
 
@@ -89,14 +89,14 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 		}
 
 		BeforeEach(func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.NodejsBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().NodeWithProcfile, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.NodejsBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().NodeWithProcfile, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
-			Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		It("detects the use of the start command in the 'web' process type", func() {
 			var appsResponse AppsResponse
-			cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/apps?q=name:%s", appName)).Wait(DEFAULT_TIMEOUT).Out.Contents()
+			cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/apps?q=name:%s", appName)).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 			json.Unmarshal(cfResponse, &appsResponse)
 
 			Expect(appsResponse.Resources[0].Entity.DetectedStartCommand).To(Equal("node app.js"))

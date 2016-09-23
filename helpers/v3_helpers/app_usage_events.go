@@ -43,8 +43,8 @@ func UsageEventsInclude(events []AppUsageEvent, event AppUsageEvent) bool {
 func LastPageUsageEvents(TestSetup *workflowhelpers.ReproducibleTestSuiteSetup) []AppUsageEvent {
 	var response AppUsageEvents
 
-	workflowhelpers.AsUser(TestSetup.AdminUserContext(), DEFAULT_TIMEOUT, func() {
-		workflowhelpers.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1", &response, DEFAULT_TIMEOUT)
+	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+		workflowhelpers.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1", &response, Config.DefaultTimeoutDuration())
 	})
 
 	return response.Resources

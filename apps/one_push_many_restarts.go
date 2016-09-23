@@ -37,7 +37,7 @@ var _ = AppsDescribe("An application that's already been pushed", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, DEFAULT_TIMEOUT)
+		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
 
 		persistentTestSetup.Teardown()
 	})
@@ -45,44 +45,44 @@ var _ = AppsDescribe("An application that's already been pushed", func() {
 	BeforeEach(func() {
 		appName = Config.PersistentAppHost
 
-		appQuery := cf.Cf("app", appName).Wait(DEFAULT_TIMEOUT)
+		appQuery := cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
 		// might exit with 1 or 0, depending on app status
 		output := string(appQuery.Out.Contents())
 
 		if appQuery.ExitCode() == 1 && strings.Contains(output, "not found") {
-			pushCommand := cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(DEFAULT_TIMEOUT)
+			pushCommand := cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())
 			if pushCommand.ExitCode() != 0 {
-				Expect(cf.Cf("delete", "-f", "-r", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				Expect(cf.Cf("delete", "-f", "-r", appName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				Fail("failed to create app")
 			}
 			app_helpers.SetBackend(appName)
-			startCommand := cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)
+			startCommand := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
 			if startCommand.ExitCode() != 0 {
-				Expect(cf.Cf("delete", "-f", "-r", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+				Expect(cf.Cf("delete", "-f", "-r", appName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				Fail("persistent app failed to stage")
 			}
 		}
 
 		if appQuery.ExitCode() == 0 && strings.Contains(output, "stopped") {
-			Expect(cf.Cf("start", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
+			Expect(cf.Cf("start", appName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		}
 	})
 
 	It("can be restarted and still come up", func() {
 		Eventually(func() string {
 			return helpers.CurlAppRoot(appName)
-		}, CF_PUSH_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
+		}, Config.CfPushTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 
-		Expect(cf.Cf("stop", appName).Wait(DEFAULT_TIMEOUT)).To(Exit(0))
-
-		Eventually(func() string {
-			return helpers.CurlAppRoot(appName)
-		}, DEFAULT_TIMEOUT).Should(ContainSubstring("404"))
-
-		Expect(cf.Cf("start", appName).Wait(CF_PUSH_TIMEOUT)).To(Exit(0))
+		Expect(cf.Cf("stop", appName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(appName)
-		}, CF_PUSH_TIMEOUT).Should(ContainSubstring("Hi, I'm Dora!"))
+		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
+
+		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+		Eventually(func() string {
+			return helpers.CurlAppRoot(appName)
+		}, Config.CfPushTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 	})
 })

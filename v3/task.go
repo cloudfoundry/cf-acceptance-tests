@@ -67,7 +67,7 @@ var _ = V3Describe("v3 tasks", func() {
 			By("creating the task")
 			var createOutput Task
 			postBody := `{"command": "echo 0", "name": "mreow"}`
-			createCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks", appGuid), "-X", "POST", "-d", postBody).Wait(DEFAULT_TIMEOUT)
+			createCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks", appGuid), "-X", "POST", "-d", postBody).Wait(Config.DefaultTimeoutDuration())
 			Expect(createCommand).To(Exit(0))
 			err := json.Unmarshal(createCommand.Out.Contents(), &createOutput)
 			Expect(err).NotTo(HaveOccurred())
@@ -83,12 +83,12 @@ var _ = V3Describe("v3 tasks", func() {
 			By("successfully running")
 			var readOutput Task
 			Eventually(func() string {
-				readCommand := cf.Cf("curl", fmt.Sprintf("/v3/tasks/%s", createOutput.Guid), "-X", "GET").Wait(DEFAULT_TIMEOUT)
+				readCommand := cf.Cf("curl", fmt.Sprintf("/v3/tasks/%s", createOutput.Guid), "-X", "GET").Wait(Config.DefaultTimeoutDuration())
 				Expect(readCommand).To(Exit(0))
 				err := json.Unmarshal(readCommand.Out.Contents(), &readOutput)
 				Expect(err).NotTo(HaveOccurred())
 				return readOutput.State
-			}, DEFAULT_TIMEOUT).Should(Equal("SUCCEEDED"))
+			}, Config.DefaultTimeoutDuration()).Should(Equal("SUCCEEDED"))
 
 			By("TASK_STOPPED AppUsageEvent")
 			usageEvents = LastPageUsageEvents(TestSetup)
@@ -102,7 +102,7 @@ var _ = V3Describe("v3 tasks", func() {
 
 		BeforeEach(func() {
 			postBody := `{"command": "sleep 100;", "name": "mreow"}`
-			createCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks", appGuid), "-X", "POST", "-d", postBody).Wait(DEFAULT_TIMEOUT)
+			createCommand := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/tasks", appGuid), "-X", "POST", "-d", postBody).Wait(Config.DefaultTimeoutDuration())
 			Expect(createCommand).To(Exit(0))
 
 			var createOutput Task
@@ -114,11 +114,11 @@ var _ = V3Describe("v3 tasks", func() {
 
 		It("should show task is in FAILED state", func() {
 			var failureReason string
-			cancelCommand := cf.Cf("curl", fmt.Sprintf("/v3/tasks/%s/cancel", taskGuid), "-X", "PUT").Wait(DEFAULT_TIMEOUT)
+			cancelCommand := cf.Cf("curl", fmt.Sprintf("/v3/tasks/%s/cancel", taskGuid), "-X", "PUT").Wait(Config.DefaultTimeoutDuration())
 			Expect(cancelCommand).To(Exit(0))
 
 			Eventually(func() string {
-				readCommand := cf.Cf("curl", fmt.Sprintf("/v3/tasks/%s", taskGuid), "-X", "GET").Wait(DEFAULT_TIMEOUT)
+				readCommand := cf.Cf("curl", fmt.Sprintf("/v3/tasks/%s", taskGuid), "-X", "GET").Wait(Config.DefaultTimeoutDuration())
 				Expect(readCommand).To(Exit(0))
 
 				var readOutput Task
@@ -126,7 +126,7 @@ var _ = V3Describe("v3 tasks", func() {
 				Expect(err).NotTo(HaveOccurred())
 				failureReason = readOutput.Result.FailureReason
 				return readOutput.State
-			}, DEFAULT_TIMEOUT).Should(Equal("FAILED"))
+			}, Config.DefaultTimeoutDuration()).Should(Equal("FAILED"))
 			Expect(failureReason).To(Equal("task was cancelled"))
 		})
 	})
