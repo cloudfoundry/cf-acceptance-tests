@@ -183,7 +183,7 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 		}, 5).Should(Say("CURL_EXIT=[^0]"), "Expected staging security groups not to allow internal communication between app containers. Configure your staging security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
 
 		Expect(cf.Cf("set-env", testAppName, "TESTURI", "www.google.com").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		Expect(cf.Cf("start", testAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
+		Expect(cf.Cf("restart", testAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 		Eventually(func() *Session {
 			appLogsSession := cf.Cf("logs", "--recent", testAppName)
 			Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
