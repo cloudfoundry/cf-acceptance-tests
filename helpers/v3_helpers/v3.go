@@ -166,7 +166,7 @@ func AssignDropletToApp(appGuid, dropletGuid string) {
 
 func FetchRecentLogs(appGuid, oauthToken string, config config.Config) *Session {
 	loggregatorEndpoint := strings.Replace(config.ApiEndpoint, "api", "doppler", -1)
-	logUrl := fmt.Sprintf("%s/recent?app=%s", loggregatorEndpoint, appGuid)
+	logUrl := fmt.Sprintf("%s/apps/%s/recentlogs", loggregatorEndpoint, appGuid)
 	session := helpers.Curl(logUrl, "-H", fmt.Sprintf("Authorization: %s", oauthToken))
 	Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	return session
