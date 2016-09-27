@@ -27,7 +27,7 @@ and should not modify the CF state in such a way as to impact other tests.
     1. [Install Required Dependencies](#install-required-dependencies)
     1. [Test Configuration](#test-configuration)
 1. [Test Execution](#test-execution)
-1. [Explanation of Test Suites](#explanation-of-test-suites)
+1. [Explanation of Test Groups](#explanation-of-test-groups)
 1. [Contributing](#contributing)
 
 ## Test Setup
@@ -70,15 +70,15 @@ go get -u github.com/FiloSottile/gvt
 In order to update a current dependency to a specific version,
 do the following:
 
-  ```
-  cd cf-acceptance-tests
-  gvt delete <import_path>
-  gvt fetch -revision <revision_number> <import_path>
-  ```
+```
+cd cf-acceptance-tests
+gvt delete <import_path>
+gvt fetch -revision <revision_number> <import_path>
+```
 
 If you'd like to add a new dependency just `gvt fetch`
 
-### Test Configuration
+## Test Configuration
 
 You must set an environment variable `$CONFIG` which points to a JSON file that
 contains several pieces of data that will be used to configure the acceptance
@@ -92,52 +92,81 @@ to run the core test suites against a
 cat > integration_config.json <<EOF
 {
   "api": "api.bosh-lite.com",
+  "apps_domain": "bosh-lite.com",
   "admin_user": "admin",
   "admin_password": "admin",
-  "apps_domain": "bosh-lite.com",
   "skip_ssl_validation": true,
-  "use_http": true
+  "use_http": true,
+  "include_apps": true,
+  "include_backend_compatibility": true,
+  "include_detect": true,
+  "include_docker": true,
+  "include_internet_dependent": true,
+  "include_privileged_container_support": true,
+  "include_route_services": true,
+  "include_routing": true,
+  "include_security_groups": true,
+  "include_services": true,
+  "include_ssh": true,
+  "include_sso": true,
+  "include_tasks": true,
+  "include_v3": true
 }
 EOF
 export CONFIG=$PWD/integration_config.json
 ```
 
-The full set of config parameters is explained below:
+#### The full set of config parameters is explained below:
 
-* `api` (required): Cloud Controller API endpoint.
-* `admin_user` (required): Name of a user in your CF instance with admin credentials.  This admin user must have the `doppler.firehose` scope.
-* `admin_password` (required): Password of the admin user above.
-* `apps_domain` (required): A shared domain that tests can use to create subdomains that will route to applications also created in the tests.
+##### Required parameters:
+* `api`: Cloud Controller API endpoint.
+* `admin_user`: Name of a user in your CF instance with admin credentials.  This admin user must have the `doppler.firehose` scope.
+* `admin_password`: Password of the admin user above.
+* `apps_domain`: A shared domain that tests can use to create subdomains that will route to applications also created in the tests.
+
+##### Optional parameters:
+`include_*` parameters are used to specify whether to skip tests based on what is enabled/disabled on a deployment.  
+* `include_apps`: Flag to include the apps test group.
+* `include_sso`: Flag to include the services tests that integrate with Single Sign On.
+* `include_security_groups`: Flag to include tests for security groups.
+* `include_internet_dependent`: Flag to include tests that require the deployment to have internet access.
+* `include_services`: Flag to include test for the services API.
+* `include_v3`: Flag to include tests for the the v3 API.
+* `include_tasks`: Flag to include the v3 task tests dependent on the CC task_creation feature flag.
+* `include_route_services`: Flag to include the route services tests. Diego must be deployed for these tests to pass.
+* `include_routing`: Flag to include the routing tests. Diego must be deployed for these tests to pass.
+* `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
+* `include_ssh`: Flag to include tests for Diego container ssh feature.
+* `include_backend_compatibility`: Flag to include whether we check DEA/Diego interoperability.
+* `include_detect`: Flag to run tests in the detect group.
+* `include_privileged_container_support`: Requires capi.nsync.diego_privileged_containers and capi.stager.diego_privileged_containers to be enabled.
+* `backend`: App tests push their apps using the backend specified. Incompatible tests will be skipped based on which backend is chosen. If left unspecified the default backend will be used.
 * `skip_ssl_validation`: Set to true if using an invalid (e.g. self-signed) cert for traffic routed to your CF instance; this is generally always true for BOSH-Lite deployments of CF.
-* `use_existing_user` (optional): The admin user configured above will normally be used to create a temporary user (with lesser permissions) to perform actions (such as push applications) during tests, and then delete said user after the tests have run; set this to `true` if you want to use an existing user, configured via the following properties.
-* `keep_user_at_suite_end` (optional): If using an existing user (see above), set this to `true` unless you are okay having your existing user being deleted at the end. You can also set this to `true` when not using an existing user if you want to leave the temporary user around for debugging purposes after the test teardown.
-* `existing_user` (optional): Name of the existing user to use.
-* `existing_user_password` (optional): Password for the existing user to use.
-* `persistent_app_host` (optional): [See below](#persistent-app-test-setup).
-* `persistent_app_space` (optional): [See below](#persistent-app-test-setup).
-* `persistent_app_org` (optional): [See below](#persistent-app-test-setup).
-* `persistent_app_quota_name` (optional): [See below](#persistent-app-test-setup).
-* `backend` (optional): Set to 'diego' or 'dea' to determine the backend used. If unspecified the default backend will be used.
-* `include_tasks` (optional): If true, the task tests will be run. These require the task_creation feature flag to be enabled.
-* `include_privileged_container_support` (optional, default false): Requires capi.nsync.diego_privileged_containers and capi.stager.diego_privileged_containers to be enabled.
-* `artifacts_directory` (optional): If set, `cf` CLI trace output from test runs will be captured in files and placed in this directory. [See below](#capturing-test-output) for more.
-* `default_timeout` (optional): Default time (in seconds) to wait for polling assertions that wait for asynchronous results.
-* `cf_push_timeout` (optional): Default time (in seconds) to wait for `cf push` commands to succeed.
-* `long_curl_timeout` (optional): Default time (in seconds) to wait for assertions that `curl` slow endpoints of test applications.
-* `broker_start_timeout` (optional, only relevant for `services` suite): Time (in seconds) to wait for service broker test app to start.
-* `async_service_operation_timeout` (optional, only relevant for the `services` suite): Time (in seconds) to wait for an asynchronous service operation to complete.
-* `test_password` (optional): Used to set the password for the test user. This may be needed if your CF installation has password policies.
-* `timeout_scale` (optional): Used primarily to scale default timeouts for test setup and teardown actions (e.g. creating an org) as opposed to main test actions (e.g. pushing an app).
-* `use_http` (optional): Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
-* `include_sso` (optional, default false): Set to true if you would like CF Acceptance Tests to run the SSO lifecycle test suite.
-* `staticfile_buildpack_name` (optional) [See below](#buildpack-names).
-* `java_buildpack_name` (optional) [See below](#buildpack-names).
-* `ruby_buildpack_name` (optional) [See below](#buildpack-names).
-* `nodejs_buildpack_name` (optional) [See below](#buildpack-names).
-* `go_buildpack_name` (optional) [See below](#buildpack-names).
-* `python_buildpack_name` (optional) [See below](#buildpack-names).
-* `php_buildpack_name` (optional) [See below](#buildpack-names).
-* `binary_buildpack_name` (optional) [See below](#buildpack-names).
+* `use_http`: Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
+* `use_existing_user`: The admin user configured above will normally be used to create a temporary user (with lesser permissions) to perform actions (such as push applications) during tests, and then delete said user after the tests have run; set this to `true` if you want to use an existing user, configured via the following properties.
+* `keep_user_at_suite_end`: If using an existing user (see above), set this to `true` unless you are okay having your existing user being deleted at the end. You can also set this to `true` when not using an existing user if you want to leave the temporary user around for debugging purposes after the test teardown.
+* `existing_user`: Name of the existing user to use.
+* `existing_user_password`: Password for the existing user to use.
+* `persistent_app_host`: [See below](#persistent-app-test-setup).
+* `persistent_app_space`: [See below](#persistent-app-test-setup).
+* `persistent_app_org`: [See below](#persistent-app-test-setup).
+* `persistent_app_quota_name`: [See below](#persistent-app-test-setup).
+* `artifacts_directory`: If set, `cf` CLI trace output from test runs will be captured in files and placed in this directory. [See below](#capturing-test-output) for more.
+* `default_timeout`: Default time (in seconds) to wait for polling assertions that wait for asynchronous results.
+* `cf_push_timeout`: Default time (in seconds) to wait for `cf push` commands to succeed.
+* `long_curl_timeout`: Default time (in seconds) to wait for assertions that `curl` slow endpoints of test applications.
+* `broker_start_timeout` (only relevant for `services` test group): Time (in seconds) to wait for service broker test app to start.
+* `async_service_operation_timeout` (only relevant for the `services` test group): Time (in seconds) to wait for an asynchronous service operation to complete.
+* `test_password`: Used to set the password for the test user. This may be needed if your CF installation has password policies.
+* `timeout_scale`: Used primarily to scale default timeouts for test setup and teardown actions (e.g. creating an org) as opposed to main test actions (e.g. pushing an app).
+* `staticfile_buildpack_name` [See below](#buildpack-names).
+* `java_buildpack_name` [See below](#buildpack-names).
+* `ruby_buildpack_name` [See below](#buildpack-names).
+* `nodejs_buildpack_name` [See below](#buildpack-names).
+* `go_buildpack_name` [See below](#buildpack-names).
+* `python_buildpack_name` [See below](#buildpack-names).
+* `php_buildpack_name` [See below](#buildpack-names).
+* `binary_buildpack_name` [See below](#buildpack-names).
 
 #### Persistent App Test Setup
 The tests in `one_push_many_restarts_test.go` operate on an app that is supposed to persist between runs of the CF Acceptance tests. If these tests are run, they will create an org, space, and quota and push the app to this space. The test config will provide default names for these entities, but to configure them, set values for `persistent_app_host`, `persistent_app_space`, `persistent_app_org`, and `persistent_app_quota_name`.
@@ -154,9 +183,9 @@ Many tests specify a buildpack when pushing an app, so that on diego the app sta
 * `php_buildpack_name: php_buildpack`
 * `binary_buildpack_name: binary_buildpack`
 
-#### Route Services Test Suite Setup
+#### Route Services Test Group Setup
 
-The `route_services` suite pushes applications which must be able to reach the load balancer of your Cloud Foundry deployment. This requires configuring application security groups to support this. Your deployment manifest should include the following data if you are running the `route_services` suite:
+The `route_services` test group pushes applications which must be able to reach the load balancer of your Cloud Foundry deployment. This requires configuring application security groups to support this. Your deployment manifest should include the following data if you are running the `route_services` group:
 
 ```yaml
 ...
@@ -173,80 +202,79 @@ properties:
 ```
 
 #### Capturing Test Output
-If you set a value for `artifacts_directory` in your `$CONFIG` file, then you will be able to capture `cf` trace output from failed test runs.  When a test fails, look for the node id and suite name ("*Applications*" and "*2*" in the example below) in the test output:
+If you set a value for `artifacts_directory` in your `$CONFIG` file, then you will be able to capture `cf` trace output from failed test runs.  When a test fails, look for the test group name (`[services]` in the example below) in the test output:
 
 ```bash
-=== RUN TestLifecycle
-
-Running Suite: Applications
-====================================
-Random Seed: 1389376383
-Parallel test node 2/10. Assigned 14 of 137 specs.
+• Failure in Spec Setup (BeforeEach) [34.662 seconds]
+[services] Service Instance Lifecycle
 ```
 
 The `cf` trace output for the tests in these specs will be found in `CF-TRACE-Applications-2.txt` in the `artifacts_directory`.
 
-### Test Execution
-
-There are several different test suites, and you may not wish to run all the tests in all contexts, and sometimes you may want to focus individual test suites to pinpoint a failure.  The default set of tests for the DEAs can be run via:
+## Test Execution
+```bash
+cd cf-acceptance-tests
+```
+and then:
 
 ```bash
-./bin/test_default
+ginkgo -r
 ```
 
-This will run the `apps`, `detect`, `internet_dependent`, `routing` and `security_groups` test suites, as well as the top level test suite that simply asserts that the installed `cf` CLI version is high enough to be compatible with the test suite.
-
-The default tests for Diego can be run via:
-
-```bash
-./bin/diego_test_default
-```
-
-This will run the `apps`, `backend_compatibility`, `detect`, `docker`, `internet_dependent`, `routing`, `security_groups`, and `ssh` test suites, as well as the top level test suite that simply asserts that the installed `cf` CLI version is high enough to be compatible with the test suite.
-
-For more flexibility you can run `./bin/test` and specify many more options, e.g. which suites to run, which suites to exclude (e.g. if you want to run all but one suite), whether or not to run the tests in parallel, the number of parallel nodes to use, etc.  Refer to [ginkgo documentation](http://onsi.github.io/ginkgo/) for full details.  
-
-For example, to execute all test suites, and have tests run in parallel across four processes one would run:
+##### Parallel execution
+To execute all test groups, and have tests run in parallel across four processes one would run:
 
 ```bash
-./bin/test -r -nodes=4
+ginkgo -r -nodes=4
 ```
 
 Be careful with this number, as it's effectively "how many apps to push at once", as nearly every example pushes an app.
 
-To execute the acceptance tests for a specific suite, e.g. `routing`, run the following:
+
+##### Focusing Test Groups
+If you are already familiar with CATs you probably remember that there used to be many test suites. We've merged them all into a single test suite, but we still wanted to give developers the ability to skip or run specific groups of tests.
+For the purposes of this document we will call them "Test groups", if you can think of a better term for them feel free to open a github issue or pull request.  
+
+You may not wish to run all the tests in all contexts, and sometimes you may want to focus individual test groups to pinpoint a failure.
+To execute a specific group of acceptance tests, e.g. `routing/`, edit your [`integration_config.json`](#test-configuration) file and set all `include_*` values to `false` except for `include_routing` then run the following:
 
 ```bash
-bin/test routing
+ginkgo -r
 ```
 
-The suite names correspond to directory names.
+To execute tests in a single file use an `FDescribe` block around the tests in that file:
+```go
+var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
+  FDescribe("Focused tests", func() { // Add this line here
+  // ... rest of file
+  }) // Close here
+})
+
+```
+
+The test group names correspond to directory names.
 
 To see verbose output from `ginkgo`, use the `-v` flag.
 
 ```bash
-./bin/test routing -v
+ginkgo -r -v
 ```
 
-Most of these flags and options can also be passed to the `bin/test_default` and `bin/diego_test_default` scripts as well.
+## Explanation of Test Groups
 
-## Explanation of Test Suites
-
-* The test suite in the top level directory of this repository simply asserts the the installed version of the `cf` CLI is compatible with the rest of the test suites.
-
-Test Suite Name| Compatable Backend | Description
+Test Group Name| Compatable Backend | Description
 --- | --- | ---
-`apps`| DEA or Diego | Tests the core functionalities of Cloud Foundry: staging, running, logging, routing, buildpacks, etc.  This suite should always pass against a sound Cloud Foundry deployment.
+`apps`| DEA or Diego | Tests the core functionalities of Cloud Foundry: staging, running, logging, routing, buildpacks, etc.  This test group should always pass against a sound Cloud Foundry deployment.
 `backend_compatibility` | DEA and Diego are required simultaneously| Tests interoperability of droplets staged on Diego or the DEAs
 `detect` | DEA or Diego | Tests the ability of the platform to detect the correct buildpack for compiling an application if no buildpack is explicitly specified.
 `docker`| Diego |Test our ability to run docker containers on diego and that we handle docker metadata correctly.
-`internet_dependent`| DEA or Diego | This suite tests the feature of being able to specify a buildpack via a Github URL.  As such, this depends on your Cloud Foundry application containers having access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
+`internet_dependent`| DEA or Diego | This test group tests the feature of being able to specify a buildpack via a Github URL.  As such, this depends on your Cloud Foundry application containers having access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
 `routing`| DEA or Diego |This package contains routing specific acceptance tests (Context path, wildcard, SSL termination, sticky sessions).
 `route_services` | Diego |This package contains route services acceptance tests.
-`security_groups`| DEA or Diego |This suite tests the security groups feature of Cloud Foundry that lets you apply rules-based controls to network traffic in and out of your containers.  These should pass for most recent Cloud Foundry installations.  `cf-release` versions `v200` and up should have support for most security group specs to pass.
-`services`| DEA or Diego | This suite tests various features related to services, e.g. registering a service broker via the service broker API.  Some of these tests exercise special integrations, such as Single Sign-On authentication; you may wish to run some tests in this package but selectively skip others if you haven't configured the required integrations.  Consult the [ginkgo spec runner](http://onsi.github.io/ginkgo/#the-spec-runner) documention to see how to use the `--skip` and `--focus` flags.
-`ssh`| Diego |This suite tests our ability to communicate with Diego apps via ssh, scp, and sftp.
-`v3`| Diego| This suite contains tests for the next-generation v3 Cloud Controller API.  As of this writing, the v3 API is not officially supported.
+`security_groups`| DEA or Diego |This test group tests the security groups feature of Cloud Foundry that lets you apply rules-based controls to network traffic in and out of your containers.  These should pass for most recent Cloud Foundry installations.  `cf-release` versions `v200` and up should have support for most security group specs to pass.
+`services`| DEA or Diego | This test group tests various features related to services, e.g. registering a service broker via the service broker API.  Some of these tests exercise special integrations, such as Single Sign-On authentication; you may wish to run some tests in this package but selectively skip others if you haven't configured the required integrations.  Consult the [ginkgo spec runner](http://onsi.github.io/ginkgo/#the-spec-runner) documention to see how to use the `--skip` and `--focus` flags.
+`ssh`| Diego |This test group tests our ability to communicate with Diego apps via ssh, scp, and sftp.
+`v3`| Diego| This test group contains tests for the next-generation v3 Cloud Controller API.  As of this writing, the v3 API is not officially supported.
 
 ## Contributing
 
@@ -303,10 +331,10 @@ recent application logs. There is a helper method `AppReport` provided in the
       app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
     })
     ```
-1. Document the purpose of your test suite in this repo's README.md.
-This is especially important when changing the explicit behavior of existing suites
-or adding new suites.
+1. Document the purpose of your test groups in this repo's README.md.
+This is especially important when changing the explicit behavior of existing test groups
+or adding new test groups.
 1. Document all changes to the config object in this repo's README.md.
 1. Document the compatible backends in this repo's README.md.
-1. If you add a test that requires a new minimum `cf` CLI version, update the `cli_compatibility_test`.
+1. If you add a test that requires a new minimum `cf` CLI version, update the `minCliVersion` in `cats_suite_test.go`.
 1. If you add a test that is unsupported on a particular backend, add a ginkgo Skip() in an if Config.Backend != "your_backend" {} clause, [see Ginkgo's skip](https://onsi.github.io/ginkgo/#the-spec-runner).
