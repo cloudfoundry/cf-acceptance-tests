@@ -175,7 +175,7 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 		defer func() { cf.Cf("delete", testAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration()) }()
 
 		Expect(cf.Cf("set-env", testAppName, "TESTURI", privateUri).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		Expect(cf.Cf("restart", testAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
+		Expect(cf.Cf("start", testAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 		Eventually(func() *Session {
 			appLogsSession := cf.Cf("logs", "--recent", testAppName)
 			Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
