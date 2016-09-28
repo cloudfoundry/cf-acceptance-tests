@@ -13,7 +13,7 @@ func randomName() string {
 		panic(err)
 	}
 
-	return guid.String()
+	return guid.String()[0:20]
 }
 
 func PrefixedRandomName(prefixName, resourceName string) string {
