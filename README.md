@@ -40,6 +40,11 @@ and should not modify the CF state in such a way as to impact other tests.
   * [git](http://git-scm.com/)
   * [mercurial](http://mercurial.selenic.com/)
   * [bazaar](http://bazaar.canonical.com/)
+- [Install ginkgo](https://onsi.github.io/ginkgo/#getting-ginkgo)
+  ```
+  $ go get github.com/onsi/ginkgo/ginkgo
+  $ go get github.com/onsi/gomega
+  ```
 - Install the [`cf CLI`](https://github.com/cloudfoundry/cli).
   Make sure that it is accessible in your `$PATH`.
 - Install [curl](http://curl.haxx.se/)
