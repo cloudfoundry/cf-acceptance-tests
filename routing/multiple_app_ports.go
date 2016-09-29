@@ -42,7 +42,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 		Context("when no ports are specified for the app", func() {
 			It("should listen on the default app port", func() {
 				Eventually(func() string {
-					return helpers.CurlApp(app, "/port")
+					return helpers.CurlApp(Config, app, "/port")
 				}, Config.DefaultTimeoutDuration(), "5s").Should(ContainSubstring("8080"))
 			})
 		})
@@ -62,15 +62,15 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 
 		It("should listen on multiple ports", func() {
 			Eventually(func() string {
-				return helpers.CurlApp(app, "/")
+				return helpers.CurlApp(Config, app, "/")
 			}, Config.DefaultTimeoutDuration(), "5s").Should(ContainSubstring("Lattice"))
 
 			Consistently(func() string {
-				return helpers.CurlApp(app, "/port")
+				return helpers.CurlApp(Config, app, "/port")
 			}, Config.DefaultTimeoutDuration(), "5s").Should(ContainSubstring("8080"))
 
 			Eventually(func() string {
-				return helpers.CurlApp(secondRoute, "/port")
+				return helpers.CurlApp(Config, secondRoute, "/port")
 			}, Config.DefaultTimeoutDuration(), "5s").Should(ContainSubstring("7777"))
 		})
 	})

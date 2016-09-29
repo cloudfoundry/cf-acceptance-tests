@@ -41,13 +41,13 @@ var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
 			app_helpers.EnableDiego(appName)
 
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(binaryHi))
+			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(binaryHi))
 		})
 
 		It("runs on the DEAs", func() {
 			app_helpers.DisableDiego(appName)
 			Eventually(cf.Cf("restart", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(binaryHi))
+			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(binaryHi))
 		})
 	})
 
@@ -55,13 +55,13 @@ var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
 		BeforeEach(func() {
 			app_helpers.DisableDiego(appName)
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(binaryHi))
+			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(binaryHi))
 		})
 
 		It("runs on Diego", func() {
 			app_helpers.EnableDiego(appName)
 			Eventually(cf.Cf("restart", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(binaryHi))
+			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(binaryHi))
 		})
 	})
 })

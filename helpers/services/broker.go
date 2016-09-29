@@ -118,7 +118,7 @@ func (b ServiceBroker) Push(config cats_config.Config) {
 }
 
 func (b ServiceBroker) Configure() {
-	Expect(helpers.Curl(helpers.AppUri(b.Name, "/config"), "-d", b.ToJSON()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+	Expect(helpers.Curl(Config, helpers.AppUri(b.Name, "/config", Config), "-d", b.ToJSON()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 }
 
 func (b ServiceBroker) Restart() {
@@ -127,21 +127,21 @@ func (b ServiceBroker) Restart() {
 
 func (b ServiceBroker) Create() {
 	workflowhelpers.AsUser(b.TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("create-service-broker", b.Name, "username", "password", helpers.AppUri(b.Name, "")).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("create-service-broker", b.Name, "username", "password", helpers.AppUri(b.Name, "", Config)).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		Expect(cf.Cf("service-brokers").Wait(Config.DefaultTimeoutDuration())).To(Say(b.Name))
 	})
 }
 
 func (b ServiceBroker) CreateSpaceScoped() {
 	workflowhelpers.AsUser(b.TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("create-service-broker", b.Name, "username", "password", helpers.AppUri(b.Name, ""), "--space-scoped").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("create-service-broker", b.Name, "username", "password", helpers.AppUri(b.Name, "", Config), "--space-scoped").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		Expect(cf.Cf("service-brokers").Wait(Config.DefaultTimeoutDuration())).To(Say(b.Name))
 	})
 }
 
 func (b ServiceBroker) Update() {
 	workflowhelpers.AsUser(b.TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("update-service-broker", b.Name, "username", "password", helpers.AppUri(b.Name, "")).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("update-service-broker", b.Name, "username", "password", helpers.AppUri(b.Name, "", Config)).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 }
 

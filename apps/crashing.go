@@ -74,7 +74,7 @@ var _ = AppsDescribe("Crashing", func() {
 		})
 
 		It("shows crash events", func() {
-			helpers.CurlApp(appName, "/sigterm/KILL")
+			helpers.CurlApp(Config, appName, "/sigterm/KILL")
 
 			Eventually(func() string {
 				return string(cf.Cf("events", appName).Wait(Config.DefaultTimeoutDuration()).Out.Contents())
@@ -82,11 +82,11 @@ var _ = AppsDescribe("Crashing", func() {
 		})
 
 		It("recovers", func() {
-			id := helpers.CurlApp(appName, "/id")
-			helpers.CurlApp(appName, "/sigterm/KILL")
+			id := helpers.CurlApp(Config, appName, "/id")
+			helpers.CurlApp(Config, appName, "/sigterm/KILL")
 
 			Eventually(func() string {
-				return helpers.CurlApp(appName, "/id")
+				return helpers.CurlApp(Config, appName, "/id")
 			}, Config.DefaultTimeoutDuration()).Should(Not(Equal(id)))
 		})
 	})

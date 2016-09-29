@@ -218,7 +218,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				spaceGuid = strings.Trim(spaceGuid, "\n")
 				body := map[string]string{
 					"name":          broker.Name,
-					"broker_url":    helpers.AppUri(broker.Name, ""),
+					"broker_url":    helpers.AppUri(broker.Name, "", Config),
 					"auth_username": TestSetup.RegularUserContext().Username,
 					"auth_password": TestSetup.RegularUserContext().Password,
 					"space_guid":    spaceGuid,
@@ -260,7 +260,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				spaceGuid = strings.Trim(spaceGuid, "\n")
 				body := map[string]string{
 					"name":          broker.Name,
-					"broker_url":    helpers.AppUri(broker.Name, ""),
+					"broker_url":    helpers.AppUri(broker.Name, "", Config),
 					"auth_username": TestSetup.RegularUserContext().Username,
 					"auth_password": TestSetup.RegularUserContext().Password,
 					"space_guid":    spaceGuid,

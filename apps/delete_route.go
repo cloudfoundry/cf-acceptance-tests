@@ -23,7 +23,7 @@ var _ = AppsDescribe("Delete Route", func() {
 		app_helpers.SetBackend(appName)
 		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Eventually(func() string {
-			return helpers.CurlAppRoot(appName)
+			return helpers.CurlAppRoot(Config, appName)
 		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 	})
 
@@ -39,17 +39,17 @@ var _ = AppsDescribe("Delete Route", func() {
 
 			By("adding a route")
 			Eventually(cf.Cf("map-route", appName, Config.AppsDomain, "-n", secondHost), Config.DefaultTimeoutDuration()).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
-			Eventually(helpers.CurlingAppRoot(secondHost), Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+			Eventually(helpers.CurlingAppRoot(Config, secondHost), Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 
 			By("removing a route")
 			Eventually(cf.Cf("unmap-route", appName, Config.AppsDomain, "-n", secondHost), Config.DefaultTimeoutDuration()).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(secondHost), Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
-			Eventually(helpers.CurlingAppRoot(appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+			Eventually(helpers.CurlingAppRoot(Config, secondHost), Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
+			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 
 			By("deleting the original route")
 			Expect(cf.Cf("delete-route", Config.AppsDomain, "-n", appName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			Eventually(helpers.CurlingAppRoot(appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
+			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
 		})
 	})
 })

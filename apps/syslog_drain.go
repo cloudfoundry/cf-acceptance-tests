@@ -95,7 +95,7 @@ func writeLogsUntilInterrupted(interrupt chan struct{}, randomMessage string, lo
 		case <-interrupt:
 			return
 		default:
-			helpers.CurlAppWithTimeout(logWriterAppName, "/log/"+randomMessage, Config.DefaultTimeoutDuration())
+			helpers.CurlAppWithTimeout(Config, logWriterAppName, "/log/"+randomMessage, Config.DefaultTimeoutDuration())
 			time.Sleep(3 * time.Second)
 		}
 	}

@@ -73,7 +73,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 
 			It("a request to the app is routed through the route service", func() {
 				Eventually(func() *Session {
-					helpers.CurlAppRoot(appName)
+					helpers.CurlAppRoot(Config, appName)
 					logs := cf.Cf("logs", "--recent", routeServiceName)
 					Expect(logs.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 					return logs
@@ -120,7 +120,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 
 			It("routes to an app", func() {
 				Eventually(func() string {
-					return helpers.CurlAppRoot(appName)
+					return helpers.CurlAppRoot(Config, appName)
 				}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("go, world"))
 			})
 		})
@@ -231,7 +231,7 @@ func deleteServiceInstance(serviceInstanceName string) {
 }
 
 func configureBroker(serviceBrokerAppName, routeServiceName string) {
-	brokerConfigJson := helpers.CurlApp(serviceBrokerAppName, "/config")
+	brokerConfigJson := helpers.CurlApp(Config, serviceBrokerAppName, "/config")
 
 	var brokerConfigMap customMap
 
@@ -239,7 +239,7 @@ func configureBroker(serviceBrokerAppName, routeServiceName string) {
 	Expect(err).NotTo(HaveOccurred())
 
 	if routeServiceName != "" {
-		routeServiceUrl := helpers.AppUri(routeServiceName, "/")
+		routeServiceUrl := helpers.AppUri(routeServiceName, "/", Config)
 		url, err := url.Parse(routeServiceUrl)
 		Expect(err).NotTo(HaveOccurred())
 		url.Scheme = "https"
@@ -253,7 +253,7 @@ func configureBroker(serviceBrokerAppName, routeServiceName string) {
 	changedJson, err := json.Marshal(brokerConfigMap)
 	Expect(err).NotTo(HaveOccurred())
 
-	helpers.CurlApp(serviceBrokerAppName, "/config", "-X", "POST", "-d", string(changedJson))
+	helpers.CurlApp(Config, serviceBrokerAppName, "/config", "-X", "POST", "-d", string(changedJson))
 }
 
 func createServiceBroker(brokerName, brokerAppName, serviceName string) {
@@ -262,7 +262,7 @@ func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 
 	initiateBrokerConfig(serviceName, brokerAppName)
 
-	brokerUrl := helpers.AppUri(brokerAppName, "")
+	brokerUrl := helpers.AppUri(brokerAppName, "", Config)
 
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 		session := cf.Cf("create-service-broker", brokerName, "user", "password", brokerUrl)
@@ -281,7 +281,7 @@ func deleteServiceBroker(brokerName string) {
 }
 
 func initiateBrokerConfig(serviceName, serviceBrokerAppName string) {
-	brokerConfigJson := helpers.CurlApp(serviceBrokerAppName, "/config")
+	brokerConfigJson := helpers.CurlApp(Config, serviceBrokerAppName, "/config")
 
 	var brokerConfigMap customMap
 
@@ -307,5 +307,5 @@ func initiateBrokerConfig(serviceName, serviceBrokerAppName string) {
 	changedJson, err := json.Marshal(brokerConfigMap)
 	Expect(err).NotTo(HaveOccurred())
 
-	helpers.CurlApp(serviceBrokerAppName, "/config", "-X", "POST", "-d", string(changedJson))
+	helpers.CurlApp(Config, serviceBrokerAppName, "/config", "-X", "POST", "-d", string(changedJson))
 }

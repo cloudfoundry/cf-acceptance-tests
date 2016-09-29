@@ -34,16 +34,16 @@ var _ = AppsDescribe("An application printing a bunch of output", func() {
 	})
 
 	It("doesn't die when printing 32MB", func() {
-		beforeId := helpers.CurlApp(appName, "/id")
+		beforeId := helpers.CurlApp(Config, appName, "/id")
 
-		Expect(helpers.CurlAppWithTimeout(appName, "/logspew/32000", Config.LongCurlTimeoutDuration())).
+		Expect(helpers.CurlAppWithTimeout(Config, appName, "/logspew/32000", Config.LongCurlTimeoutDuration())).
 			To(ContainSubstring("Just wrote 32000 kbytes to the log"))
 
 		// Give time for components (i.e. Warden) to react to the output
 		// and potentially make bad decisions (like killing the app)
 		time.Sleep(10 * time.Second)
 
-		afterId := helpers.CurlApp(appName, "/id")
+		afterId := helpers.CurlApp(Config, appName, "/id")
 
 		Expect(beforeId).To(Equal(afterId))
 	})

@@ -61,7 +61,7 @@ var _ = SshDescribe("SSH", func() {
 			BeforeEach(func() {
 				Eventually(cf.Cf("scale", appName, "-i", "2"), Config.CfPushTimeoutDuration()).Should(Exit(0))
 				Eventually(func() string {
-					return helpers.CurlApp(appName, "/env/INSTANCE_INDEX")
+					return helpers.CurlApp(Config, appName, "/env/INSTANCE_INDEX")
 				}, Config.DefaultTimeoutDuration()).Should(Equal("1"))
 			})
 
@@ -141,7 +141,7 @@ var _ = SshDescribe("SSH", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() string {
-				curl := helpers.Curl("http://127.0.0.1:61007/").Wait(Config.DefaultTimeoutDuration())
+				curl := helpers.Curl(Config, "http://127.0.0.1:61007/").Wait(Config.DefaultTimeoutDuration())
 				return string(curl.Out.Contents())
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora"))
 

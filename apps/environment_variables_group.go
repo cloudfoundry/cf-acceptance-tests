@@ -170,7 +170,7 @@ exit 1
 			app_helpers.SetBackend(appName)
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-			env := helpers.CurlApp(appName, "/env")
+			env := helpers.CurlApp(Config, appName, "/env")
 
 			Expect(env).To(ContainSubstring(envVarValue))
 		})

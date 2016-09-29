@@ -93,10 +93,10 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 		Expect(cf.Cf("start", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		defer func() { cf.Cf("delete", clientAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration()) }()
 
-		curlResponse := helpers.CurlApp(serverAppName, "/myip")
+		curlResponse := helpers.CurlApp(Config, serverAppName, "/myip")
 		containerIp := strings.TrimSpace(curlResponse)
 
-		curlResponse = helpers.CurlApp(serverAppName, "/env/VCAP_APPLICATION")
+		curlResponse = helpers.CurlApp(Config, serverAppName, "/env/VCAP_APPLICATION")
 		var env map[string]interface{}
 		err := json.Unmarshal([]byte(curlResponse), &env)
 		Expect(err).NotTo(HaveOccurred())
@@ -104,7 +104,7 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 
 		By("Asserting default running security-group configuration")
 		var doraCurlResponse DoraCurlResponse
-		curlResponse = helpers.CurlApp(clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort))
+		curlResponse = helpers.CurlApp(Config, clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort))
 		json.Unmarshal([]byte(curlResponse), &doraCurlResponse)
 		Expect(doraCurlResponse.ReturnCode).ToNot(Equal(0), "Expected running security groups not to allow internal communication between app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
 
@@ -138,7 +138,7 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 		Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		By("Testing app egress rules")
-		curlResponse = helpers.CurlApp(clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort))
+		curlResponse = helpers.CurlApp(Config, clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort))
 		json.Unmarshal([]byte(curlResponse), &doraCurlResponse)
 		Expect(doraCurlResponse.ReturnCode).To(Equal(0))
 
@@ -149,7 +149,7 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 		Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		By("Testing app egress rules")
-		curlResponse = helpers.CurlApp(clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort))
+		curlResponse = helpers.CurlApp(Config, clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort))
 		json.Unmarshal([]byte(curlResponse), &doraCurlResponse)
 		Expect(doraCurlResponse.ReturnCode).ToNot(Equal(0))
 	})

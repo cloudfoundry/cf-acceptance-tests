@@ -36,7 +36,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 			Expect(cf.Cf("start", appName).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
-				return helpers.CurlAppRoot(appName)
+				return helpers.CurlAppRoot(Config, appName)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 	})
@@ -48,7 +48,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 			Expect(cf.Cf("start", appName).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
-				return helpers.CurlAppRoot(appName)
+				return helpers.CurlAppRoot(Config, appName)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello from a node app!"))
 		})
 	})
@@ -61,7 +61,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 			Expect(cf.Cf("start", appName).Wait(CF_JAVA_TIMEOUT)).To(Exit(0))
 
 			Eventually(func() string {
-				return helpers.CurlAppRoot(appName)
+				return helpers.CurlAppRoot(Config, appName)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello, from your friendly neighborhood Java JSP!"))
 		})
 	})
@@ -73,7 +73,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 			Expect(cf.Cf("start", appName).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
-				return helpers.CurlAppRoot(appName)
+				return helpers.CurlAppRoot(Config, appName)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("go, world"))
 		})
 	})
@@ -85,7 +85,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 			Expect(cf.Cf("start", appName).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
-				return helpers.CurlAppRoot(appName)
+				return helpers.CurlAppRoot(Config, appName)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("python, world"))
 		})
 	})
@@ -100,7 +100,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 			Expect(cf.Cf("start", appName).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
-				return helpers.CurlAppRoot(appName)
+				return helpers.CurlAppRoot(Config, appName)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello from php"))
 		})
 	})
@@ -112,7 +112,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 			Expect(cf.Cf("start", appName).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
-				return helpers.CurlAppRoot(appName)
+				return helpers.CurlAppRoot(Config, appName)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello from a staticfile"))
 		})
 	})
@@ -124,7 +124,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 			Expect(cf.Cf("start", appName).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
-				return helpers.CurlAppRoot(appName)
+				return helpers.CurlAppRoot(Config, appName)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello from a binary"))
 		})
 	})

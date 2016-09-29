@@ -39,7 +39,7 @@ var _ = AppsDescribe("Encoding", func() {
 	It("Does not corrupt UTF-8 characters in filenames", func() {
 		var curlResponse string
 		Eventually(func() string {
-			curlResponse = helpers.CurlApp(appName, "/omega")
+			curlResponse = helpers.CurlApp(Config, appName, "/omega")
 			return curlResponse
 		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("It's Ω!"))
 		Expect(curlResponse).To(ContainSubstring("File encoding is UTF-8"))
@@ -49,7 +49,7 @@ var _ = AppsDescribe("Encoding", func() {
 		It("Supports URLs with percent-encoded characters", func() {
 			var curlResponse string
 			Eventually(func() string {
-				curlResponse = helpers.CurlApp(appName, "/requesturi/%21%7E%5E%24%20%27%28%29?foo=bar+baz%20bing")
+				curlResponse = helpers.CurlApp(Config, appName, "/requesturi/%21%7E%5E%24%20%27%28%29?foo=bar+baz%20bing")
 				return curlResponse
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("You requested some information about rio rancho properties"))
 			Expect(curlResponse).To(ContainSubstring("/requesturi/%21%7E%5E%24%20%27%28%29"))
@@ -59,7 +59,7 @@ var _ = AppsDescribe("Encoding", func() {
 		It("transparently proxies both reserved characters and unsafe characters", func() {
 			var curlResponse string
 			Eventually(func() string {
-				curlResponse = helpers.CurlApp(appName, "/requesturi/!~^'()$\"?!'()$#!'")
+				curlResponse = helpers.CurlApp(Config, appName, "/requesturi/!~^'()$\"?!'()$#!'")
 				return curlResponse
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("You requested some information about rio rancho properties"))
 			Expect(curlResponse).To(ContainSubstring("/requesturi/!~^'()$\""))

@@ -101,14 +101,14 @@ var _ = RoutingDescribe("Session Affinity", func() {
 					var body string
 
 					Eventually(func() string {
-						body = helpers.CurlAppRoot(appName)
+						body = helpers.CurlAppRoot(Config, appName)
 						return body
 					}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(fmt.Sprintf("Hello, %s", appName)))
 
 					indexPre := parseInstanceIndex(body)
 
 					Eventually(func() int {
-						body := helpers.CurlAppRoot(appName)
+						body := helpers.CurlAppRoot(Config, appName)
 						index := parseInstanceIndex(body)
 						return index
 					}, Config.DefaultTimeoutDuration()).ShouldNot(Equal(indexPre))
@@ -276,8 +276,8 @@ func parseInstanceIndex(body string) int {
 }
 
 func curlAppWithCookies(appName, path string, cookieStorePath string) string {
-	uri := helpers.AppUri(appName, path)
-	curlCmd := helpers.Curl(uri, "-b", cookieStorePath, "-c", cookieStorePath).Wait(helpers.CURL_TIMEOUT)
+	uri := helpers.AppUri(appName, path, Config)
+	curlCmd := helpers.Curl(Config, uri, "-b", cookieStorePath, "-c", cookieStorePath).Wait(helpers.CURL_TIMEOUT)
 	Expect(curlCmd).To(gexec.Exit(0))
 	return string(curlCmd.Out.Contents())
 }

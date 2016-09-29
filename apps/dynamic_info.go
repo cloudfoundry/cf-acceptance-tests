@@ -57,14 +57,14 @@ var _ = AppsDescribe("A running application", func() {
 	})
 
 	It("shows crash events and recovers from crashes", func() {
-		id := helpers.CurlApp(appName, "/id")
-		helpers.CurlApp(appName, "/sigterm/KILL")
+		id := helpers.CurlApp(Config, appName, "/id")
+		helpers.CurlApp(Config, appName, "/sigterm/KILL")
 
 		Eventually(func() string {
 			return string(cf.Cf("events", appName).Wait(Config.DefaultTimeoutDuration()).Out.Contents())
 		}, Config.DefaultTimeoutDuration()).Should(MatchRegexp("[eE]xited"))
 
-		Eventually(func() string { return helpers.CurlApp(appName, "/id") }).Should(Not(Equal(id)))
+		Eventually(func() string { return helpers.CurlApp(Config, appName, "/id") }).Should(Not(Equal(id)))
 	})
 
 	Context("with multiple instances", func() {

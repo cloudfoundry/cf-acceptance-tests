@@ -80,7 +80,7 @@ var _ = V3Describe("droplet features", func() {
 			CreateAndMapRoute(destinationAppGuid, TestSetup.RegularUserContext().Space, Config.AppsDomain, webProcess.Name)
 			StartApp(destinationAppGuid)
 			Eventually(func() string {
-				return helpers.CurlAppRoot(webProcess.Name)
+				return helpers.CurlAppRoot(Config, webProcess.Name)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 

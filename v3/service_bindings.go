@@ -102,7 +102,7 @@ var _ = V3Describe("service bindings", func() {
 		StartApp(appGuid)
 
 		Eventually(func() string {
-			return helpers.CurlApp(appName, "/env")
+			return helpers.CurlApp(Config, appName, "/env")
 		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("my-service"))
 	})
 })

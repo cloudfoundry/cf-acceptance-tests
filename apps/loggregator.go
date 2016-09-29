@@ -71,7 +71,7 @@ var _ = AppsDescribe("loggregator", func() {
 			Eventually(logs, (Config.DefaultTimeoutDuration() + time.Minute)).Should(Say("Connected, tailing logs for app"))
 
 			Eventually(func() string {
-				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
+				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Muahaha"))
 
 			Eventually(logs, (Config.DefaultTimeoutDuration() + time.Minute)).Should(Say("Muahaha"))
@@ -81,7 +81,7 @@ var _ = AppsDescribe("loggregator", func() {
 	Context("cf logs --recent", func() {
 		It("makes loggregator buffer and dump log messages", func() {
 			Eventually(func() string {
-				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
+				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Muahaha"))
 
 			Eventually(func() *Session {
@@ -103,7 +103,7 @@ var _ = AppsDescribe("loggregator", func() {
 			defer close(stopchan)
 
 			Eventually(func() string {
-				return helpers.CurlApp(appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
+				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Muahaha"))
 
 			Eventually(msgChan, 10*time.Second).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")

@@ -104,7 +104,7 @@ func GetAuthToken() string {
 
 func UploadPackage(uploadUrl, packageZipPath, token string) {
 	bits := fmt.Sprintf(`bits=@%s`, packageZipPath)
-	curl := helpers.Curl("-v", "-s", uploadUrl, "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).Wait(Config.DefaultTimeoutDuration())
+	curl := helpers.Curl(Config, "-v", "-s", uploadUrl, "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).Wait(Config.DefaultTimeoutDuration())
 	Expect(curl).To(Exit(0))
 }
 
@@ -167,7 +167,7 @@ func AssignDropletToApp(appGuid, dropletGuid string) {
 func FetchRecentLogs(appGuid, oauthToken string, config config.Config) *Session {
 	loggregatorEndpoint := strings.Replace(config.ApiEndpoint, "api", "doppler", -1)
 	logUrl := fmt.Sprintf("%s/apps/%s/recentlogs", loggregatorEndpoint, appGuid)
-	session := helpers.Curl(logUrl, "-H", fmt.Sprintf("Authorization: %s", oauthToken))
+	session := helpers.Curl(Config, logUrl, "-H", fmt.Sprintf("Authorization: %s", oauthToken))
 	Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	return session
 }

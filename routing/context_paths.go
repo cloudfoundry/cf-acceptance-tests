@@ -51,15 +51,15 @@ var _ = RoutingDescribe("Context Paths", func() {
 	Context("when another app has a route with a context path", func() {
 		It("routes to app with context path", func() {
 			Eventually(func() string {
-				return helpers.CurlAppRoot(hostname)
+				return helpers.CurlAppRoot(Config, hostname)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(app1))
 
 			Eventually(func() string {
-				return helpers.CurlApp(hostname, app2Path)
+				return helpers.CurlApp(Config, hostname, app2Path)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(app2))
 
 			Eventually(func() string {
-				return helpers.CurlApp(hostname, app3Path)
+				return helpers.CurlApp(Config, hostname, app3Path)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(app3))
 		})
 	})

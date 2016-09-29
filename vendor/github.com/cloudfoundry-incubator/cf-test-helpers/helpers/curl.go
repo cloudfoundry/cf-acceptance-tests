@@ -7,8 +7,7 @@ import (
 	"github.com/onsi/gomega/gexec"
 )
 
-func Curl(args ...string) *gexec.Session {
-	cfg := config.LoadConfig()
+func Curl(cfg config.Config, args ...string) *gexec.Session {
 	cmdStarter := commandstarter.NewCommandStarter()
 	return helpersinternal.Curl(cmdStarter, cfg.SkipSSLValidation, args...)
 }

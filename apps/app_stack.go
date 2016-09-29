@@ -139,7 +139,7 @@ EOF
 		Expect(start).To(Say(""))
 
 		Eventually(func() string {
-			return helpers.CurlAppRoot(appName)
+			return helpers.CurlAppRoot(Config, appName)
 		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(expected_lsb_release))
 	})
 })

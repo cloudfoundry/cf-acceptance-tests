@@ -66,10 +66,10 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 			StartApp(appGuid)
 
 			Eventually(func() string {
-				return helpers.CurlAppRoot(webProcess.Name)
+				return helpers.CurlAppRoot(Config, webProcess.Name)
 			}, Config.CfPushTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 
-			output := helpers.CurlApp(webProcess.Name, "/env")
+			output := helpers.CurlApp(Config, webProcess.Name, "/env")
 			Expect(output).To(ContainSubstring(fmt.Sprintf("application_name\\\":\\\"%s", appName)))
 			Expect(output).To(ContainSubstring(appCreationEnvironmentVariables))
 
@@ -95,7 +95,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 			Expect(UsageEventsInclude(usageEvents, event2)).To(BeTrue())
 
 			Eventually(func() string {
-				return helpers.CurlAppRoot(webProcess.Name)
+				return helpers.CurlAppRoot(Config, webProcess.Name)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
 		})
 	})
@@ -122,7 +122,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 			StartApp(appGuid)
 
 			Eventually(func() string {
-				return helpers.CurlAppRoot(webProcess.Name)
+				return helpers.CurlAppRoot(Config, webProcess.Name)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("ok"))
 
 			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
@@ -141,7 +141,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 			Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
 
 			Eventually(func() string {
-				return helpers.CurlAppRoot(webProcess.Name)
+				return helpers.CurlAppRoot(Config, webProcess.Name)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
 		})
 	})
@@ -190,10 +190,10 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 		StartApp(appGuid)
 
 		Eventually(func() string {
-			return helpers.CurlAppRoot(webProcess.Name)
+			return helpers.CurlAppRoot(Config, webProcess.Name)
 		}, Config.DefaultTimeoutDuration()).Should(Equal("0"))
 
-		output := helpers.CurlApp(webProcess.Name, "/env")
+		output := helpers.CurlApp(Config, webProcess.Name, "/env")
 		Expect(output).To(ContainSubstring(fmt.Sprintf("application_name\\\":\\\"%s", appName)))
 		Expect(output).To(ContainSubstring(appCreationEnvironmentVariables))
 
@@ -212,7 +212,7 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 		Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
 
 		Eventually(func() string {
-			return helpers.CurlAppRoot(webProcess.Name)
+			return helpers.CurlAppRoot(Config, webProcess.Name)
 		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
 	})
 })

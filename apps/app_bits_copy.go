@@ -49,7 +49,7 @@ var _ = AppsDescribe("Copy app bits", func() {
 		Expect(cf.Cf("copy-source", helloWorldAppName, golangAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		Eventually(func() string {
-			return helpers.CurlAppRoot(golangAppName)
+			return helpers.CurlAppRoot(Config, golangAppName)
 		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello, world!"))
 	})
 })

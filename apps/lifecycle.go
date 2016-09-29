@@ -69,7 +69,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
-				return helpers.CurlAppRoot(appName)
+				return helpers.CurlAppRoot(Config, appName)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 
@@ -124,11 +124,11 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				Expect(cf.Cf("curl", "/v2/apps/"+strings.TrimSpace(string(appGuid))+"/routes/"+string(routeGuid), "-X", "PUT").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 				Eventually(func() string {
-					return helpers.CurlAppRoot(appName)
+					return helpers.CurlAppRoot(Config, appName)
 				}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 
 				Eventually(func() string {
-					return helpers.CurlApp(appName, path)
+					return helpers.CurlApp(Config, appName, path)
 				}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello, world!"))
 			})
 		})
@@ -167,7 +167,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 			var envOutput string
 			Eventually(func() string {
-				envOutput = helpers.CurlApp(appName, "/env")
+				envOutput = helpers.CurlApp(Config, appName, "/env")
 				return envOutput
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(`"CF_INSTANCE_INDEX"=>"0"`))
 			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_IP"=>"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"`))
@@ -220,7 +220,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			Expect(cf.Cf("stop", appName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
-				return helpers.CurlAppRoot(appName)
+				return helpers.CurlAppRoot(Config, appName)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
 		})
 
@@ -243,7 +243,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				Expect(cf.Cf("start", appName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 				Eventually(func() string {
-					return helpers.CurlAppRoot(appName)
+					return helpers.CurlAppRoot(Config, appName)
 				}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 			})
 		})
@@ -265,7 +265,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 		It("is reflected through another push", func() {
 			Eventually(func() string {
-				return helpers.CurlAppRoot(appName)
+				return helpers.CurlAppRoot(Config, appName)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 
 			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
@@ -273,7 +273,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
-				return helpers.CurlAppRoot(appName)
+				return helpers.CurlAppRoot(Config, appName)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello, world!"))
 		})
 	})
@@ -298,7 +298,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
-				return helpers.CurlAppRoot(appName)
+				return helpers.CurlAppRoot(Config, appName)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
 		})
 

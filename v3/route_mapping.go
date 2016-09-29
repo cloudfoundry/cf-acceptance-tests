@@ -90,7 +90,7 @@ var _ = V3Describe("route_mapping", func() {
 			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 
 			Eventually(func() string {
-				return helpers.CurlAppRoot(appName)
+				return helpers.CurlAppRoot(Config, appName)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 	})

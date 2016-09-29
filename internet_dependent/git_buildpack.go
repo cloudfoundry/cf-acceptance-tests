@@ -25,7 +25,7 @@ var _ = InternetDependentDescribe("GitBuildpack", func() {
 		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		Eventually(func() string {
-			return helpers.CurlAppRoot(appName)
+			return helpers.CurlAppRoot(Config, appName)
 		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello from a node app!"))
 	})
 
