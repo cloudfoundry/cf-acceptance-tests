@@ -2,6 +2,7 @@ package routing
 
 import (
 	"fmt"
+	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
@@ -19,6 +20,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 		app             string
 		secondRoute     string
 		latticeAppAsset = assets.NewAssets().LatticeApp
+		SleepTimeOut    = 45 * time.Second
 	)
 
 	BeforeEach(func() {
@@ -31,6 +33,9 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 		PushAppNoStart(app, latticeAppAsset, Config.GoBuildpackName, Config.AppsDomain, Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT, "-c", cmd)
 		EnableDiego(app, Config.DefaultTimeoutDuration())
 		StartApp(app, APP_START_TIMEOUT)
+		if Config.SleepTimeoutDuration() > 0 {
+			SleepTimeOut = time.Duration(Config.SleepTimeout) * time.Second
+		}
 	})
 
 	AfterEach(func() {
@@ -67,7 +72,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 
 			Consistently(func() string {
 				return helpers.CurlApp(Config, app, "/port")
-			}, Config.DefaultTimeoutDuration(), "5s").Should(ContainSubstring("8080"))
+			}, SleepTimeout, "5s").Should(ContainSubstring("8080"))
 
 			Eventually(func() string {
 				return helpers.CurlApp(Config, secondRoute, "/port")
