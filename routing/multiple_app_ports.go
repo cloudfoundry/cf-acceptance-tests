@@ -72,7 +72,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 
 			Consistently(func() string {
 				return helpers.CurlApp(Config, app, "/port")
-			}, SleepTimeout, "5s").Should(ContainSubstring("8080"))
+			}, SleepTimeOut, "5s").Should(ContainSubstring("8080"))
 
 			Eventually(func() string {
 				return helpers.CurlApp(Config, secondRoute, "/port")
