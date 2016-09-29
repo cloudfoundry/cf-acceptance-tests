@@ -40,24 +40,24 @@ and should not modify the CF state in such a way as to impact other tests.
   * [git](http://git-scm.com/)
   * [mercurial](http://mercurial.selenic.com/)
   * [bazaar](http://bazaar.canonical.com/)
-- [Install ginkgo](https://onsi.github.io/ginkgo/#getting-ginkgo)
-  ```
-  $ go get github.com/onsi/ginkgo/ginkgo
-  $ go get github.com/onsi/gomega
+- [Install ginkgo and the matchers library](https://onsi.github.io/ginkgo/#getting-ginkgo)
+  ```bash
+  go get github.com/onsi/ginkgo/ginkgo
+  go get github.com/onsi/gomega
   ```
 - Install the [`cf CLI`](https://github.com/cloudfoundry/cli).
   Make sure that it is accessible in your `$PATH`.
 - Install [curl](http://curl.haxx.se/)
 - Check out a copy of `cf-acceptance-tests` and make sure that it is added to your `$GOPATH`.
   The recommended way to do this is to run:
-  ```
+  ```bash
   go get -d github.com/cloudfoundry/cf-acceptance-tests
   ```
   You will receive a warning `no buildable Go source files`;
   this can be ignored as there is no compilable go source code in the package, only test code.
 - Ensure all submodules are checked out to the correct SHA.
   The easiest way to do this is by running:
-  ```
+  ```bash
   ./bin/update_submodules
   ```
 - Install a running Cloud Foundry deployment to run these acceptance tests against. For example, bosh-lite.
@@ -68,14 +68,14 @@ All `go` dependencies required by CATs are vendored in the `vendor` directory.
 
 Install [gvt](https://github.com/FiloSottile/gvt) and make sure it is available
 in your $PATH. The recommended way to do this is to run:
-```
+```bash
 go get -u github.com/FiloSottile/gvt
 ```
 
 In order to update a current dependency to a specific version,
 do the following:
 
-```
+```bash
 cd cf-acceptance-tests
 gvt delete <import_path>
 gvt fetch -revision <revision_number> <import_path>
@@ -130,7 +130,7 @@ export CONFIG=$PWD/integration_config.json
 * `apps_domain`: A shared domain that tests can use to create subdomains that will route to applications also created in the tests.
 
 ##### Optional parameters:
-`include_*` parameters are used to specify whether to skip tests based on what is enabled/disabled on a deployment.  
+`include_*` parameters are used to specify whether to skip tests based on how a deployment is configured.  
 * `include_apps`: Flag to include the apps test group.
 * `include_sso`: Flag to include the services tests that integrate with Single Sign On.
 * `include_security_groups`: Flag to include tests for security groups.
@@ -207,21 +207,18 @@ properties:
 ```
 
 #### Capturing Test Output
-If you set a value for `artifacts_directory` in your `$CONFIG` file, then you will be able to capture `cf` trace output from failed test runs.  When a test fails, look for the test group name (`[services]` in the example below) in the test output:
+When a test fails, look for the test group name (`[services]` in the example below) in the test output:
 
 ```bash
 • Failure in Spec Setup (BeforeEach) [34.662 seconds]
 [services] Service Instance Lifecycle
 ```
 
-The `cf` trace output for the tests in these specs will be found in `CF-TRACE-Applications-2.txt` in the `artifacts_directory`.
+If you set a value for `artifacts_directory` in your `$CONFIG` file, then you will be able to capture `cf` trace output from failed test runs, this output may be useful in cases where the normal test output is not enough to debug an issue.  
+The `cf` trace output for the tests in these specs will be found in `CF-TRACE-Applications-*.txt` in the `artifacts_directory`.
 
 ## Test Execution
-```bash
-cd cf-acceptance-tests
-```
-and then:
-
+From the root directory of cf-acceptance-tests run:
 ```bash
 ginkgo -r
 ```
