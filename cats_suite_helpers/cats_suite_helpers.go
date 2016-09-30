@@ -21,7 +21,7 @@ const (
 )
 
 var (
-	Config    config.Config
+	Config    *config.Config
 	TestSetup *workflowhelpers.ReproducibleTestSuiteSetup
 	ScpPath   string
 	SftpPath  string

@@ -104,7 +104,7 @@ func NewServiceBroker(name string, path string, TestSetup *workflowhelpers.Repro
 	return b
 }
 
-func (b ServiceBroker) Push(config cats_config.Config) {
+func (b ServiceBroker) Push(config *cats_config.Config) {
 	Expect(cf.Cf(
 		"push", b.Name,
 		"--no-start",

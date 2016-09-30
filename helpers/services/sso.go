@@ -36,7 +36,7 @@ func ParseJsonResponse(response []byte) (resultMap map[string]interface{}) {
 	return
 }
 
-func SetOauthEndpoints(apiEndpoint string, oAuthConfig *OAuthConfig, config cats_config.Config) {
+func SetOauthEndpoints(apiEndpoint string, oAuthConfig *OAuthConfig, config *cats_config.Config) {
 	args := []string{}
 	if config.SkipSSLValidation {
 		args = append(args, "--insecure")

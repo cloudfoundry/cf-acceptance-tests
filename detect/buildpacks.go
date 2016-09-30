@@ -92,7 +92,11 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("php", func() {
 		// This test requires more time during push, because the php buildpack is slower than your average bear
-		var phpPushTimeout = Config.DetectTimeoutDuration() + 6*time.Minute
+		var phpPushTimeout time.Duration
+
+		BeforeEach(func() {
+			phpPushTimeout = Config.DetectTimeoutDuration() + 6*time.Minute
+		})
 
 		It("makes the app reachable via its bound route", func() {
 			Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Php, "-d", Config.AppsDomain).Wait(phpPushTimeout)).To(Exit(0))
