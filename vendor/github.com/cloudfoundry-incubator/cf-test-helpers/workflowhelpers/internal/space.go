@@ -3,7 +3,6 @@ package internal
 import (
 	"time"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
@@ -27,26 +26,26 @@ type TestSpace struct {
 	Timeout                              time.Duration
 }
 
-func NewRegularTestSpace(config config.Config, quotaLimit string) *TestSpace {
+func NewRegularTestSpace(cfg SpaceConfig, quotaLimit string) *TestSpace {
 	return NewBaseTestSpace(
-		generator.PrefixedRandomName(config.NamePrefix, "SPACE"),
-		generator.PrefixedRandomName(config.NamePrefix, "ORG"),
-		generator.PrefixedRandomName(config.NamePrefix, "QUOTA"),
+		generator.PrefixedRandomName(cfg.GetNamePrefix(), "SPACE"),
+		generator.PrefixedRandomName(cfg.GetNamePrefix(), "ORG"),
+		generator.PrefixedRandomName(cfg.GetNamePrefix(), "QUOTA"),
 		quotaLimit,
 		false,
-		config.ScaledTimeout(1*time.Minute),
+		cfg.GetScaledTimeout(1*time.Minute),
 		commandstarter.NewCommandStarter(),
 	)
 }
 
-func NewPersistentAppTestSpace(config config.Config) *TestSpace {
+func NewPersistentAppTestSpace(cfg SpaceConfig) *TestSpace {
 	baseTestSpace := NewBaseTestSpace(
-		config.PersistentAppSpace,
-		config.PersistentAppOrg,
-		config.PersistentAppQuotaName,
+		cfg.GetPersistentAppSpace(),
+		cfg.GetPersistentAppOrg(),
+		cfg.GetPersistentAppQuotaName(),
 		"10G",
 		true,
-		config.ScaledTimeout(1*time.Minute),
+		cfg.GetScaledTimeout(1*time.Minute),
 		commandstarter.NewCommandStarter(),
 	)
 	return baseTestSpace

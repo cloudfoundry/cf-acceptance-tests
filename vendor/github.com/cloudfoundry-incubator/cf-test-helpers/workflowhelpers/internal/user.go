@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/internal"
 	ginkgoconfig "github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
@@ -20,36 +19,51 @@ type TestUser struct {
 	shouldKeepUser bool
 }
 
-func NewTestUser(config config.Config, cmdStarter internal.Starter) *TestUser {
+type UserConfig interface {
+	GetUseExistingUser() bool
+	GetExistingUser() string
+	GetExistingUserPassword() string
+	GetConfigurableTestPassword() string
+	GetScaledTimeout(time.Duration) time.Duration
+	GetShouldKeepUser() bool
+	GetNamePrefix() string
+}
+
+type AdminUserConfig interface {
+	GetAdminUser() string
+	GetAdminPassword() string
+}
+
+func NewTestUser(config UserConfig, cmdStarter internal.Starter) *TestUser {
 	node := ginkgoconfig.GinkgoConfig.ParallelNode
 	timeTag := time.Now().Format("2006_01_02-15h04m05.999s")
 
 	var regUser, regUserPass string
-	regUser = fmt.Sprintf("%s-USER-%d-%s", config.NamePrefix, node, timeTag)
+	regUser = fmt.Sprintf("%s-USER-%d-%s", config.GetNamePrefix(), node, timeTag)
 	regUserPass = "meow"
 
-	if config.UseExistingUser {
-		regUser = config.ExistingUser
-		regUserPass = config.ExistingUserPassword
+	if config.GetUseExistingUser() {
+		regUser = config.GetExistingUser()
+		regUserPass = config.GetExistingUserPassword()
 	}
 
-	if config.ConfigurableTestPassword != "" {
-		regUserPass = config.ConfigurableTestPassword
+	if config.GetConfigurableTestPassword() != "" {
+		regUserPass = config.GetConfigurableTestPassword()
 	}
 
 	return &TestUser{
 		username:       regUser,
 		password:       regUserPass,
 		cmdStarter:     cmdStarter,
-		timeout:        config.ScaledTimeout(1 * time.Minute),
-		shouldKeepUser: config.ShouldKeepUser,
+		timeout:        config.GetScaledTimeout(1 * time.Minute),
+		shouldKeepUser: config.GetShouldKeepUser(),
 	}
 }
 
-func NewAdminUser(config config.Config, cmdStarter internal.Starter) *TestUser {
+func NewAdminUser(config AdminUserConfig, cmdStarter internal.Starter) *TestUser {
 	return &TestUser{
-		username:   config.AdminUser,
-		password:   config.AdminPassword,
+		username:   config.GetAdminUser(),
+		password:   config.GetAdminPassword(),
 		cmdStarter: cmdStarter,
 	}
 }

@@ -3,7 +3,6 @@ package helpersinternal
 import (
 	"time"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 )
@@ -13,19 +12,19 @@ type uriCreator interface {
 }
 
 type AppCurler struct {
-	CurlFunc   func(config.Config, ...string) *gexec.Session
+	CurlFunc   func(CurlConfig, ...string) *gexec.Session
 	UriCreator uriCreator
 }
 
-func NewAppCurler(curlFunc func(config.Config, ...string) *gexec.Session, cfg config.Config) *AppCurler {
-	uriCreator := &AppUriCreator{Config: cfg}
+func NewAppCurler(curlFunc func(CurlConfig, ...string) *gexec.Session, cfg CurlConfig) *AppCurler {
+	uriCreator := &AppUriCreator{CurlConfig: cfg}
 	return &AppCurler{
 		UriCreator: uriCreator,
 		CurlFunc:   curlFunc,
 	}
 }
 
-func (appCurler *AppCurler) CurlAndWait(cfg config.Config, appName string, path string, timeout time.Duration, args ...string) string {
+func (appCurler *AppCurler) CurlAndWait(cfg CurlConfig, appName string, path string, timeout time.Duration, args ...string) string {
 	appUri := appCurler.UriCreator.AppUri(appName, path)
 	curlArgs := append([]string{appUri}, args...)
 

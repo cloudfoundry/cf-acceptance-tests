@@ -1,13 +1,9 @@
 package helpersinternal
 
-import (
-	"strings"
-
-	"github.com/cloudfoundry-incubator/cf-test-helpers/config"
-)
+import "strings"
 
 type AppUriCreator struct {
-	Config config.Config
+	CurlConfig CurlConfig
 }
 
 func (uriCreator *AppUriCreator) AppUri(appName string, path string) string {
@@ -20,5 +16,5 @@ func (uriCreator *AppUriCreator) AppUri(appName string, path string) string {
 		subdomain = appName + "."
 	}
 
-	return uriCreator.Config.Protocol() + subdomain + uriCreator.Config.AppsDomain + path
+	return uriCreator.CurlConfig.Protocol() + subdomain + uriCreator.CurlConfig.GetAppsDomain() + path
 }

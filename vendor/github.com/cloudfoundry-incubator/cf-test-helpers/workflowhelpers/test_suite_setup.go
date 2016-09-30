@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/commandstarter"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers/internal"
 )
@@ -16,7 +15,7 @@ type remoteResource interface {
 }
 
 type ReproducibleTestSuiteSetup struct {
-	config config.Config
+	config internal.TestSuiteConfig
 
 	shortTimeout time.Duration
 	longTimeout  time.Duration
@@ -40,26 +39,26 @@ type ReproducibleTestSuiteSetup struct {
 
 const RUNAWAY_QUOTA_MEM_LIMIT = "99999G"
 
-func NewTestSuiteSetup(config config.Config) *ReproducibleTestSuiteSetup {
-	testSpace := internal.NewRegularTestSpace(config, "10G")
-	testUser := internal.NewTestUser(config, commandstarter.NewCommandStarter())
-	adminUser := internal.NewAdminUser(config, commandstarter.NewCommandStarter())
+func NewTestSuiteSetup(config internal.TestSuiteConfig) *ReproducibleTestSuiteSetup {
+	testSpace := internal.NewRegularTestSpace(config.(internal.SpaceConfig), "10G")
+	testUser := internal.NewTestUser(config.(internal.UserConfig), commandstarter.NewCommandStarter())
+	adminUser := internal.NewAdminUser(config.(internal.AdminUserConfig), commandstarter.NewCommandStarter())
 
-	shortTimeout := config.ScaledTimeout(1 * time.Minute)
-	regularUserContext := NewUserContext(config.ApiEndpoint, testUser, testSpace, config.SkipSSLValidation, shortTimeout)
-	adminUserContext := NewUserContext(config.ApiEndpoint, adminUser, nil, config.SkipSSLValidation, shortTimeout)
+	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
+	regularUserContext := NewUserContext(config.GetApiEndpoint(), testUser, testSpace, config.GetSkipSSLValidation(), shortTimeout)
+	adminUserContext := NewUserContext(config.GetApiEndpoint(), adminUser, nil, config.GetSkipSSLValidation(), shortTimeout)
 
 	return NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext)
 }
 
-func NewPersistentAppTestSuiteSetup(config config.Config) *ReproducibleTestSuiteSetup {
-	testSpace := internal.NewPersistentAppTestSpace(config)
-	testUser := internal.NewTestUser(config, commandstarter.NewCommandStarter())
-	adminUser := internal.NewAdminUser(config, commandstarter.NewCommandStarter())
+func NewPersistentAppTestSuiteSetup(config internal.TestSuiteConfig) *ReproducibleTestSuiteSetup {
+	testSpace := internal.NewPersistentAppTestSpace(config.(internal.SpaceConfig))
+	testUser := internal.NewTestUser(config.(internal.UserConfig), commandstarter.NewCommandStarter())
+	adminUser := internal.NewAdminUser(config.(internal.AdminUserConfig), commandstarter.NewCommandStarter())
 
-	shortTimeout := config.ScaledTimeout(1 * time.Minute)
-	regularUserContext := NewUserContext(config.ApiEndpoint, testUser, testSpace, config.SkipSSLValidation, shortTimeout)
-	adminUserContext := NewUserContext(config.ApiEndpoint, adminUser, nil, config.SkipSSLValidation, shortTimeout)
+	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
+	regularUserContext := NewUserContext(config.GetApiEndpoint(), testUser, testSpace, config.GetSkipSSLValidation(), shortTimeout)
+	adminUserContext := NewUserContext(config.GetApiEndpoint(), adminUser, nil, config.GetSkipSSLValidation(), shortTimeout)
 
 	testSuiteSetup := NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext)
 	testSuiteSetup.isPersistent = true
@@ -67,29 +66,29 @@ func NewPersistentAppTestSuiteSetup(config config.Config) *ReproducibleTestSuite
 	return testSuiteSetup
 }
 
-func NewRunawayAppTestSuiteSetup(config config.Config) *ReproducibleTestSuiteSetup {
-	testSpace := internal.NewRegularTestSpace(config, RUNAWAY_QUOTA_MEM_LIMIT)
-	testUser := internal.NewTestUser(config, commandstarter.NewCommandStarter())
-	adminUser := internal.NewAdminUser(config, commandstarter.NewCommandStarter())
+func NewRunawayAppTestSuiteSetup(config internal.TestSuiteConfig) *ReproducibleTestSuiteSetup {
+	testSpace := internal.NewRegularTestSpace(config.(internal.SpaceConfig), RUNAWAY_QUOTA_MEM_LIMIT)
+	testUser := internal.NewTestUser(config.(internal.UserConfig), commandstarter.NewCommandStarter())
+	adminUser := internal.NewAdminUser(config.(internal.AdminUserConfig), commandstarter.NewCommandStarter())
 
-	shortTimeout := config.ScaledTimeout(1 * time.Minute)
-	regularUserContext := NewUserContext(config.ApiEndpoint, testUser, testSpace, config.SkipSSLValidation, shortTimeout)
-	adminUserContext := NewUserContext(config.ApiEndpoint, adminUser, nil, config.SkipSSLValidation, shortTimeout)
+	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
+	regularUserContext := NewUserContext(config.GetApiEndpoint(), testUser, testSpace, config.GetSkipSSLValidation(), shortTimeout)
+	adminUserContext := NewUserContext(config.GetApiEndpoint(), adminUser, nil, config.GetSkipSSLValidation(), shortTimeout)
 
 	return NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext)
 }
 
-func NewBaseTestSuiteSetup(config config.Config, testSpace, testUser remoteResource, regularUserContext, adminUserContext UserContext) *ReproducibleTestSuiteSetup {
-	shortTimeout := config.ScaledTimeout(1 * time.Minute)
+func NewBaseTestSuiteSetup(config internal.TestSuiteConfig, testSpace, testUser remoteResource, regularUserContext, adminUserContext UserContext) *ReproducibleTestSuiteSetup {
+	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
 
 	return &ReproducibleTestSuiteSetup{
 		config: config,
 
 		shortTimeout: shortTimeout,
-		longTimeout:  config.ScaledTimeout(5 * time.Minute),
+		longTimeout:  config.GetScaledTimeout(5 * time.Minute),
 
-		organizationName: generator.PrefixedRandomName(config.NamePrefix, "ORG"),
-		spaceName:        generator.PrefixedRandomName(config.NamePrefix, "SPACE"),
+		organizationName: generator.PrefixedRandomName(config.GetNamePrefix(), "ORG"),
+		spaceName:        generator.PrefixedRandomName(config.GetNamePrefix(), "SPACE"),
 
 		regularUserContext: regularUserContext,
 		adminUserContext:   adminUserContext,
