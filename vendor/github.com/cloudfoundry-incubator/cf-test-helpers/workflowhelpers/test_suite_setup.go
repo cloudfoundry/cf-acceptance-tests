@@ -40,9 +40,9 @@ type ReproducibleTestSuiteSetup struct {
 const RUNAWAY_QUOTA_MEM_LIMIT = "99999G"
 
 func NewTestSuiteSetup(config internal.TestSuiteConfig) *ReproducibleTestSuiteSetup {
-	testSpace := internal.NewRegularTestSpace(config.(internal.SpaceConfig), "10G")
-	testUser := internal.NewTestUser(config.(internal.UserConfig), commandstarter.NewCommandStarter())
-	adminUser := internal.NewAdminUser(config.(internal.AdminUserConfig), commandstarter.NewCommandStarter())
+	testSpace := internal.NewRegularTestSpace(config, "10G")
+	testUser := internal.NewTestUser(config, commandstarter.NewCommandStarter())
+	adminUser := internal.NewAdminUser(config, commandstarter.NewCommandStarter())
 
 	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
 	regularUserContext := NewUserContext(config.GetApiEndpoint(), testUser, testSpace, config.GetSkipSSLValidation(), shortTimeout)
@@ -52,9 +52,9 @@ func NewTestSuiteSetup(config internal.TestSuiteConfig) *ReproducibleTestSuiteSe
 }
 
 func NewPersistentAppTestSuiteSetup(config internal.TestSuiteConfig) *ReproducibleTestSuiteSetup {
-	testSpace := internal.NewPersistentAppTestSpace(config.(internal.SpaceConfig))
-	testUser := internal.NewTestUser(config.(internal.UserConfig), commandstarter.NewCommandStarter())
-	adminUser := internal.NewAdminUser(config.(internal.AdminUserConfig), commandstarter.NewCommandStarter())
+	testSpace := internal.NewPersistentAppTestSpace(config)
+	testUser := internal.NewTestUser(config, commandstarter.NewCommandStarter())
+	adminUser := internal.NewAdminUser(config, commandstarter.NewCommandStarter())
 
 	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
 	regularUserContext := NewUserContext(config.GetApiEndpoint(), testUser, testSpace, config.GetSkipSSLValidation(), shortTimeout)
@@ -67,9 +67,9 @@ func NewPersistentAppTestSuiteSetup(config internal.TestSuiteConfig) *Reproducib
 }
 
 func NewRunawayAppTestSuiteSetup(config internal.TestSuiteConfig) *ReproducibleTestSuiteSetup {
-	testSpace := internal.NewRegularTestSpace(config.(internal.SpaceConfig), RUNAWAY_QUOTA_MEM_LIMIT)
-	testUser := internal.NewTestUser(config.(internal.UserConfig), commandstarter.NewCommandStarter())
-	adminUser := internal.NewAdminUser(config.(internal.AdminUserConfig), commandstarter.NewCommandStarter())
+	testSpace := internal.NewRegularTestSpace(config, RUNAWAY_QUOTA_MEM_LIMIT)
+	testUser := internal.NewTestUser(config, commandstarter.NewCommandStarter())
+	adminUser := internal.NewAdminUser(config, commandstarter.NewCommandStarter())
 
 	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
 	regularUserContext := NewUserContext(config.GetApiEndpoint(), testUser, testSpace, config.GetSkipSSLValidation(), shortTimeout)

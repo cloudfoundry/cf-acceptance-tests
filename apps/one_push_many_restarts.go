@@ -43,14 +43,14 @@ var _ = AppsDescribe("An application that's already been pushed", func() {
 	})
 
 	BeforeEach(func() {
-		appName = Config.PersistentAppHost
+		appName = Config.GetPersistentAppHost()
 
 		appQuery := cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
 		// might exit with 1 or 0, depending on app status
 		output := string(appQuery.Out.Contents())
 
 		if appQuery.ExitCode() == 1 && strings.Contains(output, "not found") {
-			pushCommand := cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())
+			pushCommand := cf.Cf("push", appName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())
 			if pushCommand.ExitCode() != 0 {
 				Expect(cf.Cf("delete", "-f", "-r", appName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				Fail("failed to create app")

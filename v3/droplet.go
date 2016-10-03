@@ -32,7 +32,7 @@ var _ = V3Describe("droplet features", func() {
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()
-		uploadUrl := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.ApiEndpoint, packageGuid)
+		uploadUrl := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.GetApiEndpoint(), packageGuid)
 		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
 		WaitForPackageToBeReady(packageGuid)
 	})
@@ -45,7 +45,7 @@ var _ = V3Describe("droplet features", func() {
 		)
 
 		BeforeEach(func() {
-			sourceDropletGuid = StageBuildpackPackage(packageGuid, Config.RubyBuildpackName)
+			sourceDropletGuid = StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
 			WaitForDropletToStage(sourceDropletGuid)
 
 			destinationAppName = random_name.CATSRandomName("APP")
@@ -77,7 +77,7 @@ var _ = V3Describe("droplet features", func() {
 			Expect(webProcess.Guid).ToNot(BeEmpty())
 			Expect(workerProcess.Guid).ToNot(BeEmpty())
 
-			CreateAndMapRoute(destinationAppGuid, TestSetup.RegularUserContext().Space, Config.AppsDomain, webProcess.Name)
+			CreateAndMapRoute(destinationAppGuid, TestSetup.RegularUserContext().Space, Config.GetAppsDomain(), webProcess.Name)
 			StartApp(destinationAppGuid)
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, webProcess.Name)

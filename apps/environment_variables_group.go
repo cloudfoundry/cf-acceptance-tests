@@ -129,7 +129,7 @@ exit 1
 				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			})
 
-			Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 
@@ -166,7 +166,7 @@ exit 1
 				extendEnv("running", envVarName, envVarValue)
 			})
 
-			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 

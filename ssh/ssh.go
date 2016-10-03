@@ -29,7 +29,7 @@ var _ = SshDescribe("SSH", func() {
 	var appName string
 
 	BeforeEach(func() {
-		if Config.Backend != "diego" {
+		if Config.GetBackend() != "diego" {
 			Skip(skip_messages.SkipDiegoMessage)
 		}
 		appName = random_name.CATSRandomName("APP")
@@ -39,7 +39,7 @@ var _ = SshDescribe("SSH", func() {
 			"--no-start",
 			"-b", "ruby_buildpack",
 			"-m", DEFAULT_MEMORY_LIMIT,
-			"-d", Config.AppsDomain,
+			"-d", Config.GetAppsDomain(),
 			"-i", "1"),
 			Config.DefaultTimeoutDuration(),
 		).Should(Exit(0))

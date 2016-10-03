@@ -55,10 +55,10 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 		Expect(cf.Cf("push",
 			serverAppName,
 			"--no-start",
-			"-b", Config.RubyBuildpackName,
+			"-b", Config.GetRubyBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Dora,
-			"-d", Config.AppsDomain).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(serverAppName)
 		Expect(cf.Cf("start", serverAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
@@ -88,7 +88,7 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 	//   are discoverable via the cc api and dora's myip endpoint.
 	It("allows previously-blocked ip traffic after applying a security group, and re-blocks it when the group is removed", func() {
 		clientAppName := random_name.CATSRandomName("APP")
-		Expect(cf.Cf("push", clientAppName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("push", clientAppName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(clientAppName)
 		Expect(cf.Cf("start", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		defer func() { cf.Cf("delete", clientAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration()) }()
@@ -170,7 +170,7 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 			})
 		}()
 
-		Expect(cf.Cf("push", testAppName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpack, "-p", assets.NewAssets().HelloWorld, "-d", Config.AppsDomain).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("push", testAppName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpack, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(testAppName)
 		defer func() { cf.Cf("delete", testAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration()) }()
 

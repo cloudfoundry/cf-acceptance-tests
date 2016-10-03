@@ -42,7 +42,7 @@ var _ = V3Describe("service bindings", func() {
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()
-		uploadUrl := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.ApiEndpoint, packageGuid)
+		uploadUrl := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.GetApiEndpoint(), packageGuid)
 		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
 		WaitForPackageToBeReady(packageGuid)
 		Expect(cf.Cf("create-user-provided-service", upsName, "-p", "{\"username\":\"admin\",\"password\":\"my-service\"}").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
@@ -94,10 +94,10 @@ var _ = V3Describe("service bindings", func() {
 
 	// TODO Unpend this test once v3 service bindings can be deleted (especially recursively through org delete)
 	PIt("exposes them during running", func() {
-		dropletGuid := StageBuildpackPackage(packageGuid, Config.RubyBuildpackName)
+		dropletGuid := StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
 		WaitForDropletToStage(dropletGuid)
 		AssignDropletToApp(appGuid, dropletGuid)
-		CreateAndMapRoute(appGuid, TestSetup.RegularUserContext().Space, Config.AppsDomain, appName)
+		CreateAndMapRoute(appGuid, TestSetup.RegularUserContext().Space, Config.GetAppsDomain(), appName)
 
 		StartApp(appGuid)
 

@@ -34,7 +34,7 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 		orgName = TestSetup.RegularUserContext().Org
 		spaceName = TestSetup.RegularUserContext().Space
 
-		domainName = random_name.CATSRandomName("DOMAIN") + "." + Config.AppsDomain
+		domainName = random_name.CATSRandomName("DOMAIN") + "." + Config.GetAppsDomain()
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 			Expect(cf.Cf("create-shared-domain", domainName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
@@ -45,10 +45,10 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 		Expect(cf.Cf(
 			"push", appNameDora,
 			"--no-start",
-			"-b", Config.RubyBuildpackName,
+			"-b", Config.GetRubyBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Dora,
-			"-d", Config.AppsDomain,
+			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		app_helpers.SetBackend(appNameDora)
@@ -57,10 +57,10 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 		Expect(cf.Cf(
 			"push", appNameSimple,
 			"--no-start",
-			"-b", Config.RubyBuildpackName,
+			"-b", Config.GetRubyBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().HelloWorld,
-			"-d", Config.AppsDomain,
+			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		app_helpers.SetBackend(appNameSimple)

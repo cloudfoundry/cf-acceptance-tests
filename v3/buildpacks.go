@@ -38,7 +38,7 @@ var _ = V3Describe("buildpack", func() {
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()
-		uploadUrl := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.ApiEndpoint, packageGuid)
+		uploadUrl := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.GetApiEndpoint(), packageGuid)
 		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
 		WaitForPackageToBeReady(packageGuid)
 
@@ -67,7 +67,7 @@ var _ = V3Describe("buildpack", func() {
 	})
 
 	It("Downloads the correct user specified git buildpack", func() {
-		if !Config.IncludeInternetDependent {
+		if !Config.GetIncludeInternetDependent() {
 			Skip(skip_messages.SkipInternetDependentMessage)
 		}
 		StageBuildpackPackage(packageGuid, "https://github.com/cloudfoundry/example-git-buildpack")

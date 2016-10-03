@@ -37,10 +37,10 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 			Expect(cf.Cf(
 				"push", appName,
 				"--no-start",
-				"-b", Config.RubyBuildpackName,
+				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Dora,
-				"-d", Config.AppsDomain,
+				"-d", Config.GetAppsDomain(),
 				"-c", "FOO=foo bundle exec rackup config.ru -p $PORT",
 			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
@@ -89,7 +89,7 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 		}
 
 		BeforeEach(func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.NodejsBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().NodeWithProcfile, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.GetNodejsBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().NodeWithProcfile, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})

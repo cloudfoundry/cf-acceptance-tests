@@ -19,7 +19,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 	var appName string
 
 	BeforeEach(func() {
-		if Config.Backend != "diego" {
+		if Config.GetBackend() != "diego" {
 			Skip(skip_messages.SkipDiegoMessage)
 		}
 
@@ -40,7 +40,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 				"--no-start",
 				"-b", "go_buildpack",
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-d", Config.AppsDomain,
+				"-d", Config.GetAppsDomain(),
 				"-i", "1",
 				"-u", "none"),
 				Config.CfPushTimeoutDuration(),
@@ -66,9 +66,9 @@ var _ = AppsDescribe("Healthcheck", func() {
 				"push", appName,
 				"-p", assets.NewAssets().Dora,
 				"--no-start",
-				"-b", Config.RubyBuildpackName,
+				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-d", Config.AppsDomain,
+				"-d", Config.GetAppsDomain(),
 				"-i", "1",
 				"-u", "port"),
 				Config.DefaultTimeoutDuration(),

@@ -23,16 +23,16 @@ var _ = AppsDescribe("Copy app bits", func() {
 
 		Expect(cf.Cf("push", golangAppName,
 			"--no-start",
-			"-b", Config.RubyBuildpackName,
+			"-b", Config.GetRubyBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Golang,
-			"-d", Config.AppsDomain,
+			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Expect(cf.Cf("push", helloWorldAppName,
 			"--no-start",
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().HelloWorld,
-			"-d", Config.AppsDomain,
+			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 

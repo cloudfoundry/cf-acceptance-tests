@@ -42,19 +42,19 @@ var _ = V3Describe("route_mapping", func() {
 		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()
-		uploadUrl := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.ApiEndpoint, packageGuid)
+		uploadUrl := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.GetApiEndpoint(), packageGuid)
 
 		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
 		WaitForPackageToBeReady(packageGuid)
 
-		dropletGuid := StageBuildpackPackage(packageGuid, Config.RubyBuildpackName)
+		dropletGuid := StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
 		WaitForDropletToStage(dropletGuid)
 		AssignDropletToApp(appGuid, dropletGuid)
 
 		processes := GetProcesses(appGuid, appName)
 		webProcess = GetProcessByType(processes, "web")
 
-		CreateRoute(spaceName, Config.AppsDomain, appName)
+		CreateRoute(spaceName, Config.GetAppsDomain(), appName)
 	})
 
 	AfterEach(func() {

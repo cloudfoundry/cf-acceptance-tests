@@ -39,10 +39,10 @@ var _ = AppsDescribe("loggregator", func() {
 		Expect(cf.Cf("push",
 			appName,
 			"--no-start",
-			"-b", Config.RubyBuildpackName,
+			"-b", Config.GetRubyBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().LoggregatorLoadGenerator,
-			"-d", Config.AppsDomain).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
 		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
@@ -94,7 +94,7 @@ var _ = AppsDescribe("loggregator", func() {
 
 	Context("firehose data", func() {
 		It("shows logs and metrics", func() {
-			noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.SkipSSLValidation}, nil)
+			noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.GetSkipSSLValidation()}, nil)
 			msgChan := make(chan *events.Envelope, 100000)
 			errorChan := make(chan error)
 			stopchan := make(chan struct{})
@@ -112,7 +112,7 @@ var _ = AppsDescribe("loggregator", func() {
 		It("shows container metrics", func() {
 			appGuid := strings.TrimSpace(string(cf.Cf("app", appName, "--guid").Wait(Config.DefaultTimeoutDuration()).Out.Contents()))
 
-			noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.SkipSSLValidation}, nil)
+			noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.GetSkipSSLValidation()}, nil)
 			msgChan := make(chan *events.Envelope, 100000)
 			errorChan := make(chan error)
 			stopchan := make(chan struct{})

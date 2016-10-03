@@ -19,7 +19,7 @@ var _ = AppsDescribe("FUSE", func() {
 	var appName string
 
 	BeforeEach(func() {
-		if !Config.IncludePrivilegedContainerSupport {
+		if !Config.GetIncludePrivilegedContainerSupport() {
 			Skip(skip_messages.SkipPrivilegedContainerSupportMessage)
 		}
 		appName = random_name.CATSRandomName("APP")
@@ -32,7 +32,7 @@ var _ = AppsDescribe("FUSE", func() {
 	})
 
 	It("Can mount a fuse endpoint", func() {
-		Expect(cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Fuse, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("push", appName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Fuse, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
 		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 

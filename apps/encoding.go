@@ -21,10 +21,10 @@ var _ = AppsDescribe("Encoding", func() {
 		Expect(cf.Cf("push",
 			appName,
 			"--no-start",
-			"-b", Config.JavaBuildpackName,
+			"-b", Config.GetJavaBuildpackName(),
 			"-p", assets.NewAssets().Java,
 			"-m", "512M",
-			"-d", Config.AppsDomain).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
 		Expect(cf.Cf("set-env", appName, "JAVA_OPTS", "-Djava.security.egd=file:///dev/urandom").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		Expect(cf.Cf("start", appName).Wait(CF_JAVA_TIMEOUT)).To(Exit(0))

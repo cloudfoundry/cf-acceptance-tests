@@ -2,7 +2,6 @@ package routing
 
 import (
 	"fmt"
-	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
@@ -20,22 +19,18 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 		app             string
 		secondRoute     string
 		latticeAppAsset = assets.NewAssets().LatticeApp
-		SleepTimeOut    = 45 * time.Second
 	)
 
 	BeforeEach(func() {
-		if Config.Backend != "diego" {
+		if Config.GetBackend() != "diego" {
 			Skip(skip_messages.SkipDiegoMessage)
 		}
 		app = random_name.CATSRandomName("APP")
 		cmd := fmt.Sprintf("lattice-app --ports=7777,8888,8080")
 
-		PushAppNoStart(app, latticeAppAsset, Config.GoBuildpackName, Config.AppsDomain, Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT, "-c", cmd)
+		PushAppNoStart(app, latticeAppAsset, Config.GetGoBuildpackName(), Config.GetAppsDomain(), Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT, "-c", cmd)
 		EnableDiego(app, Config.DefaultTimeoutDuration())
 		StartApp(app, APP_START_TIMEOUT)
-		if Config.SleepTimeoutDuration() > 0 {
-			SleepTimeOut = time.Duration(Config.SleepTimeout) * time.Second
-		}
 	})
 
 	AfterEach(func() {
@@ -59,7 +54,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 			// create 2nd route
 			spacename := TestSetup.RegularUserContext().Space
 			secondRoute = fmt.Sprintf("%s-two", app)
-			CreateRoute(secondRoute, "", spacename, Config.AppsDomain, Config.DefaultTimeoutDuration())
+			CreateRoute(secondRoute, "", spacename, Config.GetAppsDomain(), Config.DefaultTimeoutDuration())
 
 			// map app route to other port
 			CreateRouteMapping(app, secondRoute, 0, 7777, Config.DefaultTimeoutDuration())
@@ -72,7 +67,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 
 			Consistently(func() string {
 				return helpers.CurlApp(Config, app, "/port")
-			}, SleepTimeOut, "5s").Should(ContainSubstring("8080"))
+			}, Config.SleepTimeoutDuration(), "5s").Should(ContainSubstring("8080"))
 
 			Eventually(func() string {
 				return helpers.CurlApp(Config, secondRoute, "/port")

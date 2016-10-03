@@ -11,9 +11,9 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	cats_config "github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
+	cats_config "github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
@@ -104,14 +104,14 @@ func NewServiceBroker(name string, path string, TestSetup *workflowhelpers.Repro
 	return b
 }
 
-func (b ServiceBroker) Push(config *cats_config.Config) {
+func (b ServiceBroker) Push(config cats_config.CatsConfig) {
 	Expect(cf.Cf(
 		"push", b.Name,
 		"--no-start",
-		"-b", config.RubyBuildpackName,
+		"-b", config.GetRubyBuildpackName(),
 		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", b.Path,
-		"-d", config.AppsDomain,
+		"-d", config.GetAppsDomain(),
 	).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
 	app_helpers.SetBackend(b.Name)
 	Expect(cf.Cf("start", b.Name).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))

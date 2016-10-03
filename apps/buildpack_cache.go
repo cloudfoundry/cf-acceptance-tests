@@ -128,7 +128,7 @@ EOF
 			"-b", BuildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", appPath,
-			"-d", Config.AppsDomain,
+			"-d", Config.GetAppsDomain(),
 		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
 

@@ -228,7 +228,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 			BeforeEach(func() {
 				appName = random_name.CATSRandomName("APP")
-				createApp := cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())
+				createApp := cf.Cf("push", appName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())
 				Expect(createApp).To(Exit(0), "failed creating app")
 				app_helpers.SetBackend(appName)
 				Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -406,7 +406,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 				var appName string
 				BeforeEach(func() {
 					appName = random_name.CATSRandomName("APP")
-					createApp := cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())
+					createApp := cf.Cf("push", appName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())
 					Expect(createApp).To(Exit(0), "failed creating app")
 					app_helpers.SetBackend(appName)
 					Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))

@@ -29,7 +29,7 @@ var _ = AppsDescribe("An application being staged", func() {
 	})
 
 	It("has its staging log streamed during a push", func() {
-		Eventually(cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain), Config.DefaultTimeoutDuration()).Should(Exit(0))
+		Eventually(cf.Cf("push", appName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.GetAppsDomain()), Config.DefaultTimeoutDuration()).Should(Exit(0))
 		app_helpers.SetBackend(appName)
 		start := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
 

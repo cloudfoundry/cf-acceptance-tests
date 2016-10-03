@@ -18,10 +18,10 @@ import (
 	_ "github.com/cloudfoundry/cf-acceptance-tests/ssh"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/v3"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/cli_version_check"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -31,7 +31,7 @@ const minCliVersion = "6.16.1"
 func TestCATS(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	Config = config.LoadConfig()
+	Config = config.NewCatsConfig()
 
 	TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
 
@@ -40,7 +40,7 @@ func TestCATS(t *testing.T) {
 		Expect(err).ToNot(HaveOccurred(), "Error trying to determine CF CLI version")
 
 		Expect(ParseRawCliVersionString(installedVersion).AtLeast(ParseRawCliVersionString(minCliVersion))).To(BeTrue(), "CLI version "+minCliVersion+" is required")
-		if Config.IncludeSsh {
+		if Config.GetIncludeSsh() {
 			ScpPath, err = exec.LookPath("scp")
 			Expect(err).NotTo(HaveOccurred())
 
@@ -56,7 +56,7 @@ func TestCATS(t *testing.T) {
 
 	rs := []Reporter{}
 
-	if Config.ArtifactsDirectory != "" {
+	if Config.GetArtifactsDirectory() != "" {
 		helpers.EnableCFTrace(Config, "CATS")
 		rs = append(rs, helpers.NewJUnitReporter(Config, "CATS"))
 	}

@@ -22,7 +22,7 @@ import (
 var _ = DockerDescribe("Docker Application Lifecycle", func() {
 	var appName string
 	BeforeEach(func() {
-		if Config.Backend != "diego" {
+		if Config.GetBackend() != "diego" {
 			Skip(skip_messages.SkipDiegoMessage)
 		}
 	})
@@ -51,7 +51,7 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 				// app is defined by cloudfoundry-incubator/diego-dockerfiles
 				"-o", "cloudfoundry/diego-docker-app-custom:latest",
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-d", Config.AppsDomain,
+				"-d", Config.GetAppsDomain(),
 				"-i", "1",
 				"-c", fmt.Sprintf("/myapp/dockerapp -name=%s", appName)),
 				Config.DefaultTimeoutDuration(),
@@ -81,7 +81,7 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 				// app is defined by cloudfoundry-incubator/diego-dockerfiles
 				"-o", "cloudfoundry/diego-docker-app-custom:latest",
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-d", Config.AppsDomain,
+				"-d", Config.GetAppsDomain(),
 				"-i", "1"),
 				Config.DefaultTimeoutDuration(),
 			).Should(Exit(0))

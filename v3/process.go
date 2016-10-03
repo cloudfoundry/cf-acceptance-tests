@@ -37,7 +37,7 @@ var _ = V3Describe("process", func() {
 		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()
-		uploadUrl := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.ApiEndpoint, packageGuid)
+		uploadUrl := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.GetApiEndpoint(), packageGuid)
 		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
 		WaitForPackageToBeReady(packageGuid)
 	})
@@ -55,7 +55,7 @@ var _ = V3Describe("process", func() {
 		)
 
 		BeforeEach(func() {
-			dropletGuid := StageBuildpackPackage(packageGuid, Config.RubyBuildpackName)
+			dropletGuid := StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
 			WaitForDropletToStage(dropletGuid)
 
 			AssignDropletToApp(appGuid, dropletGuid)
@@ -63,7 +63,7 @@ var _ = V3Describe("process", func() {
 			processes := GetProcesses(appGuid, appName)
 			webProcess = GetProcessByType(processes, "web")
 
-			CreateAndMapRoute(appGuid, TestSetup.RegularUserContext().Space, Config.AppsDomain, webProcess.Name)
+			CreateAndMapRoute(appGuid, TestSetup.RegularUserContext().Space, Config.GetAppsDomain(), webProcess.Name)
 
 			StartApp(appGuid)
 

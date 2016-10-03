@@ -34,7 +34,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()
-		uploadUrl = fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.ApiEndpoint, packageGuid)
+		uploadUrl = fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.GetApiEndpoint(), packageGuid)
 	})
 
 	AfterEach(func() {
@@ -49,7 +49,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 		})
 
 		It("can run apps with processes from the Procfile", func() {
-			dropletGuid := StageBuildpackPackage(packageGuid, Config.RubyBuildpackName)
+			dropletGuid := StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
 			WaitForDropletToStage(dropletGuid)
 
 			AssignDropletToApp(appGuid, dropletGuid)
@@ -61,7 +61,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 			Expect(webProcess.Guid).ToNot(BeEmpty())
 			Expect(workerProcess.Guid).ToNot(BeEmpty())
 
-			CreateAndMapRoute(appGuid, TestSetup.RegularUserContext().Space, Config.AppsDomain, webProcess.Name)
+			CreateAndMapRoute(appGuid, TestSetup.RegularUserContext().Space, Config.GetAppsDomain(), webProcess.Name)
 
 			StartApp(appGuid)
 
@@ -107,7 +107,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 		})
 
 		It("can run spring apps", func() {
-			dropletGuid := StageBuildpackPackage(packageGuid, Config.JavaBuildpackName)
+			dropletGuid := StageBuildpackPackage(packageGuid, Config.GetJavaBuildpackName())
 			WaitForDropletToStage(dropletGuid)
 
 			AssignDropletToApp(appGuid, dropletGuid)
@@ -117,7 +117,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			Expect(webProcess.Guid).ToNot(BeEmpty())
 
-			CreateAndMapRoute(appGuid, TestSetup.RegularUserContext().Space, Config.AppsDomain, webProcess.Name)
+			CreateAndMapRoute(appGuid, TestSetup.RegularUserContext().Space, Config.GetAppsDomain(), webProcess.Name)
 
 			StartApp(appGuid)
 
@@ -158,7 +158,7 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 	)
 
 	BeforeEach(func() {
-		if !Config.IncludeDocker {
+		if !Config.GetIncludeDocker() {
 			Skip(skip_messages.SkipDockerMessage)
 		}
 		appName = random_name.CATSRandomName("APP")
@@ -185,7 +185,7 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 
 		Expect(webProcess.Guid).ToNot(BeEmpty())
 
-		CreateAndMapRoute(appGuid, TestSetup.RegularUserContext().Space, Config.AppsDomain, webProcess.Name)
+		CreateAndMapRoute(appGuid, TestSetup.RegularUserContext().Space, Config.GetAppsDomain(), webProcess.Name)
 
 		StartApp(appGuid)
 

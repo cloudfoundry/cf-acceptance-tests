@@ -31,8 +31,8 @@ var _ = AppsDescribe("Logging", func() {
 			listenerAppName = random_name.CATSRandomName("APP")
 			logWriterAppName = random_name.CATSRandomName("APP")
 
-			Eventually(cf.Cf("push", listenerAppName, "--no-start", "--health-check-type", "port", "-b", Config.GoBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().SyslogDrainListener, "-d", Config.AppsDomain, "-f", assets.NewAssets().SyslogDrainListener+"/manifest.yml"), Config.DefaultTimeoutDuration()).Should(Exit(0), "Failed to push app")
-			Eventually(cf.Cf("push", logWriterAppName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().RubySimple, "-d", Config.AppsDomain), Config.DefaultTimeoutDuration()).Should(Exit(0), "Failed to push app")
+			Eventually(cf.Cf("push", listenerAppName, "--no-start", "--health-check-type", "port", "-b", Config.GetGoBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().SyslogDrainListener, "-d", Config.GetAppsDomain(), "-f", assets.NewAssets().SyslogDrainListener+"/manifest.yml"), Config.DefaultTimeoutDuration()).Should(Exit(0), "Failed to push app")
+			Eventually(cf.Cf("push", logWriterAppName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().RubySimple, "-d", Config.GetAppsDomain()), Config.DefaultTimeoutDuration()).Should(Exit(0), "Failed to push app")
 
 			app_helpers.SetBackend(listenerAppName)
 			app_helpers.SetBackend(logWriterAppName)

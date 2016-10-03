@@ -23,14 +23,14 @@ var _ = RoutingDescribe("Context Paths", func() {
 	)
 
 	BeforeEach(func() {
-		domain := Config.AppsDomain
+		domain := Config.GetAppsDomain()
 
 		app1 = random_name.CATSRandomName("APP")
-		PushApp(app1, helloRoutingAsset, Config.RubyBuildpackName, Config.AppsDomain, Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
+		PushApp(app1, helloRoutingAsset, Config.GetRubyBuildpackName(), Config.GetAppsDomain(), Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
 		app2 = random_name.CATSRandomName("APP")
-		PushApp(app2, helloRoutingAsset, Config.RubyBuildpackName, Config.AppsDomain, Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
+		PushApp(app2, helloRoutingAsset, Config.GetRubyBuildpackName(), Config.GetAppsDomain(), Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
 		app3 = random_name.CATSRandomName("APP")
-		PushApp(app3, helloRoutingAsset, Config.RubyBuildpackName, Config.AppsDomain, Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
+		PushApp(app3, helloRoutingAsset, Config.GetRubyBuildpackName(), Config.GetAppsDomain(), Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
 
 		hostname = app1
 

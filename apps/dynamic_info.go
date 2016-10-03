@@ -24,10 +24,10 @@ var _ = AppsDescribe("A running application", func() {
 		Expect(cf.Cf("push",
 			appName,
 			"--no-start",
-			"-b", Config.RubyBuildpackName,
+			"-b", Config.GetRubyBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Dora,
-			"-d", Config.AppsDomain).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
 		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
@@ -40,7 +40,7 @@ var _ = AppsDescribe("A running application", func() {
 
 	It("can have its files inspected", func() {
 		// Currently cannot work with multiple instances since CF always checks instance 0
-		if Config.Backend != "dea" {
+		if Config.GetBackend() != "dea" {
 			Skip(skip_messages.SkipDeaMessage)
 		}
 		files := cf.Cf("files", appName).Wait(Config.DefaultTimeoutDuration())

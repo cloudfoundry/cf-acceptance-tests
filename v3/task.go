@@ -40,7 +40,7 @@ var _ = V3Describe("v3 tasks", func() {
 	)
 
 	BeforeEach(func() {
-		if !Config.IncludeTasks {
+		if !Config.GetIncludeTasks() {
 			Skip(skip_messages.SkipTasksMessage)
 		}
 		appName = random_name.CATSRandomName("APP")
@@ -49,7 +49,7 @@ var _ = V3Describe("v3 tasks", func() {
 		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()
-		uploadUrl := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.ApiEndpoint, packageGuid)
+		uploadUrl := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.GetApiEndpoint(), packageGuid)
 		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
 		WaitForPackageToBeReady(packageGuid)
 		dropletGuid := StageBuildpackPackage(packageGuid, "ruby_buildpack")

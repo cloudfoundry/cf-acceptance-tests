@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/config"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -21,7 +21,7 @@ const (
 )
 
 var (
-	Config    *config.Config
+	Config    CatsConfig
 	TestSetup *workflowhelpers.ReproducibleTestSuiteSetup
 	ScpPath   string
 	SftpPath  string
@@ -30,7 +30,7 @@ var (
 func AppsDescribe(description string, callback func()) bool {
 	return Describe("[apps] "+description, func() {
 		BeforeEach(func() {
-			if !Config.IncludeApps {
+			if !Config.GetIncludeApps() {
 				Skip(`Skipping this test because Config.IncludeApps is set to 'false'.`)
 			}
 		})
@@ -41,7 +41,7 @@ func AppsDescribe(description string, callback func()) bool {
 func BackendCompatibilityDescribe(description string, callback func()) bool {
 	return Describe("[backend_compatibility] "+description, func() {
 		BeforeEach(func() {
-			if !Config.IncludeBackendCompatiblity {
+			if !Config.GetIncludeBackendCompatiblity() {
 				Skip(`Skipping this test because Config.IncludeBackendCompatibility is set to 'false'.
 			NOTE: Ensure that your deployment has deployed both DEA and Diego before running this test.`)
 			}
@@ -53,7 +53,7 @@ func BackendCompatibilityDescribe(description string, callback func()) bool {
 func DetectDescribe(description string, callback func()) bool {
 	return Describe("[detect] "+description, func() {
 		BeforeEach(func() {
-			if !Config.IncludeDetect {
+			if !Config.GetIncludeDetect() {
 				Skip(`Skipping this test because Config.IncludeDetect is set to 'false'.`)
 			}
 		})
@@ -64,7 +64,7 @@ func DetectDescribe(description string, callback func()) bool {
 func DockerDescribe(description string, callback func()) bool {
 	return Describe("[docker] "+description, func() {
 		BeforeEach(func() {
-			if !Config.IncludeDocker {
+			if !Config.GetIncludeDocker() {
 				Skip(`Skipping this test because Config.IncludeDocker is set to 'false'.
 				NOTE: Ensure Docker containers are enabled on your platform before enabling this test.`)
 			}
@@ -81,7 +81,7 @@ func TestCliVersionCheck(t *testing.T) {
 func InternetDependentDescribe(description string, callback func()) bool {
 	return Describe("[internet_dependent] "+description, func() {
 		BeforeEach(func() {
-			if !Config.IncludeInternetDependent {
+			if !Config.GetIncludeInternetDependent() {
 				Skip(`Skipping this test because Config.IncludeInternetDependent is set to 'false'.
 NOTE: Ensure that your deployment has access to the internet before running this test.`)
 			}
@@ -93,7 +93,7 @@ NOTE: Ensure that your deployment has access to the internet before running this
 func RouteServicesDescribe(description string, callback func()) bool {
 	return Describe("[route_services] "+description, func() {
 		BeforeEach(func() {
-			if !Config.IncludeRouteServices {
+			if !Config.GetIncludeRouteServices() {
 				Skip(`Skipping this test because Config.IncludeRouteServices is set to 'false'.
 			NOTE: Ensure that route services are enabled in your deployment before running this test.`)
 			}
@@ -105,7 +105,7 @@ func RouteServicesDescribe(description string, callback func()) bool {
 func RoutingDescribe(description string, callback func()) bool {
 	return Describe("[routing] "+description, func() {
 		BeforeEach(func() {
-			if !Config.IncludeRouting {
+			if !Config.GetIncludeRouting() {
 				Skip(`Skipping this test because Config.IncludeRouting is set to 'false'.`)
 			}
 		})
@@ -116,7 +116,7 @@ func RoutingDescribe(description string, callback func()) bool {
 func SecurityGroupsDescribe(description string, callback func()) bool {
 	return Describe("[security_groups] "+description, func() {
 		BeforeEach(func() {
-			if !Config.IncludeSecurityGroups {
+			if !Config.GetIncludeSecurityGroups() {
 				Skip(`Skipping this test because Config.IncludeSecurityGroups is set to 'false'.
 			NOTE: Ensure that your deployment restricts internal network traffic by default in order to run this test.`)
 			}
@@ -128,7 +128,7 @@ func SecurityGroupsDescribe(description string, callback func()) bool {
 func ServicesDescribe(description string, callback func()) bool {
 	return Describe("[services] "+description, func() {
 		BeforeEach(func() {
-			if !Config.IncludeServices {
+			if !Config.GetIncludeServices() {
 				Skip(`Skipping this test because Config.IncludeServices is set to 'false'.`)
 			}
 		})
@@ -139,7 +139,7 @@ func ServicesDescribe(description string, callback func()) bool {
 func SshDescribe(description string, callback func()) bool {
 	return Describe("[ssh] "+description, func() {
 		BeforeEach(func() {
-			if !Config.IncludeSsh {
+			if !Config.GetIncludeSsh() {
 				Skip(`Skipping this test because Config.IncludeSsh is set to 'false'.
 			NOTE: Ensure that your platform is deployed with a Diego SSH proxy in order to run this test.`)
 			}
@@ -151,7 +151,7 @@ func SshDescribe(description string, callback func()) bool {
 func V3Describe(description string, callback func()) bool {
 	return Describe("[v3] "+description, func() {
 		BeforeEach(func() {
-			if !Config.IncludeV3 {
+			if !Config.GetIncludeV3() {
 				Skip(`Skipping this test because Config.IncludeV3 is set to 'false'.`)
 			}
 		})

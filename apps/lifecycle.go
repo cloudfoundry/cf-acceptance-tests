@@ -63,7 +63,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 	Describe("pushing", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
 
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -78,13 +78,13 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			var path = "/imposter_dora"
 
 			BeforeEach(func() {
-				Expect(cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("push", appName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				app_helpers.SetBackend(appName)
 
 				Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 				app2 = random_name.CATSRandomName("APP")
-				Expect(cf.Cf("push", app2, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("push", app2, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				app_helpers.SetBackend(app2)
 				Expect(cf.Cf("start", app2).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			})
@@ -135,7 +135,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 		Context("multiple instances", func() {
 			BeforeEach(func() {
-				Expect(cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("push", appName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				app_helpers.SetBackend(appName)
 				Expect(cf.Cf("scale", appName, "-i", "2").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			})
@@ -157,10 +157,10 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			Expect(cf.Cf("push",
 				appName,
 				"--no-start",
-				"-b", Config.RubyBuildpackName,
+				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Dora,
-				"-d", Config.AppsDomain).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
 
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -181,10 +181,10 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				"push",
 				appName,
 				"--no-start",
-				"-b", Config.RubyBuildpackName,
+				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Dora,
-				"-d", Config.AppsDomain).Wait(Config.CfPushTimeoutDuration()),
+				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration()),
 			).To(Exit(0))
 			app_helpers.SetBackend(appName)
 
@@ -195,7 +195,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 		})
 
 		It("generates an app usage 'buildpack_set' event", func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
 
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -210,7 +210,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 	Describe("stopping", func() {
 		BeforeEach(func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
 
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -254,10 +254,10 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			Expect(cf.Cf("push",
 				appName,
 				"--no-start",
-				"-b", Config.RubyBuildpackName,
+				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Dora,
-				"-d", Config.AppsDomain).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
 
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -268,7 +268,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				return helpers.CurlAppRoot(Config, appName)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 
-			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
@@ -280,7 +280,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 	Describe("deleting", func() {
 		BeforeEach(func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.RubyBuildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.AppsDomain).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
 
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))

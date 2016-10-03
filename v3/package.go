@@ -38,7 +38,7 @@ var _ = V3Describe("package features", func() {
 		appGuid = CreateApp(appName, spaceGuid, "{}")
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()
-		uploadUrl = fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.ApiEndpoint, packageGuid)
+		uploadUrl = fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.GetApiEndpoint(), packageGuid)
 	})
 
 	AfterEach(func() {
@@ -95,7 +95,7 @@ var _ = V3Describe("package features", func() {
 		})
 
 		It("can still stage the package", func() {
-			dropletGuid := StageBuildpackPackage(packageGuid, Config.JavaBuildpackName)
+			dropletGuid := StageBuildpackPackage(packageGuid, Config.GetJavaBuildpackName())
 			dropletPath := fmt.Sprintf("/v3/droplets/%s", dropletGuid)
 
 			Eventually(func() *Session {

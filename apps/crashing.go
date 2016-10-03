@@ -29,7 +29,7 @@ var _ = AppsDescribe("Crashing", func() {
 
 	Describe("a continuously crashing app", func() {
 		BeforeEach(func() {
-			if Config.Backend != "diego" {
+			if Config.GetBackend() != "diego" {
 				Skip(skip_messages.SkipDiegoMessage)
 			}
 		})
@@ -40,10 +40,10 @@ var _ = AppsDescribe("Crashing", func() {
 				appName,
 				"-c", "/bin/false",
 				"--no-start",
-				"-b", Config.RubyBuildpackName,
+				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Dora,
-				"-d", Config.AppsDomain,
+				"-d", Config.GetAppsDomain(),
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			app_helpers.SetBackend(appName)
@@ -63,10 +63,10 @@ var _ = AppsDescribe("Crashing", func() {
 				"push",
 				appName,
 				"--no-start",
-				"-b", Config.RubyBuildpackName,
+				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Dora,
-				"-d", Config.AppsDomain,
+				"-d", Config.GetAppsDomain(),
 			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 			app_helpers.SetBackend(appName)
