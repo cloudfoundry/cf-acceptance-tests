@@ -15,8 +15,6 @@ type remoteResource interface {
 }
 
 type ReproducibleTestSuiteSetup struct {
-	config internal.TestSuiteConfig
-
 	shortTimeout time.Duration
 	longTimeout  time.Duration
 
@@ -82,8 +80,6 @@ func NewBaseTestSuiteSetup(config internal.TestSuiteConfig, testSpace, testUser 
 	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
 
 	return &ReproducibleTestSuiteSetup{
-		config: config,
-
 		shortTimeout: shortTimeout,
 		longTimeout:  config.GetScaledTimeout(5 * time.Minute),
 
