@@ -139,13 +139,13 @@ export CONFIG=$PWD/integration_config.json
 * `include_v3`: Flag to include tests for the the v3 API.
 * `include_tasks`: Flag to include the v3 task tests dependent on the CC task_creation feature flag.
 * `include_route_services`: Flag to include the route services tests. Diego must be deployed for these tests to pass.
-* `include_routing`: Flag to include the routing tests. Diego must be deployed for these tests to pass.
+* `include_routing`: Flag to include the routing tests.
 * `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
 * `include_ssh`: Flag to include tests for Diego container ssh feature.
 * `include_backend_compatibility`: Flag to include whether we check DEA/Diego interoperability.
 * `include_detect`: Flag to run tests in the detect group.
 * `include_privileged_container_support`: Requires capi.nsync.diego_privileged_containers and capi.stager.diego_privileged_containers to be enabled.
-* `backend`: App tests push their apps using the backend specified. Incompatible tests will be skipped based on which backend is chosen. If left unspecified the default backend will be used.
+* `backend`: App tests push their apps using the backend specified. Incompatible tests will be skipped based on which backend is chosen. If left unspecified the default backend will be used where none is specified; all tests that specify a particular backend will be skipped.
 * `skip_ssl_validation`: Set to true if using an invalid (e.g. self-signed) cert for traffic routed to your CF instance; this is generally always true for BOSH-Lite deployments of CF.
 * `use_http`: Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
 * `use_existing_user`: The admin user configured above will normally be used to create a temporary user (with lesser permissions) to perform actions (such as push applications) during tests, and then delete said user after the tests have run; set this to `true` if you want to use an existing user, configured via the following properties.
