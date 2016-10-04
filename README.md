@@ -132,19 +132,19 @@ export CONFIG=$PWD/integration_config.json
 ##### Optional parameters:
 `include_*` parameters are used to specify whether to skip tests based on how a deployment is configured.  
 * `include_apps`: Flag to include the apps test group.
-* `include_sso`: Flag to include the services tests that integrate with Single Sign On.
-* `include_security_groups`: Flag to include tests for security groups.
-* `include_internet_dependent`: Flag to include tests that require the deployment to have internet access.
-* `include_services`: Flag to include test for the services API.
-* `include_v3`: Flag to include tests for the the v3 API.
-* `include_tasks`: Flag to include the v3 task tests dependent on the CC task_creation feature flag.
-* `include_route_services`: Flag to include the route services tests. Diego must be deployed for these tests to pass.
-* `include_routing`: Flag to include the routing tests.
-* `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
-* `include_ssh`: Flag to include tests for Diego container ssh feature.
 * `include_backend_compatibility`: Flag to include whether we check DEA/Diego interoperability.
 * `include_detect`: Flag to run tests in the detect group.
+* `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
+* `include_internet_dependent`: Flag to include tests that require the deployment to have internet access.
 * `include_privileged_container_support`: Requires capi.nsync.diego_privileged_containers and capi.stager.diego_privileged_containers to be enabled.
+* `include_route_services`: Flag to include the route services tests. Diego must be deployed for these tests to pass.
+* `include_routing`: Flag to include the routing tests.
+* `include_security_groups`: Flag to include tests for security groups.
+* `include_services`: Flag to include test for the services API.
+* `include_ssh`: Flag to include tests for Diego container ssh feature.
+* `include_sso`: Flag to include the services tests that integrate with Single Sign On.
+* `include_tasks`: Flag to include the v3 task tests dependent on the CC task_creation feature flag.
+* `include_v3`: Flag to include tests for the the v3 API.
 * `backend`: App tests push their apps using the backend specified. Incompatible tests will be skipped based on which backend is chosen. If left unspecified the default backend will be used where none is specified; all tests that specify a particular backend will be skipped.
 * `skip_ssl_validation`: Set to true if using an invalid (e.g. self-signed) cert for traffic routed to your CF instance; this is generally always true for BOSH-Lite deployments of CF.
 * `use_http`: Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
