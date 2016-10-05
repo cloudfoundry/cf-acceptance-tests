@@ -26,7 +26,15 @@ type TestSpace struct {
 	Timeout                              time.Duration
 }
 
-func NewRegularTestSpace(cfg SpaceConfig, quotaLimit string) *TestSpace {
+type spaceConfig interface {
+	GetScaledTimeout(time.Duration) time.Duration
+	GetPersistentAppSpace() string
+	GetPersistentAppOrg() string
+	GetPersistentAppQuotaName() string
+	GetNamePrefix() string
+}
+
+func NewRegularTestSpace(cfg spaceConfig, quotaLimit string) *TestSpace {
 	return NewBaseTestSpace(
 		generator.PrefixedRandomName(cfg.GetNamePrefix(), "SPACE"),
 		generator.PrefixedRandomName(cfg.GetNamePrefix(), "ORG"),
@@ -38,7 +46,7 @@ func NewRegularTestSpace(cfg SpaceConfig, quotaLimit string) *TestSpace {
 	)
 }
 
-func NewPersistentAppTestSpace(cfg SpaceConfig) *TestSpace {
+func NewPersistentAppTestSpace(cfg spaceConfig) *TestSpace {
 	baseTestSpace := NewBaseTestSpace(
 		cfg.GetPersistentAppSpace(),
 		cfg.GetPersistentAppOrg(),

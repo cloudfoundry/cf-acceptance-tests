@@ -19,7 +19,7 @@ type TestUser struct {
 	shouldKeepUser bool
 }
 
-type UserConfig interface {
+type userConfig interface {
 	GetUseExistingUser() bool
 	GetExistingUser() string
 	GetExistingUserPassword() string
@@ -29,12 +29,12 @@ type UserConfig interface {
 	GetNamePrefix() string
 }
 
-type AdminUserConfig interface {
+type adminuserConfig interface {
 	GetAdminUser() string
 	GetAdminPassword() string
 }
 
-func NewTestUser(config UserConfig, cmdStarter internal.Starter) *TestUser {
+func NewTestUser(config userConfig, cmdStarter internal.Starter) *TestUser {
 	node := ginkgoconfig.GinkgoConfig.ParallelNode
 	timeTag := time.Now().Format("2006_01_02-15h04m05.999s")
 
@@ -60,7 +60,7 @@ func NewTestUser(config UserConfig, cmdStarter internal.Starter) *TestUser {
 	}
 }
 
-func NewAdminUser(config AdminUserConfig, cmdStarter internal.Starter) *TestUser {
+func NewAdminUser(config adminuserConfig, cmdStarter internal.Starter) *TestUser {
 	return &TestUser{
 		username:   config.GetAdminUser(),
 		password:   config.GetAdminPassword(),

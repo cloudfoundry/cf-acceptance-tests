@@ -14,6 +14,23 @@ type remoteResource interface {
 	ShouldRemain() bool
 }
 
+type testSuiteConfig interface {
+	GetApiEndpoint() string
+	GetConfigurableTestPassword() string
+	GetPersistentAppOrg() string
+	GetPersistentAppQuotaName() string
+	GetPersistentAppSpace() string
+	GetScaledTimeout(time.Duration) time.Duration
+	GetAdminPassword() string
+	GetExistingUser() string
+	GetExistingUserPassword() string
+	GetShouldKeepUser() bool
+	GetUseExistingUser() bool
+	GetAdminUser() string
+	GetSkipSSLValidation() bool
+	GetNamePrefix() string
+}
+
 type ReproducibleTestSuiteSetup struct {
 	shortTimeout time.Duration
 	longTimeout  time.Duration
@@ -37,7 +54,7 @@ type ReproducibleTestSuiteSetup struct {
 
 const RUNAWAY_QUOTA_MEM_LIMIT = "99999G"
 
-func NewTestSuiteSetup(config internal.TestSuiteConfig) *ReproducibleTestSuiteSetup {
+func NewTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSuiteSetup {
 	testSpace := internal.NewRegularTestSpace(config, "10G")
 	testUser := internal.NewTestUser(config, commandstarter.NewCommandStarter())
 	adminUser := internal.NewAdminUser(config, commandstarter.NewCommandStarter())
@@ -49,7 +66,7 @@ func NewTestSuiteSetup(config internal.TestSuiteConfig) *ReproducibleTestSuiteSe
 	return NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext)
 }
 
-func NewPersistentAppTestSuiteSetup(config internal.TestSuiteConfig) *ReproducibleTestSuiteSetup {
+func NewPersistentAppTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSuiteSetup {
 	testSpace := internal.NewPersistentAppTestSpace(config)
 	testUser := internal.NewTestUser(config, commandstarter.NewCommandStarter())
 	adminUser := internal.NewAdminUser(config, commandstarter.NewCommandStarter())
@@ -64,7 +81,7 @@ func NewPersistentAppTestSuiteSetup(config internal.TestSuiteConfig) *Reproducib
 	return testSuiteSetup
 }
 
-func NewRunawayAppTestSuiteSetup(config internal.TestSuiteConfig) *ReproducibleTestSuiteSetup {
+func NewRunawayAppTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSuiteSetup {
 	testSpace := internal.NewRegularTestSpace(config, RUNAWAY_QUOTA_MEM_LIMIT)
 	testUser := internal.NewTestUser(config, commandstarter.NewCommandStarter())
 	adminUser := internal.NewAdminUser(config, commandstarter.NewCommandStarter())
@@ -76,7 +93,7 @@ func NewRunawayAppTestSuiteSetup(config internal.TestSuiteConfig) *ReproducibleT
 	return NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext)
 }
 
-func NewBaseTestSuiteSetup(config internal.TestSuiteConfig, testSpace, testUser remoteResource, regularUserContext, adminUserContext UserContext) *ReproducibleTestSuiteSetup {
+func NewBaseTestSuiteSetup(config testSuiteConfig, testSpace, testUser remoteResource, regularUserContext, adminUserContext UserContext) *ReproducibleTestSuiteSetup {
 	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
 
 	return &ReproducibleTestSuiteSetup{
