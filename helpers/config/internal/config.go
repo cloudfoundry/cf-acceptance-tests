@@ -110,13 +110,18 @@ var defaults = Config{
 	NamePrefix: "CATS",
 }
 
-func (c Config) GetScaledTimeout(timeout time.Duration) time.Duration {
-	return time.Duration(float64(timeout) * c.TimeoutScale)
+var config *Config
+
+func NewConfig() *Config {
+	config = &defaults
+	err := load(configPath(), config)
+	if err != nil {
+		panic(err)
+	}
+	return config
 }
 
-var loadedConfig *Config
-
-func Load(path string, config *Config) error {
+func load(path string, config *Config) error {
 	err := loadConfigFromPath(path, config)
 	if err != nil {
 		return err
@@ -141,27 +146,6 @@ func Load(path string, config *Config) error {
 	return nil
 }
 
-func LoadConfig() *Config {
-	if loadedConfig != nil {
-		return loadedConfig
-	}
-
-	loadedConfig = &defaults
-	err := Load(ConfigPath(), loadedConfig)
-	if err != nil {
-		panic(err)
-	}
-	return loadedConfig
-}
-
-func (c Config) Protocol() string {
-	if c.UseHttp {
-		return "http://"
-	} else {
-		return "https://"
-	}
-}
-
 func loadConfigFromPath(path string, config interface{}) error {
 	configFile, err := os.Open(path)
 	if err != nil {
@@ -173,13 +157,17 @@ func loadConfigFromPath(path string, config interface{}) error {
 	return decoder.Decode(config)
 }
 
-func ConfigPath() string {
+func configPath() string {
 	path := os.Getenv("CONFIG")
 	if path == "" {
 		panic("Must set $CONFIG to point to an integration config .json file.")
 	}
 
 	return path
+}
+
+func (c Config) GetScaledTimeout(timeout time.Duration) time.Duration {
+	return time.Duration(float64(timeout) * c.TimeoutScale)
 }
 
 func (c *Config) DefaultTimeoutDuration() time.Duration {
@@ -212,6 +200,14 @@ func (c *Config) BrokerStartTimeoutDuration() time.Duration {
 
 func (c *Config) AsyncServiceOperationTimeoutDuration() time.Duration {
 	return time.Duration(c.AsyncServiceOperationTimeout) * time.Minute
+}
+
+func (c Config) Protocol() string {
+	if c.UseHttp {
+		return "http://"
+	} else {
+		return "https://"
+	}
 }
 
 func (c *Config) GetAppsDomain() string {

@@ -46,7 +46,7 @@ var _ = Describe("Config", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		os.Setenv("CONFIG", tmpFile.Name())
-		config = cfg.LoadConfig()
+		config = cfg.NewConfig()
 	})
 
 	AfterEach(func() {

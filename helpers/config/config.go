@@ -58,6 +58,6 @@ type CatsConfig interface {
 }
 
 func NewCatsConfig() CatsConfig {
-	cfg := cats_config.LoadConfig()
+	cfg := cats_config.NewConfig()
 	return cfg
 }
