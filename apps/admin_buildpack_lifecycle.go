@@ -13,7 +13,6 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -346,9 +345,6 @@ exit 1
 		// that user facing errors are correctly propagated from a garden container out of the system.
 
 		It("the user receives a BuildpackCompileFailed error", func() {
-			if Config.GetBackend() != "dea" {
-				Skip(skip_messages.SkipDeaMessage)
-			}
 			setupBadCompileBuildpack(appConfig{Empty: false})
 			itRaisesBuildpackCompileFailedError()
 		})
@@ -359,9 +355,6 @@ exit 1
 		// that user facing errors are correctly propagated from a garden container out of the system.
 
 		It("the user receives a BuildpackReleaseFailed error", func() {
-			if Config.GetBackend() != "dea" {
-				Skip(skip_messages.SkipDeaMessage)
-			}
 			setupBadReleaseBuildpack(appConfig{Empty: false})
 			itRaisesBuildpackReleaseFailedError()
 		})
