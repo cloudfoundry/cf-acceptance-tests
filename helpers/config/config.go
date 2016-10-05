@@ -3,7 +3,7 @@ package config
 import (
 	"time"
 
-	cats_config "github.com/cloudfoundry/cf-acceptance-tests/internal/helpers/config"
+	cats_config "github.com/cloudfoundry/cf-acceptance-tests/helpers/config/internal"
 )
 
 type CatsConfig interface {
