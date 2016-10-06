@@ -2,8 +2,6 @@ package config
 
 import (
 	"time"
-
-	cats_config "github.com/cloudfoundry/cf-acceptance-tests/helpers/config/internal"
 )
 
 type CatsConfig interface {
@@ -57,7 +55,6 @@ type CatsConfig interface {
 	SleepTimeoutDuration() time.Duration
 }
 
-func NewCatsConfig() CatsConfig {
-	cfg := cats_config.NewConfig()
-	return cfg
+func NewCatsConfig() (CatsConfig, error) {
+	return NewConfig()
 }

@@ -31,7 +31,12 @@ const minCliVersion = "6.16.1"
 func TestCATS(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	Config = config.NewCatsConfig()
+	var err error
+	Config, err = config.NewCatsConfig()
+
+	if err != nil {
+		panic(err)
+	}
 
 	TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
 

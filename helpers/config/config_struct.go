@@ -3,12 +3,16 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"net"
+	"net/url"
 	"os"
 	"path/filepath"
 	"time"
+
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/validationerrors"
 )
 
-type Config struct {
+type config struct {
 	ApiEndpoint string `json:"api"`
 	AppsDomain  string `json:"apps_domain"`
 	UseHttp     bool   `json:"use_http"`
@@ -70,7 +74,7 @@ type Config struct {
 	NamePrefix string `json:"name_prefix"`
 }
 
-var defaults = Config{
+var defaults = config{
 	PersistentAppHost:      "CATS-persistent-app",
 	PersistentAppOrg:       "CATS-persistent-org",
 	PersistentAppQuotaName: "CATS-persistent-quota",
@@ -110,40 +114,66 @@ var defaults = Config{
 	NamePrefix: "CATS",
 }
 
-var config *Config
+var cfg *config
 
-func NewConfig() *Config {
-	config = &defaults
-	err := load(configPath(), config)
-	if err != nil {
-		panic(err)
+func NewConfig() (*config, error) {
+	cfg = &defaults
+	err := load(configPath(), cfg)
+	if err.Empty() {
+		return cfg, nil
 	}
-	return config
+	return nil, err
 }
 
-func load(path string, config *Config) error {
+func load(path string, config *config) Errors {
+	errs := Errors{}
 	err := loadConfigFromPath(path, config)
 	if err != nil {
-		return err
+		errs.Add(err)
 	}
 
 	if config.ApiEndpoint == "" {
-		return fmt.Errorf("missing configuration 'api'")
+		errs.Add(fmt.Errorf("* Invalid configuration: 'api' must be a valid Cloud Controller endpoint but was blank"))
+	}
+
+	var u *url.URL
+	var host string
+	if u, err = url.Parse(config.ApiEndpoint); err != nil {
+		errs.Add(fmt.Errorf("* Invalid configuration: 'api' must be a valid URL but was set to '%s'", config.ApiEndpoint))
+	} else {
+		host = u.Host
+		if host == "" {
+			// url.Parse misunderstood our convention and treated the hostname as a URL path
+			host = u.Path
+		}
+
+		if _, err = net.LookupHost(host); err != nil {
+			errs.Add(fmt.Errorf("* Invalid configuration for ApiEndpoint <%s> (host %s): %s", config.ApiEndpoint, host, err))
+		}
+	}
+
+	madeUpAppHostname := "made-up-hostname-that-will-never-resolve." + config.AppsDomain
+	if _, err = net.LookupHost(madeUpAppHostname); err != nil {
+		errs.Add(fmt.Errorf("* Invalid configuration for AppDomain <%s> (host %s): %s", config.AppsDomain, host, err))
 	}
 
 	if config.AdminUser == "" {
-		return fmt.Errorf("missing configuration 'admin_user'")
+		errs.Add(fmt.Errorf("* Invalid configuration: 'admin_user' must be provided"))
 	}
 
 	if config.AdminPassword == "" {
-		return fmt.Errorf("missing configuration 'admin_password'")
+		errs.Add(fmt.Errorf("* Invalid configuration: 'admin_password' must be provided"))
+	}
+
+	if config.Backend != "dea" && config.Backend != "diego" && config.Backend != "" {
+		errs.Add(fmt.Errorf("* Invalid configuration: 'backend' must be 'diego', 'dea', or empty but was set to '%s'", config.Backend))
 	}
 
 	if config.TimeoutScale <= 0 {
 		config.TimeoutScale = 1.0
 	}
 
-	return nil
+	return errs
 }
 
 func loadConfigFromPath(path string, config interface{}) error {
@@ -166,43 +196,43 @@ func configPath() string {
 	return path
 }
 
-func (c Config) GetScaledTimeout(timeout time.Duration) time.Duration {
+func (c config) GetScaledTimeout(timeout time.Duration) time.Duration {
 	return time.Duration(float64(timeout) * c.TimeoutScale)
 }
 
-func (c *Config) DefaultTimeoutDuration() time.Duration {
+func (c *config) DefaultTimeoutDuration() time.Duration {
 	return time.Duration(c.DefaultTimeout) * time.Second
 }
 
-func (c *Config) LongTimeoutDuration() time.Duration {
+func (c *config) LongTimeoutDuration() time.Duration {
 	return time.Duration(c.DefaultTimeout) * time.Second
 }
 
-func (c *Config) LongCurlTimeoutDuration() time.Duration {
+func (c *config) LongCurlTimeoutDuration() time.Duration {
 	return time.Duration(c.LongCurlTimeout) * time.Minute
 }
 
-func (c *Config) SleepTimeoutDuration() time.Duration {
+func (c *config) SleepTimeoutDuration() time.Duration {
 	return time.Duration(c.SleepTimeout) * time.Second
 }
 
-func (c *Config) DetectTimeoutDuration() time.Duration {
+func (c *config) DetectTimeoutDuration() time.Duration {
 	return time.Duration(c.DetectTimeout) * time.Minute
 }
 
-func (c *Config) CfPushTimeoutDuration() time.Duration {
+func (c *config) CfPushTimeoutDuration() time.Duration {
 	return time.Duration(c.CfPushTimeout) * time.Minute
 }
 
-func (c *Config) BrokerStartTimeoutDuration() time.Duration {
+func (c *config) BrokerStartTimeoutDuration() time.Duration {
 	return time.Duration(c.BrokerStartTimeout) * time.Minute
 }
 
-func (c *Config) AsyncServiceOperationTimeoutDuration() time.Duration {
+func (c *config) AsyncServiceOperationTimeoutDuration() time.Duration {
 	return time.Duration(c.AsyncServiceOperationTimeout) * time.Minute
 }
 
-func (c Config) Protocol() string {
+func (c *config) Protocol() string {
 	if c.UseHttp {
 		return "http://"
 	} else {
@@ -210,144 +240,144 @@ func (c Config) Protocol() string {
 	}
 }
 
-func (c *Config) GetAppsDomain() string {
+func (c *config) GetAppsDomain() string {
 	return c.AppsDomain
 }
 
-func (c *Config) GetSkipSSLValidation() bool {
+func (c *config) GetSkipSSLValidation() bool {
 	return c.SkipSSLValidation
 }
 
-func (c *Config) GetArtifactsDirectory() string {
+func (c *config) GetArtifactsDirectory() string {
 	return c.ArtifactsDirectory
 }
 
-func (c *Config) GetPersistentAppSpace() string {
+func (c *config) GetPersistentAppSpace() string {
 	return c.PersistentAppSpace
 }
-func (c *Config) GetPersistentAppOrg() string {
+func (c *config) GetPersistentAppOrg() string {
 	return c.PersistentAppOrg
 }
-func (c *Config) GetPersistentAppQuotaName() string {
+func (c *config) GetPersistentAppQuotaName() string {
 	return c.PersistentAppQuotaName
 }
 
-func (c *Config) GetNamePrefix() string {
+func (c *config) GetNamePrefix() string {
 	return c.NamePrefix
 }
 
-func (c *Config) GetUseExistingUser() bool {
+func (c *config) GetUseExistingUser() bool {
 	return c.UseExistingUser
 }
 
-func (c *Config) GetExistingUser() string {
+func (c *config) GetExistingUser() string {
 	return c.ExistingUser
 }
 
-func (c *Config) GetExistingUserPassword() string {
+func (c *config) GetExistingUserPassword() string {
 	return c.ExistingUserPassword
 }
 
-func (c *Config) GetConfigurableTestPassword() string {
+func (c *config) GetConfigurableTestPassword() string {
 	return c.ConfigurableTestPassword
 }
 
-func (c *Config) GetShouldKeepUser() bool {
+func (c *config) GetShouldKeepUser() bool {
 	return c.ShouldKeepUser
 }
 
-func (c *Config) GetAdminUser() string {
+func (c *config) GetAdminUser() string {
 	return c.AdminUser
 }
 
-func (c *Config) GetAdminPassword() string {
+func (c *config) GetAdminPassword() string {
 	return c.AdminPassword
 }
 
-func (c *Config) GetApiEndpoint() string {
+func (c *config) GetApiEndpoint() string {
 	return c.ApiEndpoint
 }
 
-func (c *Config) GetIncludeSsh() bool {
+func (c *config) GetIncludeSsh() bool {
 	return c.IncludeSsh
 }
 
-func (c *Config) GetIncludeApps() bool {
+func (c *config) GetIncludeApps() bool {
 	return c.IncludeApps
 }
 
-func (c *Config) GetIncludeBackendCompatiblity() bool {
+func (c *config) GetIncludeBackendCompatiblity() bool {
 	return c.IncludeBackendCompatiblity
 }
 
-func (c *Config) GetIncludeDetect() bool {
+func (c *config) GetIncludeDetect() bool {
 	return c.IncludeDetect
 }
 
-func (c *Config) GetIncludeDocker() bool {
+func (c *config) GetIncludeDocker() bool {
 	return c.IncludeDocker
 }
 
-func (c *Config) GetIncludeInternetDependent() bool {
+func (c *config) GetIncludeInternetDependent() bool {
 	return c.IncludeInternetDependent
 }
 
-func (c *Config) GetIncludeRouteServices() bool {
+func (c *config) GetIncludeRouteServices() bool {
 	return c.IncludeRouteServices
 }
 
-func (c *Config) GetIncludeRouting() bool {
+func (c *config) GetIncludeRouting() bool {
 	return c.IncludeRouting
 }
 
-func (c *Config) GetIncludeTasks() bool {
+func (c *config) GetIncludeTasks() bool {
 	return c.IncludeTasks
 }
 
-func (c *Config) GetIncludePrivilegedContainerSupport() bool {
+func (c *config) GetIncludePrivilegedContainerSupport() bool {
 	return c.IncludePrivilegedContainerSupport
 }
 
-func (c *Config) GetIncludeSecurityGroups() bool {
+func (c *config) GetIncludeSecurityGroups() bool {
 	return c.IncludeSecurityGroups
 }
 
-func (c *Config) GetIncludeServices() bool {
+func (c *config) GetIncludeServices() bool {
 	return c.IncludeServices
 }
 
-func (c *Config) GetIncludeSSO() bool {
+func (c *config) GetIncludeSSO() bool {
 	return c.IncludeSSO
 }
 
-func (c *Config) GetIncludeV3() bool {
+func (c *config) GetIncludeV3() bool {
 	return c.IncludeV3
 }
 
-func (c *Config) GetRubyBuildpackName() string {
+func (c *config) GetRubyBuildpackName() string {
 	return c.RubyBuildpackName
 }
 
-func (c *Config) GetGoBuildpackName() string {
+func (c *config) GetGoBuildpackName() string {
 	return c.GoBuildpackName
 }
 
-func (c *Config) GetJavaBuildpackName() string {
+func (c *config) GetJavaBuildpackName() string {
 	return c.JavaBuildpackName
 }
 
-func (c *Config) GetNodejsBuildpackName() string {
+func (c *config) GetNodejsBuildpackName() string {
 	return c.NodejsBuildpackName
 }
 
-func (c *Config) GetBinaryBuildpackName() string {
+func (c *config) GetBinaryBuildpackName() string {
 	return c.BinaryBuildpackName
 }
 
-func (c *Config) GetPersistentAppHost() string {
+func (c *config) GetPersistentAppHost() string {
 	return c.PersistentAppHost
 }
 
-func (c *Config) GetBackend() string {
+func (c *config) GetBackend() string {
 	return c.Backend
 }
