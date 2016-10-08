@@ -32,7 +32,7 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 	BeforeEach(func() {
 		helloWorldAppName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Cf("push", helloWorldAppName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("push", helloWorldAppName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(helloWorldAppName)
 		Expect(cf.Cf("start", helloWorldAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
@@ -67,7 +67,7 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 
 		By("Pushing a different version of the app")
 
-		Expect(cf.Cf("push", helloWorldAppName, "-p", assets.NewAssets().Dora).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("push", helloWorldAppName, "-p", assets.NewAssets().Dora).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, helloWorldAppName)
 		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
