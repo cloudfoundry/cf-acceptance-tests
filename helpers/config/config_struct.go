@@ -114,10 +114,8 @@ var defaults = config{
 	NamePrefix: "CATS",
 }
 
-var cfg *config
-
 func NewConfig() (*config, error) {
-	cfg = &defaults
+	cfg := &defaults
 	err := load(configPath(), cfg)
 	if err.Empty() {
 		return cfg, nil
