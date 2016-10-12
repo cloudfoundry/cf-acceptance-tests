@@ -50,6 +50,7 @@ var err error
 var errors Errors
 var requiredCfg requiredConfig
 var testCfg testConfig
+var originalConfig string
 
 func writeConfigFile(updatedConfig interface{}) string {
 	configFile, err := ioutil.TempFile("", "cf-test-helpers-config")
@@ -105,12 +106,15 @@ var _ = Describe("Config", func() {
 		err = tmpFile.Close()
 		Expect(err).NotTo(HaveOccurred())
 
+		originalConfig = os.Getenv("CONFIG")
 		os.Setenv("CONFIG", tmpFile.Name())
 	})
 
 	AfterEach(func() {
 		err := os.Remove(tmpFile.Name())
 		Expect(err).NotTo(HaveOccurred())
+
+		os.Setenv("CONFIG", originalConfig)
 	})
 
 	It("should have the right defaults", func() {
