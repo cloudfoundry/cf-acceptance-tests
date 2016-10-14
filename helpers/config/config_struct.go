@@ -114,9 +114,9 @@ var defaults = config{
 	NamePrefix: "CATS",
 }
 
-func NewConfig() (*config, error) {
+func NewConfig(path string) (*config, error) {
 	cfg := &defaults
-	err := load(configPath(), cfg)
+	err := load(path, cfg)
 	if err.Empty() {
 		return cfg, nil
 	}
@@ -150,9 +150,18 @@ func load(path string, config *config) Errors {
 		}
 	}
 
-	madeUpAppHostname := "made-up-hostname-that-will-never-resolve." + config.AppsDomain
-	if _, err = net.LookupHost(madeUpAppHostname); err != nil {
-		errs.Add(fmt.Errorf("* Invalid configuration for AppDomain <%s> (host %s): %s", config.AppsDomain, host, err))
+	madeUpAppHostname := "made-up-app-host-name." + config.AppsDomain
+	if u, err = url.Parse(madeUpAppHostname); err != nil {
+		errs.Add(fmt.Errorf("* Invalid configuration: 'apps_domain' must be a valid URL but was set to '%s'", config.AppsDomain))
+	} else {
+		host = u.Host
+		if host == "" {
+			// url.Parse misunderstood our convention and treated the hostname as a URL path
+			host = u.Path
+		}
+		if _, err = net.LookupHost(madeUpAppHostname); err != nil {
+			errs.Add(fmt.Errorf("* Invalid configuration for AppDomain <%s> (host %s): %s", config.AppsDomain, host, err))
+		}
 	}
 
 	if config.AdminUser == "" {
@@ -183,15 +192,6 @@ func loadConfigFromPath(path string, config interface{}) error {
 
 	decoder := json.NewDecoder(configFile)
 	return decoder.Decode(config)
-}
-
-func configPath() string {
-	path := os.Getenv("CONFIG")
-	if path == "" {
-		panic("Must set $CONFIG to point to an integration config .json file.")
-	}
-
-	return path
 }
 
 func (c config) GetScaledTimeout(timeout time.Duration) time.Duration {

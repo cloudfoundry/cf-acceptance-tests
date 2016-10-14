@@ -45,7 +45,7 @@ type testConfig struct {
 	Backend string `json:"backend"`
 }
 
-var tmpFile *os.File
+var tmpFilePath string
 var err error
 var errors Errors
 var requiredCfg requiredConfig
@@ -66,17 +66,6 @@ func writeConfigFile(updatedConfig interface{}) string {
 	return configFile.Name()
 }
 
-func withConfig(initialConfig testConfig, setupConfig func(testConfig) testConfig, runTest func()) {
-	previousConfig := os.Getenv("CONFIG")
-	updatedConfig := setupConfig(initialConfig)
-
-	newConfigFilePath := writeConfigFile(updatedConfig)
-	os.Setenv("CONFIG", newConfigFilePath)
-
-	runTest()
-	os.Setenv("CONFIG", previousConfig)
-}
-
 var _ = Describe("Config", func() {
 	BeforeEach(func() {
 		testCfg = testConfig{
@@ -87,38 +76,28 @@ var _ = Describe("Config", func() {
 			AppsDomain:        "cf-app.bosh-lite.com",
 			UseHttp:           true,
 		}
-		requiredCfg = requiredConfig{
-			ApiEndpoint:       "api.bosh-lite.com",
-			AdminUser:         "admin",
-			AdminPassword:     "admin",
-			SkipSSLValidation: true,
-			AppsDomain:        "cf-app.bosh-lite.com",
-			UseHttp:           true,
-		}
+	})
 
-		tmpFile, err = ioutil.TempFile("", "cf-test-helpers-config")
-		Expect(err).NotTo(HaveOccurred())
-
-		encoder := json.NewEncoder(tmpFile)
-		err = encoder.Encode(requiredCfg)
-		Expect(err).NotTo(HaveOccurred())
-
-		err = tmpFile.Close()
-		Expect(err).NotTo(HaveOccurred())
-
-		originalConfig = os.Getenv("CONFIG")
-		os.Setenv("CONFIG", tmpFile.Name())
+	JustBeforeEach(func() {
+		tmpFilePath = writeConfigFile(&testCfg)
 	})
 
 	AfterEach(func() {
-		err := os.Remove(tmpFile.Name())
+		err := os.Remove(tmpFilePath)
 		Expect(err).NotTo(HaveOccurred())
-
-		os.Setenv("CONFIG", originalConfig)
 	})
 
 	It("should have the right defaults", func() {
-		config, err := cfg.NewCatsConfig()
+		requiredCfg := requiredConfig{
+			ApiEndpoint:       testCfg.ApiEndpoint,
+			AdminUser:         testCfg.AdminUser,
+			AdminPassword:     testCfg.AdminPassword,
+			SkipSSLValidation: testCfg.SkipSSLValidation,
+			AppsDomain:        testCfg.AppsDomain,
+			UseHttp:           testCfg.UseHttp,
+		}
+		requiredCfgFilePath := writeConfigFile(requiredCfg)
+		config, err := cfg.NewCatsConfig(requiredCfgFilePath)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(config.GetIncludeApps()).To(BeTrue())
 		Expect(config.DefaultTimeoutDuration()).To(Equal(30 * time.Second))
@@ -132,174 +111,204 @@ var _ = Describe("Config", func() {
 		Expect(config.SleepTimeoutDuration()).To(Equal(30 * time.Second))
 	})
 
-	It("should have duration timeouts based on the configured values", func() {
-		withConfig(testCfg, func(myConfig testConfig) testConfig {
-			myConfig.DefaultTimeout = 12
-			myConfig.CfPushTimeout = 34
-			myConfig.LongCurlTimeout = 56
-			myConfig.BrokerStartTimeout = 78
-			myConfig.AsyncServiceOperationTimeout = 90
-			myConfig.DetectTimeout = 100
-			myConfig.SleepTimeout = 101
-			return myConfig
-		},
-			func() {
-				config, err := cfg.NewCatsConfig()
-				Expect(err).NotTo(HaveOccurred())
+	Context("when values with default are overriden", func() {
+		BeforeEach(func() {
+			testCfg.DefaultTimeout = 12
+			testCfg.CfPushTimeout = 34
+			testCfg.LongCurlTimeout = 56
+			testCfg.BrokerStartTimeout = 78
+			testCfg.AsyncServiceOperationTimeout = 90
+			testCfg.DetectTimeout = 100
+			testCfg.SleepTimeout = 101
+		})
 
-				Expect(config.DefaultTimeoutDuration()).To(Equal(12 * time.Second))
-				Expect(config.CfPushTimeoutDuration()).To(Equal(34 * time.Minute))
-				Expect(config.LongCurlTimeoutDuration()).To(Equal(56 * time.Minute))
-				Expect(config.BrokerStartTimeoutDuration()).To(Equal(78 * time.Minute))
-				Expect(config.AsyncServiceOperationTimeoutDuration()).To(Equal(90 * time.Minute))
-				Expect(config.DetectTimeoutDuration()).To(Equal(100 * time.Minute))
-				Expect(config.SleepTimeoutDuration()).To(Equal(101 * time.Second))
-			},
-		)
+		It("respects the overriden values", func() {
+			config, err := cfg.NewCatsConfig(tmpFilePath)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(config.DefaultTimeoutDuration()).To(Equal(12 * time.Second))
+			Expect(config.CfPushTimeoutDuration()).To(Equal(34 * time.Minute))
+			Expect(config.LongCurlTimeoutDuration()).To(Equal(56 * time.Minute))
+			Expect(config.BrokerStartTimeoutDuration()).To(Equal(78 * time.Minute))
+			Expect(config.AsyncServiceOperationTimeoutDuration()).To(Equal(90 * time.Minute))
+			Expect(config.DetectTimeoutDuration()).To(Equal(100 * time.Minute))
+			Expect(config.SleepTimeoutDuration()).To(Equal(101 * time.Second))
+		})
 	})
 
-	Context(`validations`, func() {
-		It(`validates that the backend is "dea", "diego", or ""`, func() {
-			withConfig(testCfg, func(myConfig testConfig) testConfig {
-				myConfig.Backend = "lkjlkjlkjlkj"
-				return myConfig
-			},
-				func() {
-					_, err := cfg.NewCatsConfig()
-					Expect(err).To(HaveOccurred())
-					Expect(err).To(MatchError("* Invalid configuration: 'backend' must be 'diego', 'dea', or empty but was set to 'lkjlkjlkjlkj'"))
-				},
-			)
-			withConfig(testCfg, func(myConfig testConfig) testConfig {
-				myConfig.Backend = "dea"
-				return myConfig
-			},
-				func() {
-					_, err := cfg.NewCatsConfig()
-					Expect(err).NotTo(HaveOccurred())
-				},
-			)
-			withConfig(testCfg, func(myConfig testConfig) testConfig {
-				myConfig.Backend = "diego"
-				return myConfig
-			},
-				func() {
-					_, err := cfg.NewCatsConfig()
-					Expect(err).NotTo(HaveOccurred())
-				},
-			)
-			withConfig(testCfg, func(myConfig testConfig) testConfig {
-				myConfig.Backend = ""
-				return myConfig
-			},
-				func() {
-					_, err := cfg.NewCatsConfig()
-					Expect(err).NotTo(HaveOccurred())
-				},
-			)
+	Describe(`GetBackend`, func() {
+		Context("when the backend is set to `dea`", func() {
+			BeforeEach(func() {
+				testCfg.Backend = "dea"
+			})
+
+			It("returns `dea`", func() {
+				cfg, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(cfg.GetBackend()).To(Equal("dea"))
+			})
 		})
 
-		It(`validates that ApiEndpoint is a valid URL`, func() {
-			withConfig(testCfg, func(myConfig testConfig) testConfig {
-				myAlwaysResolvingDomain := "api.bosh-lite.com"
-				myConfig.ApiEndpoint = myAlwaysResolvingDomain
-				return myConfig
-			},
-				func() {
-					_, err := cfg.NewCatsConfig()
-					Expect(err).NotTo(HaveOccurred())
-				},
-			)
-			withConfig(testCfg, func(myConfig testConfig) testConfig {
-				myAlwaysResolvingIP := "10.244.0.34" // api.bosh-lite.com
-				myConfig.ApiEndpoint = myAlwaysResolvingIP
-				return myConfig
-			},
-				func() {
-					_, err := cfg.NewCatsConfig()
-					Expect(err).NotTo(HaveOccurred())
-				},
-			)
-			withConfig(testCfg, func(myConfig testConfig) testConfig {
-				myConfig.ApiEndpoint = ""
-				return myConfig
-			},
-				func() {
-					_, err := cfg.NewCatsConfig()
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("* Invalid configuration: 'api' must be a valid Cloud Controller endpoint but was blank"))
-				},
-			)
-			withConfig(testCfg, func(myConfig testConfig) testConfig {
-				myConfig.ApiEndpoint = "_bogus%%%"
-				return myConfig
-			},
-				func() {
-					_, err := cfg.NewCatsConfig()
-					Expect(err).To(HaveOccurred())
-					Expect(err).To(MatchError("* Invalid configuration: 'api' must be a valid URL but was set to '_bogus%%%'"))
-				},
-			)
-			withConfig(testCfg, func(myConfig testConfig) testConfig {
-				myNeverResolvingURI := "E437FE20-5F25-479E-8B79-A008A13E58F6.E437FE20-5F25-479E-8B79-A008A13E58F6.E437FE20-5F25-479E-8B79-A008A13E58F6"
-				myConfig.ApiEndpoint = myNeverResolvingURI
-				return myConfig
-			},
-				func() {
-					_, err := cfg.NewCatsConfig()
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("no such host"))
-				},
-			)
+		Context("when the backend is set to `diego`", func() {
+			BeforeEach(func() {
+				testCfg.Backend = "diego"
+			})
+
+			It("returns `diego`", func() {
+				cfg, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(cfg.GetBackend()).To(Equal("diego"))
+			})
 		})
 
-		It(`validates that AppsDomain is a valid domain`, func() {
-			withConfig(testCfg, func(myConfig testConfig) testConfig {
-				myConfig.AppsDomain = "bosh-lite.com"
-				return myConfig
-			},
-				func() {
-					_, err := cfg.NewCatsConfig()
-					Expect(err).ToNot(HaveOccurred())
-				},
-			)
-			withConfig(testCfg, func(myConfig testConfig) testConfig {
-				myAlwaysResolvingIP := "10.244.0.34" // api.bosh-lite.com
-				myConfig.AppsDomain = myAlwaysResolvingIP
-				return myConfig
-			},
-				func() {
-					_, err := cfg.NewCatsConfig()
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("no such host"))
-				},
-			)
+		Context("when the backend is empty", func() {
+			BeforeEach(func() {
+				testCfg.Backend = ""
+			})
+
+			It("returns an empty string", func() {
+				cfg, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(cfg.GetBackend()).To(Equal(""))
+			})
 		})
 
-		It(`validates that AdminUser is present`, func() {
-			withConfig(testCfg, func(myConfig testConfig) testConfig {
-				myConfig.AdminUser = ""
-				return myConfig
-			},
-				func() {
-					_, err := cfg.NewCatsConfig()
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("'admin_user' must be provided"))
-				},
-			)
+		Context("when the backend is set to any other value", func() {
+			BeforeEach(func() {
+				testCfg.Backend = "asdfasdf"
+			})
+
+			It("returns an error", func() {
+				_, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).To(HaveOccurred())
+				Expect(err).To(MatchError("* Invalid configuration: 'backend' must be 'diego', 'dea', or empty but was set to 'asdfasdf'"))
+			})
+		})
+	})
+
+	Describe("GetApiEndpoint", func() {
+		It(`returns the URL`, func() {
+			cfg, err := cfg.NewCatsConfig(tmpFilePath)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(cfg.GetApiEndpoint()).To(Equal("api.bosh-lite.com"))
 		})
 
-		It(`validates that AdminPassword is present`, func() {
-			withConfig(testCfg, func(myConfig testConfig) testConfig {
-				myConfig.AdminPassword = ""
-				return myConfig
-			},
-				func() {
-					_, err := cfg.NewCatsConfig()
-					Expect(err).To(HaveOccurred())
-					Expect(err.Error()).To(ContainSubstring("'admin_password' must be provided"))
-				},
-			)
+		Context("when url is an IP address", func() {
+			BeforeEach(func() {
+				testCfg.ApiEndpoint = "10.244.0.34" // api.bosh-lite.com
+			})
+
+			It("returns the IP address", func() {
+				cfg, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(cfg.GetApiEndpoint()).To(Equal("10.244.0.34"))
+			})
+		})
+
+		Context("when the domain does not resolve", func() {
+			BeforeEach(func() {
+				testCfg.ApiEndpoint = "some-url-that-does-not-resolve.com"
+			})
+
+			It("returns an error", func() {
+				_, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("no such host"))
+			})
+		})
+
+		Context("when the url is empty", func() {
+			BeforeEach(func() {
+				testCfg.ApiEndpoint = ""
+			})
+
+			It("returns an error", func() {
+				_, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("* Invalid configuration: 'api' must be a valid Cloud Controller endpoint but was blank"))
+			})
+		})
+
+		Context("when the url is invalid", func() {
+			BeforeEach(func() {
+				testCfg.ApiEndpoint = "_bogus%%%"
+			})
+
+			It("returns an error", func() {
+				_, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).To(HaveOccurred())
+				Expect(err).To(MatchError("* Invalid configuration: 'api' must be a valid URL but was set to '_bogus%%%'"))
+			})
+		})
+	})
+
+	Describe("GetAppsDomain", func() {
+		It("returns the domain", func() {
+			c, err := cfg.NewCatsConfig(tmpFilePath)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(c.GetAppsDomain()).To(Equal("cf-app.bosh-lite.com"))
+		})
+
+		Context("when the domain is not valid", func() {
+			BeforeEach(func() {
+				testCfg.AppsDomain = "_bogus%%%"
+			})
+
+			It("returns an error", func() {
+				_, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).To(HaveOccurred())
+				Expect(err).To(MatchError("* Invalid configuration: 'apps_domain' must be a valid URL but was set to '_bogus%%%'"))
+			})
+		})
+
+		Context("when the AppsDomain is an IP address (which is invalid for AppsDomain)", func() {
+			BeforeEach(func() {
+				testCfg.AppsDomain = "10.244.0.34"
+			})
+
+			It("returns an error", func() {
+				_, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("no such host"))
+			})
+		})
+	})
+
+	Describe("GetAdminUser", func() {
+		It("returns the admin user", func() {
+			c, err := cfg.NewCatsConfig(tmpFilePath)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(c.GetAdminUser()).To(Equal("admin"))
+		})
+
+		Context("when the admin user is blank", func() {
+			BeforeEach(func() {
+				testCfg.AdminUser = ""
+			})
+			It("returns an error", func() {
+				_, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("'admin_user' must be provided"))
+			})
+		})
+	})
+
+	Describe("GetAdminPassword", func() {
+		It("returns the admin password", func() {
+			c, err := cfg.NewCatsConfig(tmpFilePath)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(c.GetAdminPassword()).To(Equal("admin"))
+		})
+
+		Context("when the admin user is blank", func() {
+			BeforeEach(func() {
+				testCfg.AdminPassword = ""
+			})
+			It("returns an error", func() {
+				_, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("'admin_password' must be provided"))
+			})
 		})
 	})
 })

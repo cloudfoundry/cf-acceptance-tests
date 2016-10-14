@@ -55,6 +55,6 @@ type CatsConfig interface {
 	SleepTimeoutDuration() time.Duration
 }
 
-func NewCatsConfig() (CatsConfig, error) {
-	return NewConfig()
+func NewCatsConfig(path string) (CatsConfig, error) {
+	return NewConfig(path)
 }
