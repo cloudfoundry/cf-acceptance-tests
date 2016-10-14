@@ -1,6 +1,7 @@
 package cats_test
 
 import (
+	"os"
 	"os/exec"
 	"testing"
 
@@ -32,7 +33,7 @@ func TestCATS(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	var err error
-	Config, err = config.NewCatsConfig()
+	Config, err = config.NewCatsConfig(os.Getenv("CONFIG"))
 
 	if err != nil {
 		panic(err)
