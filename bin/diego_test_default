@@ -1,6 +1,0 @@
-#!/bin/bash
-
-$(dirname $0)/test \
-  -slowSpecThreshold=120 \
-  $@ \
-  . apps backend_compatibility detect docker internet_dependent security_groups ssh routing

@@ -40,16 +40,12 @@ and should not modify the CF state in such a way as to impact other tests.
   * [git](http://git-scm.com/)
   * [mercurial](http://mercurial.selenic.com/)
   * [bazaar](http://bazaar.canonical.com/)
-- [Install ginkgo and the matchers library](https://onsi.github.io/ginkgo/#getting-ginkgo)
-  ```bash
-  go get github.com/onsi/ginkgo/ginkgo
-  go get github.com/onsi/gomega
-  ```
 - Install the [`cf CLI`](https://github.com/cloudfoundry/cli).
   Make sure that it is accessible in your `$PATH`.
 - Install [curl](http://curl.haxx.se/)
 - Check out a copy of `cf-acceptance-tests` and make sure that it is added to your `$GOPATH`.
   The recommended way to do this is to run:
+
   ```bash
   go get -d github.com/cloudfoundry/cf-acceptance-tests
   ```
@@ -57,6 +53,7 @@ and should not modify the CF state in such a way as to impact other tests.
   this can be ignored as there is no compilable go source code in the package, only test code.
 - Ensure all submodules are checked out to the correct SHA.
   The easiest way to do this is by running:
+
   ```bash
   ./bin/update_submodules
   ```
@@ -218,30 +215,26 @@ If you set a value for `artifacts_directory` in your `$CONFIG` file, then you wi
 The `cf` trace output for the tests in these specs will be found in `CF-TRACE-Applications-*.txt` in the `artifacts_directory`.
 
 ## Test Execution
-From the root directory of cf-acceptance-tests run:
+To execute all test groups, run the following from the root directory of cf-acceptance-tests:
 ```bash
-ginkgo -r
+./bin/test
 ```
 
 ##### Parallel execution
 To execute all test groups, and have tests run in parallel across four processes one would run:
 
 ```bash
-ginkgo -r -nodes=4
+./bin/test -nodes=4
 ```
 
 Be careful with this number, as it's effectively "how many apps to push at once", as nearly every example pushes an app.
 
 
 ##### Focusing Test Groups
-If you are already familiar with CATs you probably remember that there used to be many test suites. We've merged them all into a single test suite, but we still wanted to give developers the ability to skip or run specific groups of tests.
-For the purposes of this document we will call them "Test groups", if you can think of a better term for them feel free to open a github issue or pull request.  
-
-You may not wish to run all the tests in all contexts, and sometimes you may want to focus individual test groups to pinpoint a failure.
-To execute a specific group of acceptance tests, e.g. `routing/`, edit your [`integration_config.json`](#test-configuration) file and set all `include_*` values to `false` except for `include_routing` then run the following:
+If you are already familiar with CATs you probably know that there are many test groups. You may not wish to run all the tests in all contexts, and sometimes you may want to focus individual test groups to pinpoint a failure. To execute a specific group of acceptance tests, e.g. `routing/`, edit your [`integration_config.json`](#test-configuration) file and set all `include_*` values to `false` except for `include_routing` then run the following:
 
 ```bash
-ginkgo -r
+./bin/test
 ```
 
 To execute tests in a single file use an `FDescribe` block around the tests in that file:
@@ -256,11 +249,14 @@ var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
 
 The test group names correspond to directory names.
 
+##### Verbose Output
 To see verbose output from `ginkgo`, use the `-v` flag.
 
 ```bash
-ginkgo -r -v
+./bin/test -v
 ```
+
+You can of course combine the `-v` flag with the `-nodes=N` flag.
 
 ## Explanation of Test Groups
 
@@ -274,7 +270,7 @@ Test Group Name| Compatable Backend | Description
 `routing`| DEA or Diego |This package contains routing specific acceptance tests (Context path, wildcard, SSL termination, sticky sessions).
 `route_services` | Diego |This package contains route services acceptance tests.
 `security_groups`| DEA or Diego |This test group tests the security groups feature of Cloud Foundry that lets you apply rules-based controls to network traffic in and out of your containers.  These should pass for most recent Cloud Foundry installations.  `cf-release` versions `v200` and up should have support for most security group specs to pass.
-`services`| DEA or Diego | This test group tests various features related to services, e.g. registering a service broker via the service broker API.  Some of these tests exercise special integrations, such as Single Sign-On authentication; you may wish to run some tests in this package but selectively skip others if you haven't configured the required integrations.  Consult the [ginkgo spec runner](http://onsi.github.io/ginkgo/#the-spec-runner) documention to see how to use the `--skip` and `--focus` flags.
+`services`| DEA or Diego | This test group tests various features related to services, e.g. registering a service broker via the service broker API.  Some of these tests exercise special integrations, such as Single Sign-On authentication; you may wish to run some tests in this package but selectively skip others if you haven't configured the required integrations.
 `ssh`| Diego |This test group tests our ability to communicate with Diego apps via ssh, scp, and sftp.
 `v3`| Diego| This test group contains tests for the next-generation v3 Cloud Controller API.  As of this writing, the v3 API is not officially supported.
 
