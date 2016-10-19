@@ -13,6 +13,7 @@ type CatsConfig interface {
 	GetIncludePrivilegedContainerSupport() bool
 	GetIncludeRouteServices() bool
 	GetIncludeRouting() bool
+	GetIncludeZipkin() bool
 	GetIncludeSSO() bool
 	GetIncludeSecurityGroups() bool
 	GetIncludeServices() bool

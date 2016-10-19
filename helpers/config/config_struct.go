@@ -64,6 +64,7 @@ type config struct {
 	IncludePrivilegedContainerSupport bool `json:"include_privileged_container_support"`
 	IncludeRouteServices              bool `json:"include_route_services"`
 	IncludeRouting                    bool `json:"include_routing"`
+	IncludeZipkin                     bool `json:"include_zipkin"`
 	IncludeSSO                        bool `json:"include_sso"`
 	IncludeSecurityGroups             bool `json:"include_security_groups"`
 	IncludeServices                   bool `json:"include_services"`
@@ -327,6 +328,10 @@ func (c *config) GetIncludeRouteServices() bool {
 
 func (c *config) GetIncludeRouting() bool {
 	return c.IncludeRouting
+}
+
+func (c *config) GetIncludeZipkin() bool {
+	return c.IncludeZipkin
 }
 
 func (c *config) GetIncludeTasks() bool {
