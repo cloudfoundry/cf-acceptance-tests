@@ -127,7 +127,8 @@ func load(path string, config *config) Errors {
 	errs := Errors{}
 	err := loadConfigFromPath(path, config)
 	if err != nil {
-		errs.Add(err)
+		errs.Add(fmt.Errorf("* Failed to unmarshal: %s", err))
+		return errs
 	}
 
 	if config.ApiEndpoint == "" {
@@ -146,7 +147,7 @@ func load(path string, config *config) Errors {
 		}
 
 		if _, err = net.LookupHost(host); err != nil {
-			errs.Add(fmt.Errorf("* Invalid configuration for ApiEndpoint <%s> (host %s): %s", config.ApiEndpoint, host, err))
+			errs.Add(fmt.Errorf("* Invalid configuration for 'api_endpoint' <%s> (host %s): %s", config.ApiEndpoint, host, err))
 		}
 	}
 
@@ -160,7 +161,7 @@ func load(path string, config *config) Errors {
 			host = u.Path
 		}
 		if _, err = net.LookupHost(madeUpAppHostname); err != nil {
-			errs.Add(fmt.Errorf("* Invalid configuration for AppDomain <%s> (host %s): %s", config.AppsDomain, host, err))
+			errs.Add(fmt.Errorf("* Invalid configuration for 'apps_domain' <%s> (host %s): %s", config.AppsDomain, host, err))
 		}
 	}
 

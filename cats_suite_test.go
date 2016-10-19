@@ -1,6 +1,7 @@
 package cats_test
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"testing"
@@ -32,16 +33,18 @@ const minCliVersion = "6.16.1"
 func TestCATS(t *testing.T) {
 	RegisterFailHandler(Fail)
 
-	var err error
-	Config, err = config.NewCatsConfig(os.Getenv("CONFIG"))
-
-	if err != nil {
-		panic(err)
-	}
-
-	TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
+	var validationError error
+	Config, validationError = config.NewCatsConfig(os.Getenv("CONFIG"))
 
 	var _ = BeforeSuite(func() {
+		if validationError != nil {
+			fmt.Println("Invalid configuration.  ")
+			fmt.Println(validationError)
+			Fail("Please fix the contents of $CONFIG:\n  " + os.Getenv("CONFIG") + "\nbefore proceeding.")
+		}
+
+		TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
+
 		installedVersion, err := GetInstalledCliVersionString()
 		Expect(err).ToNot(HaveOccurred(), "Error trying to determine CF CLI version")
 
@@ -57,14 +60,18 @@ func TestCATS(t *testing.T) {
 	})
 
 	AfterSuite(func() {
-		TestSetup.Teardown()
+		if TestSetup != nil {
+			TestSetup.Teardown()
+		}
 	})
 
 	rs := []Reporter{}
 
-	if Config.GetArtifactsDirectory() != "" {
-		helpers.EnableCFTrace(Config, "CATS")
-		rs = append(rs, helpers.NewJUnitReporter(Config, "CATS"))
+	if validationError == nil {
+		if Config.GetArtifactsDirectory() != "" {
+			helpers.EnableCFTrace(Config, "CATS")
+			rs = append(rs, helpers.NewJUnitReporter(Config, "CATS"))
+		}
 	}
 
 	RunSpecsWithDefaultAndCustomReporters(t, "CATS", rs)
