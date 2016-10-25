@@ -98,7 +98,8 @@ func GetSpaceGuidFromName(spaceName string) string {
 }
 
 func GetAuthToken() string {
-	bytes := helpers.Run("bash", "-c", "cf oauth-token | grep bearer").Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+	session := cf.Cf("oauth-token")
+	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 	return strings.TrimSpace(string(bytes))
 }
 
