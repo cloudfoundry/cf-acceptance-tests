@@ -13,110 +13,143 @@ import (
 )
 
 type config struct {
-	ApiEndpoint string `json:"api"`
-	AppsDomain  string `json:"apps_domain"`
-	UseHttp     bool   `json:"use_http"`
+	ApiEndpoint *string `json:"api"`
+	AppsDomain  *string `json:"apps_domain"`
+	UseHttp     *bool   `json:"use_http"`
 
-	AdminPassword string `json:"admin_password"`
-	AdminUser     string `json:"admin_user"`
+	AdminPassword *string `json:"admin_password"`
+	AdminUser     *string `json:"admin_user"`
 
-	ExistingUser         string `json:"existing_user"`
-	ExistingUserPassword string `json:"existing_user_password"`
-	ShouldKeepUser       bool   `json:"keep_user_at_suite_end"`
-	UseExistingUser      bool   `json:"use_existing_user"`
+	ExistingUser         *string `json:"existing_user"`
+	ExistingUserPassword *string `json:"existing_user_password"`
+	ShouldKeepUser       *bool   `json:"keep_user_at_suite_end"`
+	UseExistingUser      *bool   `json:"use_existing_user"`
 
-	ConfigurableTestPassword string `json:"test_password"`
+	ConfigurableTestPassword *string `json:"test_password"`
 
-	PersistentAppHost      string `json:"persistent_app_host"`
-	PersistentAppOrg       string `json:"persistent_app_org"`
-	PersistentAppQuotaName string `json:"persistent_app_quota_name"`
-	PersistentAppSpace     string `json:"persistent_app_space"`
+	PersistentAppHost      *string `json:"persistent_app_host"`
+	PersistentAppOrg       *string `json:"persistent_app_org"`
+	PersistentAppQuotaName *string `json:"persistent_app_quota_name"`
+	PersistentAppSpace     *string `json:"persistent_app_space"`
 
-	Backend           string `json:"backend"`
-	SkipSSLValidation bool   `json:"skip_ssl_validation"`
+	Backend           *string `json:"backend"`
+	SkipSSLValidation *bool   `json:"skip_ssl_validation"`
 
-	ArtifactsDirectory string `json:"artifacts_directory"`
+	ArtifactsDirectory *string `json:"artifacts_directory"`
 
-	AsyncServiceOperationTimeout int `json:"async_service_operation_timeout"`
-	BrokerStartTimeout           int `json:"broker_start_timeout"`
-	CfPushTimeout                int `json:"cf_push_timeout"`
-	DefaultTimeout               int `json:"default_timeout"`
-	DetectTimeout                int `json:"detect_timeout"`
-	LongCurlTimeout              int `json:"long_curl_timeout"`
-	SleepTimeout                 int `json:"sleep_timeout"`
+	AsyncServiceOperationTimeout *int `json:"async_service_operation_timeout"`
+	BrokerStartTimeout           *int `json:"broker_start_timeout"`
+	CfPushTimeout                *int `json:"cf_push_timeout"`
+	DefaultTimeout               *int `json:"default_timeout"`
+	DetectTimeout                *int `json:"detect_timeout"`
+	LongCurlTimeout              *int `json:"long_curl_timeout"`
+	SleepTimeout                 *int `json:"sleep_timeout"`
 
-	TimeoutScale float64 `json:"timeout_scale"`
+	TimeoutScale *float64 `json:"timeout_scale"`
 
-	BinaryBuildpackName     string `json:"binary_buildpack_name"`
-	GoBuildpackName         string `json:"go_buildpack_name"`
-	JavaBuildpackName       string `json:"java_buildpack_name"`
-	NodejsBuildpackName     string `json:"nodejs_buildpack_name"`
-	PhpBuildpackName        string `json:"php_buildpack_name"`
-	PythonBuildpackName     string `json:"python_buildpack_name"`
-	RubyBuildpackName       string `json:"ruby_buildpack_name"`
-	StaticFileBuildpackName string `json:"staticfile_buildpack_name"`
+	BinaryBuildpackName     *string `json:"binary_buildpack_name"`
+	GoBuildpackName         *string `json:"go_buildpack_name"`
+	JavaBuildpackName       *string `json:"java_buildpack_name"`
+	NodejsBuildpackName     *string `json:"nodejs_buildpack_name"`
+	PhpBuildpackName        *string `json:"php_buildpack_name"`
+	PythonBuildpackName     *string `json:"python_buildpack_name"`
+	RubyBuildpackName       *string `json:"ruby_buildpack_name"`
+	StaticFileBuildpackName *string `json:"staticfile_buildpack_name"`
 
-	IncludeApps                       bool `json:"include_apps"`
-	IncludeBackendCompatiblity        bool `json:"include_backend_compatibility"`
-	IncludeDetect                     bool `json:"include_detect"`
-	IncludeDocker                     bool `json:"include_docker"`
-	IncludeInternetDependent          bool `json:"include_internet_dependent"`
-	IncludePrivilegedContainerSupport bool `json:"include_privileged_container_support"`
-	IncludeRouteServices              bool `json:"include_route_services"`
-	IncludeRouting                    bool `json:"include_routing"`
-	IncludeZipkin                     bool `json:"include_zipkin"`
-	IncludeSSO                        bool `json:"include_sso"`
-	IncludeSecurityGroups             bool `json:"include_security_groups"`
-	IncludeServices                   bool `json:"include_services"`
-	IncludeSsh                        bool `json:"include_ssh"`
-	IncludeTasks                      bool `json:"include_tasks"`
-	IncludeV3                         bool `json:"include_v3"`
+	IncludeApps                       *bool `json:"include_apps"`
+	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
+	IncludeDetect                     *bool `json:"include_detect"`
+	IncludeDocker                     *bool `json:"include_docker"`
+	IncludeInternetDependent          *bool `json:"include_internet_dependent"`
+	IncludePrivilegedContainerSupport *bool `json:"include_privileged_container_support"`
+	IncludeRouteServices              *bool `json:"include_route_services"`
+	IncludeRouting                    *bool `json:"include_routing"`
+	IncludeZipkin                     *bool `json:"include_zipkin"`
+	IncludeSSO                        *bool `json:"include_sso"`
+	IncludeSecurityGroups             *bool `json:"include_security_groups"`
+	IncludeServices                   *bool `json:"include_services"`
+	IncludeSsh                        *bool `json:"include_ssh"`
+	IncludeTasks                      *bool `json:"include_tasks"`
+	IncludeV3                         *bool `json:"include_v3"`
 
-	NamePrefix string `json:"name_prefix"`
+	NamePrefix *string `json:"name_prefix"`
 }
 
-var defaults = config{
-	PersistentAppHost:      "CATS-persistent-app",
-	PersistentAppOrg:       "CATS-persistent-org",
-	PersistentAppQuotaName: "CATS-persistent-quota",
-	PersistentAppSpace:     "CATS-persistent-space",
+var defaults = config{}
 
-	BinaryBuildpackName:     "binary_buildpack",
-	GoBuildpackName:         "go_buildpack",
-	JavaBuildpackName:       "java_buildpack",
-	NodejsBuildpackName:     "nodejs_buildpack",
-	PhpBuildpackName:        "php_buildpack",
-	PythonBuildpackName:     "python_buildpack",
-	RubyBuildpackName:       "ruby_buildpack",
-	StaticFileBuildpackName: "staticfile_buildpack",
+func ptrToString(str string) *string {
+	return &str
+}
 
-	IncludeApps:                true,
-	IncludeBackendCompatiblity: true,
-	IncludeDetect:              true,
-	IncludeDocker:              true,
-	IncludeInternetDependent:   true,
-	IncludeRouteServices:       true,
-	IncludeRouting:             true,
-	IncludeSecurityGroups:      true,
-	IncludeServices:            true,
-	IncludeSsh:                 true,
-	IncludeV3:                  true,
+func ptrToBool(b bool) *bool {
+	return &b
+}
 
-	AsyncServiceOperationTimeout: 2,
-	BrokerStartTimeout:           5,
-	CfPushTimeout:                2,
-	DefaultTimeout:               30,
-	DetectTimeout:                5,
-	LongCurlTimeout:              2,
-	SleepTimeout:                 30,
+func ptrToInt(i int) *int {
+	return &i
+}
 
-	ArtifactsDirectory: filepath.Join("..", "results"),
+func ptrToFloat(f float64) *float64 {
+	return &f
+}
 
-	NamePrefix: "CATS",
+func getDefaults() config {
+	defaults.Backend = ptrToString("")
+	defaults.PersistentAppHost = ptrToString("CATS-persistent-app")
+
+	defaults.PersistentAppOrg = ptrToString("CATS-persistent-org")
+	defaults.PersistentAppQuotaName = ptrToString("CATS-persistent-quota")
+	defaults.PersistentAppSpace = ptrToString("CATS-persistent-space")
+
+	defaults.BinaryBuildpackName = ptrToString("binary_buildpack")
+	defaults.GoBuildpackName = ptrToString("go_buildpack")
+	defaults.JavaBuildpackName = ptrToString("java_buildpack")
+	defaults.NodejsBuildpackName = ptrToString("nodejs_buildpack")
+	defaults.PhpBuildpackName = ptrToString("php_buildpack")
+	defaults.PythonBuildpackName = ptrToString("python_buildpack")
+	defaults.RubyBuildpackName = ptrToString("ruby_buildpack")
+	defaults.StaticFileBuildpackName = ptrToString("staticfile_buildpack")
+
+	defaults.IncludeApps = ptrToBool(true)
+	defaults.IncludeBackendCompatiblity = ptrToBool(true)
+	defaults.IncludeDetect = ptrToBool(true)
+	defaults.IncludeDocker = ptrToBool(true)
+	defaults.IncludeInternetDependent = ptrToBool(true)
+	defaults.IncludeRouteServices = ptrToBool(true)
+	defaults.IncludeRouting = ptrToBool(true)
+	defaults.IncludeSecurityGroups = ptrToBool(true)
+	defaults.IncludeServices = ptrToBool(true)
+	defaults.IncludeSsh = ptrToBool(true)
+	defaults.IncludeV3 = ptrToBool(true)
+	defaults.IncludePrivilegedContainerSupport = ptrToBool(true)
+	defaults.IncludeZipkin = ptrToBool(true)
+	defaults.IncludeSSO = ptrToBool(true)
+	defaults.IncludeTasks = ptrToBool(true)
+
+	defaults.UseExistingUser = ptrToBool(false)
+	defaults.ShouldKeepUser = ptrToBool(false)
+
+	defaults.AsyncServiceOperationTimeout = ptrToInt(2)
+	defaults.BrokerStartTimeout = ptrToInt(5)
+	defaults.CfPushTimeout = ptrToInt(2)
+	defaults.DefaultTimeout = ptrToInt(30)
+	defaults.DetectTimeout = ptrToInt(5)
+	defaults.LongCurlTimeout = ptrToInt(2)
+	defaults.SleepTimeout = ptrToInt(30)
+
+	defaults.ConfigurableTestPassword = ptrToString("")
+
+	defaults.TimeoutScale = ptrToFloat(1.0)
+
+	defaults.ArtifactsDirectory = ptrToString(filepath.Join("..", "results"))
+
+	defaults.NamePrefix = ptrToString("CATS")
+	return defaults
 }
 
 func NewConfig(path string) (*config, error) {
-	cfg := &defaults
+	d := getDefaults()
+	cfg := &d
 	err := load(path, cfg)
 	if err.Empty() {
 		return cfg, nil
@@ -131,15 +164,159 @@ func load(path string, config *config) Errors {
 		errs.Add(fmt.Errorf("* Failed to unmarshal: %s", err))
 		return errs
 	}
+	if config.ApiEndpoint == nil {
+		errs.Add(fmt.Errorf("* 'api' must be provided"))
+	}
+	if config.AppsDomain == nil {
+		errs.Add(fmt.Errorf("* 'apps_domain' must be provided"))
+	}
+	if config.UseHttp == nil {
+		errs.Add(fmt.Errorf("* 'use_http' must be provided"))
+	}
+	if config.AdminPassword == nil {
+		errs.Add(fmt.Errorf("* 'admin_password' must be provided"))
+	}
+	if config.AdminUser == nil {
+		errs.Add(fmt.Errorf("* 'admin_user' must be provided"))
+	}
+	if config.ShouldKeepUser == nil {
+		errs.Add(fmt.Errorf("* 'keep_user_at_suite_end' must be provided"))
+	}
+	if config.UseExistingUser == nil {
+		errs.Add(fmt.Errorf("* 'use_existing_user' must be provided"))
+	}
+	if config.ConfigurableTestPassword == nil {
+		errs.Add(fmt.Errorf("* 'test_password' must be provided"))
+	}
+	if config.PersistentAppHost == nil {
+		errs.Add(fmt.Errorf("* 'persistent_app_host' must be provided"))
+	}
+	if config.PersistentAppOrg == nil {
+		errs.Add(fmt.Errorf("* 'persistent_app_org' must be provided"))
+	}
+	if config.PersistentAppQuotaName == nil {
+		errs.Add(fmt.Errorf("* 'persistent_app_quota_name' must be provided"))
+	}
+	if config.PersistentAppSpace == nil {
+		errs.Add(fmt.Errorf("* 'persistent_app_space' must be provided"))
+	}
+	if config.Backend == nil {
+		errs.Add(fmt.Errorf("* 'backend' must be provided"))
+	}
+	if config.SkipSSLValidation == nil {
+		errs.Add(fmt.Errorf("* 'skip_ssl_validation' must be provided"))
+	}
+	if config.ArtifactsDirectory == nil {
+		errs.Add(fmt.Errorf("* 'artifacts_directory' must be provided"))
+	}
+	if config.AsyncServiceOperationTimeout == nil {
+		errs.Add(fmt.Errorf("* 'async_service_operation_timeout' must be provided"))
+	}
+	if config.BrokerStartTimeout == nil {
+		errs.Add(fmt.Errorf("* 'broker_start_timeout' must be provided"))
+	}
+	if config.CfPushTimeout == nil {
+		errs.Add(fmt.Errorf("* 'cf_push_timeout' must be provided"))
+	}
+	if config.DefaultTimeout == nil {
+		errs.Add(fmt.Errorf("* 'default_timeout' must be provided"))
+	}
+	if config.DetectTimeout == nil {
+		errs.Add(fmt.Errorf("* 'detect_timeout' must be provided"))
+	}
+	if config.LongCurlTimeout == nil {
+		errs.Add(fmt.Errorf("* 'long_curl_timeout' must be provided"))
+	}
+	if config.SleepTimeout == nil {
+		errs.Add(fmt.Errorf("* 'sleep_timeout' must be provided"))
+	}
+	if config.TimeoutScale == nil {
+		errs.Add(fmt.Errorf("* 'timeout_scale' must be provided"))
+	}
+	if config.BinaryBuildpackName == nil {
+		errs.Add(fmt.Errorf("* 'binary_buildpack_name' must be provided"))
+	}
+	if config.GoBuildpackName == nil {
+		errs.Add(fmt.Errorf("* 'go_buildpack_name' must be provided"))
+	}
+	if config.JavaBuildpackName == nil {
+		errs.Add(fmt.Errorf("* 'java_buildpack_name' must be provided"))
+	}
+	if config.NodejsBuildpackName == nil {
+		errs.Add(fmt.Errorf("* 'nodejs_buildpack_name' must be provided"))
+	}
+	if config.PhpBuildpackName == nil {
+		errs.Add(fmt.Errorf("* 'php_buildpack_name' must be provided"))
+	}
+	if config.PythonBuildpackName == nil {
+		errs.Add(fmt.Errorf("* 'python_buildpack_name' must be provided"))
+	}
+	if config.RubyBuildpackName == nil {
+		errs.Add(fmt.Errorf("* 'ruby_buildpack_name' must be provided"))
+	}
+	if config.StaticFileBuildpackName == nil {
+		errs.Add(fmt.Errorf("* 'staticfile_buildpack_name' must be provided"))
+	}
+	if config.IncludeApps == nil {
+		errs.Add(fmt.Errorf("* 'include_apps' must be provided"))
+	}
+	if config.IncludeBackendCompatiblity == nil {
+		errs.Add(fmt.Errorf("* 'include_backend_compatibility' must be provided"))
+	}
+	if config.IncludeDetect == nil {
+		errs.Add(fmt.Errorf("* 'include_detect' must be provided"))
+	}
+	if config.IncludeDocker == nil {
+		errs.Add(fmt.Errorf("* 'include_docker' must be provided"))
+	}
+	if config.IncludeInternetDependent == nil {
+		errs.Add(fmt.Errorf("* 'include_internet_dependent' must be provided"))
+	}
+	if config.IncludePrivilegedContainerSupport == nil {
+		errs.Add(fmt.Errorf("* 'include_privileged_container_support' must be provided"))
+	}
+	if config.IncludeRouteServices == nil {
+		errs.Add(fmt.Errorf("* 'include_route_services' must be provided"))
+	}
+	if config.IncludeRouting == nil {
+		errs.Add(fmt.Errorf("* 'include_routing' must be provided"))
+	}
+	if config.IncludeZipkin == nil {
+		errs.Add(fmt.Errorf("* 'include_zipkin' must be provided"))
+	}
+	if config.IncludeSSO == nil {
+		errs.Add(fmt.Errorf("* 'include_sso' must be provided"))
+	}
+	if config.IncludeSecurityGroups == nil {
+		errs.Add(fmt.Errorf("* 'include_security_groups' must be provided"))
+	}
+	if config.IncludeServices == nil {
+		errs.Add(fmt.Errorf("* 'include_services' must be provided"))
+	}
+	if config.IncludeSsh == nil {
+		errs.Add(fmt.Errorf("* 'include_ssh' must be provided"))
+	}
+	if config.IncludeTasks == nil {
+		errs.Add(fmt.Errorf("* 'include_tasks' must be provided"))
+	}
+	if config.IncludeV3 == nil {
+		errs.Add(fmt.Errorf("* 'include_v3' must be provided"))
+	}
+	if config.NamePrefix == nil {
+		errs.Add(fmt.Errorf("* 'name_prefix' must be provided"))
+	}
+	if !errs.Empty() {
+		return errs
+	}
 
-	if config.ApiEndpoint == "" {
+	if config.GetApiEndpoint() == "" {
 		errs.Add(fmt.Errorf("* Invalid configuration: 'api' must be a valid Cloud Controller endpoint but was blank"))
 	}
 
 	var u *url.URL
 	var host string
-	if u, err = url.Parse(config.ApiEndpoint); err != nil {
-		errs.Add(fmt.Errorf("* Invalid configuration: 'api' must be a valid URL but was set to '%s'", config.ApiEndpoint))
+	if u, err = url.Parse(config.GetApiEndpoint()); err != nil {
+		errs.Add(fmt.Errorf("* Invalid configuration: 'api' must be a valid URL but was set to '%s'", config.GetApiEndpoint()))
 	} else {
 		host = u.Host
 		if host == "" {
@@ -148,13 +325,13 @@ func load(path string, config *config) Errors {
 		}
 
 		if _, err = net.LookupHost(host); err != nil {
-			errs.Add(fmt.Errorf("* Invalid configuration for 'api_endpoint' <%s> (host %s): %s", config.ApiEndpoint, host, err))
+			errs.Add(fmt.Errorf("* Invalid configuration for 'api_endpoint' <%s> (host %s): %s", config.GetApiEndpoint(), host, err))
 		}
 	}
 
-	madeUpAppHostname := "made-up-app-host-name." + config.AppsDomain
+	madeUpAppHostname := "made-up-app-host-name." + config.GetAppsDomain()
 	if u, err = url.Parse(madeUpAppHostname); err != nil {
-		errs.Add(fmt.Errorf("* Invalid configuration: 'apps_domain' must be a valid URL but was set to '%s'", config.AppsDomain))
+		errs.Add(fmt.Errorf("* Invalid configuration: 'apps_domain' must be a valid URL but was set to '%s'", config.GetAppsDomain()))
 	} else {
 		host = u.Host
 		if host == "" {
@@ -162,24 +339,24 @@ func load(path string, config *config) Errors {
 			host = u.Path
 		}
 		if _, err = net.LookupHost(madeUpAppHostname); err != nil {
-			errs.Add(fmt.Errorf("* Invalid configuration for 'apps_domain' <%s> (host %s): %s", config.AppsDomain, host, err))
+			errs.Add(fmt.Errorf("* Invalid configuration for 'apps_domain' <%s> (host %s): %s", config.GetAppsDomain(), host, err))
 		}
 	}
 
-	if config.AdminUser == "" {
+	if config.GetAdminUser() == "" {
 		errs.Add(fmt.Errorf("* Invalid configuration: 'admin_user' must be provided"))
 	}
 
-	if config.AdminPassword == "" {
+	if config.GetAdminPassword() == "" {
 		errs.Add(fmt.Errorf("* Invalid configuration: 'admin_password' must be provided"))
 	}
 
-	if config.Backend != "dea" && config.Backend != "diego" && config.Backend != "" {
-		errs.Add(fmt.Errorf("* Invalid configuration: 'backend' must be 'diego', 'dea', or empty but was set to '%s'", config.Backend))
+	if config.GetBackend() != "dea" && config.GetBackend() != "diego" && config.GetBackend() != "" {
+		errs.Add(fmt.Errorf("* Invalid configuration: 'backend' must be 'diego', 'dea', or empty but was set to '%s'", config.GetBackend()))
 	}
 
-	if config.TimeoutScale <= 0 {
-		config.TimeoutScale = 1.0
+	if *config.TimeoutScale <= 0 {
+		*config.TimeoutScale = 1.0
 	}
 
 	return errs
@@ -197,43 +374,43 @@ func loadConfigFromPath(path string, config interface{}) error {
 }
 
 func (c config) GetScaledTimeout(timeout time.Duration) time.Duration {
-	return time.Duration(float64(timeout) * c.TimeoutScale)
+	return time.Duration(float64(timeout) * *c.TimeoutScale)
 }
 
 func (c *config) DefaultTimeoutDuration() time.Duration {
-	return time.Duration(c.DefaultTimeout) * time.Second
+	return time.Duration(*c.DefaultTimeout) * time.Second
 }
 
 func (c *config) LongTimeoutDuration() time.Duration {
-	return time.Duration(c.DefaultTimeout) * time.Second
+	return time.Duration(*c.DefaultTimeout) * time.Second
 }
 
 func (c *config) LongCurlTimeoutDuration() time.Duration {
-	return time.Duration(c.LongCurlTimeout) * time.Minute
+	return time.Duration(*c.LongCurlTimeout) * time.Minute
 }
 
 func (c *config) SleepTimeoutDuration() time.Duration {
-	return time.Duration(c.SleepTimeout) * time.Second
+	return time.Duration(*c.SleepTimeout) * time.Second
 }
 
 func (c *config) DetectTimeoutDuration() time.Duration {
-	return time.Duration(c.DetectTimeout) * time.Minute
+	return time.Duration(*c.DetectTimeout) * time.Minute
 }
 
 func (c *config) CfPushTimeoutDuration() time.Duration {
-	return time.Duration(c.CfPushTimeout) * time.Minute
+	return time.Duration(*c.CfPushTimeout) * time.Minute
 }
 
 func (c *config) BrokerStartTimeoutDuration() time.Duration {
-	return time.Duration(c.BrokerStartTimeout) * time.Minute
+	return time.Duration(*c.BrokerStartTimeout) * time.Minute
 }
 
 func (c *config) AsyncServiceOperationTimeoutDuration() time.Duration {
-	return time.Duration(c.AsyncServiceOperationTimeout) * time.Minute
+	return time.Duration(*c.AsyncServiceOperationTimeout) * time.Minute
 }
 
 func (c *config) Protocol() string {
-	if c.UseHttp {
+	if *c.UseHttp {
 		return "http://"
 	} else {
 		return "https://"
@@ -241,147 +418,147 @@ func (c *config) Protocol() string {
 }
 
 func (c *config) GetAppsDomain() string {
-	return c.AppsDomain
+	return *c.AppsDomain
 }
 
 func (c *config) GetSkipSSLValidation() bool {
-	return c.SkipSSLValidation
+	return *c.SkipSSLValidation
 }
 
 func (c *config) GetArtifactsDirectory() string {
-	return c.ArtifactsDirectory
+	return *c.ArtifactsDirectory
 }
 
 func (c *config) GetPersistentAppSpace() string {
-	return c.PersistentAppSpace
+	return *c.PersistentAppSpace
 }
 func (c *config) GetPersistentAppOrg() string {
-	return c.PersistentAppOrg
+	return *c.PersistentAppOrg
 }
 func (c *config) GetPersistentAppQuotaName() string {
-	return c.PersistentAppQuotaName
+	return *c.PersistentAppQuotaName
 }
 
 func (c *config) GetNamePrefix() string {
-	return c.NamePrefix
+	return *c.NamePrefix
 }
 
 func (c *config) GetUseExistingUser() bool {
-	return c.UseExistingUser
+	return *c.UseExistingUser
 }
 
 func (c *config) GetExistingUser() string {
-	return c.ExistingUser
+	return *c.ExistingUser
 }
 
 func (c *config) GetExistingUserPassword() string {
-	return c.ExistingUserPassword
+	return *c.ExistingUserPassword
 }
 
 func (c *config) GetConfigurableTestPassword() string {
-	return c.ConfigurableTestPassword
+	return *c.ConfigurableTestPassword
 }
 
 func (c *config) GetShouldKeepUser() bool {
-	return c.ShouldKeepUser
+	return *c.ShouldKeepUser
 }
 
 func (c *config) GetAdminUser() string {
-	return c.AdminUser
+	return *c.AdminUser
 }
 
 func (c *config) GetAdminPassword() string {
-	return c.AdminPassword
+	return *c.AdminPassword
 }
 
 func (c *config) GetApiEndpoint() string {
-	return c.ApiEndpoint
+	return *c.ApiEndpoint
 }
 
 func (c *config) GetIncludeSsh() bool {
-	return c.IncludeSsh
+	return *c.IncludeSsh
 }
 
 func (c *config) GetIncludeApps() bool {
-	return c.IncludeApps
+	return *c.IncludeApps
 }
 
 func (c *config) GetIncludeBackendCompatiblity() bool {
-	return c.IncludeBackendCompatiblity
+	return *c.IncludeBackendCompatiblity
 }
 
 func (c *config) GetIncludeDetect() bool {
-	return c.IncludeDetect
+	return *c.IncludeDetect
 }
 
 func (c *config) GetIncludeDocker() bool {
-	return c.IncludeDocker
+	return *c.IncludeDocker
 }
 
 func (c *config) GetIncludeInternetDependent() bool {
-	return c.IncludeInternetDependent
+	return *c.IncludeInternetDependent
 }
 
 func (c *config) GetIncludeRouteServices() bool {
-	return c.IncludeRouteServices
+	return *c.IncludeRouteServices
 }
 
 func (c *config) GetIncludeRouting() bool {
-	return c.IncludeRouting
+	return *c.IncludeRouting
 }
 
 func (c *config) GetIncludeZipkin() bool {
-	return c.IncludeZipkin
+	return *c.IncludeZipkin
 }
 
 func (c *config) GetIncludeTasks() bool {
-	return c.IncludeTasks
+	return *c.IncludeTasks
 }
 
 func (c *config) GetIncludePrivilegedContainerSupport() bool {
-	return c.IncludePrivilegedContainerSupport
+	return *c.IncludePrivilegedContainerSupport
 }
 
 func (c *config) GetIncludeSecurityGroups() bool {
-	return c.IncludeSecurityGroups
+	return *c.IncludeSecurityGroups
 }
 
 func (c *config) GetIncludeServices() bool {
-	return c.IncludeServices
+	return *c.IncludeServices
 }
 
 func (c *config) GetIncludeSSO() bool {
-	return c.IncludeSSO
+	return *c.IncludeSSO
 }
 
 func (c *config) GetIncludeV3() bool {
-	return c.IncludeV3
+	return *c.IncludeV3
 }
 
 func (c *config) GetRubyBuildpackName() string {
-	return c.RubyBuildpackName
+	return *c.RubyBuildpackName
 }
 
 func (c *config) GetGoBuildpackName() string {
-	return c.GoBuildpackName
+	return *c.GoBuildpackName
 }
 
 func (c *config) GetJavaBuildpackName() string {
-	return c.JavaBuildpackName
+	return *c.JavaBuildpackName
 }
 
 func (c *config) GetNodejsBuildpackName() string {
-	return c.NodejsBuildpackName
+	return *c.NodejsBuildpackName
 }
 
 func (c *config) GetBinaryBuildpackName() string {
-	return c.BinaryBuildpackName
+	return *c.BinaryBuildpackName
 }
 
 func (c *config) GetPersistentAppHost() string {
-	return c.PersistentAppHost
+	return *c.PersistentAppHost
 }
 
 func (c *config) GetBackend() string {
-	return c.Backend
+	return *c.Backend
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"time"
 
 	cfg "github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
@@ -15,34 +16,97 @@ import (
 
 type requiredConfig struct {
 	// required
-	ApiEndpoint       string `json:"api"`
-	AdminUser         string `json:"admin_user"`
-	AdminPassword     string `json:"admin_password"`
-	SkipSSLValidation bool   `json:"skip_ssl_validation"`
-	AppsDomain        string `json:"apps_domain"`
-	UseHttp           bool   `json:"use_http"`
+	ApiEndpoint       *string `json:"api"`
+	AdminUser         *string `json:"admin_user"`
+	AdminPassword     *string `json:"admin_password"`
+	SkipSSLValidation *bool   `json:"skip_ssl_validation"`
+	AppsDomain        *string `json:"apps_domain"`
+	UseHttp           *bool   `json:"use_http"`
 }
 
 type testConfig struct {
 	// required
-	ApiEndpoint       string `json:"api"`
-	AdminUser         string `json:"admin_user"`
-	AdminPassword     string `json:"admin_password"`
-	SkipSSLValidation bool   `json:"skip_ssl_validation"`
-	AppsDomain        string `json:"apps_domain"`
-	UseHttp           bool   `json:"use_http"`
+	ApiEndpoint       *string `json:"api"`
+	AdminUser         *string `json:"admin_user"`
+	AdminPassword     *string `json:"admin_password"`
+	SkipSSLValidation *bool   `json:"skip_ssl_validation"`
+	AppsDomain        *string `json:"apps_domain"`
+	UseHttp           *bool   `json:"use_http"`
 
 	// timeouts
-	DefaultTimeout               int `json:"default_timeout"`
-	CfPushTimeout                int `json:"cf_push_timeout"`
-	LongCurlTimeout              int `json:"long_curl_timeout"`
-	BrokerStartTimeout           int `json:"broker_start_timeout"`
-	AsyncServiceOperationTimeout int `json:"async_service_operation_timeout"`
-	DetectTimeout                int `json:"detect_timeout"`
-	SleepTimeout                 int `json:"sleep_timeout"`
+	DefaultTimeout               *int `json:"default_timeout,omitempty"`
+	CfPushTimeout                *int `json:"cf_push_timeout,omitempty"`
+	LongCurlTimeout              *int `json:"long_curl_timeout,omitempty"`
+	BrokerStartTimeout           *int `json:"broker_start_timeout,omitempty"`
+	AsyncServiceOperationTimeout *int `json:"async_service_operation_timeout,omitempty"`
+	DetectTimeout                *int `json:"detect_timeout,omitempty"`
+	SleepTimeout                 *int `json:"sleep_timeout,omitempty"`
 
 	// optional
-	Backend string `json:"backend"`
+	Backend *string `json:"backend"`
+}
+
+type allConfig struct {
+	ApiEndpoint *string `json:"api"`
+	AppsDomain  *string `json:"apps_domain"`
+	UseHttp     *bool   `json:"use_http"`
+
+	AdminPassword *string `json:"admin_password"`
+	AdminUser     *string `json:"admin_user"`
+
+	ExistingUser         *string `json:"existing_user"`
+	ExistingUserPassword *string `json:"existing_user_password"`
+	ShouldKeepUser       *bool   `json:"keep_user_at_suite_end"`
+	UseExistingUser      *bool   `json:"use_existing_user"`
+
+	ConfigurableTestPassword *string `json:"test_password"`
+
+	PersistentAppHost      *string `json:"persistent_app_host"`
+	PersistentAppOrg       *string `json:"persistent_app_org"`
+	PersistentAppQuotaName *string `json:"persistent_app_quota_name"`
+	PersistentAppSpace     *string `json:"persistent_app_space"`
+
+	Backend           *string `json:"backend"`
+	SkipSSLValidation *bool   `json:"skip_ssl_validation"`
+
+	ArtifactsDirectory *string `json:"artifacts_directory"`
+
+	AsyncServiceOperationTimeout *int `json:"async_service_operation_timeout"`
+	BrokerStartTimeout           *int `json:"broker_start_timeout"`
+	CfPushTimeout                *int `json:"cf_push_timeout"`
+	DefaultTimeout               *int `json:"default_timeout"`
+	DetectTimeout                *int `json:"detect_timeout"`
+	LongCurlTimeout              *int `json:"long_curl_timeout"`
+	SleepTimeout                 *int `json:"sleep_timeout"`
+
+	TimeoutScale *float64 `json:"timeout_scale"`
+
+	BinaryBuildpackName     *string `json:"binary_buildpack_name"`
+	GoBuildpackName         *string `json:"go_buildpack_name"`
+	JavaBuildpackName       *string `json:"java_buildpack_name"`
+	NodejsBuildpackName     *string `json:"nodejs_buildpack_name"`
+	PhpBuildpackName        *string `json:"php_buildpack_name"`
+	PythonBuildpackName     *string `json:"python_buildpack_name"`
+	RubyBuildpackName       *string `json:"ruby_buildpack_name"`
+	StaticFileBuildpackName *string `json:"staticfile_buildpack_name"`
+
+	IncludeApps                       *bool `json:"include_apps"`
+	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
+	IncludeDetect                     *bool `json:"include_detect"`
+	IncludeDocker                     *bool `json:"include_docker"`
+	IncludeInternetDependent          *bool `json:"include_internet_dependent"`
+	IncludePrivilegedContainerSupport *bool `json:"include_privileged_container_support"`
+	IncludeRouteServices              *bool `json:"include_route_services"`
+	IncludeRouting                    *bool `json:"include_routing"`
+	IncludeZipkin                     *bool `json:"include_zipkin"`
+	IncludeSSO                        *bool `json:"include_sso"`
+	IncludeSecurityGroups             *bool `json:"include_security_groups"`
+	IncludeServices                   *bool `json:"include_services"`
+	IncludeSsh                        *bool `json:"include_ssh"`
+	IncludeTasks                      *bool `json:"include_tasks"`
+	IncludeV3                         *bool `json:"include_v3"`
+
+	NamePrefix *string `json:"name_prefix"`
 }
 
 var tmpFilePath string
@@ -66,16 +130,28 @@ func writeConfigFile(updatedConfig interface{}) string {
 	return configFile.Name()
 }
 
+func ptrToString(str string) *string {
+	return &str
+}
+
+func ptrToBool(b bool) *bool {
+	return &b
+}
+
+func ptrToInt(i int) *int {
+	return &i
+}
+
 var _ = Describe("Config", func() {
 	BeforeEach(func() {
-		testCfg = testConfig{
-			ApiEndpoint:       "api.bosh-lite.com",
-			AdminUser:         "admin",
-			AdminPassword:     "admin",
-			SkipSSLValidation: true,
-			AppsDomain:        "cf-app.bosh-lite.com",
-			UseHttp:           true,
-		}
+		testCfg = testConfig{}
+		testCfg.ApiEndpoint = ptrToString("api.bosh-lite.com")
+		testCfg.AdminUser = ptrToString("admin")
+		testCfg.AdminPassword = ptrToString("admin")
+		testCfg.SkipSSLValidation = ptrToBool(true)
+		testCfg.AppsDomain = ptrToString("cf-app.bosh-lite.com")
+		testCfg.UseHttp = ptrToBool(true)
+		testCfg.Backend = ptrToString("")
 	})
 
 	JustBeforeEach(func() {
@@ -88,38 +164,140 @@ var _ = Describe("Config", func() {
 	})
 
 	It("should have the right defaults", func() {
-		requiredCfg := requiredConfig{
-			ApiEndpoint:       testCfg.ApiEndpoint,
-			AdminUser:         testCfg.AdminUser,
-			AdminPassword:     testCfg.AdminPassword,
-			SkipSSLValidation: testCfg.SkipSSLValidation,
-			AppsDomain:        testCfg.AppsDomain,
-			UseHttp:           testCfg.UseHttp,
-		}
+		requiredCfg := requiredConfig{}
+		requiredCfg.ApiEndpoint = testCfg.ApiEndpoint
+		requiredCfg.AdminUser = testCfg.AdminUser
+		requiredCfg.AdminPassword = testCfg.AdminPassword
+		requiredCfg.SkipSSLValidation = testCfg.SkipSSLValidation
+		requiredCfg.AppsDomain = testCfg.AppsDomain
+		requiredCfg.UseHttp = testCfg.UseHttp
+
 		requiredCfgFilePath := writeConfigFile(requiredCfg)
 		config, err := cfg.NewCatsConfig(requiredCfgFilePath)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(config.GetIncludeApps()).To(BeTrue())
-		Expect(config.DefaultTimeoutDuration()).To(Equal(30 * time.Second))
-		Expect(config.CfPushTimeoutDuration()).To(Equal(2 * time.Minute))
-		Expect(config.LongCurlTimeoutDuration()).To(Equal(2 * time.Minute))
-		Expect(config.BrokerStartTimeoutDuration()).To(Equal(5 * time.Minute))
+		Expect(config.GetPersistentAppHost()).To(Equal("CATS-persistent-app"))
+
+		Expect(config.GetPersistentAppOrg()).To(Equal("CATS-persistent-org"))
+		Expect(config.GetPersistentAppQuotaName()).To(Equal("CATS-persistent-quota"))
+		Expect(config.GetPersistentAppSpace()).To(Equal("CATS-persistent-space"))
+
+		Expect(config.GetIncludeApps()).To(BeTrue())
+		Expect(config.GetIncludeBackendCompatiblity()).To(BeTrue())
+		Expect(config.GetIncludeDetect()).To(BeTrue())
+		Expect(config.GetIncludeDocker()).To(BeTrue())
+		Expect(config.GetIncludeInternetDependent()).To(BeTrue())
+		Expect(config.GetIncludeRouteServices()).To(BeTrue())
+		Expect(config.GetIncludeRouting()).To(BeTrue())
+		Expect(config.GetIncludeSecurityGroups()).To(BeTrue())
+		Expect(config.GetIncludeServices()).To(BeTrue())
+		Expect(config.GetIncludeSsh()).To(BeTrue())
+		Expect(config.GetIncludeV3()).To(BeTrue())
+		Expect(config.GetIncludePrivilegedContainerSupport()).To(BeTrue())
+		Expect(config.GetIncludeZipkin()).To(BeTrue())
+		Expect(config.GetIncludeSSO()).To(BeTrue())
+		Expect(config.GetIncludeTasks()).To(BeTrue())
+
+		Expect(config.GetBackend()).To(Equal(""))
+
+		Expect(config.GetUseExistingUser()).To(Equal(false))
+		Expect(config.GetConfigurableTestPassword()).To(Equal(""))
+		Expect(config.GetShouldKeepUser()).To(Equal(false))
+
 		Expect(config.AsyncServiceOperationTimeoutDuration()).To(Equal(2 * time.Minute))
+		Expect(config.BrokerStartTimeoutDuration()).To(Equal(5 * time.Minute))
+		Expect(config.CfPushTimeoutDuration()).To(Equal(2 * time.Minute))
+		Expect(config.DefaultTimeoutDuration()).To(Equal(30 * time.Second))
+		Expect(config.LongCurlTimeoutDuration()).To(Equal(2 * time.Minute))
+
+		Expect(config.GetScaledTimeout(1)).To(Equal(time.Duration(1)))
+
+		Expect(config.GetArtifactsDirectory()).To(Equal(filepath.Join("..", "results")))
+
+		Expect(config.GetNamePrefix()).To(Equal("CATS"))
 
 		// undocumented
 		Expect(config.DetectTimeoutDuration()).To(Equal(5 * time.Minute))
 		Expect(config.SleepTimeoutDuration()).To(Equal(30 * time.Second))
 	})
 
+	Context("when all values are null", func() {
+		It("returns an error", func() {
+			allCfgFilePath := writeConfigFile(&allConfig{})
+			_, err := cfg.NewCatsConfig(allCfgFilePath)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("'api' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'apps_domain' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'use_http' must be provided"))
+
+			Expect(err.Error()).To(ContainSubstring("'admin_password' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'admin_user' must be provided"))
+
+			// Expect(err.Error()).To(ContainSubstring("'existing_user' must be provided"))
+			// Expect(err.Error()).To(ContainSubstring("'existing_user_password' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'keep_user_at_suite_end' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'use_existing_user' must be provided"))
+
+			Expect(err.Error()).To(ContainSubstring("'test_password' must be provided"))
+
+			Expect(err.Error()).To(ContainSubstring("'persistent_app_host' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'persistent_app_org' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'persistent_app_quota_name' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'persistent_app_space' must be provided"))
+
+			Expect(err.Error()).To(ContainSubstring("'backend' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'skip_ssl_validation' must be provided"))
+
+			Expect(err.Error()).To(ContainSubstring("'artifacts_directory' must be provided"))
+
+			Expect(err.Error()).To(ContainSubstring("'async_service_operation_timeout' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'broker_start_timeout' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'cf_push_timeout' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'default_timeout' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'detect_timeout' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'long_curl_timeout' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'sleep_timeout' must be provided"))
+
+			Expect(err.Error()).To(ContainSubstring("'timeout_scale' must be provided"))
+
+			Expect(err.Error()).To(ContainSubstring("'binary_buildpack_name' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'go_buildpack_name' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'java_buildpack_name' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'nodejs_buildpack_name' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'php_buildpack_name' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'python_buildpack_name' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'ruby_buildpack_name' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'staticfile_buildpack_name' must be provided"))
+
+			Expect(err.Error()).To(ContainSubstring("'include_apps' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'include_backend_compatibility' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'include_detect' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'include_docker' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'include_internet_dependent' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'include_privileged_container_support' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'include_route_services' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'include_routing' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'include_zipkin' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'include_sso' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'include_security_groups' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'include_services' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'include_ssh' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'include_tasks' must be provided"))
+			Expect(err.Error()).To(ContainSubstring("'include_v3' must be provided"))
+
+			Expect(err.Error()).To(ContainSubstring("'name_prefix' must be provided"))
+		})
+	})
+
 	Context("when values with default are overriden", func() {
 		BeforeEach(func() {
-			testCfg.DefaultTimeout = 12
-			testCfg.CfPushTimeout = 34
-			testCfg.LongCurlTimeout = 56
-			testCfg.BrokerStartTimeout = 78
-			testCfg.AsyncServiceOperationTimeout = 90
-			testCfg.DetectTimeout = 100
-			testCfg.SleepTimeout = 101
+			testCfg.DefaultTimeout = ptrToInt(12)
+			testCfg.CfPushTimeout = ptrToInt(34)
+			testCfg.LongCurlTimeout = ptrToInt(56)
+			testCfg.BrokerStartTimeout = ptrToInt(78)
+			testCfg.AsyncServiceOperationTimeout = ptrToInt(90)
+			testCfg.DetectTimeout = ptrToInt(100)
+			testCfg.SleepTimeout = ptrToInt(101)
 		})
 
 		It("respects the overriden values", func() {
@@ -139,7 +317,7 @@ var _ = Describe("Config", func() {
 	Describe(`GetBackend`, func() {
 		Context("when the backend is set to `dea`", func() {
 			BeforeEach(func() {
-				testCfg.Backend = "dea"
+				testCfg.Backend = ptrToString("dea")
 			})
 
 			It("returns `dea`", func() {
@@ -151,7 +329,7 @@ var _ = Describe("Config", func() {
 
 		Context("when the backend is set to `diego`", func() {
 			BeforeEach(func() {
-				testCfg.Backend = "diego"
+				testCfg.Backend = ptrToString("diego")
 			})
 
 			It("returns `diego`", func() {
@@ -163,7 +341,7 @@ var _ = Describe("Config", func() {
 
 		Context("when the backend is empty", func() {
 			BeforeEach(func() {
-				testCfg.Backend = ""
+				testCfg.Backend = ptrToString("")
 			})
 
 			It("returns an empty string", func() {
@@ -175,13 +353,25 @@ var _ = Describe("Config", func() {
 
 		Context("when the backend is set to any other value", func() {
 			BeforeEach(func() {
-				testCfg.Backend = "asdfasdf"
+				testCfg.Backend = ptrToString("asdfasdf")
 			})
 
 			It("returns an error", func() {
 				_, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(err).To(HaveOccurred())
 				Expect(err).To(MatchError("* Invalid configuration: 'backend' must be 'diego', 'dea', or empty but was set to 'asdfasdf'"))
+			})
+		})
+
+		Context("when the Backend is nil", func() {
+			BeforeEach(func() {
+				testCfg.Backend = nil
+			})
+
+			It("returns an error", func() {
+				_, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("'backend' must be provided"))
 			})
 		})
 	})
@@ -195,7 +385,7 @@ var _ = Describe("Config", func() {
 
 		Context("when url is an IP address", func() {
 			BeforeEach(func() {
-				testCfg.ApiEndpoint = "10.244.0.34" // api.bosh-lite.com
+				testCfg.ApiEndpoint = ptrToString("10.244.0.34") // api.bosh-lite.com
 			})
 
 			It("returns the IP address", func() {
@@ -207,7 +397,7 @@ var _ = Describe("Config", func() {
 
 		Context("when the domain does not resolve", func() {
 			BeforeEach(func() {
-				testCfg.ApiEndpoint = "some-url-that-does-not-resolve.com"
+				testCfg.ApiEndpoint = ptrToString("some-url-that-does-not-resolve.com")
 			})
 
 			It("returns an error", func() {
@@ -219,7 +409,7 @@ var _ = Describe("Config", func() {
 
 		Context("when the url is empty", func() {
 			BeforeEach(func() {
-				testCfg.ApiEndpoint = ""
+				testCfg.ApiEndpoint = ptrToString("")
 			})
 
 			It("returns an error", func() {
@@ -231,13 +421,25 @@ var _ = Describe("Config", func() {
 
 		Context("when the url is invalid", func() {
 			BeforeEach(func() {
-				testCfg.ApiEndpoint = "_bogus%%%"
+				testCfg.ApiEndpoint = ptrToString("_bogus%%%")
 			})
 
 			It("returns an error", func() {
 				_, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(err).To(HaveOccurred())
 				Expect(err).To(MatchError("* Invalid configuration: 'api' must be a valid URL but was set to '_bogus%%%'"))
+			})
+		})
+
+		Context("when the ApiEndpoint is nil", func() {
+			BeforeEach(func() {
+				testCfg.ApiEndpoint = nil
+			})
+
+			It("returns an error", func() {
+				_, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("'api' must be provided"))
 			})
 		})
 	})
@@ -251,7 +453,7 @@ var _ = Describe("Config", func() {
 
 		Context("when the domain is not valid", func() {
 			BeforeEach(func() {
-				testCfg.AppsDomain = "_bogus%%%"
+				testCfg.AppsDomain = ptrToString("_bogus%%%")
 			})
 
 			It("returns an error", func() {
@@ -263,13 +465,25 @@ var _ = Describe("Config", func() {
 
 		Context("when the AppsDomain is an IP address (which is invalid for AppsDomain)", func() {
 			BeforeEach(func() {
-				testCfg.AppsDomain = "10.244.0.34"
+				testCfg.AppsDomain = ptrToString("10.244.0.34")
 			})
 
 			It("returns an error", func() {
 				_, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("no such host"))
+			})
+		})
+
+		Context("when the AppsDomain is nil", func() {
+			BeforeEach(func() {
+				testCfg.AppsDomain = nil
+			})
+
+			It("returns an error", func() {
+				_, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("'apps_domain' must be provided"))
 			})
 		})
 	})
@@ -283,8 +497,20 @@ var _ = Describe("Config", func() {
 
 		Context("when the admin user is blank", func() {
 			BeforeEach(func() {
-				testCfg.AdminUser = ""
+				*testCfg.AdminUser = ""
 			})
+			It("returns an error", func() {
+				_, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("'admin_user' must be provided"))
+			})
+		})
+
+		Context("when the admin user is nil", func() {
+			BeforeEach(func() {
+				testCfg.AdminUser = nil
+			})
+
 			It("returns an error", func() {
 				_, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(err).To(HaveOccurred())
@@ -300,10 +526,22 @@ var _ = Describe("Config", func() {
 			Expect(c.GetAdminPassword()).To(Equal("admin"))
 		})
 
-		Context("when the admin user is blank", func() {
+		Context("when the admin user password is blank", func() {
 			BeforeEach(func() {
-				testCfg.AdminPassword = ""
+				testCfg.AdminPassword = ptrToString("")
 			})
+			It("returns an error", func() {
+				_, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).To(HaveOccurred())
+				Expect(err.Error()).To(ContainSubstring("'admin_password' must be provided"))
+			})
+		})
+
+		Context("when the admin user password is nil", func() {
+			BeforeEach(func() {
+				testCfg.AdminPassword = nil
+			})
+
 			It("returns an error", func() {
 				_, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(err).To(HaveOccurred())
