@@ -1,27 +1,14 @@
 # CF Acceptance Tests (CATs)
 
-This test suite exercises a full [Cloud Foundry](https://github.com/cloudfoundry/cf-release)
-deployment using the golang `cf` CLI and `curl`.
-It is restricted to testing user-facing features such as a user interacting with the system via the CLI.
+This test suite exercises a full [Cloud Foundry](https://github.com/cloudfoundry/cf-release) deployment using the golang `cf` CLI and `curl`.  It is restricted to testing user-facing features such as a user interacting with the system via the CLI.
 
-For example, one test pushes an app with `cf push`, hits an endpoint on the app
-with `curl` that causes it to crash, and asserts that we eventually see a crash
-event registered in `cf events`.
+For example, one test pushes an app with `cf push`, hits an endpoint on the app with `curl` that causes it to crash, and asserts that we eventually see a crash event registered in `cf events`.
 
-Tests that will NOT be introduced here are ones which could be tested at the component level,
-such as basic CRUD of an object in the Cloud Controller. These tests belong with that component.
+Tests that will NOT be introduced here are ones which could be tested at the component level, such as basic CRUD of an object in the Cloud Controller. These tests belong with that component.
 
-These tests are not intended for use against production systems,
-they are intended for acceptance environments for teams developing Cloud Foundry itself.
-While these tests attempt to clean up after themselves,
-there is no guarantee that they will not mutate state of your system in an undesirable way.
-For lightweight system tests that are safe to run against a production environment,
-please use the [CF Smoke Tests](https://github.com/cloudfoundry/cf-smoke-tests).
+These tests are not intended for use against production systems, they are intended for acceptance environments for teams developing Cloud Foundry itself.  While these tests attempt to clean up after themselves, there is no guarantee that they will not mutate state of your system in an undesirable way.  For lightweight system tests that are safe to run against a production environment, please use the [CF Smoke Tests](https://github.com/cloudfoundry/cf-smoke-tests).
 
-NOTE: Because we want to parallelize execution, tests should be written in
-such a way as to be runnable individually.
-This means that tests should not depend on state in other tests,
-and should not modify the CF state in such a way as to impact other tests.
+NOTE: Because we want to parallelize execution, tests should be written in such a way as to be runnable individually.  This means that tests should not depend on state in other tests, and should not modify the CF state in such a way as to impact other tests.
 
 1. [Test Setup](#test-setup)
     1. [Install Required Dependencies](#install-required-dependencies)
@@ -49,9 +36,7 @@ and should not modify the CF state in such a way as to impact other tests.
   ```bash
   go get -d github.com/cloudfoundry/cf-acceptance-tests
   ```
-  You will receive a warning `no buildable Go source files`;
-  this can be ignored as there is no compilable go source code in the package, only test code.
-- Ensure all submodules are checked out to the correct SHA.
+  You will receive a warning `no buildable Go source files`; this can be ignored as there is no compilable go source code in the package, only test code.  - Ensure all submodules are checked out to the correct SHA.
   The easiest way to do this is by running:
 
   ```bash
@@ -82,13 +67,9 @@ If you'd like to add a new dependency just `gvt fetch`
 
 ## Test Configuration
 
-You must set an environment variable `$CONFIG` which points to a JSON file that
-contains several pieces of data that will be used to configure the acceptance
-tests, e.g. telling the tests how to target your running Cloud Foundry deployment.
+You must set an environment variable `$CONFIG` which points to a JSON file that contains several pieces of data that will be used to configure the acceptance tests, e.g. telling the tests how to target your running Cloud Foundry deployment and what tests to run.
 
-The following can be pasted into a terminal and will set up a sufficient `$CONFIG`
-to run the core test suites against a
-[BOSH-Lite](https://github.com/cloudfoundry/bosh-lite) deployment of CF.
+The following can be pasted into a terminal and will set up a sufficient `$CONFIG` to run the core test suites against a [BOSH-Lite](https://github.com/cloudfoundry/bosh-lite) deployment of CF.
 
 ```bash
 cat > integration_config.json <<EOF
@@ -128,7 +109,7 @@ export CONFIG=$PWD/integration_config.json
 * `apps_domain`: A shared domain that tests can use to create subdomains that will route to applications also created in the tests.
 
 ##### Optional parameters:
-`include_*` parameters are used to specify whether to skip tests based on how a deployment is configured.  
+`include_*` parameters are used to specify whether to skip tests based on how a deployment is configured.
 * `include_apps`: Flag to include the apps test group.
 * `include_backend_compatibility`: Flag to include whether we check DEA/Diego interoperability.
 * `include_detect`: Flag to run tests in the detect group.
@@ -213,8 +194,7 @@ When a test fails, look for the test group name (`[services]` in the example bel
 [services] Service Instance Lifecycle
 ```
 
-If you set a value for `artifacts_directory` in your `$CONFIG` file, then you will be able to capture `cf` trace output from failed test runs, this output may be useful in cases where the normal test output is not enough to debug an issue.  
-The `cf` trace output for the tests in these specs will be found in `CF-TRACE-Applications-*.txt` in the `artifacts_directory`.
+If you set a value for `artifacts_directory` in your `$CONFIG` file, then you will be able to capture `cf` trace output from failed test runs, this output may be useful in cases where the normal test output is not enough to debug an issue.  The `cf` trace output for the tests in these specs will be found in `CF-TRACE-Applications-*.txt` in the `artifacts_directory`.
 
 ## Test Execution
 To execute all test groups, run the following from the root directory of cf-acceptance-tests:
@@ -293,13 +273,10 @@ adopt:
 
 1. When pushing an app:
   * set the **backend**,
-  * set the **memory** requirement, and use the suite's `DEFAULT_MEMORY_LIMIT`
-unless the test specifically needs to test a different value,
-  * set the **buildpack** unless the test specifically needs to test the case where
-a buildpack is unspecified, and use one of `config.RubyBuildpack`, `config.JavaBuildpack`, etc.
+  * set the **memory** requirement, and use the suite's `DEFAULT_MEMORY_LIMIT` unless the test specifically needs to test a different value,
+  * set the **buildpack** unless the test specifically needs to test the case where a buildpack is unspecified, and use one of `config.RubyBuildpack`, `config.JavaBuildpack`, etc.
 unless the test specifically needs to use a buildpack name or URL specific to the test,
-  * set the **domain**, and use the `Config.AppsDomain` unless the test specifically
-needs to test a different app domain.
+  * set the **domain**, and use the `Config.AppsDomain` unless the test specifically needs to test a different app domain.
 
   For example:
 
@@ -316,24 +293,18 @@ needs to test a different app domain.
 
   Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
   ```
-1. Delete all resources that are created, e.g. apps, routes, quotas, etc.
-This is in order to leave the system in the same state it was found in.
-For example, to delete apps and their associated routes:
+1. Delete all resources that are created, e.g. apps, routes, quotas, etc.  This is in order to leave the system in the same state it was found in.  For example, to delete apps and their associated routes:
     ```
 		Expect(cf.Cf("delete", myAppName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
     ```
-1. Specifically for apps, before tearing them down, print the app guid and
-recent application logs. There is a helper method `AppReport` provided in the
-`app_helpers` package for this purpose.
+1. Specifically for apps, before tearing them down, print the app guid and recent application logs. There is a helper method `AppReport` provided in the `app_helpers` package for this purpose.
 
     ```go
     AfterEach(func() {
       app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
     })
     ```
-1. Document the purpose of your test groups in this repo's README.md.
-This is especially important when changing the explicit behavior of existing test groups
-or adding new test groups.
+1. Document the purpose of your test groups in this repo's README.md.  This is especially important when changing the explicit behavior of existing test groups or adding new test groups.
 1. Document all changes to the config object in this repo's README.md.
 1. Document the compatible backends in this repo's README.md.
 1. If you add a test that requires a new minimum `cf` CLI version, update the `minCliVersion` in `cats_suite_test.go`.
