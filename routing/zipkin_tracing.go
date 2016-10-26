@@ -3,6 +3,7 @@ package routing
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 
 	"code.cloudfoundry.org/cf-routing-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -92,5 +93,23 @@ func grabIDs(logLines string, traceId string) (string, string, string) {
 	Expect(matches).To(HaveLen(4))
 
 	// traceid, spanid, parentspanid
-	return matches[1], matches[2], matches[3]
+	trimmedMatches, err := trimZeros(matches[1:])
+	Expect(err).ToNot(HaveOccurred())
+	return trimmedMatches[0], trimmedMatches[1], trimmedMatches[2]
+}
+
+func trimZeros(in []string) ([]string, error) {
+	var out []string
+	for _, s := range in {
+		if s != "-" {
+			x, err := strconv.ParseUint(s, 16, 64)
+			if err != nil {
+				return nil, err
+			}
+			out = append(out, fmt.Sprintf("%x", x))
+		} else {
+			out = append(out, "-")
+		}
+	}
+	return out, nil
 }
