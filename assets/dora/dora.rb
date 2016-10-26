@@ -90,7 +90,7 @@ class Dora < Sinatra::Base
   end
 
   get '/myip' do
-    `ip addr show  | grep 'scope global w' | grep inet | awk '{print $2}'`
+    `ip route get 1 | awk '{print $NF;exit}'`
   end
 
   get '/largetext/:kbytes' do
