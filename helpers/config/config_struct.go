@@ -165,145 +165,145 @@ func load(path string, config *config) Errors {
 		return errs
 	}
 	if config.ApiEndpoint == nil {
-		errs.Add(fmt.Errorf("* 'api' must be provided"))
+		errs.Add(fmt.Errorf("* 'api' must not be null"))
 	}
 	if config.AppsDomain == nil {
-		errs.Add(fmt.Errorf("* 'apps_domain' must be provided"))
+		errs.Add(fmt.Errorf("* 'apps_domain' must not be null"))
 	}
 	if config.UseHttp == nil {
-		errs.Add(fmt.Errorf("* 'use_http' must be provided"))
+		errs.Add(fmt.Errorf("* 'use_http' must not be null"))
 	}
 	if config.AdminPassword == nil {
-		errs.Add(fmt.Errorf("* 'admin_password' must be provided"))
+		errs.Add(fmt.Errorf("* 'admin_password' must not be null"))
 	}
 	if config.AdminUser == nil {
-		errs.Add(fmt.Errorf("* 'admin_user' must be provided"))
+		errs.Add(fmt.Errorf("* 'admin_user' must not be null"))
 	}
 	if config.ShouldKeepUser == nil {
-		errs.Add(fmt.Errorf("* 'keep_user_at_suite_end' must be provided"))
+		errs.Add(fmt.Errorf("* 'keep_user_at_suite_end' must not be null"))
 	}
 	if config.UseExistingUser == nil {
-		errs.Add(fmt.Errorf("* 'use_existing_user' must be provided"))
+		errs.Add(fmt.Errorf("* 'use_existing_user' must not be null"))
 	}
 	if config.ConfigurableTestPassword == nil {
-		errs.Add(fmt.Errorf("* 'test_password' must be provided"))
+		errs.Add(fmt.Errorf("* 'test_password' must not be null"))
 	}
 	if config.PersistentAppHost == nil {
-		errs.Add(fmt.Errorf("* 'persistent_app_host' must be provided"))
+		errs.Add(fmt.Errorf("* 'persistent_app_host' must not be null"))
 	}
 	if config.PersistentAppOrg == nil {
-		errs.Add(fmt.Errorf("* 'persistent_app_org' must be provided"))
+		errs.Add(fmt.Errorf("* 'persistent_app_org' must not be null"))
 	}
 	if config.PersistentAppQuotaName == nil {
-		errs.Add(fmt.Errorf("* 'persistent_app_quota_name' must be provided"))
+		errs.Add(fmt.Errorf("* 'persistent_app_quota_name' must not be null"))
 	}
 	if config.PersistentAppSpace == nil {
-		errs.Add(fmt.Errorf("* 'persistent_app_space' must be provided"))
+		errs.Add(fmt.Errorf("* 'persistent_app_space' must not be null"))
 	}
 	if config.Backend == nil {
-		errs.Add(fmt.Errorf("* 'backend' must be provided"))
+		errs.Add(fmt.Errorf("* 'backend' must not be null"))
 	}
 	if config.SkipSSLValidation == nil {
-		errs.Add(fmt.Errorf("* 'skip_ssl_validation' must be provided"))
+		errs.Add(fmt.Errorf("* 'skip_ssl_validation' must not be null"))
 	}
 	if config.ArtifactsDirectory == nil {
-		errs.Add(fmt.Errorf("* 'artifacts_directory' must be provided"))
+		errs.Add(fmt.Errorf("* 'artifacts_directory' must not be null"))
 	}
 	if config.AsyncServiceOperationTimeout == nil {
-		errs.Add(fmt.Errorf("* 'async_service_operation_timeout' must be provided"))
+		errs.Add(fmt.Errorf("* 'async_service_operation_timeout' must not be null"))
 	}
 	if config.BrokerStartTimeout == nil {
-		errs.Add(fmt.Errorf("* 'broker_start_timeout' must be provided"))
+		errs.Add(fmt.Errorf("* 'broker_start_timeout' must not be null"))
 	}
 	if config.CfPushTimeout == nil {
-		errs.Add(fmt.Errorf("* 'cf_push_timeout' must be provided"))
+		errs.Add(fmt.Errorf("* 'cf_push_timeout' must not be null"))
 	}
 	if config.DefaultTimeout == nil {
-		errs.Add(fmt.Errorf("* 'default_timeout' must be provided"))
+		errs.Add(fmt.Errorf("* 'default_timeout' must not be null"))
 	}
 	if config.DetectTimeout == nil {
-		errs.Add(fmt.Errorf("* 'detect_timeout' must be provided"))
+		errs.Add(fmt.Errorf("* 'detect_timeout' must not be null"))
 	}
 	if config.LongCurlTimeout == nil {
-		errs.Add(fmt.Errorf("* 'long_curl_timeout' must be provided"))
+		errs.Add(fmt.Errorf("* 'long_curl_timeout' must not be null"))
 	}
 	if config.SleepTimeout == nil {
-		errs.Add(fmt.Errorf("* 'sleep_timeout' must be provided"))
+		errs.Add(fmt.Errorf("* 'sleep_timeout' must not be null"))
 	}
 	if config.TimeoutScale == nil {
-		errs.Add(fmt.Errorf("* 'timeout_scale' must be provided"))
+		errs.Add(fmt.Errorf("* 'timeout_scale' must not be null"))
 	}
 	if config.BinaryBuildpackName == nil {
-		errs.Add(fmt.Errorf("* 'binary_buildpack_name' must be provided"))
+		errs.Add(fmt.Errorf("* 'binary_buildpack_name' must not be null"))
 	}
 	if config.GoBuildpackName == nil {
-		errs.Add(fmt.Errorf("* 'go_buildpack_name' must be provided"))
+		errs.Add(fmt.Errorf("* 'go_buildpack_name' must not be null"))
 	}
 	if config.JavaBuildpackName == nil {
-		errs.Add(fmt.Errorf("* 'java_buildpack_name' must be provided"))
+		errs.Add(fmt.Errorf("* 'java_buildpack_name' must not be null"))
 	}
 	if config.NodejsBuildpackName == nil {
-		errs.Add(fmt.Errorf("* 'nodejs_buildpack_name' must be provided"))
+		errs.Add(fmt.Errorf("* 'nodejs_buildpack_name' must not be null"))
 	}
 	if config.PhpBuildpackName == nil {
-		errs.Add(fmt.Errorf("* 'php_buildpack_name' must be provided"))
+		errs.Add(fmt.Errorf("* 'php_buildpack_name' must not be null"))
 	}
 	if config.PythonBuildpackName == nil {
-		errs.Add(fmt.Errorf("* 'python_buildpack_name' must be provided"))
+		errs.Add(fmt.Errorf("* 'python_buildpack_name' must not be null"))
 	}
 	if config.RubyBuildpackName == nil {
-		errs.Add(fmt.Errorf("* 'ruby_buildpack_name' must be provided"))
+		errs.Add(fmt.Errorf("* 'ruby_buildpack_name' must not be null"))
 	}
 	if config.StaticFileBuildpackName == nil {
-		errs.Add(fmt.Errorf("* 'staticfile_buildpack_name' must be provided"))
+		errs.Add(fmt.Errorf("* 'staticfile_buildpack_name' must not be null"))
 	}
 	if config.IncludeApps == nil {
-		errs.Add(fmt.Errorf("* 'include_apps' must be provided"))
+		errs.Add(fmt.Errorf("* 'include_apps' must not be null"))
 	}
 	if config.IncludeBackendCompatiblity == nil {
-		errs.Add(fmt.Errorf("* 'include_backend_compatibility' must be provided"))
+		errs.Add(fmt.Errorf("* 'include_backend_compatibility' must not be null"))
 	}
 	if config.IncludeDetect == nil {
-		errs.Add(fmt.Errorf("* 'include_detect' must be provided"))
+		errs.Add(fmt.Errorf("* 'include_detect' must not be null"))
 	}
 	if config.IncludeDocker == nil {
-		errs.Add(fmt.Errorf("* 'include_docker' must be provided"))
+		errs.Add(fmt.Errorf("* 'include_docker' must not be null"))
 	}
 	if config.IncludeInternetDependent == nil {
-		errs.Add(fmt.Errorf("* 'include_internet_dependent' must be provided"))
+		errs.Add(fmt.Errorf("* 'include_internet_dependent' must not be null"))
 	}
 	if config.IncludePrivilegedContainerSupport == nil {
-		errs.Add(fmt.Errorf("* 'include_privileged_container_support' must be provided"))
+		errs.Add(fmt.Errorf("* 'include_privileged_container_support' must not be null"))
 	}
 	if config.IncludeRouteServices == nil {
-		errs.Add(fmt.Errorf("* 'include_route_services' must be provided"))
+		errs.Add(fmt.Errorf("* 'include_route_services' must not be null"))
 	}
 	if config.IncludeRouting == nil {
-		errs.Add(fmt.Errorf("* 'include_routing' must be provided"))
+		errs.Add(fmt.Errorf("* 'include_routing' must not be null"))
 	}
 	if config.IncludeZipkin == nil {
-		errs.Add(fmt.Errorf("* 'include_zipkin' must be provided"))
+		errs.Add(fmt.Errorf("* 'include_zipkin' must not be null"))
 	}
 	if config.IncludeSSO == nil {
-		errs.Add(fmt.Errorf("* 'include_sso' must be provided"))
+		errs.Add(fmt.Errorf("* 'include_sso' must not be null"))
 	}
 	if config.IncludeSecurityGroups == nil {
-		errs.Add(fmt.Errorf("* 'include_security_groups' must be provided"))
+		errs.Add(fmt.Errorf("* 'include_security_groups' must not be null"))
 	}
 	if config.IncludeServices == nil {
-		errs.Add(fmt.Errorf("* 'include_services' must be provided"))
+		errs.Add(fmt.Errorf("* 'include_services' must not be null"))
 	}
 	if config.IncludeSsh == nil {
-		errs.Add(fmt.Errorf("* 'include_ssh' must be provided"))
+		errs.Add(fmt.Errorf("* 'include_ssh' must not be null"))
 	}
 	if config.IncludeTasks == nil {
-		errs.Add(fmt.Errorf("* 'include_tasks' must be provided"))
+		errs.Add(fmt.Errorf("* 'include_tasks' must not be null"))
 	}
 	if config.IncludeV3 == nil {
-		errs.Add(fmt.Errorf("* 'include_v3' must be provided"))
+		errs.Add(fmt.Errorf("* 'include_v3' must not be null"))
 	}
 	if config.NamePrefix == nil {
-		errs.Add(fmt.Errorf("* 'name_prefix' must be provided"))
+		errs.Add(fmt.Errorf("* 'name_prefix' must not be null"))
 	}
 	if !errs.Empty() {
 		return errs
