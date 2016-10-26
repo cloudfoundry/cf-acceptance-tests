@@ -31,7 +31,7 @@ type testConfig struct {
 	AdminPassword     *string `json:"admin_password"`
 	SkipSSLValidation *bool   `json:"skip_ssl_validation"`
 	AppsDomain        *string `json:"apps_domain"`
-	UseHttp           *bool   `json:"use_http"`
+	UseHttp           *bool   `json:"use_http,omitempty"`
 
 	// timeouts
 	DefaultTimeout               *int `json:"default_timeout,omitempty"`
@@ -43,7 +43,7 @@ type testConfig struct {
 	SleepTimeout                 *int `json:"sleep_timeout,omitempty"`
 
 	// optional
-	Backend *string `json:"backend"`
+	Backend *string `json:"backend,omitempty"`
 }
 
 type allConfig struct {
@@ -150,8 +150,6 @@ var _ = Describe("Config", func() {
 		testCfg.AdminPassword = ptrToString("admin")
 		testCfg.SkipSSLValidation = ptrToBool(true)
 		testCfg.AppsDomain = ptrToString("cf-app.bosh-lite.com")
-		testCfg.UseHttp = ptrToBool(true)
-		testCfg.Backend = ptrToString("")
 	})
 
 	JustBeforeEach(func() {
@@ -170,7 +168,7 @@ var _ = Describe("Config", func() {
 		requiredCfg.AdminPassword = testCfg.AdminPassword
 		requiredCfg.SkipSSLValidation = testCfg.SkipSSLValidation
 		requiredCfg.AppsDomain = testCfg.AppsDomain
-		requiredCfg.UseHttp = testCfg.UseHttp
+		requiredCfg.UseHttp = ptrToBool(true)
 
 		requiredCfgFilePath := writeConfigFile(requiredCfg)
 		config, err := cfg.NewCatsConfig(requiredCfgFilePath)
@@ -215,6 +213,8 @@ var _ = Describe("Config", func() {
 		Expect(config.GetArtifactsDirectory()).To(Equal(filepath.Join("..", "results")))
 
 		Expect(config.GetNamePrefix()).To(Equal("CATS"))
+
+		Expect(config.Protocol()).To(Equal("http://"))
 
 		// undocumented
 		Expect(config.DetectTimeoutDuration()).To(Equal(5 * time.Minute))
@@ -271,6 +271,7 @@ var _ = Describe("Config", func() {
 
 			Expect(err.Error()).To(ContainSubstring("'include_apps' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_backend_compatibility' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'backend' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_detect' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_docker' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_internet_dependent' must not be null"))
@@ -362,18 +363,6 @@ var _ = Describe("Config", func() {
 				Expect(err).To(MatchError("* Invalid configuration: 'backend' must be 'diego', 'dea', or empty but was set to 'asdfasdf'"))
 			})
 		})
-
-		Context("when the Backend is nil", func() {
-			BeforeEach(func() {
-				testCfg.Backend = nil
-			})
-
-			It("returns an error", func() {
-				_, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("'backend' must not be null"))
-			})
-		})
 	})
 
 	Describe("GetApiEndpoint", func() {
@@ -397,7 +386,7 @@ var _ = Describe("Config", func() {
 
 		Context("when the domain does not resolve", func() {
 			BeforeEach(func() {
-				testCfg.ApiEndpoint = ptrToString("some-url-that-does-not-resolve.com")
+				testCfg.ApiEndpoint = ptrToString("some-url-that-does-not-resolve.com.some-url-that-does-not-resolve.com")
 			})
 
 			It("returns an error", func() {

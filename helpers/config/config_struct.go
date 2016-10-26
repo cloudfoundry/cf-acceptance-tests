@@ -126,6 +126,7 @@ func getDefaults() config {
 	defaults.IncludeSSO = ptrToBool(true)
 	defaults.IncludeTasks = ptrToBool(true)
 
+	defaults.UseHttp = ptrToBool(false)
 	defaults.UseExistingUser = ptrToBool(false)
 	defaults.ShouldKeepUser = ptrToBool(false)
 
