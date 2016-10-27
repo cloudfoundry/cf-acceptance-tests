@@ -1,0 +1,17 @@
+{
+  "buildOptions": {
+    "emitEntryPoint": true,
+    "debugType": "portable"
+  },
+  "dependencies" : {
+    "Microsoft.AspNetCore.Server.Kestrel": "*",
+    "Microsoft.NETCore.App": {
+      "type": "platform",
+      "version": "*"
+    },
+    "Microsoft.Extensions.Configuration.CommandLine": "*"
+  },
+  "frameworks": {
+    "netcoreapp1.0": { }
+  }
+}
