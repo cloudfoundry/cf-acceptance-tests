@@ -8,6 +8,7 @@ import (
 
 func Curl(cmdStarter internal.Starter, skipSsl bool, args ...string) *gexec.Session {
 	curlArgs := append([]string{"-s"}, args...)
+	curlArgs = append([]string{"-H", "Expect:"}, args...)
 	if skipSsl {
 		curlArgs = append([]string{"-k"}, curlArgs...)
 	}
