@@ -4,6 +4,7 @@ type Assets struct {
 	AsyncServiceBroker       string
 	Dora                     string
 	DoraZip                  string
+	DotnetCore               string
 	Fuse                     string
 	Golang                   string
 	HelloWorld               string
@@ -33,6 +34,7 @@ func NewAssets() Assets {
 		AsyncServiceBroker:       "assets/service_broker",
 		Dora:                     "assets/dora",
 		DoraZip:                  "assets/dora.zip",
+		DotnetCore:               "assets/dotnet-core",
 		Fuse:                     "assets/fuse-mount",
 		Golang:                   "assets/golang",
 		HelloRouting:             "assets/hello-routing",
