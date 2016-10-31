@@ -64,9 +64,9 @@ def uniquify_config
   end
 end
 
-def push_broker(broker_name)
+def push_broker(broker_name, domain)
   puts "Pushing the broker"
-  IO.popen("cf push #{broker_name}") do |cmd_output|
+  IO.popen("cf push #{broker_name} -d #{domain}") do |cmd_output|
     cmd_output.each { |line| puts line }
   end
   puts
@@ -104,7 +104,7 @@ def enable_service_access
 end
 
 uniquify_config
-push_broker(broker_name)
+push_broker(broker_name, domain)
 
 url = "http://#{broker_name}.#{domain}"
 
