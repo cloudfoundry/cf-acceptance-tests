@@ -316,6 +316,22 @@ var _ = Describe("Config", func() {
 		})
 	})
 
+	Describe("error aggregation", func() {
+		BeforeEach(func() {
+			testCfg.AdminPassword = nil
+			testCfg.ApiEndpoint = ptrToString("invalid-url.asdf")
+		})
+
+		It("aggregates all errors", func() {
+			config, err := cfg.NewCatsConfig(tmpFilePath)
+			Expect(config).To(BeNil())
+			Expect(err).To(HaveOccurred())
+
+			Expect(err.Error()).To(ContainSubstring("* 'admin_password' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("* Invalid configuration for 'api' <invalid-url.asdf>"))
+		})
+	})
+
 	Describe(`GetBackend`, func() {
 		Context("when the backend is set to `dea`", func() {
 			BeforeEach(func() {

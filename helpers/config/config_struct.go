@@ -159,27 +159,37 @@ func NewConfig(path string) (*config, error) {
 	return nil, err
 }
 
-func load(path string, config *config) Errors {
+func validateConfig(config *config) Errors {
 	errs := Errors{}
-	err := loadConfigFromPath(path, config)
+
+	var err error
+	err = validateAdminUser(config)
 	if err != nil {
-		errs.Add(fmt.Errorf("* Failed to unmarshal: %s", err))
-		return errs
+		errs.Add(err)
 	}
-	if config.ApiEndpoint == nil {
-		errs.Add(fmt.Errorf("* 'api' must not be null"))
+
+	err = validateAdminPassword(config)
+	if err != nil {
+		errs.Add(err)
 	}
-	if config.AppsDomain == nil {
-		errs.Add(fmt.Errorf("* 'apps_domain' must not be null"))
+
+	err = validateApiEndpoint(config)
+	if err != nil {
+		errs.Add(err)
 	}
+
+	err = validateAppsDomain(config)
+	if err != nil {
+		errs.Add(err)
+	}
+
+	err = validateBackend(config)
+	if err != nil {
+		errs.Add(err)
+	}
+
 	if config.UseHttp == nil {
 		errs.Add(fmt.Errorf("* 'use_http' must not be null"))
-	}
-	if config.AdminPassword == nil {
-		errs.Add(fmt.Errorf("* 'admin_password' must not be null"))
-	}
-	if config.AdminUser == nil {
-		errs.Add(fmt.Errorf("* 'admin_user' must not be null"))
 	}
 	if config.ShouldKeepUser == nil {
 		errs.Add(fmt.Errorf("* 'keep_user_at_suite_end' must not be null"))
@@ -201,9 +211,6 @@ func load(path string, config *config) Errors {
 	}
 	if config.PersistentAppSpace == nil {
 		errs.Add(fmt.Errorf("* 'persistent_app_space' must not be null"))
-	}
-	if config.Backend == nil {
-		errs.Add(fmt.Errorf("* 'backend' must not be null"))
 	}
 	if config.SkipSSLValidation == nil {
 		errs.Add(fmt.Errorf("* 'skip_ssl_validation' must not be null"))
@@ -307,54 +314,108 @@ func load(path string, config *config) Errors {
 	if config.NamePrefix == nil {
 		errs.Add(fmt.Errorf("* 'name_prefix' must not be null"))
 	}
-	if !errs.Empty() {
-		return errs
-	}
 
-	if config.GetApiEndpoint() == "" {
-		errs.Add(fmt.Errorf("* Invalid configuration: 'api' must be a valid Cloud Controller endpoint but was blank"))
-	}
+	return errs
+}
 
-	var u *url.URL
-	var host string
-	if u, err = url.Parse(config.GetApiEndpoint()); err != nil {
-		errs.Add(fmt.Errorf("* Invalid configuration: 'api' must be a valid URL but was set to '%s'", config.GetApiEndpoint()))
-	} else {
-		host = u.Host
-		if host == "" {
-			// url.Parse misunderstood our convention and treated the hostname as a URL path
-			host = u.Path
-		}
-
-		if _, err = net.LookupHost(host); err != nil {
-			errs.Add(fmt.Errorf("* Invalid configuration for 'api_endpoint' <%s> (host %s): %s", config.GetApiEndpoint(), host, err))
-		}
-	}
-
-	madeUpAppHostname := "made-up-app-host-name." + config.GetAppsDomain()
-	if u, err = url.Parse(madeUpAppHostname); err != nil {
-		errs.Add(fmt.Errorf("* Invalid configuration: 'apps_domain' must be a valid URL but was set to '%s'", config.GetAppsDomain()))
-	} else {
-		host = u.Host
-		if host == "" {
-			// url.Parse misunderstood our convention and treated the hostname as a URL path
-			host = u.Path
-		}
-		if _, err = net.LookupHost(madeUpAppHostname); err != nil {
-			errs.Add(fmt.Errorf("* Invalid configuration for 'apps_domain' <%s> (host %s): %s", config.GetAppsDomain(), host, err))
-		}
-	}
-
-	if config.GetAdminUser() == "" {
-		errs.Add(fmt.Errorf("* Invalid configuration: 'admin_user' must be provided"))
-	}
-
-	if config.GetAdminPassword() == "" {
-		errs.Add(fmt.Errorf("* Invalid configuration: 'admin_password' must be provided"))
+func validateBackend(config *config) error {
+	if config.Backend == nil {
+		return fmt.Errorf("* 'backend' must not be null")
 	}
 
 	if config.GetBackend() != "dea" && config.GetBackend() != "diego" && config.GetBackend() != "" {
-		errs.Add(fmt.Errorf("* Invalid configuration: 'backend' must be 'diego', 'dea', or empty but was set to '%s'", config.GetBackend()))
+		return fmt.Errorf("* Invalid configuration: 'backend' must be 'diego', 'dea', or empty but was set to '%s'", config.GetBackend())
+	}
+
+	return nil
+}
+
+func validateApiEndpoint(config *config) error {
+	if config.ApiEndpoint == nil {
+		return fmt.Errorf("* 'api' must not be null")
+	}
+
+	if config.GetApiEndpoint() == "" {
+		return fmt.Errorf("* Invalid configuration: 'api' must be a valid Cloud Controller endpoint but was blank")
+	}
+
+	u, err := url.Parse(config.GetApiEndpoint())
+	if err != nil {
+		return fmt.Errorf("* Invalid configuration: 'api' must be a valid URL but was set to '%s'", config.GetApiEndpoint())
+	}
+
+	host := u.Host
+	if host == "" {
+		// url.Parse misunderstood our convention and treated the hostname as a URL path
+		host = u.Path
+	}
+
+	if _, err = net.LookupHost(host); err != nil {
+		return fmt.Errorf("* Invalid configuration for 'api' <%s>: %s", config.GetApiEndpoint(), err)
+	}
+
+	return nil
+}
+
+func validateAppsDomain(config *config) error {
+	if config.AppsDomain == nil {
+		return fmt.Errorf("* 'apps_domain' must not be null")
+	}
+
+	madeUpAppHostname := "made-up-app-host-name." + config.GetAppsDomain()
+	u, err := url.Parse(madeUpAppHostname)
+	if err != nil {
+		return fmt.Errorf("* Invalid configuration: 'apps_domain' must be a valid URL but was set to '%s'", config.GetAppsDomain())
+	}
+
+	host := u.Host
+	if host == "" {
+		// url.Parse misunderstood our convention and treated the hostname as a URL path
+		host = u.Path
+	}
+
+	if _, err = net.LookupHost(madeUpAppHostname); err != nil {
+		return fmt.Errorf("* Invalid configuration for 'apps_domain' <%s>: %s", config.GetAppsDomain(), err)
+	}
+
+	return nil
+}
+
+func validateAdminUser(config *config) error {
+	if config.AdminUser == nil {
+		return fmt.Errorf("* 'admin_user' must not be null")
+	}
+
+	if config.GetAdminUser() == "" {
+		return fmt.Errorf("* Invalid configuration: 'admin_user' must be provided")
+	}
+
+	return nil
+}
+
+func validateAdminPassword(config *config) error {
+	if config.AdminPassword == nil {
+		return fmt.Errorf("* 'admin_password' must not be null")
+	}
+
+	if config.GetAdminPassword() == "" {
+		return fmt.Errorf("* Invalid configuration: 'admin_password' must be provided")
+	}
+
+	return nil
+}
+
+func load(path string, config *config) Errors {
+	errs := Errors{}
+	err := loadConfigFromPath(path, config)
+	if err != nil {
+		errs.Add(fmt.Errorf("* Failed to unmarshal: %s", err))
+		return errs
+	}
+
+	errs = validateConfig(config)
+	if !errs.Empty() {
+		return errs
 	}
 
 	if *config.TimeoutScale <= 0 {
