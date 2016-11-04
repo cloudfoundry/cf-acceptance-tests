@@ -58,6 +58,7 @@ type config struct {
 
 	IncludeApps                       *bool `json:"include_apps"`
 	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
+	IncludeContainerNetworking        *bool `json:"include_container_networking"`
 	IncludeDetect                     *bool `json:"include_detect"`
 	IncludeDocker                     *bool `json:"include_docker"`
 	IncludeInternetDependent          *bool `json:"include_internet_dependent"`
@@ -115,6 +116,7 @@ func getDefaults() config {
 	defaults.IncludeRouting = ptrToBool(true)
 
 	defaults.IncludeBackendCompatiblity = ptrToBool(false)
+	defaults.IncludeContainerNetworking = ptrToBool(false)
 	defaults.IncludeDocker = ptrToBool(false)
 	defaults.IncludeInternetDependent = ptrToBool(false)
 	defaults.IncludeRouteServices = ptrToBool(false)
@@ -271,6 +273,9 @@ func validateConfig(config *config) Errors {
 	}
 	if config.IncludeBackendCompatiblity == nil {
 		errs.Add(fmt.Errorf("* 'include_backend_compatibility' must not be null"))
+	}
+	if config.IncludeContainerNetworking == nil {
+		errs.Add(fmt.Errorf("* 'include_container_networking' must not be null"))
 	}
 	if config.IncludeDetect == nil {
 		errs.Add(fmt.Errorf("* 'include_detect' must not be null"))
@@ -548,6 +553,10 @@ func (c *config) GetIncludeApps() bool {
 
 func (c *config) GetIncludeBackendCompatiblity() bool {
 	return *c.IncludeBackendCompatiblity
+}
+
+func (c *config) GetIncludeContainerNetworking() bool {
+	return *c.IncludeContainerNetworking
 }
 
 func (c *config) GetIncludeDetect() bool {

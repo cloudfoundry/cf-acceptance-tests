@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
@@ -171,9 +172,13 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 			pushApp(clientAppName, Config.GetRubyBuildpackName())
 			Expect(cf.Cf("start", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-			By("Asserting default running security group configuration")
+			By("Asserting default running security group configuration for traffic between containers")
 			doraCurlResponse := testAppConnectivity(clientAppName, privateHost, privatePort)
-			Expect(doraCurlResponse.ReturnCode).NotTo(Equal(0), "Expected running security groups not to allow internal communication between app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
+			Expect(doraCurlResponse.ReturnCode).NotTo(Equal(0), "Expected default running security groups not to allow internal communication between app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
+
+			By("Asserting default running security group configuration from a running container to an external destination")
+			doraCurlResponse = testAppConnectivity(clientAppName, "www.google.com", 80)
+			Expect(doraCurlResponse.ReturnCode).To(Equal(0), "Expected default running security groups to allow external traffic from app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
 		})
 
 		AfterEach(func() {
@@ -186,9 +191,14 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 			deleteSecurityGroup(securityGroupName)
 		})
 
-		It("allows previously-blocked ip traffic after applying a security group, and re-blocks it when the group is removed", func() {
+		It("allows ip traffic between containers after applying a security group and blocks it when the security group is removed", func() {
+			if Config.GetIncludeContainerNetworking() {
+				Skip("Skipping this test because Config.ContainerNetworking is set to 'true'.")
+			}
+
 			containerIp, containerPort := getAppContainerIpAndPort(serverAppName)
 			securityGroupName = createSecurityGroup(privateHost, privatePort, containerIp, containerPort)
+			By("binding new security group")
 			bindSecurityGroup(securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space)
 
 			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -197,11 +207,52 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 			doraCurlResponse := testAppConnectivity(clientAppName, privateHost, privatePort)
 			Expect(doraCurlResponse.ReturnCode).To(Equal(0))
 
+			By("unbinding security group")
 			unbindSecurityGroup(securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space)
 			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			By("Testing that app can no longer connect")
 			doraCurlResponse = testAppConnectivity(clientAppName, privateHost, privatePort)
+			Expect(doraCurlResponse.ReturnCode).NotTo(Equal(0))
+		})
+
+		It("allows ip traffic between containers after applying a policy and blocks it when the policy is removed", func() {
+			if !Config.GetIncludeContainerNetworking() {
+				Skip("Skipping this test because Config.ContainerNetworking is set to 'false'.")
+			}
+
+			containerIp, containerPort := getAppContainerIpAndPort(serverAppName)
+			orgName := TestSetup.RegularUserContext().Org
+			spaceName := TestSetup.RegularUserContext().Space
+
+			By("Testing that app cannot connect")
+			doraCurlResponse := testAppConnectivity(clientAppName, containerIp, containerPort)
+			Expect(doraCurlResponse.ReturnCode).NotTo(Equal(0))
+
+			By("adding policy")
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("allow-access", clientAppName, serverAppName, "--port", fmt.Sprintf("%d", containerPort), "--protocol", "tcp").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			})
+
+			By("waiting for policy to be added on cell")
+			time.Sleep(10 * time.Second)
+
+			By("Testing that app can connect")
+			doraCurlResponse = testAppConnectivity(clientAppName, containerIp, containerPort)
+			Expect(doraCurlResponse.ReturnCode).To(Equal(0))
+
+			By("removing policy")
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("deny-access", clientAppName, serverAppName, "--port", fmt.Sprintf("%d", containerPort), "--protocol", "tcp").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			})
+
+			By("waiting for policy to be removed on cell")
+			time.Sleep(10 * time.Second)
+
+			By("Testing that app can no longer connect")
+			doraCurlResponse = testAppConnectivity(clientAppName, containerIp, containerPort)
 			Expect(doraCurlResponse.ReturnCode).NotTo(Equal(0))
 		})
 	})
