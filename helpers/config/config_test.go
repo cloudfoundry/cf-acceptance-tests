@@ -96,6 +96,7 @@ type allConfig struct {
 	IncludeDocker                     *bool `json:"include_docker"`
 	IncludeInternetDependent          *bool `json:"include_internet_dependent"`
 	IncludePrivilegedContainerSupport *bool `json:"include_privileged_container_support"`
+	IncludeContainerNetworking        *bool `json:"include_container_networking"`
 	IncludeRouteServices              *bool `json:"include_route_services"`
 	IncludeRouting                    *bool `json:"include_routing"`
 	IncludeZipkin                     *bool `json:"include_zipkin"`
@@ -188,6 +189,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeDocker()).To(BeFalse())
 		Expect(config.GetIncludeInternetDependent()).To(BeFalse())
 		Expect(config.GetIncludeRouteServices()).To(BeFalse())
+		Expect(config.GetIncludeContainerNetworking()).To(BeFalse())
 		Expect(config.GetIncludeSecurityGroups()).To(BeFalse())
 		Expect(config.GetIncludeServices()).To(BeFalse())
 		Expect(config.GetIncludeSsh()).To(BeFalse())
@@ -279,6 +281,7 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_privileged_container_support' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_route_services' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_routing' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_container_networking' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_zipkin' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_sso' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_security_groups' must not be null"))
