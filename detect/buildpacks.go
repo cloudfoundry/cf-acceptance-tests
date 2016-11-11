@@ -113,14 +113,16 @@ var _ = DetectDescribe("Buildpacks", func() {
 		// This test requires more disk quota due to dotnet-core buildpack's current implementation
 		var dotnetCorePushTimeout time.Duration
 		var dotnetCoreDiskQuota string
+		var dotnetCoreMemoryQuota string
 
 		BeforeEach(func() {
 			dotnetCorePushTimeout = Config.DetectTimeoutDuration() + 6*time.Minute
 			dotnetCoreDiskQuota = "1536M"
+			dotnetCoreMemoryQuota = "512M"
 		})
 
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-k", dotnetCoreDiskQuota, "-p", assets.NewAssets().DotnetCore, "-d", Config.GetAppsDomain()).Wait(dotnetCorePushTimeout)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-m", dotnetCoreMemoryQuota, "-k", dotnetCoreDiskQuota, "-p", assets.NewAssets().DotnetCore, "-d", Config.GetAppsDomain()).Wait(dotnetCorePushTimeout)).To(Exit(0))
 			app_helpers.SetBackend(appName)
 			Expect(cf.Cf("start", appName).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
