@@ -15,6 +15,10 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
+const (
+	V3_DEFAULT_MEMORY_LIMIT = "256"
+)
+
 func StartApp(appGuid string) {
 	startURL := fmt.Sprintf("/v3/apps/%s/start", appGuid)
 	Expect(cf.Cf("curl", startURL, "-X", "PUT").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
@@ -161,7 +165,7 @@ func AssignDropletToApp(appGuid, dropletGuid string) {
 	Expect(cf.Cf("curl", appUpdatePath, "-X", "PUT", "-d", appUpdateBody).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 	for _, process := range GetProcesses(appGuid, "") {
-		ScaleProcess(appGuid, process.Type, DEFAULT_MEMORY_LIMIT)
+		ScaleProcess(appGuid, process.Type, V3_DEFAULT_MEMORY_LIMIT)
 	}
 }
 
