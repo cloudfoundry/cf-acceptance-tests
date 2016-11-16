@@ -109,6 +109,7 @@ export CONFIG=$PWD/integration_config.json
 * `admin_user`: Name of a user in your CF instance with admin credentials.  This admin user must have the `doppler.firehose` scope.
 * `admin_password`: Password of the admin user above.
 * `apps_domain`: A shared domain that tests can use to create subdomains that will route to applications also created in the tests.
+* `skip_ssl_validation`: Set to true if using an invalid (e.g. self-signed) cert for traffic routed to your CF instance; this is generally always true for BOSH-Lite deployments of CF.
 
 ##### Optional parameters:
 `include_*` parameters are used to specify whether to skip tests based on how a deployment is configured.
@@ -128,7 +129,6 @@ export CONFIG=$PWD/integration_config.json
 * `include_tasks`: Flag to include the v3 task tests dependent on the CC task_creation feature flag.
 * `include_v3`: Flag to include tests for the the v3 API.
 * `backend`: App tests push their apps using the backend specified. Incompatible tests will be skipped based on which backend is chosen. If left unspecified the default backend will be used where none is specified; all tests that specify a particular backend will be skipped.
-* `skip_ssl_validation`: Set to true if using an invalid (e.g. self-signed) cert for traffic routed to your CF instance; this is generally always true for BOSH-Lite deployments of CF.
 * `use_http`: Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
 * `use_existing_user`: The admin user configured above will normally be used to create a temporary user (with lesser permissions) to perform actions (such as push applications) during tests, and then delete said user after the tests have run; set this to `true` if you want to use an existing user, configured via the following properties.
 * `keep_user_at_suite_end`: If using an existing user (see above), set this to `true` unless you are okay having your existing user being deleted at the end. You can also set this to `true` when not using an existing user if you want to leave the temporary user around for debugging purposes after the test teardown.
@@ -140,7 +140,7 @@ export CONFIG=$PWD/integration_config.json
 * `persistent_app_quota_name`: [See below](#persistent-app-test-setup).
 * `artifacts_directory`: If set, `cf` CLI trace output from test runs will be captured in files and placed in this directory. [See below](#capturing-test-output) for more.
 * `default_timeout`: Default time (in seconds) to wait for polling assertions that wait for asynchronous results.
-* `cf_push_timeout`: Default time (in seconds) to wait for `cf push` commands to succeed.
+* `cf_push_timeout`: Default time (in minutes) to wait for `cf push` commands to succeed.
 * `long_curl_timeout`: Default time (in seconds) to wait for assertions that `curl` slow endpoints of test applications.
 * `broker_start_timeout` (only relevant for `services` test group): Time (in seconds) to wait for service broker test app to start.
 * `async_service_operation_timeout` (only relevant for the `services` test group): Time (in seconds) to wait for an asynchronous service operation to complete.
