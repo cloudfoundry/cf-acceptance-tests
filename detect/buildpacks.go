@@ -109,7 +109,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 		})
 	})
 
-	Describe("dotnet-core", func() {
+	PDescribe("dotnet-core", func() {
 		// This test requires more disk quota due to dotnet-core buildpack's current implementation
 		var dotnetCorePushTimeout time.Duration
 		var dotnetCoreDiskQuota string
