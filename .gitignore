@@ -1,5 +1,6 @@
 tags
 *config.json
+!*runtimeconfig.json
 *.test
 results
 .idea
