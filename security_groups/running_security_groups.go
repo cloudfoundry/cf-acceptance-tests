@@ -88,15 +88,16 @@ func getAppContainerIpAndPort(appName string) (string, int) {
 	return containerIp, containerPort
 }
 
-func createSecurityGroup(privateHost string, privatePort int, containerIp string, containerPort int) string {
-	rules := fmt.Sprintf(
-		`[{"destination":"%s","ports":"%d","protocol":"tcp"},
-			{"destination":"%s","ports":"%d","protocol":"tcp"}]`,
-		privateHost, privatePort, containerIp, containerPort)
+type Destination struct {
+	IP       string `json:"destination"`
+	Port     int    `json:"ports,string"`
+	Protocol string `json:"protocol"`
+}
 
+func createSecurityGroup(allowedDestinations ...Destination) string {
 	file, _ := ioutil.TempFile(os.TempDir(), "CATS-sg-rules")
 	defer os.Remove(file.Name())
-	file.WriteString(rules)
+	Expect(json.NewEncoder(file).Encode(allowedDestinations)).To(Succeed())
 
 	rulesPath := file.Name()
 	securityGroupName := random_name.CATSRandomName("SG")
@@ -197,7 +198,19 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 			}
 
 			containerIp, containerPort := getAppContainerIpAndPort(serverAppName)
-			securityGroupName = createSecurityGroup(privateHost, privatePort, containerIp, containerPort)
+			securityGroupName = createSecurityGroup(
+				Destination{
+					IP:       privateHost,
+					Port:     privatePort,
+					Protocol: "tcp",
+				},
+				Destination{
+					IP:       containerIp,
+					Port:     containerPort,
+					Protocol: "tcp",
+				},
+			)
+
 			By("binding new security group")
 			bindSecurityGroup(securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space)
 
@@ -254,6 +267,32 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 			By("Testing that app can no longer connect")
 			doraCurlResponse = testAppConnectivity(clientAppName, containerIp, containerPort)
 			Expect(doraCurlResponse.ReturnCode).NotTo(Equal(0))
+		})
+
+		It("allows ip traffic from a container to a private, non-container destination after binding a security group and refuses it after unbinding the security group", func() {
+			dest := Destination{
+				IP:       "10.0.244.255", // some random IP that isn't covered by an existing Security Group rule
+				Port:     80,
+				Protocol: "tcp",
+			}
+			securityGroupName = createSecurityGroup(dest)
+			By("binding new security group")
+			bindSecurityGroup(securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space)
+
+			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+			By("Testing that connection is not refused (but may be unreachable for other reasons)")
+			doraCurlResponse := testAppConnectivity(clientAppName, dest.IP, dest.Port)
+			const CurlExitCode_FailedToConnectToHost = 7
+			Expect(doraCurlResponse.ReturnCode).NotTo(Equal(CurlExitCode_FailedToConnectToHost))
+
+			By("unbinding security group")
+			unbindSecurityGroup(securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space)
+			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+			By("Testing the connect is refused")
+			doraCurlResponse = testAppConnectivity(clientAppName, dest.IP, dest.Port)
+			Expect(doraCurlResponse.ReturnCode).To(Equal(CurlExitCode_FailedToConnectToHost))
 		})
 	})
 
