@@ -71,9 +71,9 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Eventually(session, Config.DefaultTimeoutDuration()).Should(Exit(0))
 
-		Expect(session).To(Say("./app/config.ru"))
-		Expect(session).To(Say("./tmp"))
-		Expect(session).To(Say("./logs"))
+		Expect(session.Out.Contents()).To(ContainSubstring("./app/config.ru"))
+		Expect(session.Out.Contents()).To(ContainSubstring("./tmp"))
+		Expect(session.Out.Contents()).To(ContainSubstring("./logs"))
 
 		By("Pushing a different version of the app")
 
