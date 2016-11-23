@@ -40,7 +40,7 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 		oauthConfig.RedirectUri = redirectUri
 		oauthConfig.RequestedScopes = `openid,cloud_controller_service_permissions.read`
 
-		apiEndpoint = Config.GetApiEndpoint()
+		apiEndpoint = Config.Protocol() + Config.GetApiEndpoint()
 		SetOauthEndpoints(apiEndpoint, &oauthConfig, Config)
 
 		broker.Create()
