@@ -116,6 +116,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 			webProcess := GetProcessByType(processes, "web")
 
 			Expect(webProcess.Guid).ToNot(BeEmpty())
+			ScaleProcess(appGuid, webProcess.Type, V3_JAVA_MEMORY_LIMIT)
 
 			CreateAndMapRoute(appGuid, TestSetup.RegularUserContext().Space, Config.GetAppsDomain(), webProcess.Name)
 
