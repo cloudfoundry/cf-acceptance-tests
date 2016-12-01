@@ -171,6 +171,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				return envOutput
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(`"CF_INSTANCE_INDEX"=>"0"`))
 			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_IP"=>"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"`))
+			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_INTERNAL_IP"=>"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"`))
 			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_PORT"=>"[0-9]+"`))
 			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_ADDR"=>"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+"`))
 			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_PORTS"=>"\[(\{\\"external\\":[0-9]+,\\"internal\\":[0-9]+\},?)+\]"`))
