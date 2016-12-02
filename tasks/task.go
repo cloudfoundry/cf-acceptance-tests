@@ -1,4 +1,4 @@
-package v3
+package tasks
 
 import (
 	"encoding/json"
@@ -61,7 +61,7 @@ func getGuid(appGuid string, sequenceId string) string {
 	return task.Guid
 }
 
-var _ = V3Describe("v3 tasks", func() {
+var _ = TasksDescribe("v3 tasks", func() {
 	var (
 		appName                         string
 		appGuid                         string

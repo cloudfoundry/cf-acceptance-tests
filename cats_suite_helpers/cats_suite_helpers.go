@@ -174,6 +174,17 @@ func V3Describe(description string, callback func()) bool {
 	})
 }
 
+func TasksDescribe(description string, callback func()) bool {
+	return Describe("[tasks] "+description, func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeTasks() {
+				Skip(`Skipping this test because Config.IncludeTasks is set to 'false'.`)
+			}
+		})
+		callback()
+	})
+}
+
 func GuidForAppName(appName string) string {
 	cfApp := cf.Cf("app", appName, "--guid")
 	Expect(cfApp.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
