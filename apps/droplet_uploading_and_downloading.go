@@ -1,7 +1,6 @@
 package apps
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -27,7 +26,6 @@ import (
 
 var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 	var helloWorldAppName string
-	var out bytes.Buffer
 
 	BeforeEach(func() {
 		helloWorldAppName = random_name.CATSRandomName("APP")
@@ -49,21 +47,33 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 		guid := cf.Cf("app", helloWorldAppName, "--guid").Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 		appGuid := strings.TrimSpace(string(guid))
 
-		tmpdir, err := ioutil.TempDir(os.TempDir(), "droplet-download")
+		// This defers from the typical way temp directories are created (using the OS default), because the GNUWin32 tar.exe does not allow file paths to be prefixed with a drive letter.
+		tmpdir, err := ioutil.TempDir(".", "droplet-download")
 		Expect(err).ToNot(HaveOccurred())
+		defer os.RemoveAll(tmpdir)
 
 		app_droplet_path := path.Join(tmpdir, helloWorldAppName)
+		app_droplet_path_to_tar_file := fmt.Sprintf("%s.tar", app_droplet_path)
+		app_droplet_path_to_compressed_file := fmt.Sprintf("%s.tar.gz", app_droplet_path)
 
-		cf.Cf("curl", fmt.Sprintf("/v2/apps/%s/droplet/download", appGuid), "--output", app_droplet_path).Wait(Config.DefaultTimeoutDuration())
+		cf.Cf("curl", fmt.Sprintf("/v2/apps/%s/droplet/download", appGuid), "--output", app_droplet_path_to_compressed_file).Wait(Config.DefaultTimeoutDuration())
 
-		cmd := exec.Command("tar", "-ztf", app_droplet_path)
-		cmd.Stdout = &out
-		err = cmd.Run()
+		var session *Session
+
+		// The gzip and tar commands have been tested and works in both Linux and Windows environments. In Windows, it was tested using GNUWin32 executables. The reason why this is split into two steps instead of running 'tar -ztf file_name' is because the GNUWin32 tar.exe does not support '-z'.
+		cmd := exec.Command("gzip", "-dk", app_droplet_path_to_compressed_file)
+		session, err = Start(cmd, GinkgoWriter, GinkgoWriter)
 		Expect(err).ToNot(HaveOccurred())
+		Eventually(session, Config.DefaultTimeoutDuration()).Should(Exit(0))
 
-		Expect(out.String()).To(ContainSubstring("./app/config.ru"))
-		Expect(out.String()).To(ContainSubstring("./tmp"))
-		Expect(out.String()).To(ContainSubstring("./logs"))
+		cmd = exec.Command("tar", "-tf", app_droplet_path_to_tar_file)
+		session, err = Start(cmd, GinkgoWriter, GinkgoWriter)
+		Expect(err).ToNot(HaveOccurred())
+		Eventually(session, Config.DefaultTimeoutDuration()).Should(Exit(0))
+
+		Expect(session.Out.Contents()).To(ContainSubstring("./app/config.ru"))
+		Expect(session.Out.Contents()).To(ContainSubstring("./tmp"))
+		Expect(session.Out.Contents()).To(ContainSubstring("./logs"))
 
 		By("Pushing a different version of the app")
 
@@ -76,7 +86,7 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 
 		token := v3_helpers.GetAuthToken()
 		uploadUrl := fmt.Sprintf("%s%s/v2/apps/%s/droplet/upload", Config.Protocol(), Config.GetApiEndpoint(), appGuid)
-		bits := fmt.Sprintf(`droplet=@%s`, app_droplet_path)
+		bits := fmt.Sprintf(`droplet=@%s`, app_droplet_path_to_compressed_file)
 		curl := helpers.Curl(Config, "-v", uploadUrl, "-X", "PUT", "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).Wait(Config.DefaultTimeoutDuration())
 		Expect(curl).To(Exit(0))
 
