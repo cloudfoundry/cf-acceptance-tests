@@ -89,6 +89,10 @@ class Dora < Sinatra::Base
     ENV.to_hash.to_s
   end
 
+  get '/env.json' do
+    ENV.to_hash.to_json
+  end
+
   get '/myip' do
     `ip route get 1 | awk '{print $NF;exit}'`
   end

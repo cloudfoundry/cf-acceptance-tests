@@ -15,7 +15,9 @@
 1. `GET /logspew/:bytes` Spews out n bytes to the logs
 1. `GET /loglines/:linecount` Writes n lines to stdout, each line contains a timestamp with nanoseconds
 1. `GET /echo/:destination/:output` Echos out the output to the destination
-1. `GET /env/:name` Prints out the env variable
+1. `GET /env/:name` Prints out the environment variable `:name`
+1. `GET /env` Prints out the entire environment as a serialized Ruby hash
+1. `GET /env.json` Prints out the entire environment as a JSON object
 1. `GET /largetext/:kbytes` Returns a dummy response of size `:kbytes`. For testing large payloads.
 
 ## Sticky Sessions
