@@ -192,43 +192,6 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 			deleteSecurityGroup(securityGroupName)
 		})
 
-		It("allows ip traffic between containers after applying a security group and blocks it when the security group is removed", func() {
-			if Config.GetIncludeContainerNetworking() {
-				Skip("Skipping this test because Config.ContainerNetworking is set to 'true'.")
-			}
-
-			containerIp, containerPort := getAppContainerIpAndPort(serverAppName)
-			securityGroupName = createSecurityGroup(
-				Destination{
-					IP:       privateHost,
-					Port:     privatePort,
-					Protocol: "tcp",
-				},
-				Destination{
-					IP:       containerIp,
-					Port:     containerPort,
-					Protocol: "tcp",
-				},
-			)
-
-			By("binding new security group")
-			bindSecurityGroup(securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space)
-
-			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-			By("Testing that app can connect")
-			doraCurlResponse := testAppConnectivity(clientAppName, privateHost, privatePort)
-			Expect(doraCurlResponse.ReturnCode).To(Equal(0))
-
-			By("unbinding security group")
-			unbindSecurityGroup(securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space)
-			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-			By("Testing that app can no longer connect")
-			doraCurlResponse = testAppConnectivity(clientAppName, privateHost, privatePort)
-			Expect(doraCurlResponse.ReturnCode).NotTo(Equal(0))
-		})
-
 		It("allows ip traffic between containers after applying a policy and blocks it when the policy is removed", func() {
 			if !Config.GetIncludeContainerNetworking() {
 				Skip("Skipping this test because Config.ContainerNetworking is set to 'false'.")
