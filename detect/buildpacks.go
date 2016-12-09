@@ -109,7 +109,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 		})
 	})
 
-	Describe("dotnet-core", func() {
+	PDescribe("dotnet-core", func() {
 		// This test involves a vendored dotnet core app whose locked dotnet version will not be removed
 		// from the dotnet core buildpack until end of the version's LTS in 2019
 
