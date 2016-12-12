@@ -15,6 +15,7 @@ Bundler.require :default, ENV['RACK_ENV'].to_sym
 
 $stdout.sync = true
 $stderr.sync = true
+$counter = 0
 
 class Dora < Sinatra::Base
   use Instances
@@ -24,6 +25,17 @@ class Dora < Sinatra::Base
 
   get '/' do
     "Hi, I'm Dora!"
+  end
+
+  get '/health' do
+    $stderr.puts("Called /health #{$counter}")
+    if $counter < 3
+      $counter += 1
+     status 500
+     body "Hit /health #{$counter} times"
+    else
+      "I'm alive"
+    end
   end
 
   get '/ping/:address' do

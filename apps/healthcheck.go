@@ -82,4 +82,30 @@ var _ = AppsDescribe("Healthcheck", func() {
 			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 	})
+
+	Describe("when the healthcheck is set to http", func() {
+		It("starts up successfully", func() {
+			By("pushing it")
+			Eventually(cf.Cf(
+				"push", appName,
+				"-p", assets.NewAssets().Dora,
+				"--no-start",
+				"-b", Config.GetRubyBuildpackName(),
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-d", Config.GetAppsDomain(),
+				"-i", "1",
+				"-u", "port"),
+				Config.DefaultTimeoutDuration(),
+			).Should(Exit(0))
+
+			cf.Cf("curl", appName, "-X", "PUT", "-d", `{"HealthCheckType":"http", "HealthCheckHTTPEndpoint":"/health"}`)
+
+			By("staging and running it")
+			app_helpers.SetBackend(appName)
+			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
+
+			By("verifying it's up")
+			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("Hi, I'm Dora!"))
+		})
+	})
 })
