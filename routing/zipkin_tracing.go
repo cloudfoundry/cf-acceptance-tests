@@ -66,7 +66,7 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 
 				appLogsSession = cf.Cf("logs", "--recent", hostname)
 
-				Eventually(appLogsSession.Out).Should(gbytes.Say("x_b3_traceid:\"fee1f7ba6aeec41c"))
+				Expect(appLogsSession.Out).Should(gbytes.Say("x_b3_traceid:\"fee1f7ba6aeec41c"))
 				_, appLogSpanId, _ := grabIDs(string(appLogsSession.Out.Contents()), traceId)
 
 				Expect(curlOutput).To(ContainSubstring(traceId))
