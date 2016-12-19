@@ -340,6 +340,35 @@ exit 1
 		})
 	})
 
+	Context("when the buildpack is specified", func() {
+		It("stages the app using the specified buildpack", func() {
+			setupBadDetectBuildpack(appConfig{Empty: false})
+
+			Expect(cf.Cf("push", appName, "--no-start", "-b", buildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			app_helpers.SetBackend(appName)
+
+			start := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
+			Expect(start).To(Exit(0))
+
+			appOutput := cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
+			Expect(appOutput).To(Say("buildpack: " + buildpackName))
+		})
+
+		It("fails if the specified buildpack is disabled", func() {
+			setupBadDetectBuildpack(appConfig{Empty: false})
+
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				Expect(cf.Cf("update-buildpack", buildpackName, "--disable").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			})
+
+			Expect(cf.Cf("push", appName, "--no-start", "-b", buildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			app_helpers.SetBackend(appName)
+
+			start := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
+			Expect(start).To(Exit(1))
+		})
+	})
+
 	Context("when the buildpack compile fails", func() {
 		// This test used to be part of inigo and with the extraction of CC bridge, we want to ensure
 		// that user facing errors are correctly propagated from a garden container out of the system.
