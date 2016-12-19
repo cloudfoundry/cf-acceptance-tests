@@ -212,10 +212,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 							Expect(deleteServiceKey).To(Exit(0), "failed deleting service key")
 
 							keyInfo := cf.Cf("service-key", instanceName, keyName).Wait(Config.DefaultTimeoutDuration())
-							Expect(keyInfo).To(Exit(0), "failed key info")
-
-							errorMessage := fmt.Sprintf("No service key %s found for service instance %s", keyName, instanceName)
-							Expect(keyInfo).To(Say(errorMessage))
+							Expect(keyInfo).To(Say(fmt.Sprintf("No service key %s found for service instance %s", keyName, instanceName)))
 						})
 					})
 				})
