@@ -18,6 +18,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
 type AppUsageEvent struct {
@@ -154,6 +155,9 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 		})
 
 		It("makes system environment variables available", func() {
+			if Config.GetBackend() != "diego" {
+				Skip(skip_messages.SkipDiegoMessage)
+			}
 			Expect(cf.Cf("push",
 				appName,
 				"--no-start",
