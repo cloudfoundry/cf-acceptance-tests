@@ -1,7 +1,6 @@
 package app_helpers
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -50,7 +49,6 @@ func DisableDiegoAndCheckResponse(appName, expectedSubstring string) {
 
 func AppReport(appName string, timeout time.Duration) {
 	if appName == "" {
-		fmt.Println("App name was set to \"\"; skipping app report.")
 		return
 	}
 	Eventually(cf.Cf("app", appName, "--guid"), timeout).Should(Exit())
