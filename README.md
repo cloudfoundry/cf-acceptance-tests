@@ -115,6 +115,7 @@ export CONFIG=$PWD/integration_config.json
 `include_*` parameters are used to specify whether to skip tests based on how a deployment is configured.
 * `include_apps`: Flag to include the apps test group.
 * `include_backend_compatibility`: Flag to include whether we check DEA/Diego interoperability.
+* `include_container_networking`: Flag to include tests related to container networking. `include_security_groups` must also be set for tests to run.
 * `include_detect`: Flag to include tests in the detect group.
 * `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
 * `include_internet_dependent`: Flag to include tests that require the deployment to have internet access.

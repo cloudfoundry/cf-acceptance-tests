@@ -194,7 +194,7 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 
 		It("allows ip traffic between containers after applying a policy and blocks it when the policy is removed", func() {
 			if !Config.GetIncludeContainerNetworking() {
-				Skip("Skipping this test because Config.ContainerNetworking is set to 'false'.")
+				Skip("Skipping this test because Config.IncludeContainerNetworking is set to 'false'.")
 			}
 
 			containerIp, containerPort := getAppContainerIpAndPort(serverAppName)
