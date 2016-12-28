@@ -115,19 +115,20 @@ export CONFIG=$PWD/integration_config.json
 `include_*` parameters are used to specify whether to skip tests based on how a deployment is configured.
 * `include_apps`: Flag to include the apps test group.
 * `include_backend_compatibility`: Flag to include whether we check DEA/Diego interoperability.
-* `include_detect`: Flag to run tests in the detect group.
+* `include_container_networking`: Flag to include tests related to container networking. `include_security_groups` must also be set for tests to run.
+* `include_detect`: Flag to include tests in the detect group.
 * `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
 * `include_internet_dependent`: Flag to include tests that require the deployment to have internet access.
-* `include_privileged_container_support`: Requires capi.nsync.diego_privileged_containers and capi.stager.diego_privileged_containers to be enabled.
+* `include_privileged_container_support`: Flag to include privileged container tests. Requires capi.nsync.diego_privileged_containers and capi.stager.diego_privileged_containers to be enabled for tests to pass.
 * `include_route_services`: Flag to include the route services tests. Diego must be deployed for these tests to pass.
 * `include_routing`: Flag to include the routing tests.
-* `include_zipkin`: Flag to include tests for Zipkin tracing. `include_routing` must be set as well. CF must be deployed with `router.tracing.enable_zipkin` set for tests to pass.
 * `include_security_groups`: Flag to include tests for security groups.
 * `include_services`: Flag to include test for the services API.
 * `include_ssh`: Flag to include tests for Diego container ssh feature.
-* `include_sso`: Flag to include the services tests that integrate with Single Sign On.
-* `include_tasks`: Flag to include the v3 task tests dependent on the CC task_creation feature flag.
+* `include_sso`: Flag to include the services tests that integrate with Single Sign On. `include_services` must also be set for tests to run.
+* `include_tasks`: Flag to include the v3 task tests. `include_v3` must also be set for tests to run. The CC API task_creation feature flag must be enabled for these tests to pass.
 * `include_v3`: Flag to include tests for the the v3 API.
+* `include_zipkin`: Flag to include tests for Zipkin tracing. `include_routing` must also be set for tests to run. CF must be deployed with `router.tracing.enable_zipkin` set for tests to pass.
 * `backend`: App tests push their apps using the backend specified. Incompatible tests will be skipped based on which backend is chosen. If left unspecified the default backend will be used where none is specified; all tests that specify a particular backend will be skipped.
 * `use_http`: Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
 * `use_existing_user`: The admin user configured above will normally be used to create a temporary user (with lesser permissions) to perform actions (such as push applications) during tests, and then delete said user after the tests have run; set this to `true` if you want to use an existing user, configured via the following properties.
