@@ -90,13 +90,13 @@ cat > integration_config.json <<EOF
   "include_privileged_container_support": true,
   "include_route_services": true,
   "include_routing": true,
-  "include_zipkin": true,
   "include_security_groups": true,
   "include_services": true,
   "include_ssh": true,
   "include_sso": true,
   "include_tasks": true,
   "include_v3": true
+  "include_zipkin": true,
 }
 EOF
 export CONFIG=$PWD/integration_config.json
@@ -121,13 +121,13 @@ export CONFIG=$PWD/integration_config.json
 * `include_privileged_container_support`: Requires capi.nsync.diego_privileged_containers and capi.stager.diego_privileged_containers to be enabled.
 * `include_route_services`: Flag to include the route services tests. Diego must be deployed for these tests to pass.
 * `include_routing`: Flag to include the routing tests.
-* `include_zipkin`: Flag to include tests for Zipkin tracing. `include_routing` must be set as well. CF must be deployed with `router.tracing.enable_zipkin` set for tests to pass.
 * `include_security_groups`: Flag to include tests for security groups.
 * `include_services`: Flag to include test for the services API.
 * `include_ssh`: Flag to include tests for Diego container ssh feature.
 * `include_sso`: Flag to include the services tests that integrate with Single Sign On.
 * `include_tasks`: Flag to include the v3 task tests dependent on the CC task_creation feature flag.
 * `include_v3`: Flag to include tests for the the v3 API.
+* `include_zipkin`: Flag to include tests for Zipkin tracing. `include_routing` must be set as well. CF must be deployed with `router.tracing.enable_zipkin` set for tests to pass.
 * `backend`: App tests push their apps using the backend specified. Incompatible tests will be skipped based on which backend is chosen. If left unspecified the default backend will be used where none is specified; all tests that specify a particular backend will be skipped.
 * `use_http`: Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
 * `use_existing_user`: The admin user configured above will normally be used to create a temporary user (with lesser permissions) to perform actions (such as push applications) during tests, and then delete said user after the tests have run; set this to `true` if you want to use an existing user, configured via the following properties.

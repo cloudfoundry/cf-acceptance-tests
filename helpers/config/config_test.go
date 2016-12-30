@@ -92,20 +92,20 @@ type allConfig struct {
 
 	IncludeApps                       *bool `json:"include_apps"`
 	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
+	IncludeContainerNetworking        *bool `json:"include_container_networking"`
 	IncludeDetect                     *bool `json:"include_detect"`
 	IncludeDocker                     *bool `json:"include_docker"`
 	IncludeInternetDependent          *bool `json:"include_internet_dependent"`
 	IncludePrivilegedContainerSupport *bool `json:"include_privileged_container_support"`
-	IncludeContainerNetworking        *bool `json:"include_container_networking"`
 	IncludeRouteServices              *bool `json:"include_route_services"`
 	IncludeRouting                    *bool `json:"include_routing"`
-	IncludeZipkin                     *bool `json:"include_zipkin"`
 	IncludeSSO                        *bool `json:"include_sso"`
 	IncludeSecurityGroups             *bool `json:"include_security_groups"`
 	IncludeServices                   *bool `json:"include_services"`
 	IncludeSsh                        *bool `json:"include_ssh"`
 	IncludeTasks                      *bool `json:"include_tasks"`
 	IncludeV3                         *bool `json:"include_v3"`
+	IncludeZipkin                     *bool `json:"include_zipkin"`
 
 	NamePrefix *string `json:"name_prefix"`
 }
@@ -282,13 +282,13 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_route_services' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_routing' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_container_networking' must not be null"))
-			Expect(err.Error()).To(ContainSubstring("'include_zipkin' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_sso' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_security_groups' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_services' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_ssh' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_tasks' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_v3' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_zipkin' must not be null"))
 
 			Expect(err.Error()).To(ContainSubstring("'name_prefix' must not be null"))
 		})

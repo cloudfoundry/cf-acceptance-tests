@@ -65,13 +65,13 @@ type config struct {
 	IncludePrivilegedContainerSupport *bool `json:"include_privileged_container_support"`
 	IncludeRouteServices              *bool `json:"include_route_services"`
 	IncludeRouting                    *bool `json:"include_routing"`
-	IncludeZipkin                     *bool `json:"include_zipkin"`
 	IncludeSSO                        *bool `json:"include_sso"`
 	IncludeSecurityGroups             *bool `json:"include_security_groups"`
 	IncludeServices                   *bool `json:"include_services"`
 	IncludeSsh                        *bool `json:"include_ssh"`
 	IncludeTasks                      *bool `json:"include_tasks"`
 	IncludeV3                         *bool `json:"include_v3"`
+	IncludeZipkin                     *bool `json:"include_zipkin"`
 
 	NamePrefix *string `json:"name_prefix"`
 }
@@ -295,9 +295,6 @@ func validateConfig(config *config) Errors {
 	if config.IncludeRouting == nil {
 		errs.Add(fmt.Errorf("* 'include_routing' must not be null"))
 	}
-	if config.IncludeZipkin == nil {
-		errs.Add(fmt.Errorf("* 'include_zipkin' must not be null"))
-	}
 	if config.IncludeSSO == nil {
 		errs.Add(fmt.Errorf("* 'include_sso' must not be null"))
 	}
@@ -315,6 +312,9 @@ func validateConfig(config *config) Errors {
 	}
 	if config.IncludeV3 == nil {
 		errs.Add(fmt.Errorf("* 'include_v3' must not be null"))
+	}
+	if config.IncludeZipkin == nil {
+		errs.Add(fmt.Errorf("* 'include_zipkin' must not be null"))
 	}
 	if config.NamePrefix == nil {
 		errs.Add(fmt.Errorf("* 'name_prefix' must not be null"))
