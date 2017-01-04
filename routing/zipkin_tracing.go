@@ -71,7 +71,9 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 
 				Expect(appLogsSession.Out).To(gbytes.Say(`x_b3_traceid:"fee1f7ba6aeec41c"`))
 
-				appLogSpanID := getID(`x_b3_spanid:"([0-9a-fA-F]*)"`, string(appLogsSession.Out.Contents()))
+				spanIDRegex := fmt.Sprintf("x_b3_traceid:\"%s\" x_b3_spanid:\"([0-9a-fA-F]*)\"", traceID)
+
+				appLogSpanID := getID(spanIDRegex, string(appLogsSession.Out.Contents()))
 
 				Expect(curlOutput).To(ContainSubstring(traceID))
 				Expect(curlOutput).To(ContainSubstring(fmt.Sprintf("parents: [%s]", appLogSpanID)))
