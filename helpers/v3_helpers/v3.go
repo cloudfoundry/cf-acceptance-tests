@@ -115,7 +115,7 @@ func UploadPackage(uploadUrl, packageZipPath, token string) {
 }
 
 func StageBuildpackPackage(packageGuid, buildpack string) string {
-	stageBody := fmt.Sprintf(`{"lifecycle":{ "type": "buildpack", "data": { "buildpack": "%s" } }}`, buildpack)
+	stageBody := fmt.Sprintf(`{"lifecycle":{ "type": "buildpack", "data": { "buildpacks": ["%s"] } }}`, buildpack)
 	stageUrl := fmt.Sprintf("/v3/packages/%s/droplets", packageGuid)
 	session := cf.Cf("curl", stageUrl, "-X", "POST", "-d", stageBody)
 	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
