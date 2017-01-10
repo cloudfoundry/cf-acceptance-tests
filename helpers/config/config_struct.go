@@ -32,6 +32,8 @@ type config struct {
 	PersistentAppQuotaName *string `json:"persistent_app_quota_name"`
 	PersistentAppSpace     *string `json:"persistent_app_space"`
 
+	IsolationSegmentName *string `json:"isolation_segment_name"`
+
 	Backend           *string `json:"backend"`
 	SkipSSLValidation *bool   `json:"skip_ssl_validation"`
 
@@ -72,6 +74,7 @@ type config struct {
 	IncludeTasks                      *bool `json:"include_tasks"`
 	IncludeV3                         *bool `json:"include_v3"`
 	IncludeZipkin                     *bool `json:"include_zipkin"`
+	IncludeIsolationSegments          *bool `json:"include_isolation_segments"`
 
 	NamePrefix *string `json:"name_prefix"`
 }
@@ -102,6 +105,8 @@ func getDefaults() config {
 	defaults.PersistentAppQuotaName = ptrToString("CATS-persistent-quota")
 	defaults.PersistentAppSpace = ptrToString("CATS-persistent-space")
 
+	defaults.IsolationSegmentName = ptrToString("")
+
 	defaults.BinaryBuildpackName = ptrToString("binary_buildpack")
 	defaults.GoBuildpackName = ptrToString("go_buildpack")
 	defaults.JavaBuildpackName = ptrToString("java_buildpack")
@@ -128,6 +133,7 @@ func getDefaults() config {
 	defaults.IncludeZipkin = ptrToBool(false)
 	defaults.IncludeSSO = ptrToBool(false)
 	defaults.IncludeTasks = ptrToBool(false)
+	defaults.IncludeIsolationSegments = ptrToBool(false)
 
 	defaults.UseHttp = ptrToBool(false)
 	defaults.UseExistingUser = ptrToBool(false)
@@ -213,6 +219,9 @@ func validateConfig(config *config) Errors {
 	}
 	if config.PersistentAppSpace == nil {
 		errs.Add(fmt.Errorf("* 'persistent_app_space' must not be null"))
+	}
+	if config.IsolationSegmentName == nil {
+		errs.Add(fmt.Errorf("* 'isolation_segment_name' must not be null"))
 	}
 	if config.SkipSSLValidation == nil {
 		errs.Add(fmt.Errorf("* 'skip_ssl_validation' must not be null"))
@@ -315,6 +324,9 @@ func validateConfig(config *config) Errors {
 	}
 	if config.IncludeZipkin == nil {
 		errs.Add(fmt.Errorf("* 'include_zipkin' must not be null"))
+	}
+	if config.IncludeIsolationSegments == nil {
+		errs.Add(fmt.Errorf("* 'include_isolation_segments' must not be null"))
 	}
 	if config.NamePrefix == nil {
 		errs.Add(fmt.Errorf("* 'name_prefix' must not be null"))
@@ -507,6 +519,10 @@ func (c *config) GetPersistentAppQuotaName() string {
 	return *c.PersistentAppQuotaName
 }
 
+func (c *config) GetIsolationSegmentName() string {
+	return *c.IsolationSegmentName
+}
+
 func (c *config) GetNamePrefix() string {
 	return *c.NamePrefix
 }
@@ -605,6 +621,10 @@ func (c *config) GetIncludeSSO() bool {
 
 func (c *config) GetIncludeV3() bool {
 	return *c.IncludeV3
+}
+
+func (c *config) GetIncludeIsolationSegments() bool {
+	return *c.IncludeIsolationSegments
 }
 
 func (c *config) GetRubyBuildpackName() string {
