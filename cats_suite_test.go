@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"testing"
+	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
@@ -22,6 +23,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/buildpacks"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/cli_version_check"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
 	. "github.com/onsi/ginkgo"
@@ -46,6 +48,7 @@ func TestCATS(t *testing.T) {
 		TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
 
 		installedVersion, err := GetInstalledCliVersionString()
+
 		Expect(err).ToNot(HaveOccurred(), "Error trying to determine CF CLI version")
 
 		Expect(ParseRawCliVersionString(installedVersion).AtLeast(ParseRawCliVersionString(minCliVersion))).To(BeTrue(), "CLI version "+minCliVersion+" is required")
@@ -56,6 +59,18 @@ func TestCATS(t *testing.T) {
 			SftpPath, err = exec.LookPath("sftp")
 			Expect(err).NotTo(HaveOccurred())
 		}
+
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.GetScaledTimeout(1*time.Minute), func() {
+			buildpacks, err := GetBuildpacks()
+			Expect(err).ToNot(HaveOccurred(), "Error getting buildpacks")
+
+			Expect(buildpacks).To(ContainSubstring(Config.GetBinaryBuildpackName()), "Missing the binary buildpack specified in the integration_config.json. There may be other missing buildpacks as well; please double-check your configuration against the buildpacks listed below.")
+			Expect(buildpacks).To(ContainSubstring(Config.GetGoBuildpackName()), "Missing the go buildpack specified in the integration_config.json. There may be other missing buildpacks as well; please double-check your configuration against the buildpacks listed below.")
+			Expect(buildpacks).To(ContainSubstring(Config.GetJavaBuildpackName()), "Missing the java buildpack specified in the integration_config.json. There may be other missing buildpacks as well; please double-check your configuration against the buildpacks listed below.")
+			Expect(buildpacks).To(ContainSubstring(Config.GetNodejsBuildpackName()), "Missing the NodeJS buildpack specified in the integration_config.json. There may be other missing buildpacks as well; please double-check your configuration against the buildpacks listed below.")
+			Expect(buildpacks).To(ContainSubstring(Config.GetRubyBuildpackName()), "Missing the ruby buildpack specified in the integration_config.json. There may be other missing buildpacks as well; please double-check your configuration against the buildpacks listed below.")
+		})
+
 		TestSetup.Setup()
 	})
 
