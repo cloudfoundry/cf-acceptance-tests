@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
@@ -179,6 +180,30 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_PORT"=>"[0-9]+"`))
 			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_ADDR"=>"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+"`))
 			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_PORTS"=>"\[(\{\\"external\\":[0-9]+,\\"internal\\":[0-9]+\},?)+\]"`))
+		})
+
+		It("is restarted (by the bulker) after deleting the LRP via the bbs API", func() {
+			if Config.GetBackend() != "diego" {
+				Skip(skip_messages.SkipDiegoMessage)
+			}
+			Expect(cf.Cf("push",
+				appName,
+				"--no-start",
+				"-b", Config.GetRubyBuildpackName(),
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().Dora,
+				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			app_helpers.SetBackend(appName)
+
+			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			Eventually(func() string {
+				return helpers.CurlAppRoot(Config, appName)
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+
+			Expect(app_helpers.DeleteLRP(app_helpers.GetAppGuid(cf.Cf("app", appName)).To(BeNil())
+			Eventually(func() string {
+				return helpers.CurlAppRoot(Config, appName)
+			}, 31*time.Second).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 
 		It("generates an app usage 'started' event", func() {

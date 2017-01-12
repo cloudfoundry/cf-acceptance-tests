@@ -8,6 +8,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	"github.com/pivotal-golang/lager"
 )
 
 func GetAppGuid(appName string) string {
@@ -53,4 +54,25 @@ func AppReport(appName string, timeout time.Duration) {
 	}
 	Eventually(cf.Cf("app", appName, "--guid"), timeout).Should(Exit())
 	Eventually(cf.Cf("logs", appName, "--recent"), timeout).Should(Exit())
+}
+
+func DeleteLRP(appGuid string, logger lager.Logger) error {
+	bbsClient, err := XXX.NewBBSClient()
+	if err != nil {
+		return err
+	}
+	desiredLRPs, err := bbsClient.DesiredLRPs(logger, nil)
+	if err != nil {
+		return err
+	}
+	processGuids := []string{} // for error messages only
+	for _, desiredLRP := range desiredLRPs {
+		processGuid := desiredLRP.ProcessGuid
+		if strings.Index(processGuid, appGuid) == 0 {
+			bbsClient.RemoveDesiredLRP(logger, processGuid)
+			return nil
+		}
+		processGuids = append(processGuids, processGuid)
+	}
+	return fmt.Error("DeleteLRP: Couldn't find a desiredLRP starting with appGuid:%s (processGuids:%s)", appGuid, processGuids)
 }
