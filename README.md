@@ -96,8 +96,8 @@ cat > integration_config.json <<EOF
   "include_ssh": true,
   "include_sso": true,
   "include_tasks": true,
-  "include_v3": true
-  "include_zipkin": true,
+  "include_v3": true,
+  "include_zipkin": true
 }
 EOF
 export CONFIG=$PWD/integration_config.json
