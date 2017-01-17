@@ -19,6 +19,7 @@ import (
 	_ "github.com/cloudfoundry/cf-acceptance-tests/security_groups"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/services"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/ssh"
+	_ "github.com/cloudfoundry/cf-acceptance-tests/tasks"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/v3"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
