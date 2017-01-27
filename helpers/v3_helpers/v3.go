@@ -122,8 +122,8 @@ func StageBuildpackPackage(packageGuid, buildpack string) string {
 	var droplet struct {
 		Guid string `json:"guid"`
 	}
-	Expect(droplet.Guid).NotTo(BeEmpty())
 	json.Unmarshal(bytes, &droplet)
+	Expect(droplet.Guid).NotTo(BeEmpty())
 	return droplet.Guid
 }
 
