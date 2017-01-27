@@ -16,7 +16,7 @@ type CliVersionCheck struct {
 func GetInstalledCliVersionString() (string, error) {
 	rawVersion, err := exec.Command("cf", "-v").CombinedOutput()
 	if err != nil {
-		return "", errors.New("Error trying to determine CF CLI version:" + err.Error() + "; cf -v Output:" + rawVersion)
+		return "", errors.New("Error trying to determine CF CLI version:" + err.Error() + "; cf -v Output:" + string(rawVersion))
 	}
 
 	return string(rawVersion), nil

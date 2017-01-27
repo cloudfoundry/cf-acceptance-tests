@@ -51,6 +51,7 @@ func TestCATS(t *testing.T) {
 		installedVersion, err := GetInstalledCliVersionString()
 
 		Expect(err).ToNot(HaveOccurred(), "Error trying to determine CF CLI version")
+		fmt.Println("Running CATs with CF CLI version ", installedVersion)
 
 		Expect(ParseRawCliVersionString(installedVersion).AtLeast(ParseRawCliVersionString(minCliVersion))).To(BeTrue(), "CLI version "+minCliVersion+" is required")
 		if Config.GetIncludeSsh() {
