@@ -140,8 +140,8 @@ var _ = AppsDescribe("loggregator", func() {
 })
 
 type cfHomeConfig struct {
-	AccessToken         string
-	LoggregatorEndpoint string
+	AccessToken     string
+	DopplerEndPoint string
 }
 
 func getCfHomeConfig() *cfHomeConfig {
@@ -170,5 +170,5 @@ func getAdminUserAccessToken() string {
 }
 
 func getDopplerEndpoint() string {
-	return strings.Replace(getCfHomeConfig().LoggregatorEndpoint, "loggregator", "doppler", -1)
+	return getCfHomeConfig().DopplerEndPoint
 }
