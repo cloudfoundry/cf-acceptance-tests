@@ -75,8 +75,8 @@ func WaitForDropletToStage(dropletGuid string) {
 }
 
 func CreatePackage(appGuid string) string {
-	packageCreateUrl := fmt.Sprintf("/v3/apps/%s/packages", appGuid)
-	session := cf.Cf("curl", packageCreateUrl, "-X", "POST", "-d", fmt.Sprintf(`{"type":"bits"}`))
+	packageCreateUrl := fmt.Sprintf("/v3/packages")
+	session := cf.Cf("curl", packageCreateUrl, "-X", "POST", "-d", fmt.Sprintf(`{"relationships":{"app":{"guid":"%s"}},"type":"bits"}`, appGuid))
 	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 	var pac struct {
 		Guid string `json:"guid"`
@@ -86,8 +86,8 @@ func CreatePackage(appGuid string) string {
 }
 
 func CreateDockerPackage(appGuid, imagePath string) string {
-	packageCreateUrl := fmt.Sprintf("/v3/apps/%s/packages", appGuid)
-	session := cf.Cf("curl", packageCreateUrl, "-X", "POST", "-d", fmt.Sprintf(`{"type":"docker", "data": {"image": "%s"}}`, imagePath))
+	packageCreateUrl := fmt.Sprintf("/v3/packages")
+	session := cf.Cf("curl", packageCreateUrl, "-X", "POST", "-d", fmt.Sprintf(`{"relationships":{"app":{"guid":"%s"}},"type":"docker", "data": {"image": "%s"}}`, appGuid, imagePath))
 	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 	var pac struct {
 		Guid string `json:"guid"`
