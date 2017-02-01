@@ -39,7 +39,18 @@ func TestCATS(t *testing.T) {
 	var validationError error
 	Config, validationError = config.NewCatsConfig(os.Getenv("CONFIG"))
 
-	var _ = BeforeSuite(func() {
+	var _ = SynchronizedBeforeSuite(func() []byte {
+		installedVersion, err := GetInstalledCliVersionString()
+
+		Expect(err).ToNot(HaveOccurred(), "Error trying to determine CF CLI version")
+		fmt.Println("Running CATs with CF CLI version ", installedVersion)
+
+		Expect(ParseRawCliVersionString(installedVersion).AtLeast(ParseRawCliVersionString(minCliVersion))).To(BeTrue(), "CLI version "+minCliVersion+" is required")
+
+		return []byte{}
+	}, func([]byte) {
+		var err error
+
 		if validationError != nil {
 			fmt.Println("Invalid configuration.  ")
 			fmt.Println(validationError)
@@ -48,12 +59,6 @@ func TestCATS(t *testing.T) {
 
 		TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
 
-		installedVersion, err := GetInstalledCliVersionString()
-
-		Expect(err).ToNot(HaveOccurred(), "Error trying to determine CF CLI version")
-		fmt.Println("Running CATs with CF CLI version ", installedVersion)
-
-		Expect(ParseRawCliVersionString(installedVersion).AtLeast(ParseRawCliVersionString(minCliVersion))).To(BeTrue(), "CLI version "+minCliVersion+" is required")
 		if Config.GetIncludeSsh() {
 			ScpPath, err = exec.LookPath("scp")
 			Expect(err).NotTo(HaveOccurred())
