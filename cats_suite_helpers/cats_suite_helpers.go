@@ -38,6 +38,21 @@ func AppsDescribe(description string, callback func()) bool {
 	})
 }
 
+func IsolationSegmentsDescribe(description string, callback func()) bool {
+	return Describe("[isolation_segments] "+description, func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeIsolationSegments() {
+				Skip(`Skipping this test because Config.IncludeIsolationSegments is set to 'false'.`)
+			}
+
+			if Config.GetIsolationSegmentName() == "" {
+				Skip(`Skipping this test because Config.IsolationSegmentName is not set.`)
+			}
+		})
+		callback()
+	})
+}
+
 func BackendCompatibilityDescribe(description string, callback func()) bool {
 	return Describe("[backend_compatibility] "+description, func() {
 		BeforeEach(func() {

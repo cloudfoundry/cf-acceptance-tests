@@ -34,6 +34,13 @@ type spaceConfig interface {
 	GetNamePrefix() string
 }
 
+type Space interface {
+	Create()
+	Destroy()
+	ShouldRemain() bool
+	OrganizationName() string
+}
+
 func NewRegularTestSpace(cfg spaceConfig, quotaLimit string) *TestSpace {
 	return NewBaseTestSpace(
 		generator.PrefixedRandomName(cfg.GetNamePrefix(), "SPACE"),

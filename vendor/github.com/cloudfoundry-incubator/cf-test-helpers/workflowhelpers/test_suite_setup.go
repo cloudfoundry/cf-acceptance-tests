@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/commandstarter"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers/internal"
 )
 
@@ -39,7 +38,7 @@ type ReproducibleTestSuiteSetup struct {
 	spaceName        string
 
 	TestUser  remoteResource
-	TestSpace remoteResource
+	TestSpace internal.Space
 
 	regularUserContext UserContext
 	adminUserContext   UserContext
@@ -93,15 +92,12 @@ func NewRunawayAppTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSuiteS
 	return NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext)
 }
 
-func NewBaseTestSuiteSetup(config testSuiteConfig, testSpace, testUser remoteResource, regularUserContext, adminUserContext UserContext) *ReproducibleTestSuiteSetup {
+func NewBaseTestSuiteSetup(config testSuiteConfig, testSpace internal.Space, testUser remoteResource, regularUserContext, adminUserContext UserContext) *ReproducibleTestSuiteSetup {
 	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
 
 	return &ReproducibleTestSuiteSetup{
 		shortTimeout: shortTimeout,
 		longTimeout:  config.GetScaledTimeout(5 * time.Minute),
-
-		organizationName: generator.PrefixedRandomName(config.GetNamePrefix(), "ORG"),
-		spaceName:        generator.PrefixedRandomName(config.GetNamePrefix(), "SPACE"),
 
 		regularUserContext: regularUserContext,
 		adminUserContext:   adminUserContext,
@@ -110,6 +106,10 @@ func NewBaseTestSuiteSetup(config testSuiteConfig, testSpace, testUser remoteRes
 		TestSpace:    testSpace,
 		TestUser:     testUser,
 	}
+}
+
+func (testSetup ReproducibleTestSuiteSetup) GetOrganizationName() string {
+	return testSetup.TestSpace.OrganizationName()
 }
 
 func (testSetup ReproducibleTestSuiteSetup) ShortTimeout() time.Duration {

@@ -66,6 +66,8 @@ type allConfig struct {
 	PersistentAppQuotaName *string `json:"persistent_app_quota_name"`
 	PersistentAppSpace     *string `json:"persistent_app_space"`
 
+	IsolationSegmentName *string `json:"isolation_segment_name"`
+
 	Backend           *string `json:"backend"`
 	SkipSSLValidation *bool   `json:"skip_ssl_validation"`
 
@@ -106,6 +108,7 @@ type allConfig struct {
 	IncludeTasks                      *bool `json:"include_tasks"`
 	IncludeV3                         *bool `json:"include_v3"`
 	IncludeZipkin                     *bool `json:"include_zipkin"`
+	IncludeIsolationSegments          *bool `json:"include_isolation_segments"`
 
 	NamePrefix *string `json:"name_prefix"`
 }
@@ -181,6 +184,8 @@ var _ = Describe("Config", func() {
 		Expect(config.GetPersistentAppQuotaName()).To(Equal("CATS-persistent-quota"))
 		Expect(config.GetPersistentAppSpace()).To(Equal("CATS-persistent-space"))
 
+		Expect(config.GetIsolationSegmentName()).To(Equal(""))
+
 		Expect(config.GetIncludeApps()).To(BeTrue())
 		Expect(config.GetIncludeDetect()).To(BeTrue())
 		Expect(config.GetIncludeRouting()).To(BeTrue())
@@ -194,6 +199,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeServices()).To(BeFalse())
 		Expect(config.GetIncludeSsh()).To(BeFalse())
 		Expect(config.GetIncludeV3()).To(BeFalse())
+		Expect(config.GetIncludeIsolationSegments()).To(BeFalse())
 		Expect(config.GetIncludePrivilegedContainerSupport()).To(BeFalse())
 		Expect(config.GetIncludeZipkin()).To(BeFalse())
 		Expect(config.GetIncludeSSO()).To(BeFalse())
@@ -248,6 +254,8 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'persistent_app_quota_name' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'persistent_app_space' must not be null"))
 
+			Expect(err.Error()).To(ContainSubstring("'isolation_segment_name' must not be null"))
+
 			Expect(err.Error()).To(ContainSubstring("'backend' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'skip_ssl_validation' must not be null"))
 
@@ -289,6 +297,7 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_tasks' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_v3' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_zipkin' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_isolation_segments' must not be null"))
 
 			Expect(err.Error()).To(ContainSubstring("'name_prefix' must not be null"))
 		})

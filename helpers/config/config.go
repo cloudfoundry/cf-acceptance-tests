@@ -21,6 +21,7 @@ type CatsConfig interface {
 	GetIncludeSsh() bool
 	GetIncludeTasks() bool
 	GetIncludeV3() bool
+	GetIncludeIsolationSegments() bool
 	GetShouldKeepUser() bool
 	GetSkipSSLValidation() bool
 	GetUseExistingUser() bool
@@ -36,6 +37,7 @@ type CatsConfig interface {
 	GetExistingUser() string
 	GetExistingUserPassword() string
 	GetGoBuildpackName() string
+	GetIsolationSegmentName() string
 	GetJavaBuildpackName() string
 	GetNamePrefix() string
 	GetNodejsBuildpackName() string
