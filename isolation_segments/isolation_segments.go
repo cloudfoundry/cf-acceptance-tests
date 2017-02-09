@@ -91,6 +91,21 @@ func getIsolationSegmentGuid(name string) string {
 	return getV3Guid(bytes)
 }
 
+func isolationSegmentExists(name string) bool {
+	session := cf.Cf("curl", fmt.Sprintf("/v3/isolation_segments?names=%s", name))
+	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+	type resource struct {
+		Guid string `json:"guid"`
+	}
+	var GetResponse struct {
+		Resources []resource `json:"resources"`
+	}
+
+	err := json.Unmarshal(bytes, &GetResponse)
+	Expect(err).ToNot(HaveOccurred())
+	return len(GetResponse.Resources) > 0
+}
+
 func createIsolationSegment(name string) string {
 	session := cf.Cf("curl", "/v3/isolation_segments", "-X", "POST", "-d", fmt.Sprintf(`{"name":"%s"}`, name))
 	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
@@ -163,10 +178,15 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 
 	Context("when the user-provided Isolation Segment has an associated cell", func() {
 		BeforeEach(func() {
-			shouldDeleteIsolationSegment = false
-
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isGuid = getIsolationSegmentGuid(Config.GetIsolationSegmentName())
+				name := Config.GetIsolationSegmentName()
+				if !isolationSegmentExists(name) {
+					isGuid = createIsolationSegment(name)
+					shouldDeleteIsolationSegment = true
+				} else {
+					isGuid = getIsolationSegmentGuid(name)
+					shouldDeleteIsolationSegment = false
+				}
 				assignIsolationSegment(orgGuid, isGuid)
 				setDefaultIsolationSegment(orgGuid, isGuid)
 			})
