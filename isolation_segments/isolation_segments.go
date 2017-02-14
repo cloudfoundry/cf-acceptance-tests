@@ -38,11 +38,11 @@ func assignIsolationSegment(orgGuid, isGuid string) {
 
 func setDefaultIsolationSegment(orgGuid, isGuid string) {
 	Eventually(cf.Cf("curl",
-		fmt.Sprintf("/v2/organizations/%s", orgGuid),
+		fmt.Sprintf("/v3/organizations/%s/relationships/default_isolation_segment", orgGuid),
 		"-X",
-		"PUT",
+		"PATCH",
 		"-d",
-		fmt.Sprintf(`{"default_isolation_segment_guid":"%s"}`, isGuid)),
+		fmt.Sprintf(`{"data":{"guid":"%s"}}`, isGuid)),
 		Config.DefaultTimeoutDuration()).Should(Exit(0))
 }
 
@@ -136,9 +136,9 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 		testSetup = workflowhelpers.NewTestSuiteSetup(cfg)
 		testSetup.Setup()
 
-		session := cf.Cf("curl", fmt.Sprintf("/v2/organizations?q=name:%s", testSetup.GetOrganizationName()))
+		session := cf.Cf("curl", fmt.Sprintf("/v3/organizations?names=%s", testSetup.GetOrganizationName()))
 		bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
-		orgGuid = getV2Guid(bytes)
+		orgGuid = getV3Guid(bytes)
 
 		shouldDeleteIsolationSegment = true
 	})
