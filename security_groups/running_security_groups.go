@@ -221,7 +221,7 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 			By("removing policy")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(cf.Cf("deny-access", clientAppName, serverAppName, "--port", fmt.Sprintf("%d", containerPort), "--protocol", "tcp").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("remove-access", clientAppName, serverAppName, "--port", fmt.Sprintf("%d", containerPort), "--protocol", "tcp").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			})
 
 			By("waiting for policy to be removed on cell")
