@@ -21,6 +21,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
 type AppsResponse struct {
@@ -169,6 +170,10 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 		var clientAppName, securityGroupName string
 
 		BeforeEach(func() {
+			if !Config.GetIncludeContainerNetworking() {
+				Skip(skip_messages.SkipContainerNetworkingMessage)
+			}
+
 			clientAppName = random_name.CATSRandomName("APP")
 			pushApp(clientAppName, Config.GetRubyBuildpackName())
 			Expect(cf.Cf("start", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -193,10 +198,6 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 		})
 
 		It("allows ip traffic between containers after applying a policy and blocks it when the policy is removed", func() {
-			if !Config.GetIncludeContainerNetworking() {
-				Skip("Skipping this test because Config.IncludeContainerNetworking is set to 'false'.")
-			}
-
 			containerIp, containerPort := getAppContainerIpAndPort(serverAppName)
 			orgName := TestSetup.RegularUserContext().Org
 			spaceName := TestSetup.RegularUserContext().Space
