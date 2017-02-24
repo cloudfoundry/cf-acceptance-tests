@@ -154,37 +154,47 @@ func getStagingOutput(appName string) func() *Session {
 	}
 }
 
-var _ = SecurityGroupsDescribe("Security Groups", func() {
+func pushServerApp() (serverAppName string, privateHost string, privatePort int) {
+	serverAppName = random_name.CATSRandomName("APP")
+	pushApp(serverAppName, Config.GetRubyBuildpackName())
+	Expect(cf.Cf("start", serverAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+	privateHost, privatePort = getAppHostIpAndPort(serverAppName)
+	return
+}
+
+func pushClientApp() (clientAppName string) {
+	clientAppName = random_name.CATSRandomName("APP")
+	pushApp(clientAppName, Config.GetRubyBuildpackName())
+	Expect(cf.Cf("start", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+	return
+}
+
+func assertNetworkingPreconditions(clientAppName string, privateHost string, privatePort int) {
+	By("Asserting default running security group configuration for traffic between containers")
+	doraCurlResponse := testAppConnectivity(clientAppName, privateHost, privatePort)
+	Expect(doraCurlResponse.ReturnCode).NotTo(Equal(0), "Expected default running security groups not to allow internal communication between app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
+
+	By("Asserting default running security group configuration from a running container to an external destination")
+	doraCurlResponse = testAppConnectivity(clientAppName, "www.google.com", 80)
+	Expect(doraCurlResponse.ReturnCode).To(Equal(0), "Expected default running security groups to allow external traffic from app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
+}
+
+var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 	var serverAppName, privateHost string
 	var privatePort int
 
-	BeforeEach(func() {
-		if !Config.GetIncludeContainerNetworking() {
-			Skip(skip_messages.SkipContainerNetworkingMessage)
-		}
-
-		serverAppName = random_name.CATSRandomName("APP")
-		pushApp(serverAppName, Config.GetRubyBuildpackName())
-		Expect(cf.Cf("start", serverAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-		privateHost, privatePort = getAppHostIpAndPort(serverAppName)
-	})
-
-	Describe("Running security-groups", func() {
+	Describe("using the cf-networking commands", func() {
 		var clientAppName, securityGroupName string
 
 		BeforeEach(func() {
-			clientAppName = random_name.CATSRandomName("APP")
-			pushApp(clientAppName, Config.GetRubyBuildpackName())
-			Expect(cf.Cf("start", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			if !Config.GetIncludeContainerNetworking() {
+				Skip(skip_messages.SkipContainerNetworkingMessage)
+			}
 
-			By("Asserting default running security group configuration for traffic between containers")
-			doraCurlResponse := testAppConnectivity(clientAppName, privateHost, privatePort)
-			Expect(doraCurlResponse.ReturnCode).NotTo(Equal(0), "Expected default running security groups not to allow internal communication between app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
-
-			By("Asserting default running security group configuration from a running container to an external destination")
-			doraCurlResponse = testAppConnectivity(clientAppName, "www.google.com", 80)
-			Expect(doraCurlResponse.ReturnCode).To(Equal(0), "Expected default running security groups to allow external traffic from app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
+			serverAppName, privateHost, privatePort = pushServerApp()
+			clientAppName = pushClientApp()
+			assertNetworkingPreconditions(clientAppName, privateHost, privatePort)
 		})
 
 		AfterEach(func() {
@@ -232,6 +242,26 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 			doraCurlResponse = testAppConnectivity(clientAppName, containerIp, containerPort)
 			Expect(doraCurlResponse.ReturnCode).NotTo(Equal(0))
 		})
+	})
+
+	Describe("Using running security-groups", func() {
+		var clientAppName, securityGroupName string
+
+		BeforeEach(func() {
+			serverAppName, privateHost, privatePort = pushServerApp()
+			clientAppName = pushClientApp()
+			assertNetworkingPreconditions(clientAppName, privateHost, privatePort)
+		})
+
+		AfterEach(func() {
+			app_helpers.AppReport(serverAppName, Config.DefaultTimeoutDuration())
+			Expect(cf.Cf("delete", serverAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+			app_helpers.AppReport(clientAppName, Config.DefaultTimeoutDuration())
+			Expect(cf.Cf("delete", clientAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+			deleteSecurityGroup(securityGroupName)
+		})
 
 		It("allows ip traffic from a container to a private, non-container destination after binding a security group and refuses it after unbinding the security group", func() {
 			dest := Destination{
@@ -260,10 +290,12 @@ var _ = SecurityGroupsDescribe("Security Groups", func() {
 		})
 	})
 
-	Describe("staging security groups", func() {
+	Describe("Using staging security groups", func() {
 		var testAppName, buildpack string
 
 		BeforeEach(func() {
+			serverAppName, privateHost, privatePort = pushServerApp()
+
 			By("Asserting default staging security group configuration")
 			testAppName = random_name.CATSRandomName("APP")
 			buildpack = createDummyBuildpack()
