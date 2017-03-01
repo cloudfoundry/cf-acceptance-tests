@@ -16,9 +16,9 @@ import (
 
 var _ = RoutingDescribe("Multiple App Ports", func() {
 	var (
-		app             string
-		secondRoute     string
-		latticeAppAsset = assets.NewAssets().LatticeApp
+		app               string
+		secondRoute       string
+		multiPortAppAsset = assets.NewAssets().MultiPortApp
 	)
 
 	BeforeEach(func() {
@@ -26,9 +26,9 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 			Skip(skip_messages.SkipDiegoMessage)
 		}
 		app = random_name.CATSRandomName("APP")
-		cmd := fmt.Sprintf("lattice-app --ports=7777,8888,8080")
+		cmd := fmt.Sprintf("go-online --ports=7777,8888,8080")
 
-		PushAppNoStart(app, latticeAppAsset, Config.GetGoBuildpackName(), Config.GetAppsDomain(), Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT, "-c", cmd)
+		PushAppNoStart(app, multiPortAppAsset, Config.GetGoBuildpackName(), Config.GetAppsDomain(), Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT, "-c", cmd)
 		EnableDiego(app, Config.DefaultTimeoutDuration())
 		StartApp(app, APP_START_TIMEOUT)
 	})
