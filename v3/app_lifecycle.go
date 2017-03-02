@@ -14,6 +14,8 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
+	"github.com/onsi/gomega/gexec"
 )
 
 var _ = V3Describe("v3 buildpack app lifecycle", func() {
@@ -126,24 +128,23 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 				return helpers.CurlAppRoot(Config, webProcess.Name)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("ok"))
 
-			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
-
-			usageEvents := LastPageUsageEvents(TestSetup)
-
-			event1 := AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
-			Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
+			Eventually(func() *gbytes.Buffer {
+				session := cf.Cf("events", appName)
+				Eventually(session).Should(gexec.Exit(0))
+				return session.Out
+			}, Config.DefaultTimeoutDuration(), "5s").Should(gbytes.Say("audit.app.start"))
 
 			StopApp(appGuid)
-
-			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", webProcess.Name)))
-
-			usageEvents = LastPageUsageEvents(TestSetup)
-			event1 = AppUsageEvent{Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
-			Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, webProcess.Name)
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
+
+			Eventually(func() *gbytes.Buffer {
+				session := cf.Cf("events", appName)
+				Eventually(session).Should(gexec.Exit(0))
+				return session.Out
+			}, Config.DefaultTimeoutDuration(), "5s").Should(gbytes.Say("audit.app.stop"))
 		})
 	})
 })
