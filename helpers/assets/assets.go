@@ -25,7 +25,7 @@ type Assets struct {
 	Binary                   string
 	LoggingRouteService      string
 	WorkerApp                string
-	LatticeApp               string
+	MultiPortApp             string
 	SpringSleuthZip          string
 }
 
@@ -55,7 +55,7 @@ func NewAssets() Assets {
 		Binary:                 "assets/binary",
 		LoggingRouteService:    "assets/logging-route-service",
 		WorkerApp:              "assets/worker-app",
-		LatticeApp:             "assets/lattice-app",
+		MultiPortApp:           "assets/multi-port-app",
 		SpringSleuthZip:        "assets/spring-sleuth/spring-sleuth.jar",
 	}
 }
