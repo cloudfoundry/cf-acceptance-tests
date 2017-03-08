@@ -25,6 +25,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 		appCreationEnvironmentVariables string
 		token                           string
 		uploadUrl                       string
+		expectedNullResponse            string
 	)
 
 	BeforeEach(func() {
@@ -35,6 +36,10 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()
 		uploadUrl = fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.GetApiEndpoint(), packageGuid)
+
+		appUrl := "https://" + appName + "." + Config.GetAppsDomain()
+		nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait(Config.DefaultTimeoutDuration())
+		expectedNullResponse = string(nullSession.Buffer().Contents())
 	})
 
 	AfterEach(func() {
@@ -96,7 +101,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, webProcess.Name)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(expectedNullResponse))
 		})
 	})
 
@@ -143,7 +148,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, webProcess.Name)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(expectedNullResponse))
 		})
 	})
 })
@@ -156,6 +161,7 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 		spaceGuid                       string
 		appCreationEnvironmentVariables string
 		token                           string
+		expectedNullResponse            string
 	)
 
 	BeforeEach(func() {
@@ -168,6 +174,10 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 		appGuid = CreateDockerApp(appName, spaceGuid, `{"foo":"bar"}`)
 		packageGuid = CreateDockerPackage(appGuid, "cloudfoundry/diego-docker-app:latest")
 		token = GetAuthToken()
+
+		appUrl := "https://" + appName + "." + Config.GetAppsDomain()
+		nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait(Config.DefaultTimeoutDuration())
+		expectedNullResponse = string(nullSession.Buffer().Contents())
 	})
 
 	AfterEach(func() {
@@ -214,6 +224,6 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, webProcess.Name)
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
+		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(expectedNullResponse))
 	})
 })

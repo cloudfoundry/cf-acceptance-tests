@@ -33,7 +33,14 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 	})
 
 	Context("by using the command flag", func() {
+		var expectedNullResponse string
+
 		BeforeEach(func() {
+
+			appUrl := "https://" + appName + "." + Config.GetAppsDomain()
+			nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait(Config.DefaultTimeoutDuration())
+			expectedNullResponse = string(nullSession.Buffer().Contents())
+
 			Expect(cf.Cf(
 				"push", appName,
 				"--no-start",
@@ -67,7 +74,7 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 
 			Eventually(func() string {
 				return helpers.CurlApp(Config, appName, "/env/FOO")
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(expectedNullResponse))
 
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 

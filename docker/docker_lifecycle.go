@@ -43,8 +43,13 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 	})
 
 	Describe("running a docker app with a start command", func() {
+		var expectedNullResponse string
+
 		BeforeEach(func() {
 			appName = random_name.CATSRandomName("APP")
+			appUrl := "https://" + appName + "." + Config.GetAppsDomain()
+			nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait(Config.DefaultTimeoutDuration())
+			expectedNullResponse = string(nullSession.Buffer().Contents())
 			Eventually(cf.Cf(
 				"push", appName,
 				"--no-start",
@@ -64,7 +69,7 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 
 			By("making the app unreachable when it's stopped")
 			Eventually(cf.Cf("stop", appName), Config.DefaultTimeoutDuration()).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
+			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(expectedNullResponse))
 
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(Equal("0"))

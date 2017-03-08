@@ -50,10 +50,17 @@ func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
 }
 
 var _ = AppsDescribe("Application Lifecycle", func() {
-	var appName string
+	var (
+		appName              string
+		expectedNullResponse string
+	)
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
+
+		appUrl := "https://" + appName + "." + Config.GetAppsDomain()
+		nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait(Config.DefaultTimeoutDuration())
+		expectedNullResponse = string(nullSession.Buffer().Contents())
 	})
 
 	AfterEach(func() {
@@ -226,7 +233,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(expectedNullResponse))
 		})
 
 		It("generates an app usage 'stopped' event", func() {
@@ -284,7 +291,13 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 	})
 
 	Describe("deleting", func() {
+		var expectedNullResponse string
+
 		BeforeEach(func() {
+			appUrl := "https://" + appName + "." + Config.GetAppsDomain()
+			nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait(Config.DefaultTimeoutDuration())
+			expectedNullResponse = string(nullSession.Buffer().Contents())
+
 			Expect(cf.Cf("push", appName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
 
@@ -304,7 +317,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(expectedNullResponse))
 		})
 
 		It("generates an app usage 'stopped' event", func() {
