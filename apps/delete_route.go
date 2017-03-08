@@ -52,7 +52,7 @@ var _ = AppsDescribe("Delete Route", func() {
 
 			By("removing a route")
 			Eventually(cf.Cf("unmap-route", appName, Config.GetAppsDomain(), "-n", secondHost), Config.DefaultTimeoutDuration()).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(Config, secondHost), Config.DefaultTimeoutDuration()).Should(ContainSubstring(expectedNullResponse))
+			Eventually(helpers.CurlingAppRoot(Config, secondHost), Config.DefaultTimeoutDuration()).ShouldNot(ContainSubstring("Hi, I'm Dora!"))
 			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 
 			By("deleting the original route")
