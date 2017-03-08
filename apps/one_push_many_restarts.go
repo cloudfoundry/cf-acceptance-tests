@@ -48,10 +48,6 @@ var _ = AppsDescribe("An application that's already been pushed", func() {
 	BeforeEach(func() {
 		appName = Config.GetPersistentAppHost()
 
-		appUrl := "https://" + appName + "." + Config.GetAppsDomain()
-		nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait(Config.DefaultTimeoutDuration())
-		expectedNullResponse = string(nullSession.Buffer().Contents())
-
 		appQuery := cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
 		// might exit with 1 or 0, depending on app status
 		output := string(appQuery.Out.Contents())
@@ -84,7 +80,7 @@ var _ = AppsDescribe("An application that's already been pushed", func() {
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, appName)
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(expectedNullResponse))
+		}, Config.DefaultTimeoutDuration()).ShouldNot(ContainSubstring("Hi, I'm Dora!"))
 
 		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
