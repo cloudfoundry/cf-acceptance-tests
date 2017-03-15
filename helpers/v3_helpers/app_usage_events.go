@@ -44,7 +44,7 @@ func LastPageUsageEvents(TestSetup *workflowhelpers.ReproducibleTestSuiteSetup) 
 	var response AppUsageEvents
 
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		workflowhelpers.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1", &response, Config.DefaultTimeoutDuration())
+		workflowhelpers.ApiRequest("GET", "/v2/app_usage_events?results-per-page=150&order-direction=desc&page=1", &response, Config.DefaultTimeoutDuration())
 	})
 
 	return response.Resources
