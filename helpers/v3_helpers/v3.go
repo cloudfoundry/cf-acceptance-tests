@@ -172,7 +172,7 @@ func AssignDropletToApp(appGuid, dropletGuid string) {
 }
 
 func FetchRecentLogs(appGuid, oauthToken string, config config.CatsConfig) *Session {
-	loggregatorEndpoint := strings.Replace(config.GetApiEndpoint(), "api", "doppler", 1)
+	loggregatorEndpoint := getHttpLoggregatorEndpoint()
 	logUrl := fmt.Sprintf("%s/apps/%s/recentlogs", loggregatorEndpoint, appGuid)
 	session := helpers.Curl(Config, logUrl, "-H", fmt.Sprintf("Authorization: %s", oauthToken))
 	Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
@@ -187,4 +187,18 @@ func ScaleProcess(appGuid, processType, memoryInMb string) {
 
 func CreateRoute(space, domain, host string) {
 	Expect(cf.Cf("create-route", space, domain, "-n", host).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+}
+
+func getHttpLoggregatorEndpoint() string {
+	infoCommand := cf.Cf("curl", "/v2/info")
+	Expect(infoCommand.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+
+	var response struct {
+		DopplerLoggingEndpoint string `json:"doppler_logging_endpoint"`
+	}
+
+	err := json.Unmarshal(infoCommand.Buffer().Contents(), &response)
+	Expect(err).NotTo(HaveOccurred())
+
+	return strings.Replace(response.DopplerLoggingEndpoint, "ws", "http", 1)
 }
