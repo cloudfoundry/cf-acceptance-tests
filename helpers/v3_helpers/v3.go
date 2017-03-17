@@ -31,7 +31,7 @@ func StopApp(appGuid string) {
 }
 
 func CreateApp(appName, spaceGuid, environmentVariables string) string {
-	session := cf.Cf("curl", "/v3/apps", "-X", "POST", "-d", fmt.Sprintf(`{"name":"%s", "relationships": {"space": {"data": {"guid": "%s"}}}, "environment_variables":%s}`, appName, spaceGuid, environmentVariables))
+	session := cf.Cf("curl", "/v3/apps", "-X", "POST", "-d", fmt.Sprintf(`{"name":"%s", "relationships": {"space": {"guid": "%s"}}, "environment_variables":%s}`, appName, spaceGuid, environmentVariables))
 	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 	var app struct {
 		Guid string `json:"guid"`
@@ -41,7 +41,7 @@ func CreateApp(appName, spaceGuid, environmentVariables string) string {
 }
 
 func CreateDockerApp(appName, spaceGuid, environmentVariables string) string {
-	session := cf.Cf("curl", "/v3/apps", "-X", "POST", "-d", fmt.Sprintf(`{"name":"%s", "relationships": {"space": {"data": {"guid": "%s"}}}, "environment_variables":%s, "lifecycle": {"type": "docker", "data": {} } }`, appName, spaceGuid, environmentVariables))
+	session := cf.Cf("curl", "/v3/apps", "-X", "POST", "-d", fmt.Sprintf(`{"name":"%s", "relationships": {"space": {"guid": "%s"}}, "environment_variables":%s, "lifecycle": {"type": "docker", "data": {} } }`, appName, spaceGuid, environmentVariables))
 	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 	var app struct {
 		Guid string `json:"guid"`
