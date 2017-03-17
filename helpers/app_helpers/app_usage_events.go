@@ -1,4 +1,4 @@
-package v3_helpers
+package app_helpers
 
 import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
