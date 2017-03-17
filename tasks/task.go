@@ -9,10 +9,11 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
-	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -63,12 +64,8 @@ func getGuid(appGuid string, sequenceId string) string {
 
 var _ = TasksDescribe("v3 tasks", func() {
 	var (
-		appName                         string
-		appGuid                         string
-		packageGuid                     string
-		spaceGuid                       string
-		appCreationEnvironmentVariables string
-		token                           string
+		appName string
+		appGuid string
 	)
 
 	BeforeEach(func() {
@@ -76,22 +73,20 @@ var _ = TasksDescribe("v3 tasks", func() {
 			Skip(skip_messages.SkipTasksMessage)
 		}
 		appName = random_name.CATSRandomName("APP")
-		spaceGuid = GetSpaceGuidFromName(TestSetup.RegularUserContext().Space)
-		appCreationEnvironmentVariables = `"foo"=>"bar"`
-		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
-		packageGuid = CreatePackage(appGuid)
-		token = GetAuthToken()
-		uploadUrl := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.GetApiEndpoint(), packageGuid)
-		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
-		WaitForPackageToBeReady(packageGuid)
-		dropletGuid := StageBuildpackPackage(packageGuid, "ruby_buildpack")
-		WaitForDropletToStage(dropletGuid)
-		AssignDropletToApp(appGuid, dropletGuid)
+
+		Expect(cf.Cf("push", appName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		app_helpers.SetBackend(appName)
+		appGuid = app_helpers.GetAppGuid(appName)
+		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		Eventually(func() string {
+			return helpers.CurlAppRoot(Config, appName)
+		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 	})
 
 	AfterEach(func() {
-		FetchRecentLogs(appGuid, token, Config)
-		DeleteApp(appGuid)
+		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
 	Context("tasks lifecycle", func() {
@@ -115,9 +110,9 @@ var _ = TasksDescribe("v3 tasks", func() {
 			taskGuid := getGuid(appGuid, sequenceId)
 
 			By("TASK_STARTED AppUsageEvent")
-			usageEvents := LastPageUsageEvents(TestSetup)
-			start_event := AppUsageEvent{Entity{State: "TASK_STARTED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: taskGuid}}
-			Expect(UsageEventsInclude(usageEvents, start_event)).To(BeTrue())
+			usageEvents := app_helpers.LastPageUsageEvents(TestSetup)
+			start_event := app_helpers.AppUsageEvent{app_helpers.Entity{State: "TASK_STARTED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: taskGuid}}
+			Expect(app_helpers.UsageEventsInclude(usageEvents, start_event)).To(BeTrue())
 
 			By("successfully running")
 
@@ -131,9 +126,9 @@ var _ = TasksDescribe("v3 tasks", func() {
 			Expect(outputName).To(Equal(taskName))
 
 			By("TASK_STOPPED AppUsageEvent")
-			usageEvents = LastPageUsageEvents(TestSetup)
-			stop_event := AppUsageEvent{Entity{State: "TASK_STOPPED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: taskGuid}}
-			Expect(UsageEventsInclude(usageEvents, stop_event)).To(BeTrue())
+			usageEvents = app_helpers.LastPageUsageEvents(TestSetup)
+			stop_event := app_helpers.AppUsageEvent{app_helpers.Entity{State: "TASK_STOPPED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: taskGuid}}
+			Expect(app_helpers.UsageEventsInclude(usageEvents, stop_event)).To(BeTrue())
 		})
 	})
 
