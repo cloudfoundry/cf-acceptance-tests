@@ -162,9 +162,9 @@ func CreateAndMapRoute(appGuid, space, domain, host string) {
 }
 
 func AssignDropletToApp(appGuid, dropletGuid string) {
-	appUpdatePath := fmt.Sprintf("/v3/apps/%s/droplets/current", appGuid)
-	appUpdateBody := fmt.Sprintf(`{"droplet_guid":"%s"}`, dropletGuid)
-	Expect(cf.Cf("curl", appUpdatePath, "-X", "PUT", "-d", appUpdateBody).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+	appUpdatePath := fmt.Sprintf("/v3/apps/%s/relationships/current_droplet", appGuid)
+	appUpdateBody := fmt.Sprintf(`{"data": {"guid":"%s"}}`, dropletGuid)
+	Expect(cf.Cf("curl", appUpdatePath, "-X", "PATCH", "-d", appUpdateBody).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 	for _, process := range GetProcesses(appGuid, "") {
 		ScaleProcess(appGuid, process.Type, V3_DEFAULT_MEMORY_LIMIT)
