@@ -94,6 +94,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 			By("creating the task")
 			taskName := "mreow"
 			command := "ls"
+			lastUsageEventGuid := app_helpers.LastAppUsageEventGuid(TestSetup)
 			createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait(Config.DefaultTimeoutDuration())
 			Expect(createCommand).To(Exit(0))
 
@@ -110,8 +111,8 @@ var _ = TasksDescribe("v3 tasks", func() {
 			taskGuid := getGuid(appGuid, sequenceId)
 
 			By("TASK_STARTED AppUsageEvent")
-			usageEvents := app_helpers.LastPageUsageEvents(TestSetup)
-			start_event := app_helpers.AppUsageEvent{app_helpers.Entity{State: "TASK_STARTED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: taskGuid}}
+			usageEvents := app_helpers.UsageEventsAfterGuid(TestSetup, lastUsageEventGuid)
+			start_event := app_helpers.AppUsageEvent{Entity: app_helpers.Entity{State: "TASK_STARTED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: taskGuid}}
 			Expect(app_helpers.UsageEventsInclude(usageEvents, start_event)).To(BeTrue())
 
 			By("successfully running")
@@ -126,8 +127,8 @@ var _ = TasksDescribe("v3 tasks", func() {
 			Expect(outputName).To(Equal(taskName))
 
 			By("TASK_STOPPED AppUsageEvent")
-			usageEvents = app_helpers.LastPageUsageEvents(TestSetup)
-			stop_event := app_helpers.AppUsageEvent{app_helpers.Entity{State: "TASK_STOPPED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: taskGuid}}
+			usageEvents = app_helpers.UsageEventsAfterGuid(TestSetup, lastUsageEventGuid)
+			stop_event := app_helpers.AppUsageEvent{Entity: app_helpers.Entity{State: "TASK_STOPPED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: taskGuid}}
 			Expect(app_helpers.UsageEventsInclude(usageEvents, stop_event)).To(BeTrue())
 		})
 	})
