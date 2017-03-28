@@ -76,14 +76,13 @@ var _ = AppsDescribe("Logging", func() {
 func getSyslogDrainAddress(appName string) string {
 	var address []byte
 
-	Eventually(func() []byte {
+	Eventually(func() [][]byte {
 		re, err := regexp.Compile("ADDRESS: \\|(.*)\\|")
 		Expect(err).NotTo(HaveOccurred())
 
 		logs := cf.Cf("logs", appName, "--recent").Wait(Config.DefaultTimeoutDuration())
-		address = re.FindSubmatch(logs.Out.Contents())[1]
-		return address
-	}, Config.DefaultTimeoutDuration()).Should(Not(BeNil()))
+		return re.FindSubmatch(logs.Out.Contents())
+	}, Config.DefaultTimeoutDuration()).Should(HaveLen(2))
 
 	return string(address)
 }
