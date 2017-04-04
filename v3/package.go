@@ -63,8 +63,10 @@ var _ = V3Describe("package features", func() {
 			destinationAppGuid = CreateApp(destinationAppName, spaceGuid, "{}")
 
 			// COPY
-			copyUrl := fmt.Sprintf("/v3/apps/%s/packages?source_package_guid=%s", destinationAppGuid, packageGuid)
-			session := cf.Cf("curl", copyUrl, "-X", "POST")
+			copyRequestBody := fmt.Sprintf("{\"relationships\":{\"app\":{\"data\":{\"guid\":\"%s\"}}}}", destinationAppGuid)
+			copyUrl := fmt.Sprintf("v3/packages/?source_guid=%s", packageGuid)
+
+			session := cf.Cf("curl", copyUrl, "-X", "POST", "-d", copyRequestBody)
 			bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 			var pac struct {
 				Guid string `json:"guid"`
