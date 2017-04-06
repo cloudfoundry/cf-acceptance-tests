@@ -307,9 +307,8 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 		It("removes the application", func() {
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
-			app := cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
-			Expect(app).To(Exit(1))
-			Expect(app).To(Say("not found"))
+			app := cf.Cf("apps").Wait(Config.DefaultTimeoutDuration())
+			Consistently(app).ShouldNot(Say(appName))
 		})
 
 		It("makes the app unreachable", func() {

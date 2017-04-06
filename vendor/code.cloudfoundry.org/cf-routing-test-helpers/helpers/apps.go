@@ -70,7 +70,7 @@ func InstancesRunning(appName string, instances int, timeout time.Duration) {
 	Eventually(func() string {
 		return string(cf.Cf("app", appName).Wait(timeout).Out.Contents())
 	}, timeout*2, 2*time.Second).
-		Should(ContainSubstring(fmt.Sprintf("instances: %d/%d", instances, instances)))
+		Should(MatchRegexp(fmt.Sprintf("instances:\\s+%d/%d", instances, instances)))
 }
 
 func PushApp(appName, asset, buildpackName, domain string, timeout time.Duration, memoryLimit string) {
