@@ -3,6 +3,9 @@ package helpers
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"regexp"
+	"strconv"
 	"time"
 
 	. "github.com/onsi/gomega"
@@ -16,8 +19,19 @@ const (
 	deaUnsupportedTag = "{NO_DEA_SUPPORT} "
 )
 
+func MapRandomTcpRouteToApp(app, domain string, timeout time.Duration) {
+	Expect(cf.Cf("map-route", app, domain, "--random-port").Wait(timeout)).To(Exit(0))
+}
+
 func MapRouteToApp(app, domain, host, path string, timeout time.Duration) {
 	Expect(cf.Cf("map-route", app, domain, "--hostname", host, "--path", path).Wait(timeout)).To(Exit(0))
+}
+
+func DeleteTcpRoute(domain, port string, timeout time.Duration) {
+	Expect(cf.Cf("delete-route", domain,
+		"--port", port,
+		"-f",
+	).Wait(timeout)).To(Exit(0))
 }
 
 func DeleteRoute(hostname, contextPath, domain string, timeout time.Duration) {
@@ -36,28 +50,32 @@ func CreateRoute(hostname, contextPath, space, domain string, timeout time.Durat
 }
 
 func CreateTcpRouteWithRandomPort(space, domain string, timeout time.Duration) uint16 {
-	var routeResponse schema.RouteResource
-
-	domainGuid := GetDomainGuid(domain, timeout)
-	spaceGuid := GetSpaceGuid(space, timeout)
-
-	bodyMap := map[string]interface{}{
-		"domain_guid": domainGuid,
-		"space_guid":  spaceGuid,
-	}
-	data, err := json.Marshal(bodyMap)
-	Expect(err).ToNot(HaveOccurred())
-
-	responseBuffer := cf.Cf("curl", "/v2/routes?generate_port=true", "-X", "POST", "-d", string(data))
+	responseBuffer := cf.Cf("create-route", space, domain, "--random-port")
 	Expect(responseBuffer.Wait(timeout)).To(Exit(0))
 
-	err = json.Unmarshal(responseBuffer.Out.Contents(), &routeResponse)
+	port, err := strconv.Atoi(grabPort(responseBuffer.Out.Contents(), domain))
 	Expect(err).NotTo(HaveOccurred())
-	Expect(routeResponse.Entity.Port).NotTo(BeZero())
-	return routeResponse.Entity.Port
+	return uint16(port)
 }
 
-func GetGuid(curlPath string, timeout time.Duration) string {
+func grabPort(response []byte, domain string) string {
+	re := regexp.MustCompile("Route " + domain + ":([0-9]*) has been created")
+	matches := re.FindStringSubmatch(string(response))
+
+	Expect(len(matches)).To(Equal(2))
+	//port
+	return matches[1]
+}
+
+func VerifySharedDomain(domainName string, timeout time.Duration) {
+	output := cf.Cf("domains")
+	Expect(output.Wait(timeout)).To(Exit(0))
+
+	Expect(string(output.Out.Contents())).To(ContainSubstring(domainName))
+}
+
+func getGuid(curlPath string, timeout time.Duration) string {
+	os.Setenv("CF_TRACE", "false")
 	var response schema.ListResponse
 
 	responseBuffer := cf.Cf("curl", curlPath)
@@ -70,22 +88,13 @@ func GetGuid(curlPath string, timeout time.Duration) string {
 	}
 	return ""
 }
+func GetPortFromAppsInfo(appName, domainName string, timeout time.Duration) string {
+	cfResponse := cf.Cf("apps").Wait(timeout).Out.Contents()
+	re := regexp.MustCompile(appName + ".*" + domainName + ":([0-9]*)")
+	matches := re.FindStringSubmatch(string(cfResponse))
 
-func GetDomainGuid(domainName string, timeout time.Duration) string {
-	sharedDomainGuid := GetGuid(fmt.Sprintf("/v2/shared_domains?q=name:%s", domainName), timeout)
-	if sharedDomainGuid != "" {
-		return sharedDomainGuid
-	}
-
-	privateDomainGuid := GetGuid(fmt.Sprintf("/v2/private_domains?q=name:%s", domainName), timeout)
-	Expect(privateDomainGuid).ToNot(Equal(""))
-	return privateDomainGuid
-}
-
-func GetSpaceGuid(space string, timeout time.Duration) string {
-	spaceGuid := GetGuid(fmt.Sprintf("/v2/spaces?q=name:%s", space), timeout)
-	Expect(spaceGuid).NotTo(Equal(""))
-	return spaceGuid
+	Expect(len(matches)).To(Equal(2))
+	return matches[1]
 }
 
 func GetRouteGuidWithPort(hostname, path string, port uint16, timeout time.Duration) string {
@@ -93,7 +102,7 @@ func GetRouteGuidWithPort(hostname, path string, port uint16, timeout time.Durat
 	if port > 0 {
 		routeQuery = routeQuery + fmt.Sprintf("&q=port:%d", port)
 	}
-	routeGuid := GetGuid(routeQuery, timeout)
+	routeGuid := getGuid(routeQuery, timeout)
 	Expect(routeGuid).NotTo(Equal(""))
 	return routeGuid
 }
@@ -103,6 +112,7 @@ func GetRouteGuid(hostname, path string, timeout time.Duration) string {
 }
 
 func GetAppInfo(appName string, timeout time.Duration) (host, port string) {
+	os.Setenv("CF_TRACE", "false")
 	var appsResponse schema.AppsResponse
 	var statsResponse schema.StatsResponse
 
@@ -149,19 +159,10 @@ func CreateRouteMapping(appName string, hostname string, externalPort uint16, ap
 	Expect(cf.Cf("curl", fmt.Sprintf("/v2/route_mappings"), "-X", "POST", "-d", string(data)).Wait(timeout)).To(Exit(0))
 }
 
-func CreateSharedDomain(domainName, routerGroupGuid string, timeout time.Duration) {
-	bodyMap := map[string]interface{}{
-		"name":              domainName,
-		"router_group_guid": routerGroupGuid,
-	}
-
-	data, err := json.Marshal(bodyMap)
-	Expect(err).ToNot(HaveOccurred())
-	resp := cf.Cf("curl", fmt.Sprintf("/v2/shared_domains"), "-X", "POST", "-d", string(data))
-	resp.Wait(timeout)
+func CreateSharedDomain(domainName, routerGroupName string, timeout time.Duration) {
+	Expect(cf.Cf("create-shared-domain", domainName, "--router-group", routerGroupName).Wait(timeout)).To(Exit(0))
 }
 
 func DeleteSharedDomain(domainName string, timeout time.Duration) {
-	sharedDomainGuid := GetGuid(fmt.Sprintf("/v2/shared_domains?q=name:%s", domainName), timeout)
-	Expect(cf.Cf("curl", "-X", "DELETE", "/v2/shared_domains/"+sharedDomainGuid).Wait(timeout)).To(Exit(0))
+	Expect(cf.Cf("delete-shared-domain", domainName, "-f").Wait(timeout)).To(Exit(0))
 }
