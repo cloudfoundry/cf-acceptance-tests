@@ -25,6 +25,9 @@ type config struct {
 	ShouldKeepUser       *bool   `json:"keep_user_at_suite_end"`
 	UseExistingUser      *bool   `json:"use_existing_user"`
 
+	UseExistingOrganization *bool   `json:"use_existing_organization"`
+	ExistingOrganization    *string `json:"existing_organization"`
+
 	ConfigurableTestPassword *string `json:"test_password"`
 
 	PersistentAppHost      *string `json:"persistent_app_host"`
@@ -138,6 +141,9 @@ func getDefaults() config {
 	defaults.UseHttp = ptrToBool(false)
 	defaults.UseExistingUser = ptrToBool(false)
 	defaults.ShouldKeepUser = ptrToBool(false)
+
+	defaults.UseExistingOrganization = ptrToBool(false)
+	defaults.ExistingOrganization = ptrToString("")
 
 	defaults.AsyncServiceOperationTimeout = ptrToInt(2)
 	defaults.BrokerStartTimeout = ptrToInt(5)
@@ -525,6 +531,14 @@ func (c *config) GetIsolationSegmentName() string {
 
 func (c *config) GetNamePrefix() string {
 	return *c.NamePrefix
+}
+
+func (c *config) GetExistingOrganization() string {
+	return *c.ExistingOrganization
+}
+
+func (c *config) GetUseExistingOrganization() bool {
+	return *c.UseExistingOrganization
 }
 
 func (c *config) GetUseExistingUser() bool {

@@ -59,6 +59,9 @@ type allConfig struct {
 	ShouldKeepUser       *bool   `json:"keep_user_at_suite_end"`
 	UseExistingUser      *bool   `json:"use_existing_user"`
 
+	UseExistingOrganization *bool   `json:"use_existing_organization"`
+	ExistingOrganization    *string `json:"existing_organization"`
+
 	ConfigurableTestPassword *string `json:"test_password"`
 
 	PersistentAppHost      *string `json:"persistent_app_host"`
@@ -210,6 +213,9 @@ var _ = Describe("Config", func() {
 		Expect(config.GetUseExistingUser()).To(Equal(false))
 		Expect(config.GetConfigurableTestPassword()).To(Equal(""))
 		Expect(config.GetShouldKeepUser()).To(Equal(false))
+
+		Expect(config.GetExistingOrganization()).To(Equal(""))
+		Expect(config.GetUseExistingOrganization()).To(Equal(false))
 
 		Expect(config.AsyncServiceOperationTimeoutDuration()).To(Equal(2 * time.Minute))
 		Expect(config.BrokerStartTimeoutDuration()).To(Equal(5 * time.Minute))

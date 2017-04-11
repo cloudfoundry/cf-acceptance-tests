@@ -133,6 +133,8 @@ export CONFIG=$PWD/integration_config.json
 * `include_isolation_segments`: Flag to include isolation segment tests.
 * `backend`: App tests push their apps using the backend specified. Incompatible tests will be skipped based on which backend is chosen. If left unspecified the default backend will be used where none is specified; all tests that specify a particular backend will be skipped.
 * `use_http`: Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
+* `use_existing_organization`: Set to true when you need to specify an existing organization to use rather than creating a new organization.
+* `existing_organization`: Name of the existing organization to use.
 * `use_existing_user`: The admin user configured above will normally be used to create a temporary user (with lesser permissions) to perform actions (such as push applications) during tests, and then delete said user after the tests have run; set this to `true` if you want to use an existing user, configured via the following properties.
 * `keep_user_at_suite_end`: If using an existing user (see above), set this to `true` unless you are okay having your existing user being deleted at the end. You can also set this to `true` when not using an existing user if you want to leave the temporary user around for debugging purposes after the test teardown.
 * `existing_user`: Name of the existing user to use.

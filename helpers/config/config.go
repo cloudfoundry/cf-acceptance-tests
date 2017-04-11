@@ -34,6 +34,8 @@ type CatsConfig interface {
 	GetBackend() string
 	GetBinaryBuildpackName() string
 	GetConfigurableTestPassword() string
+	GetExistingOrganization() string
+	GetUseExistingOrganization() bool
 	GetExistingUser() string
 	GetExistingUserPassword() string
 	GetGoBuildpackName() string
