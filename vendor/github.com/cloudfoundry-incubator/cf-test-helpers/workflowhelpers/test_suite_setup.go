@@ -26,6 +26,8 @@ type testSuiteConfig interface {
 	GetShouldKeepUser() bool
 	GetUseExistingUser() bool
 	GetAdminUser() string
+	GetUseExistingOrganization() bool
+	GetExistingOrganization() string
 	GetSkipSSLValidation() bool
 	GetNamePrefix() string
 }

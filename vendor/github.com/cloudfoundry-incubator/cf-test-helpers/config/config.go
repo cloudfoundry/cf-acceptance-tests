@@ -23,6 +23,9 @@ type Config struct {
 
 	ConfigurableTestPassword string `json:"test_password"`
 
+	UseExistingOrganization bool   `json:"use_existing_organization"`
+	ExistingOrganization    string `json:"existing_organization"`
+
 	PersistentAppHost      string `json:"persistent_app_host"`
 	PersistentAppSpace     string `json:"persistent_app_space"`
 	PersistentAppOrg       string `json:"persistent_app_org"`
@@ -271,6 +274,14 @@ func (c *Config) GetAdminUser() string {
 
 func (c *Config) GetAdminPassword() string {
 	return c.AdminPassword
+}
+
+func (c *Config) GetUseExistingOrganization() bool {
+	return c.UseExistingOrganization
+}
+
+func (c *Config) GetExistingOrganization() string {
+	return c.ExistingOrganization
 }
 
 func (c *Config) GetApiEndpoint() string {
