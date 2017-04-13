@@ -83,21 +83,21 @@ cat > integration_config.json <<EOF
   "skip_ssl_validation": true,
   "use_http": true,
   "include_apps": true,
-  "include_backend_compatibility": true,
-  "include_container_networking": true,
+  "include_backend_compatibility": false,
+  "include_container_networking": false,
   "include_detect": true,
-  "include_docker": true,
-  "include_internet_dependent": true,
-  "include_privileged_container_support": true,
-  "include_route_services": true,
+  "include_docker": false,
+  "include_internet_dependent": false,
+  "include_privileged_container_support": false,
+  "include_route_services": false,
   "include_routing": true,
   "include_security_groups": true,
   "include_services": true,
-  "include_ssh": true,
+  "include_ssh": false,
   "include_sso": true,
   "include_tasks": true,
-  "include_v3": true,
-  "include_zipkin": true
+  "include_v3": false,
+  "include_zipkin": false
 }
 EOF
 export CONFIG=$PWD/integration_config.json
