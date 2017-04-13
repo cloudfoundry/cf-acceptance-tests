@@ -65,7 +65,7 @@ func NewPersistentAppTestSpace(cfg spaceConfig) *TestSpace {
 		cfg.GetPersistentAppQuotaName(),
 		"10G",
 		true,
-		true,
+		cfg.GetUseExistingOrganization(),
 		cfg.GetScaledTimeout(1*time.Minute),
 		commandstarter.NewCommandStarter(),
 	)
