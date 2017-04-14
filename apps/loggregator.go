@@ -68,7 +68,7 @@ var _ = AppsDescribe("loggregator", func() {
 		})
 
 		It("exercises basic loggregator behavior", func() {
-			Eventually(logs, (Config.DefaultTimeoutDuration() + time.Minute)).Should(Say("Connected, tailing logs for app"))
+			Eventually(logs, (Config.DefaultTimeoutDuration() + time.Minute)).Should(Say("(Connected, tailing|Retrieving) logs for app"))
 
 			Eventually(func() string {
 				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
