@@ -245,7 +245,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 					"-d",
 					fmt.Sprintf(`{"data":{"guid":"%s"}}`, isoSegGuid)).Wait(Config.DefaultTimeoutDuration())
 				Expect(session).To(Exit(0))
-				Expect(session).To(Say("Ensure it has been entitled to the|this organization"))
+				Expect(session).To(Say("Ensure it has been entitled to (the|this) organization"))
 			})
 		})
 	})
