@@ -1,6 +1,7 @@
 package apps
 
 import (
+	"fmt"
 	"regexp"
 	"time"
 
@@ -81,7 +82,9 @@ func getSyslogDrainAddress(appName string) string {
 		Expect(err).NotTo(HaveOccurred())
 
 		logs := cf.Cf("logs", appName, "--recent").Wait(Config.DefaultTimeoutDuration())
-		address = re.FindSubmatch(logs.Out.Contents())[1]
+		addressMatch := re.FindSubmatch(logs.Out.Contents())
+		Expect(addressMatch).ToNot(BeNil(), fmt.Sprintf("Expected logs to contain the syslog drain address matching pattern '%s' but it did not", re.String()))
+		address = addressMatch[1]
 		return address
 	}, Config.DefaultTimeoutDuration()).Should(Not(BeNil()))
 
