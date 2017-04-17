@@ -81,7 +81,11 @@ func getSyslogDrainAddress(appName string) string {
 		Expect(err).NotTo(HaveOccurred())
 
 		logs := cf.Cf("logs", appName, "--recent").Wait(Config.DefaultTimeoutDuration())
-		address = re.FindSubmatch(logs.Out.Contents())[1]
+		matched := re.FindSubmatch(logs.Out.Contents())
+		if len(matched) < 2 {
+			return nil
+		}
+		address = matched[1]
 		return address
 	}, Config.DefaultTimeoutDuration()).Should(Not(BeNil()))
 
