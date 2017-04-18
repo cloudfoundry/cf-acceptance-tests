@@ -78,10 +78,10 @@ var _ = V3Describe("buildpack", func() {
 	})
 
 	It("uses buildpack cache for staging", func() {
-		firstDropletGuid := StageBuildpackPackage(packageGuid, buildpackName)
-		dropletPath := fmt.Sprintf("/v3/droplets/%s", firstDropletGuid)
+		firstBuildGuid := StageBuildpackPackage(packageGuid, buildpackName)
+		buildPath := fmt.Sprintf("/v3/builds/%s", firstBuildGuid)
 		Eventually(func() *Session {
-			result := cf.Cf("curl", dropletPath).Wait(Config.DefaultTimeoutDuration())
+			result := cf.Cf("curl", buildPath).Wait(Config.DefaultTimeoutDuration())
 			if strings.Contains(string(result.Out.Contents()), "FAILED") {
 				Fail("staging failed")
 			}
@@ -91,10 +91,10 @@ var _ = V3Describe("buildpack", func() {
 		// Wait for buildpack cache to be uploaded to blobstore.
 		time.Sleep(Config.SleepTimeoutDuration())
 
-		secondDropletGuid := StageBuildpackPackage(packageGuid, buildpackName)
-		dropletPath = fmt.Sprintf("/v3/droplets/%s", secondDropletGuid)
+		secondBuildGuid := StageBuildpackPackage(packageGuid, buildpackName)
+		buildPath = fmt.Sprintf("/v3/builds/%s", secondBuildGuid)
 		Eventually(func() *Session {
-			result := cf.Cf("curl", dropletPath).Wait(Config.DefaultTimeoutDuration())
+			result := cf.Cf("curl", buildPath).Wait(Config.DefaultTimeoutDuration())
 			if strings.Contains(string(result.Out.Contents()), "FAILED") {
 				Fail("staging failed")
 			}
@@ -104,7 +104,7 @@ var _ = V3Describe("buildpack", func() {
 			return result
 		}, Config.CfPushTimeoutDuration()).Should(Say("custom buildpack contents - here's a cache"))
 
-		Expect(secondDropletGuid).NotTo(Equal(firstDropletGuid))
+		Expect(secondBuildGuid).NotTo(Equal(firstBuildGuid))
 	})
 })
 

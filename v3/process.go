@@ -55,8 +55,9 @@ var _ = V3Describe("process", func() {
 		)
 
 		BeforeEach(func() {
-			dropletGuid := StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
-			WaitForDropletToStage(dropletGuid)
+			buildGuid := StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
+			WaitForBuildToStage(buildGuid)
+			dropletGuid := GetDropletFromBuild(buildGuid)
 
 			AssignDropletToApp(appGuid, dropletGuid)
 

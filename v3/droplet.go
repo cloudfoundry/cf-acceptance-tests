@@ -45,8 +45,9 @@ var _ = V3Describe("droplet features", func() {
 		)
 
 		BeforeEach(func() {
-			sourceDropletGuid = StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
-			WaitForDropletToStage(sourceDropletGuid)
+			buildGuid := StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
+			WaitForBuildToStage(buildGuid)
+			sourceDropletGuid = GetDropletFromBuild(buildGuid)
 
 			destinationAppName = random_name.CATSRandomName("APP")
 			destinationAppGuid = CreateApp(destinationAppName, spaceGuid, "{}")
@@ -64,7 +65,7 @@ var _ = V3Describe("droplet features", func() {
 			json.Unmarshal(bytes, &droplet)
 			copiedDropletGuid := droplet.Guid
 
-			WaitForDropletToStage(copiedDropletGuid)
+			WaitForDropletToCopy(copiedDropletGuid)
 
 			DeleteApp(appGuid) // to prove that the new app does not depend on the old app
 
@@ -96,7 +97,7 @@ var _ = V3Describe("droplet features", func() {
 			json.Unmarshal(bytes, &droplet)
 			copiedDropletGuid := droplet.Guid
 
-			WaitForDropletToStage(copiedDropletGuid)
+			WaitForDropletToCopy(copiedDropletGuid)
 
 			DeleteApp(appGuid) // to prove that the new app does not depend on the old app
 

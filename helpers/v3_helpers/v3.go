@@ -65,13 +65,35 @@ func WaitForPackageToBeReady(packageGuid string) {
 	}, Config.LongCurlTimeoutDuration()).Should(Say("READY"))
 }
 
-func WaitForDropletToStage(dropletGuid string) {
+func WaitForDropletToCopy(dropletGuid string) {
 	dropletPath := fmt.Sprintf("/v3/droplets/%s", dropletGuid)
 	Eventually(func() *Session {
 		session := cf.Cf("curl", dropletPath).Wait(Config.DefaultTimeoutDuration())
 		Expect(session).NotTo(Say("FAILED"))
 		return session
 	}, Config.CfPushTimeoutDuration()).Should(Say("STAGED"))
+}
+
+func WaitForBuildToStage(buildGuid string) {
+	buildPath := fmt.Sprintf("/v3/builds/%s", buildGuid)
+	Eventually(func() *Session {
+		session := cf.Cf("curl", buildPath).Wait(Config.DefaultTimeoutDuration())
+		Expect(session).NotTo(Say("FAILED"))
+		return session
+	}, Config.CfPushTimeoutDuration()).Should(Say("STAGED"))
+}
+
+func GetDropletFromBuild(buildGuid string) string {
+	buildPath := fmt.Sprintf("/v3/builds/%s", buildGuid)
+	session := cf.Cf("curl", buildPath).Wait(Config.DefaultTimeoutDuration())
+	var build struct {
+		Droplet struct {
+			Guid string `json:"guid"`
+		} `json:"droplet"`
+	}
+	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+	json.Unmarshal(bytes, &build)
+	return build.Droplet.Guid
 }
 
 func CreatePackage(appGuid string) string {
@@ -115,27 +137,28 @@ func UploadPackage(uploadUrl, packageZipPath, token string) {
 }
 
 func StageBuildpackPackage(packageGuid, buildpack string) string {
-	stageBody := fmt.Sprintf(`{"lifecycle":{ "type": "buildpack", "data": { "buildpacks": ["%s"] } }}`, buildpack)
-	stageUrl := fmt.Sprintf("/v3/packages/%s/droplets", packageGuid)
+	stageBody := fmt.Sprintf(`{"lifecycle":{ "type": "buildpack", "data": { "buildpacks": ["%s"] } }, "package": { "guid" : "%s"}}`, buildpack, packageGuid)
+	stageUrl := "/v3/builds"
 	session := cf.Cf("curl", stageUrl, "-X", "POST", "-d", stageBody)
 	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
-	var droplet struct {
+	var build struct {
 		Guid string `json:"guid"`
 	}
-	json.Unmarshal(bytes, &droplet)
-	Expect(droplet.Guid).NotTo(BeEmpty())
-	return droplet.Guid
+	json.Unmarshal(bytes, &build)
+	Expect(build.Guid).NotTo(BeEmpty())
+	return build.Guid
 }
 
 func StageDockerPackage(packageGuid string) string {
-	stageUrl := fmt.Sprintf("/v3/packages/%s/droplets", packageGuid)
-	session := cf.Cf("curl", stageUrl, "-X", "POST", "-d", "")
+	stageBody := fmt.Sprintf(`{"lifecycle": { "type" : "docker" }, "package": { "guid" : "%s"}}`, packageGuid)
+	stageUrl := "/v3/builds"
+	session := cf.Cf("curl", stageUrl, "-X", "POST", "-d", stageBody)
 	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
-	var droplet struct {
+	var build struct {
 		Guid string `json:"guid"`
 	}
-	json.Unmarshal(bytes, &droplet)
-	return droplet.Guid
+	json.Unmarshal(bytes, &build)
+	return build.Guid
 }
 
 func CreateAndMapRoute(appGuid, space, domain, host string) {
