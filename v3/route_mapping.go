@@ -47,8 +47,9 @@ var _ = V3Describe("route_mapping", func() {
 		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
 		WaitForPackageToBeReady(packageGuid)
 
-		dropletGuid := StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
-		WaitForDropletToStage(dropletGuid)
+		buildGuid := StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
+		WaitForBuildToStage(buildGuid)
+		dropletGuid := GetDropletFromBuild(buildGuid)
 		AssignDropletToApp(appGuid, dropletGuid)
 
 		processes := GetProcesses(appGuid, appName)

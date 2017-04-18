@@ -55,8 +55,9 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 		})
 
 		It("can run apps with processes from the Procfile", func() {
-			dropletGuid := StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
-			WaitForDropletToStage(dropletGuid)
+			buildGuid := StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
+			WaitForBuildToStage(buildGuid)
+			dropletGuid := GetDropletFromBuild(buildGuid)
 
 			AssignDropletToApp(appGuid, dropletGuid)
 
@@ -115,8 +116,9 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 		})
 
 		It("can run spring apps", func() {
-			dropletGuid := StageBuildpackPackage(packageGuid, Config.GetJavaBuildpackName())
-			WaitForDropletToStage(dropletGuid)
+			buildGuid := StageBuildpackPackage(packageGuid, Config.GetJavaBuildpackName())
+			WaitForBuildToStage(buildGuid)
+			dropletGuid := GetDropletFromBuild(buildGuid)
 
 			AssignDropletToApp(appGuid, dropletGuid)
 
@@ -190,8 +192,9 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 	})
 
 	It("can run apps", func() {
-		dropletGuid := StageDockerPackage(packageGuid)
-		WaitForDropletToStage(dropletGuid)
+		buildGuid := StageDockerPackage(packageGuid)
+		WaitForBuildToStage(buildGuid)
+		dropletGuid := GetDropletFromBuild(buildGuid)
 
 		AssignDropletToApp(appGuid, dropletGuid)
 
