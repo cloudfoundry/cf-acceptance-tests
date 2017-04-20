@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path"
-	"strings"
 	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -79,30 +78,22 @@ var _ = V3Describe("buildpack", func() {
 
 	It("uses buildpack cache for staging", func() {
 		firstBuildGuid := StageBuildpackPackage(packageGuid, buildpackName)
-		buildPath := fmt.Sprintf("/v3/builds/%s", firstBuildGuid)
-		Eventually(func() *Session {
-			result := cf.Cf("curl", buildPath).Wait(Config.DefaultTimeoutDuration())
-			if strings.Contains(string(result.Out.Contents()), "FAILED") {
-				Fail("staging failed")
-			}
-			return result
-		}, Config.CfPushTimeoutDuration()).Should(Say("custom buildpack contents - cache not found"))
+		WaitForBuildToStage(firstBuildGuid)
+		dropletGuid := GetDropletFromBuild(firstBuildGuid)
+		dropletPath := fmt.Sprintf("/v3/droplets/%s", dropletGuid)
+
+		result := cf.Cf("curl", dropletPath).Wait(Config.DefaultTimeoutDuration())
+		Expect(result).To(Say("custom buildpack contents - cache not found"))
 
 		// Wait for buildpack cache to be uploaded to blobstore.
 		time.Sleep(Config.SleepTimeoutDuration())
 
 		secondBuildGuid := StageBuildpackPackage(packageGuid, buildpackName)
-		buildPath = fmt.Sprintf("/v3/builds/%s", secondBuildGuid)
-		Eventually(func() *Session {
-			result := cf.Cf("curl", buildPath).Wait(Config.DefaultTimeoutDuration())
-			if strings.Contains(string(result.Out.Contents()), "FAILED") {
-				Fail("staging failed")
-			}
-			if strings.Contains(string(result.Out.Contents()), "cache not found") {
-				Fail("cache was not found")
-			}
-			return result
-		}, Config.CfPushTimeoutDuration()).Should(Say("custom buildpack contents - here's a cache"))
+		WaitForBuildToStage(secondBuildGuid)
+		dropletGuid = GetDropletFromBuild(secondBuildGuid)
+		dropletPath = fmt.Sprintf("/v3/droplets/%s", dropletGuid)
+		result = cf.Cf("curl", dropletPath).Wait(Config.DefaultTimeoutDuration())
+		Expect(result).To(Say("custom buildpack contents - here's a cache"))
 
 		Expect(secondBuildGuid).NotTo(Equal(firstBuildGuid))
 	})
