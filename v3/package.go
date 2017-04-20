@@ -98,7 +98,7 @@ var _ = V3Describe("package features", func() {
 
 		It("can still stage the package", func() {
 			buildGuid := StageBuildpackPackage(packageGuid, Config.GetJavaBuildpackName())
-			buildPath := fmt.Sprintf("/v3/droplets/%s", buildGuid)
+			buildPath := fmt.Sprintf("/v3/builds/%s", buildGuid)
 
 			Eventually(func() *Session {
 				return cf.Cf("curl", buildPath).Wait(Config.DefaultTimeoutDuration())
