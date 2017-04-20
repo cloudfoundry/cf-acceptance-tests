@@ -143,6 +143,7 @@ export CONFIG=$PWD/integration_config.json
 * `persistent_app_space`: [See below](#persistent-app-test-setup).
 * `persistent_app_org`: [See below](#persistent-app-test-setup).
 * `persistent_app_quota_name`: [See below](#persistent-app-test-setup).
+* `cleanup_persistent_app_org`: [See below](#persistent-app-test-setup).
 * `artifacts_directory`: If set, `cf` CLI trace output from test runs will be captured in files and placed in this directory. [See below](#capturing-test-output) for more.
 * `default_timeout`: Default time (in seconds) to wait for polling assertions that wait for asynchronous results.
 * `cf_push_timeout`: Default time (in minutes) to wait for `cf push` commands to succeed.
@@ -162,7 +163,7 @@ export CONFIG=$PWD/integration_config.json
 * `binary_buildpack_name` [See below](#buildpack-names).
 
 #### Persistent App Test Setup
-The tests in `one_push_many_restarts_test.go` operate on an app that is supposed to persist between runs of the CF Acceptance tests. If these tests are run, they will create an org, space, and quota and push the app to this space. The test config will provide default names for these entities, but to configure them, set values for `persistent_app_host`, `persistent_app_space`, `persistent_app_org`, and `persistent_app_quota_name`.
+The tests in `one_push_many_restarts_test.go` operate on an app that is supposed to persist between runs of the CF Acceptance tests. If these tests are run, they will create an org, space, and quota and push the app to this space. The test config will provide default names for these entities, but to configure them, set values for `persistent_app_host`, `persistent_app_space`, `persistent_app_org`, and `persistent_app_quota_name`.  To clean up (delete) the persistent app org at the end of your test run, set `cleanup_persistent_app_org` to `true`.
 
 #### Buildpack Names
 Many tests specify a buildpack when pushing an app, so that on diego the app staging process completes in less time. The default names for the buildpacks are as follows; if you have buildpacks with different names, you can override them by setting different names:
