@@ -47,7 +47,6 @@ type CatsConfig interface {
 	GetPersistentAppOrg() string
 	GetPersistentAppQuotaName() string
 	GetPersistentAppSpace() string
-	GetCleanupPersistentAppOrg() bool
 	GetRubyBuildpackName() string
 	Protocol() string
 

@@ -43,8 +43,7 @@ type testConfig struct {
 	SleepTimeout                 *int `json:"sleep_timeout,omitempty"`
 
 	// optional
-	Backend                 *string `json:"backend,omitempty"`
-	CleanupPersistentAppOrg *bool   `json:"cleanup_persistent_app_org"`
+	Backend *string `json:"backend,omitempty"`
 }
 
 type allConfig struct {
@@ -187,7 +186,6 @@ var _ = Describe("Config", func() {
 		Expect(config.GetPersistentAppOrg()).To(Equal("CATS-persistent-org"))
 		Expect(config.GetPersistentAppQuotaName()).To(Equal("CATS-persistent-quota"))
 		Expect(config.GetPersistentAppSpace()).To(Equal("CATS-persistent-space"))
-		Expect(config.GetCleanupPersistentAppOrg()).To(Equal(false))
 
 		Expect(config.GetIsolationSegmentName()).To(Equal(""))
 
@@ -320,7 +318,6 @@ var _ = Describe("Config", func() {
 			testCfg.AsyncServiceOperationTimeout = ptrToInt(90)
 			testCfg.DetectTimeout = ptrToInt(100)
 			testCfg.SleepTimeout = ptrToInt(101)
-			testCfg.CleanupPersistentAppOrg = ptrToBool(true)
 		})
 
 		It("respects the overriden values", func() {
@@ -334,7 +331,6 @@ var _ = Describe("Config", func() {
 			Expect(config.AsyncServiceOperationTimeoutDuration()).To(Equal(90 * time.Minute))
 			Expect(config.DetectTimeoutDuration()).To(Equal(100 * time.Minute))
 			Expect(config.SleepTimeoutDuration()).To(Equal(101 * time.Second))
-			Expect(config.GetCleanupPersistentAppOrg()).To(Equal(true))
 		})
 	})
 

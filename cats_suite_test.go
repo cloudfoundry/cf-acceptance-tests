@@ -23,7 +23,6 @@ import (
 	_ "github.com/cloudfoundry/cf-acceptance-tests/tasks"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/v3"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/buildpacks"
@@ -86,11 +85,6 @@ func TestCATS(t *testing.T) {
 	AfterSuite(func() {
 		if TestSetup != nil {
 			TestSetup.Teardown()
-		}
-		if Config.GetCleanupPersistentAppOrg() {
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				cf.Cf("delete-org", Config.GetPersistentAppOrg(), "-f").Wait(Config.DefaultTimeoutDuration())
-			})
 		}
 	})
 

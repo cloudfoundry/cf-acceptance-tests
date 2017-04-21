@@ -30,11 +30,10 @@ type config struct {
 
 	ConfigurableTestPassword *string `json:"test_password"`
 
-	PersistentAppHost       *string `json:"persistent_app_host"`
-	PersistentAppOrg        *string `json:"persistent_app_org"`
-	PersistentAppQuotaName  *string `json:"persistent_app_quota_name"`
-	PersistentAppSpace      *string `json:"persistent_app_space"`
-	CleanupPersistentAppOrg *bool   `json:"cleanup_persistent_app_org"`
+	PersistentAppHost      *string `json:"persistent_app_host"`
+	PersistentAppOrg       *string `json:"persistent_app_org"`
+	PersistentAppQuotaName *string `json:"persistent_app_quota_name"`
+	PersistentAppSpace     *string `json:"persistent_app_space"`
 
 	IsolationSegmentName *string `json:"isolation_segment_name"`
 
@@ -108,7 +107,6 @@ func getDefaults() config {
 	defaults.PersistentAppOrg = ptrToString("CATS-persistent-org")
 	defaults.PersistentAppQuotaName = ptrToString("CATS-persistent-quota")
 	defaults.PersistentAppSpace = ptrToString("CATS-persistent-space")
-	defaults.CleanupPersistentAppOrg = ptrToBool(false)
 
 	defaults.IsolationSegmentName = ptrToString("")
 
@@ -520,16 +518,11 @@ func (c *config) GetArtifactsDirectory() string {
 func (c *config) GetPersistentAppSpace() string {
 	return *c.PersistentAppSpace
 }
-
 func (c *config) GetPersistentAppOrg() string {
 	return *c.PersistentAppOrg
 }
-
 func (c *config) GetPersistentAppQuotaName() string {
 	return *c.PersistentAppQuotaName
-}
-func (c *config) GetCleanupPersistentAppOrg() bool {
-	return *c.CleanupPersistentAppOrg
 }
 
 func (c *config) GetIsolationSegmentName() string {
