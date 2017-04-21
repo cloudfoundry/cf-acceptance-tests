@@ -63,11 +63,11 @@ var _ = V3Describe("route_mapping", func() {
 	})
 
 	Describe("Route mapping lifecycle", func() {
-		It("creates a route mapping on a specified port", func() {
+		It("creates a route mapping", func() {
 			updateProcessPath := fmt.Sprintf("/v3/processes/%s", webProcess.Guid)
-			setPortBody := `{"ports": [1234], "health_check": {"type": "process"}}`
+			setHealthCheckBody := `{"health_check": {"type": "process"}}`
 
-			Expect(cf.Cf("curl", updateProcessPath, "-X", "PATCH", "-d", setPortBody).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("curl", updateProcessPath, "-X", "PATCH", "-d", setHealthCheckBody).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 			getRoutePath := fmt.Sprintf("/v2/routes?q=host:%s", appName)
 			routeBody := cf.Cf("curl", getRoutePath).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
@@ -80,8 +80,7 @@ var _ = V3Describe("route_mapping", func() {
 					"relationships": {
 						"app":   {"guid": "%s"},
 						"route": {"guid": "%s"}
-					},
-					"app_port": 1234
+					}
 				}`, appGuid, routeGuid)
 
 			Expect(cf.Cf("curl", "/v3/route_mappings", "-X", "POST", "-d", addRouteBody).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
