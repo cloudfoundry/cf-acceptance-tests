@@ -54,7 +54,7 @@ var _ = V3Describe("droplet features", func() {
 
 		It("can copy a droplet", func() {
 			copyRequestBody := fmt.Sprintf("{\"relationships\":{\"app\":{\"guid\":\"%s\"}}}", destinationAppGuid)
-			copyUrl := fmt.Sprintf("/v3/droplets/%s/copy", sourceDropletGuid)
+			copyUrl := fmt.Sprintf("/v3/droplets?source_guid=%s", sourceDropletGuid)
 			session := cf.Cf("curl", copyUrl, "-X", "POST", "-d", copyRequestBody)
 
 			bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
@@ -86,7 +86,7 @@ var _ = V3Describe("droplet features", func() {
 
 		It("creates an audit.app.droplet.create event for the copied droplet", func() {
 			copyRequestBody := fmt.Sprintf("{\"relationships\":{\"app\":{\"guid\":\"%s\"}}}", destinationAppGuid)
-			copyUrl := fmt.Sprintf("/v3/droplets/%s/copy", sourceDropletGuid)
+			copyUrl := fmt.Sprintf("/v3/droplets?source_guid=%s", sourceDropletGuid)
 			session := cf.Cf("curl", copyUrl, "-X", "POST", "-d", copyRequestBody)
 
 			bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
