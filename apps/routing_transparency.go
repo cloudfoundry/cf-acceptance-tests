@@ -5,6 +5,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	"path/filepath"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
@@ -23,6 +24,7 @@ var _ = AppsDescribe("Routing Transparency", func() {
 			"--no-start",
 			"-b", Config.GetGoBuildpackName(),
 			"-p", assets.NewAssets().Golang,
+			"-f", filepath.Join(assets.NewAssets().Golang, "manifest.yml"),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)

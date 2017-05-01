@@ -1,6 +1,7 @@
 package detect
 
 import (
+	"path/filepath"
 	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -68,7 +69,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("golang", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Golang, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Golang, "-f", filepath.Join(assets.NewAssets().Golang, "manifest.yml"), "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
 			Expect(cf.Cf("start", appName).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
