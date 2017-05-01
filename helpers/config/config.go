@@ -11,6 +11,7 @@ type CatsConfig interface {
 	GetIncludeDetect() bool
 	GetIncludeDocker() bool
 	GetIncludeInternetDependent() bool
+	GetIncludePersistentApp() bool
 	GetIncludePrivilegedContainerSupport() bool
 	GetIncludeRouteServices() bool
 	GetIncludeRouting() bool

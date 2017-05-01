@@ -120,6 +120,7 @@ export CONFIG=$PWD/integration_config.json
 * `include_detect`: Flag to include tests in the detect group.
 * `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
 * `include_internet_dependent`: Flag to include tests that require the deployment to have internet access.
+* `include_persistent_app`: Flag to run tests in `one_push_many_restarts_test.go`.
 * `include_privileged_container_support`: Flag to include privileged container tests. Requires capi.nsync.diego_privileged_containers and capi.stager.diego_privileged_containers to be enabled for tests to pass.
 * `include_route_services`: Flag to include the route services tests. Diego must be deployed for these tests to pass.
 * `include_routing`: Flag to include the routing tests.

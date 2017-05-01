@@ -13,6 +13,7 @@ const SkipDockerMessage string = `Skipping this test because config.IncludeDocke
 NOTE: Ensure Docker containers are enabled on your platform before enabling this test.`
 const SkipInternetDependentMessage string = `Skipping this test because config.IncludeInternetDependent is set to 'false'.
 NOTE: Ensure that your platform has access to the internet before running this test.`
+const SkipPersistentAppMessage string = `Skipping this test because config.IncludePersistentApp is set to 'false'.`
 const SkipPrivilegedContainerSupportMessage string = `Skipping this test because Config.IncludePrivilegedContainerSupport is set to 'false'.
 NOTE: Ensure privileged containers are allowed on your platform before enabling this test.`
 const SkipRouteServicesMessage string = `Skipping this test because config.IncludeRouteServices is set to 'false'.

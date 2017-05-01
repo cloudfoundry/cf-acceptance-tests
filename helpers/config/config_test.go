@@ -101,6 +101,7 @@ type allConfig struct {
 	IncludeDetect                     *bool `json:"include_detect"`
 	IncludeDocker                     *bool `json:"include_docker"`
 	IncludeInternetDependent          *bool `json:"include_internet_dependent"`
+	IncludePersistentApp              *bool `json:"include_persistent_app"`
 	IncludePrivilegedContainerSupport *bool `json:"include_privileged_container_support"`
 	IncludeRouteServices              *bool `json:"include_route_services"`
 	IncludeRouting                    *bool `json:"include_routing"`
@@ -181,6 +182,7 @@ var _ = Describe("Config", func() {
 		config, err := cfg.NewCatsConfig(requiredCfgFilePath)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(config.GetIncludeApps()).To(BeTrue())
+		Expect(config.GetIncludePersistentApp()).To(BeTrue())
 		Expect(config.GetPersistentAppHost()).To(Equal("CATS-persistent-app"))
 
 		Expect(config.GetPersistentAppOrg()).To(Equal("CATS-persistent-org"))
@@ -292,6 +294,7 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_detect' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_docker' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_internet_dependent' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_persistent_app' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_privileged_container_support' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_route_services' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_routing' must not be null"))

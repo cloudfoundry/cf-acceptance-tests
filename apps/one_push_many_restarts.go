@@ -27,7 +27,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 )
 
-var _ = AppsDescribe("An application that's already been pushed", func() {
+var _ = PersistentAppDescribe("An application that's already been pushed", func() {
 	var (
 		appName             string
 		persistentTestSetup *workflowhelpers.ReproducibleTestSuiteSetup

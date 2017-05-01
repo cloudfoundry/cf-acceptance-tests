@@ -67,6 +67,7 @@ type config struct {
 	IncludeDetect                     *bool `json:"include_detect"`
 	IncludeDocker                     *bool `json:"include_docker"`
 	IncludeInternetDependent          *bool `json:"include_internet_dependent"`
+	IncludePersistentApp              *bool `json:"include_persistent_app"`
 	IncludePrivilegedContainerSupport *bool `json:"include_privileged_container_support"`
 	IncludeRouteServices              *bool `json:"include_route_services"`
 	IncludeRouting                    *bool `json:"include_routing"`
@@ -121,22 +122,23 @@ func getDefaults() config {
 
 	defaults.IncludeApps = ptrToBool(true)
 	defaults.IncludeDetect = ptrToBool(true)
+	defaults.IncludePersistentApp = ptrToBool(true)
 	defaults.IncludeRouting = ptrToBool(true)
 
 	defaults.IncludeBackendCompatiblity = ptrToBool(false)
 	defaults.IncludeContainerNetworking = ptrToBool(false)
 	defaults.IncludeDocker = ptrToBool(false)
 	defaults.IncludeInternetDependent = ptrToBool(false)
+	defaults.IncludeIsolationSegments = ptrToBool(false)
+	defaults.IncludePrivilegedContainerSupport = ptrToBool(false)
 	defaults.IncludeRouteServices = ptrToBool(false)
+	defaults.IncludeSSO = ptrToBool(false)
 	defaults.IncludeSecurityGroups = ptrToBool(false)
 	defaults.IncludeServices = ptrToBool(false)
 	defaults.IncludeSsh = ptrToBool(false)
-	defaults.IncludeV3 = ptrToBool(false)
-	defaults.IncludePrivilegedContainerSupport = ptrToBool(false)
-	defaults.IncludeZipkin = ptrToBool(false)
-	defaults.IncludeSSO = ptrToBool(false)
 	defaults.IncludeTasks = ptrToBool(false)
-	defaults.IncludeIsolationSegments = ptrToBool(false)
+	defaults.IncludeV3 = ptrToBool(false)
+	defaults.IncludeZipkin = ptrToBool(false)
 
 	defaults.UseHttp = ptrToBool(false)
 	defaults.UseExistingUser = ptrToBool(false)
@@ -300,6 +302,9 @@ func validateConfig(config *config) Errors {
 	}
 	if config.IncludeInternetDependent == nil {
 		errs.Add(fmt.Errorf("* 'include_internet_dependent' must not be null"))
+	}
+	if config.IncludePersistentApp == nil {
+		errs.Add(fmt.Errorf("* 'include_persistent_app' must not be null"))
 	}
 	if config.IncludePrivilegedContainerSupport == nil {
 		errs.Add(fmt.Errorf("* 'include_privileged_container_support' must not be null"))
@@ -579,6 +584,10 @@ func (c *config) GetIncludeSsh() bool {
 
 func (c *config) GetIncludeApps() bool {
 	return *c.IncludeApps
+}
+
+func (c *config) GetIncludePersistentApp() bool {
+	return *c.IncludePersistentApp
 }
 
 func (c *config) GetIncludeBackendCompatiblity() bool {
