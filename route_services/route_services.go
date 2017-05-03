@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"path/filepath"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
@@ -50,11 +51,13 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
 
-				PushAppNoStart(appName, golangAsset, Config.GetGoBuildpackName(), Config.GetAppsDomain(), Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
+				PushAppNoStart(appName, golangAsset, Config.GetGoBuildpackName(), Config.GetAppsDomain(), Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT, "-f", filepath.Join(golangAsset, "manifest.yml"))
 				EnableDiego(appName, Config.DefaultTimeoutDuration())
 				StartApp(appName, Config.CfPushTimeoutDuration())
 
-				PushApp(routeServiceName, loggingRouteServiceAsset, Config.GetGoBuildpackName(), Config.GetAppsDomain(), Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
+				PushAppNoStart(routeServiceName, loggingRouteServiceAsset, Config.GetGoBuildpackName(), Config.GetAppsDomain(), Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT, "-f", filepath.Join(loggingRouteServiceAsset, "manifest.yml"))
+				SetBackend(routeServiceName, Config.CfPushTimeoutDuration())
+				StartApp(routeServiceName, Config.CfPushTimeoutDuration())
 				configureBroker(brokerAppName, routeServiceName)
 
 				bindRouteToService(appName, serviceInstanceName)
@@ -100,7 +103,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
 
-				PushAppNoStart(appName, golangAsset, Config.GetGoBuildpackName(), Config.GetAppsDomain(), Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
+				PushAppNoStart(appName, golangAsset, Config.GetGoBuildpackName(), Config.GetAppsDomain(), Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT, "-f", filepath.Join(golangAsset, "manifest.yml"))
 				EnableDiego(appName, Config.DefaultTimeoutDuration())
 				StartApp(appName, Config.CfPushTimeoutDuration())
 

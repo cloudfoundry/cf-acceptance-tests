@@ -5,6 +5,8 @@ import (
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
+	"path/filepath"
+
 	. "code.cloudfoundry.org/cf-routing-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
@@ -28,7 +30,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 		app = random_name.CATSRandomName("APP")
 		cmd := fmt.Sprintf("go-online --ports=7777,8888,8080")
 
-		PushAppNoStart(app, multiPortAppAsset, Config.GetGoBuildpackName(), Config.GetAppsDomain(), Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT, "-c", cmd)
+		PushAppNoStart(app, multiPortAppAsset, Config.GetGoBuildpackName(), Config.GetAppsDomain(), Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT, "-c", cmd, "-f", filepath.Join(multiPortAppAsset, "manifest.yml"))
 		EnableDiego(app, Config.DefaultTimeoutDuration())
 		StartApp(app, APP_START_TIMEOUT)
 	})

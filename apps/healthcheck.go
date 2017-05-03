@@ -10,6 +10,8 @@ import (
 	"github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 
+	"path/filepath"
+
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -37,6 +39,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 			Eventually(cf.Cf(
 				"push", appName,
 				"-p", assets.NewAssets().WorkerApp,
+				"-f", filepath.Join(assets.NewAssets().WorkerApp, "manifest.yml"),
 				"--no-start",
 				"-b", "go_buildpack",
 				"-m", DEFAULT_MEMORY_LIMIT,
