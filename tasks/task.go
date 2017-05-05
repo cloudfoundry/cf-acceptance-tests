@@ -3,6 +3,7 @@ package tasks
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -93,7 +94,9 @@ var _ = TasksDescribe("v3 tasks", func() {
 		It("can successfully create and run a task", func() {
 			By("creating the task")
 			taskName := "mreow"
-			command := "ls"
+			// sleep for enough time to see the task is RUNNING
+			sleepTime := math.Min(float64(2), float64(Config.DefaultTimeoutDuration().Seconds()))
+			command := fmt.Sprintf("sleep %f", sleepTime)
 			lastUsageEventGuid := app_helpers.LastAppUsageEventGuid(TestSetup)
 			createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait(Config.DefaultTimeoutDuration())
 			Expect(createCommand).To(Exit(0))
