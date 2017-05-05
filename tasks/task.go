@@ -105,7 +105,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 			sequenceId := taskDetails[0]
 			outputName := taskDetails[1]
 			outputState := taskDetails[2]
-			ouputCommand := taskDetails[len(taskDetails)-1]
+			ouputCommand := taskDetails[len(taskDetails)-2] + " " + taskDetails[len(taskDetails)-1]
 
 			Expect(ouputCommand).To(Equal(command))
 			Expect(outputName).To(Equal(taskName))
