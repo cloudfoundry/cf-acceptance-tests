@@ -11,6 +11,7 @@ type CatsConfig interface {
 	GetIncludeDetect() bool
 	GetIncludeDocker() bool
 	GetIncludeInternetDependent() bool
+	GetIncludePrivateDockerRegistry() bool
 	GetIncludePersistentApp() bool
 	GetIncludePrivilegedContainerSupport() bool
 	GetIncludeRouteServices() bool
@@ -44,6 +45,9 @@ type CatsConfig interface {
 	GetJavaBuildpackName() string
 	GetNamePrefix() string
 	GetNodejsBuildpackName() string
+	GetPrivateDockerRegistryImage() string
+	GetPrivateDockerRegistryUsername() string
+	GetPrivateDockerRegistryPassword() string
 	GetPersistentAppHost() string
 	GetPersistentAppOrg() string
 	GetPersistentAppQuotaName() string

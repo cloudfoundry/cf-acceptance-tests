@@ -88,6 +88,7 @@ cat > integration_config.json <<EOF
   "include_detect": true,
   "include_docker": false,
   "include_internet_dependent": false,
+  "include_private_docker_registry": false,
   "include_privileged_container_support": false,
   "include_route_services": false,
   "include_routing": true,
@@ -120,6 +121,7 @@ export CONFIG=$PWD/integration_config.json
 * `include_detect`: Flag to include tests in the detect group.
 * `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
 * `include_internet_dependent`: Flag to include tests that require the deployment to have internet access.
+* `include_private_docker_registry`: Flag to run tests that rely on a private docker image. [See below](#private-docker).
 * `include_persistent_app`: Flag to run tests in `one_push_many_restarts_test.go`.
 * `include_privileged_container_support`: Flag to include privileged container tests. Requires capi.nsync.diego_privileged_containers and capi.stager.diego_privileged_containers to be enabled for tests to pass.
 * `include_route_services`: Flag to include the route services tests. Diego must be deployed for these tests to pass.
@@ -153,6 +155,10 @@ export CONFIG=$PWD/integration_config.json
 * `test_password`: Used to set the password for the test user. This may be needed if your CF installation has password policies.
 * `timeout_scale`: Used primarily to scale default timeouts for test setup and teardown actions (e.g. creating an org) as opposed to main test actions (e.g. pushing an app).
 * `isolation_segment_name`: Name of the isolation segment to use for the isolation segments test.
+* `private_docker_registry_image`: Name of the private docker image to use when testing private docker registries. [See below](#private-docker)
+* `private_docker_registry_username`: Username to access the private docker repository. [See below](#private-docker)
+* `private_docker_registry_password`: Password to access the private docker repository. [See below](#private-docker)
+
 * `staticfile_buildpack_name` [See below](#buildpack-names).
 * `java_buildpack_name` [See below](#buildpack-names).
 * `ruby_buildpack_name` [See below](#buildpack-names).
@@ -194,6 +200,23 @@ properties:
           destination: IP_OF_YOUR_LOAD_BALANCER # (e.g. 10.244.0.34 for a standard deployment of Cloud Foundry on BOSH-Lite)
     default_running_security_groups: ["load_balancer"]
 ```
+
+#### Private Docker
+To run tests that exercise the use of credentials to access a private docker registry, the `include_private_docker_registry` flag must be true, and the following config values must be provided:
+
+* `private_docker_registry_image`
+* `private_docker_registry_username`
+* `private_docker_registry_password`
+
+These tests assume that the specified private docker image is a private version of the cloudfoundry/diego-docker-app-custom:latest. To upload a private version to your DockerHub account, first create a private repository on DockerHub and log in to docker on the command line. Then run the following commands:
+
+```bash
+docker pull cloudfoundry/diego-docker-app-custom:latest
+docker tag cloudfoundry/diego-docker-app-custom:latest <your-private-repo>:<some-tag>
+docker push <your-private-repo>:<some-tag>
+```
+
+The value for the `private_docker_registry_image` config value in this case would be "<your-private-repo>:<some-tag>".
 
 #### Capturing Test Output
 When a test fails, look for the test group name (`[services]` in the example below) in the test output:
