@@ -150,7 +150,7 @@ func StageBuildpackPackage(packageGuid, buildpack string) string {
 }
 
 func StageDockerPackage(packageGuid string) string {
-	stageBody := fmt.Sprintf(`{"lifecycle": { "type" : "docker" }, "package": { "guid" : "%s"}}`, packageGuid)
+	stageBody := fmt.Sprintf(`{"lifecycle": { "type" : "docker", "data": {} }, "package": { "guid" : "%s"}}`, packageGuid)
 	stageUrl := "/v3/builds"
 	session := cf.Cf("curl", stageUrl, "-X", "POST", "-d", stageBody)
 	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
