@@ -43,7 +43,11 @@ type testConfig struct {
 	SleepTimeout                 *int `json:"sleep_timeout,omitempty"`
 
 	// optional
-	Backend *string `json:"backend,omitempty"`
+	Backend                       *string `json:"backend,omitempty"`
+	IncludePrivateDockerRegistry  *bool   `json:"include_private_docker_registry,omitempty"`
+	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image,omitempty"`
+	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username,omitempty"`
+	PrivateDockerRegistryPassword *string `json:"private_docker_registry_password,omitempty"`
 }
 
 type allConfig struct {
@@ -101,6 +105,7 @@ type allConfig struct {
 	IncludeDetect                     *bool `json:"include_detect"`
 	IncludeDocker                     *bool `json:"include_docker"`
 	IncludeInternetDependent          *bool `json:"include_internet_dependent"`
+	IncludePrivateDockerRegistry      *bool `json:"include_private_docker_registry"`
 	IncludePersistentApp              *bool `json:"include_persistent_app"`
 	IncludePrivilegedContainerSupport *bool `json:"include_privileged_container_support"`
 	IncludeRouteServices              *bool `json:"include_route_services"`
@@ -113,6 +118,10 @@ type allConfig struct {
 	IncludeV3                         *bool `json:"include_v3"`
 	IncludeZipkin                     *bool `json:"include_zipkin"`
 	IncludeIsolationSegments          *bool `json:"include_isolation_segments"`
+
+	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image"`
+	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username"`
+	PrivateDockerRegistryPassword *string `json:"private_docker_registry_password"`
 
 	NamePrefix *string `json:"name_prefix"`
 }
@@ -205,6 +214,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeSsh()).To(BeFalse())
 		Expect(config.GetIncludeV3()).To(BeFalse())
 		Expect(config.GetIncludeIsolationSegments()).To(BeFalse())
+		Expect(config.GetIncludePrivateDockerRegistry()).To(BeFalse())
 		Expect(config.GetIncludePrivilegedContainerSupport()).To(BeFalse())
 		Expect(config.GetIncludeZipkin()).To(BeFalse())
 		Expect(config.GetIncludeSSO()).To(BeFalse())
@@ -228,6 +238,10 @@ var _ = Describe("Config", func() {
 		Expect(config.GetScaledTimeout(1)).To(Equal(time.Duration(1)))
 
 		Expect(config.GetArtifactsDirectory()).To(Equal(filepath.Join("..", "results")))
+
+		Expect(config.GetPrivateDockerRegistryImage()).To(Equal(""))
+		Expect(config.GetPrivateDockerRegistryUsername()).To(Equal(""))
+		Expect(config.GetPrivateDockerRegistryPassword()).To(Equal(""))
 
 		Expect(config.GetNamePrefix()).To(Equal("CATS"))
 
@@ -295,6 +309,7 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_docker' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_internet_dependent' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_persistent_app' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_private_docker_registry' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_privileged_container_support' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_route_services' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_routing' must not be null"))
@@ -307,6 +322,10 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_v3' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_zipkin' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_isolation_segments' must not be null"))
+
+			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_image' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_username' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_password' must not be null"))
 
 			Expect(err.Error()).To(ContainSubstring("'name_prefix' must not be null"))
 		})
@@ -334,6 +353,51 @@ var _ = Describe("Config", func() {
 			Expect(config.AsyncServiceOperationTimeoutDuration()).To(Equal(90 * time.Minute))
 			Expect(config.DetectTimeoutDuration()).To(Equal(100 * time.Minute))
 			Expect(config.SleepTimeoutDuration()).To(Equal(101 * time.Second))
+		})
+	})
+
+	Context("when including private docker registry tests", func() {
+		BeforeEach(func() {
+			testCfg.IncludePrivateDockerRegistry = ptrToBool(true)
+			testCfg.PrivateDockerRegistryImage = ptrToString("value")
+			testCfg.PrivateDockerRegistryUsername = ptrToString("value")
+			testCfg.PrivateDockerRegistryPassword = ptrToString("value")
+		})
+
+		Context("when image is an empty string", func() {
+			BeforeEach(func() {
+				testCfg.PrivateDockerRegistryImage = ptrToString("")
+			})
+
+			It("returns an error", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(config).To(BeNil())
+				Expect(err).To(MatchError("* Invalid configuration: 'private_docker_registry_image' must be provided if 'include_private_docker_registry' is true"))
+			})
+		})
+
+		Context("when username is an empty string", func() {
+			BeforeEach(func() {
+				testCfg.PrivateDockerRegistryUsername = ptrToString("")
+			})
+
+			It("returns an error", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(config).To(BeNil())
+				Expect(err).To(MatchError("* Invalid configuration: 'private_docker_registry_username' must be provided if 'include_private_docker_registry' is true"))
+			})
+		})
+
+		Context("when password is an empty string", func() {
+			BeforeEach(func() {
+				testCfg.PrivateDockerRegistryPassword = ptrToString("")
+			})
+
+			It("returns an error", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(config).To(BeNil())
+				Expect(err).To(MatchError("* Invalid configuration: 'private_docker_registry_password' must be provided if 'include_private_docker_registry' is true"))
+			})
 		})
 	})
 

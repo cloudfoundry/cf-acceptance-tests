@@ -68,6 +68,7 @@ type config struct {
 	IncludeDocker                     *bool `json:"include_docker"`
 	IncludeInternetDependent          *bool `json:"include_internet_dependent"`
 	IncludePersistentApp              *bool `json:"include_persistent_app"`
+	IncludePrivateDockerRegistry      *bool `json:"include_private_docker_registry"`
 	IncludePrivilegedContainerSupport *bool `json:"include_privileged_container_support"`
 	IncludeRouteServices              *bool `json:"include_route_services"`
 	IncludeRouting                    *bool `json:"include_routing"`
@@ -79,6 +80,10 @@ type config struct {
 	IncludeV3                         *bool `json:"include_v3"`
 	IncludeZipkin                     *bool `json:"include_zipkin"`
 	IncludeIsolationSegments          *bool `json:"include_isolation_segments"`
+
+	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image"`
+	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username"`
+	PrivateDockerRegistryPassword *string `json:"private_docker_registry_password"`
 
 	NamePrefix *string `json:"name_prefix"`
 }
@@ -131,6 +136,7 @@ func getDefaults() config {
 	defaults.IncludeInternetDependent = ptrToBool(false)
 	defaults.IncludeIsolationSegments = ptrToBool(false)
 	defaults.IncludePrivilegedContainerSupport = ptrToBool(false)
+	defaults.IncludePrivateDockerRegistry = ptrToBool(false)
 	defaults.IncludeRouteServices = ptrToBool(false)
 	defaults.IncludeSSO = ptrToBool(false)
 	defaults.IncludeSecurityGroups = ptrToBool(false)
@@ -160,6 +166,10 @@ func getDefaults() config {
 	defaults.TimeoutScale = ptrToFloat(1.0)
 
 	defaults.ArtifactsDirectory = ptrToString(filepath.Join("..", "results"))
+
+	defaults.PrivateDockerRegistryImage = ptrToString("")
+	defaults.PrivateDockerRegistryUsername = ptrToString("")
+	defaults.PrivateDockerRegistryPassword = ptrToString("")
 
 	defaults.NamePrefix = ptrToString("CATS")
 	return defaults
@@ -200,6 +210,11 @@ func validateConfig(config *config) Errors {
 	}
 
 	err = validateBackend(config)
+	if err != nil {
+		errs.Add(err)
+	}
+
+	err = validatePrivateDockerRegistry(config)
 	if err != nil {
 		errs.Add(err)
 	}
@@ -303,6 +318,9 @@ func validateConfig(config *config) Errors {
 	if config.IncludeInternetDependent == nil {
 		errs.Add(fmt.Errorf("* 'include_internet_dependent' must not be null"))
 	}
+	if config.IncludePrivateDockerRegistry == nil {
+		errs.Add(fmt.Errorf("* 'include_private_docker_registry' must not be null"))
+	}
 	if config.IncludePersistentApp == nil {
 		errs.Add(fmt.Errorf("* 'include_persistent_app' must not be null"))
 	}
@@ -338,6 +356,15 @@ func validateConfig(config *config) Errors {
 	}
 	if config.IncludeIsolationSegments == nil {
 		errs.Add(fmt.Errorf("* 'include_isolation_segments' must not be null"))
+	}
+	if config.PrivateDockerRegistryImage == nil {
+		errs.Add(fmt.Errorf("* 'private_docker_registry_image' must not be null"))
+	}
+	if config.PrivateDockerRegistryUsername == nil {
+		errs.Add(fmt.Errorf("* 'private_docker_registry_username' must not be null"))
+	}
+	if config.PrivateDockerRegistryPassword == nil {
+		errs.Add(fmt.Errorf("* 'private_docker_registry_password' must not be null"))
 	}
 	if config.NamePrefix == nil {
 		errs.Add(fmt.Errorf("* 'name_prefix' must not be null"))
@@ -428,6 +455,37 @@ func validateAdminPassword(config *config) error {
 
 	if config.GetAdminPassword() == "" {
 		return fmt.Errorf("* Invalid configuration: 'admin_password' must be provided")
+	}
+
+	return nil
+}
+
+func validatePrivateDockerRegistry(config *config) error {
+	if config.IncludePrivateDockerRegistry == nil {
+		return fmt.Errorf("* 'include_private_docker_registry' must not be null")
+	}
+	if config.PrivateDockerRegistryImage == nil {
+		return fmt.Errorf("* 'private_docker_registry_image' must not be null")
+	}
+	if config.PrivateDockerRegistryUsername == nil {
+		return fmt.Errorf("* 'private_docker_registry_username' must not be null")
+	}
+	if config.PrivateDockerRegistryPassword == nil {
+		return fmt.Errorf("* 'private_docker_registry_password' must not be null")
+	}
+
+	if !config.GetIncludePrivateDockerRegistry() {
+		return nil
+	}
+
+	if config.GetPrivateDockerRegistryImage() == "" {
+		return fmt.Errorf("* Invalid configuration: 'private_docker_registry_image' must be provided if 'include_private_docker_registry' is true")
+	}
+	if config.GetPrivateDockerRegistryUsername() == "" {
+		return fmt.Errorf("* Invalid configuration: 'private_docker_registry_username' must be provided if 'include_private_docker_registry' is true")
+	}
+	if config.GetPrivateDockerRegistryPassword() == "" {
+		return fmt.Errorf("* Invalid configuration: 'private_docker_registry_password' must be provided if 'include_private_docker_registry' is true")
 	}
 
 	return nil
@@ -626,6 +684,10 @@ func (c *config) GetIncludeTasks() bool {
 	return *c.IncludeTasks
 }
 
+func (c *config) GetIncludePrivateDockerRegistry() bool {
+	return *c.IncludePrivateDockerRegistry
+}
+
 func (c *config) GetIncludePrivilegedContainerSupport() bool {
 	return *c.IncludePrivilegedContainerSupport
 }
@@ -676,4 +738,16 @@ func (c *config) GetPersistentAppHost() string {
 
 func (c *config) GetBackend() string {
 	return *c.Backend
+}
+
+func (c *config) GetPrivateDockerRegistryImage() string {
+	return *c.PrivateDockerRegistryImage
+}
+
+func (c *config) GetPrivateDockerRegistryUsername() string {
+	return *c.PrivateDockerRegistryUsername
+}
+
+func (c *config) GetPrivateDockerRegistryPassword() string {
+	return *c.PrivateDockerRegistryPassword
 }
