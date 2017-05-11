@@ -8,7 +8,7 @@ if [ ! -f "${CONFIG}" ]; then
 fi
 
 echo "Printing sanitized \$CONFIG"
-grep -v password $CONFIG
+grep -v -e password -e private_docker_registry_ $CONFIG
 
 bin_dir=$(dirname "${BASH_SOURCE[0]}")
 project_go_root="${bin_dir}/../../../../../"
