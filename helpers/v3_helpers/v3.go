@@ -3,6 +3,7 @@ package v3_helpers
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -10,6 +11,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
+	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
@@ -210,6 +212,145 @@ func ScaleProcess(appGuid, processType, memoryInMb string) {
 
 func CreateRoute(space, domain, host string) {
 	Expect(cf.Cf("create-route", space, domain, "-n", host).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+}
+
+func GetGuidFromResponse(response []byte) string {
+	type resource struct {
+		Guid string `json:"guid"`
+	}
+	var GetResponse struct {
+		Resources []resource `json:"resources"`
+	}
+
+	err := json.Unmarshal(response, &GetResponse)
+	Expect(err).ToNot(HaveOccurred())
+
+	if len(GetResponse.Resources) == 0 {
+		Fail("No guid found for response")
+	}
+
+	return GetResponse.Resources[0].Guid
+}
+
+func GetIsolationSegmentGuidFromResponse(response []byte) string {
+	type data struct {
+		Guid string `json:"guid"`
+	}
+	var GetResponse struct {
+		Data data `json:"data"`
+	}
+
+	err := json.Unmarshal(response, &GetResponse)
+	Expect(err).ToNot(HaveOccurred())
+
+	if (data{}) == GetResponse.Data {
+		return ""
+	}
+
+	return GetResponse.Data.Guid
+}
+
+func AssignIsolationSegmentToSpace(spaceGuid, isoSegGuid string) {
+	Eventually(cf.Cf("curl", fmt.Sprintf("/v3/spaces/%s/relationships/isolation_segment", spaceGuid),
+		"-X",
+		"PATCH",
+		"-d",
+		fmt.Sprintf(`{"data":{"guid":"%s"}}`, isoSegGuid)),
+		Config.DefaultTimeoutDuration()).Should(Exit(0))
+}
+
+func CreateIsolationSegment(name string) string {
+	session := cf.Cf("curl", "/v3/isolation_segments", "-X", "POST", "-d", fmt.Sprintf(`{"name":"%s"}`, name))
+	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+
+	var isolation_segment struct {
+		Guid string `json:"guid"`
+	}
+	err := json.Unmarshal(bytes, &isolation_segment)
+	Expect(err).ToNot(HaveOccurred())
+
+	return isolation_segment.Guid
+}
+
+func DeleteIsolationSegment(guid string) {
+	Eventually(cf.Cf("curl", fmt.Sprintf("/v3/isolation_segments/%s", guid), "-X", "DELETE"), Config.DefaultTimeoutDuration()).Should(Exit(0))
+}
+
+func CreateOrGetIsolationSegment(name string) (string, bool) {
+	var isoSegGuid string
+	var created bool
+	if IsolationSegmentExists(name) {
+		isoSegGuid = GetIsolationSegmentGuid(name)
+		created = true
+	} else {
+		isoSegGuid = CreateIsolationSegment(name)
+		created = false
+	}
+	return isoSegGuid, created
+}
+
+func GetIsolationSegmentGuid(name string) string {
+	session := cf.Cf("curl", fmt.Sprintf("/v3/isolation_segments?names=%s", name))
+	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+	return GetGuidFromResponse(bytes)
+}
+
+func IsolationSegmentExists(name string) bool {
+	session := cf.Cf("curl", fmt.Sprintf("/v3/isolation_segments?names=%s", name))
+	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+	type resource struct {
+		Guid string `json:"guid"`
+	}
+	var GetResponse struct {
+		Resources []resource `json:"resources"`
+	}
+
+	err := json.Unmarshal(bytes, &GetResponse)
+	Expect(err).ToNot(HaveOccurred())
+	return len(GetResponse.Resources) > 0
+}
+
+func OrgEntitledToIsolationSegment(orgGuid string, isoSegName string) bool {
+	session := cf.Cf("curl", fmt.Sprintf("/v3/isolation_segments?names=%s&organization_guids=%s", isoSegName, orgGuid))
+	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+
+	type resource struct {
+		Guid string `json:"guid"`
+	}
+	var GetResponse struct {
+		Resources []resource `json:"resources"`
+	}
+
+	err := json.Unmarshal(bytes, &GetResponse)
+	Expect(err).ToNot(HaveOccurred())
+	return len(GetResponse.Resources) > 0
+}
+
+func EntitleOrgToIsolationSegment(orgGuid, isoSegGuid string) {
+	Eventually(cf.Cf("curl",
+		fmt.Sprintf("/v3/isolation_segments/%s/relationships/organizations", isoSegGuid),
+		"-X",
+		"POST",
+		"-d",
+		fmt.Sprintf(`{"data":[{ "guid":"%s" }]}`, orgGuid)),
+		Config.DefaultTimeoutDuration()).Should(Exit(0))
+}
+
+func RevokeOrgEntitlementForIsolationSegment(orgGuid, isoSegGuid string) {
+	Eventually(cf.Cf("curl",
+		fmt.Sprintf("/v3/isolation_segments/%s/relationships/organizations/%s", isoSegGuid, orgGuid),
+		"-X",
+		"DELETE",
+	), Config.DefaultTimeoutDuration()).Should(Exit(0))
+}
+
+func SendRequestWithHost(host, domain string) *http.Response {
+	req, _ := http.NewRequest("GET", fmt.Sprintf("http://wildcard-path.%s", domain), nil)
+	req.Host = host
+
+	resp, err := http.DefaultClient.Do(req)
+	Expect(err).NotTo(HaveOccurred())
+	return resp
 }
 
 func getHttpLoggregatorEndpoint() string {

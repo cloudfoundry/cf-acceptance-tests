@@ -35,7 +35,8 @@ type config struct {
 	PersistentAppQuotaName *string `json:"persistent_app_quota_name"`
 	PersistentAppSpace     *string `json:"persistent_app_space"`
 
-	IsolationSegmentName *string `json:"isolation_segment_name"`
+	IsolationSegmentName   *string `json:"isolation_segment_name"`
+	IsolationSegmentDomain *string `json:"isolation_segment_domain"`
 
 	Backend           *string `json:"backend"`
 	SkipSSLValidation *bool   `json:"skip_ssl_validation"`
@@ -115,6 +116,7 @@ func getDefaults() config {
 	defaults.PersistentAppSpace = ptrToString("CATS-persistent-space")
 
 	defaults.IsolationSegmentName = ptrToString("")
+	defaults.IsolationSegmentDomain = ptrToString("")
 
 	defaults.BinaryBuildpackName = ptrToString("binary_buildpack")
 	defaults.GoBuildpackName = ptrToString("go_buildpack")
@@ -590,6 +592,10 @@ func (c *config) GetPersistentAppQuotaName() string {
 
 func (c *config) GetIsolationSegmentName() string {
 	return *c.IsolationSegmentName
+}
+
+func (c *config) GetIsolationSegmentDomain() string {
+	return *c.IsolationSegmentDomain
 }
 
 func (c *config) GetNamePrefix() string {
