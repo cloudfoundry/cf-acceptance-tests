@@ -143,6 +143,21 @@ func ZipkinDescribe(description string, callback func()) bool {
 	})
 }
 
+func RoutingIsolationSegmentsDescribe(description string, callback func()) bool {
+	return Describe("[routing] "+description, func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeRouting() {
+				Skip(`Skipping this test because Config.IncludeRouting is set to 'false'`)
+			}
+
+			if !Config.GetIncludeRoutingIsolationSegments() {
+				Skip(`Skipping this test because Config.IncludeRoutingIsolationSegments is set to 'false'`)
+			}
+		})
+		callback()
+	})
+}
+
 func SecurityGroupsDescribe(description string, callback func()) bool {
 	return Describe("[security_groups] "+description, func() {
 		BeforeEach(func() {

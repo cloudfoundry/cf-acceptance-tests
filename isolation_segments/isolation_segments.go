@@ -1,7 +1,6 @@
 package isolation_segments
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
@@ -18,31 +17,13 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 )
 
 const (
 	SHARED_ISOLATION_SEGMENT_GUID = "933b4c58-120b-499a-b85d-4b6fc9e2903b"
 	binaryHi                      = "Hello from a binary"
 )
-
-func entitleOrgToIsolationSegment(orgGuid, isoSegGuid string) {
-	Eventually(cf.Cf("curl",
-		fmt.Sprintf("/v3/isolation_segments/%s/relationships/organizations", isoSegGuid),
-		"-X",
-		"POST",
-		"-d",
-		fmt.Sprintf(`{"data":[{ "guid":"%s" }]}`, orgGuid)),
-		Config.DefaultTimeoutDuration()).Should(Exit(0))
-}
-
-func assignIsolationSegmentToSpace(spaceGuid, isoSegGuid string) {
-	Eventually(cf.Cf("curl", fmt.Sprintf("/v3/spaces/%s/relationships/isolation_segment", spaceGuid),
-		"-X",
-		"PATCH",
-		"-d",
-		fmt.Sprintf(`{"data":{"guid":"%s"}}`, isoSegGuid)),
-		Config.DefaultTimeoutDuration()).Should(Exit(0))
-}
 
 func setDefaultIsolationSegment(orgGuid, isoSegGuid string) {
 	Eventually(cf.Cf("curl",
@@ -52,72 +33,6 @@ func setDefaultIsolationSegment(orgGuid, isoSegGuid string) {
 		"-d",
 		fmt.Sprintf(`{"data":{"guid":"%s"}}`, isoSegGuid)),
 		Config.DefaultTimeoutDuration()).Should(Exit(0))
-}
-
-func getGuid(response []byte) string {
-	type resource struct {
-		Guid string `json:"guid"`
-	}
-	var GetResponse struct {
-		Resources []resource `json:"resources"`
-	}
-
-	err := json.Unmarshal(response, &GetResponse)
-	Expect(err).ToNot(HaveOccurred())
-
-	if len(GetResponse.Resources) == 0 {
-		Fail("No guid found for response")
-	}
-
-	return GetResponse.Resources[0].Guid
-}
-
-func getIsolationSegmentGuid(name string) string {
-	session := cf.Cf("curl", fmt.Sprintf("/v3/isolation_segments?names=%s", name))
-	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
-	return getGuid(bytes)
-}
-
-func isolationSegmentExists(name string) bool {
-	session := cf.Cf("curl", fmt.Sprintf("/v3/isolation_segments?names=%s", name))
-	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
-	type resource struct {
-		Guid string `json:"guid"`
-	}
-	var GetResponse struct {
-		Resources []resource `json:"resources"`
-	}
-
-	err := json.Unmarshal(bytes, &GetResponse)
-	Expect(err).ToNot(HaveOccurred())
-	return len(GetResponse.Resources) > 0
-}
-
-func createIsolationSegment(name string) string {
-	session := cf.Cf("curl", "/v3/isolation_segments", "-X", "POST", "-d", fmt.Sprintf(`{"name":"%s"}`, name))
-	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
-
-	var isolation_segment struct {
-		Guid string `json:"guid"`
-	}
-	err := json.Unmarshal(bytes, &isolation_segment)
-	Expect(err).ToNot(HaveOccurred())
-
-	return isolation_segment.Guid
-}
-
-func deleteIsolationSegment(guid string) {
-	Eventually(cf.Cf("curl", fmt.Sprintf("/v3/isolation_segments/%s", guid), "-X", "DELETE"), Config.DefaultTimeoutDuration()).Should(Exit(0))
-}
-
-func createOrGetIsolationSegment(name string) string {
-	var isoSegGuid string
-	if isolationSegmentExists(name) {
-		isoSegGuid = getIsolationSegmentGuid(name)
-	} else {
-		isoSegGuid = createIsolationSegment(name)
-	}
-	return isoSegGuid
 }
 
 var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
@@ -139,7 +54,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 
 		session := cf.Cf("curl", fmt.Sprintf("/v3/organizations?names=%s", orgName))
 		bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
-		orgGuid = getGuid(bytes)
+		orgGuid = v3_helpers.GetGuidFromResponse(bytes)
 	})
 
 	AfterEach(func() {
@@ -147,7 +62,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 
 		if isoSegGuid != "" {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				deleteIsolationSegment(isoSegGuid)
+				v3_helpers.DeleteIsolationSegment(isoSegGuid)
 			})
 			isoSegGuid = ""
 		}
@@ -155,7 +70,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 
 	Context("When an organization has the shared segment as its default", func() {
 		BeforeEach(func() {
-			entitleOrgToIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
+			v3_helpers.EntitleOrgToIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
 		})
 
 		It("can run an app to a space with no assigned segment", func() {
@@ -179,8 +94,8 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 	Context("When the user-provided Isolation Segment has an associated cell", func() {
 		BeforeEach(func() {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid = createOrGetIsolationSegment(isoSegName)
-				entitleOrgToIsolationSegment(orgGuid, isoSegGuid)
+				isoSegGuid = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
+				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
 				setDefaultIsolationSegment(orgGuid, isoSegGuid)
 			})
 		})
@@ -206,8 +121,8 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 	Context("When the Isolation Segment has no associated cells", func() {
 		BeforeEach(func() {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid = createIsolationSegment(random_name.CATSRandomName("fake-iso-seg"))
-				entitleOrgToIsolationSegment(orgGuid, isoSegGuid)
+				isoSegGuid = v3_helpers.CreateIsolationSegment(random_name.CATSRandomName("fake-iso-seg"))
+				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
 				setDefaultIsolationSegment(orgGuid, isoSegGuid)
 			})
 		})
@@ -232,7 +147,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 	Context("When the organization has not been entitled to the Isolation Segment", func() {
 		BeforeEach(func() {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid = createOrGetIsolationSegment(isoSegName)
+				isoSegGuid = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
 			})
 		})
 
@@ -253,12 +168,12 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 	Context("When the space has been assigned an Isolation Segment", func() {
 		BeforeEach(func() {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid = createOrGetIsolationSegment(isoSegName)
-				entitleOrgToIsolationSegment(orgGuid, isoSegGuid)
+				isoSegGuid = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
+				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
 				session := cf.Cf("curl", fmt.Sprintf("/v3/spaces?names=%s", spaceName))
 				bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
-				spaceGuid = getGuid(bytes)
-				assignIsolationSegmentToSpace(spaceGuid, isoSegGuid)
+				spaceGuid = v3_helpers.GetGuidFromResponse(bytes)
+				v3_helpers.AssignIsolationSegmentToSpace(spaceGuid, isoSegGuid)
 			})
 		})
 

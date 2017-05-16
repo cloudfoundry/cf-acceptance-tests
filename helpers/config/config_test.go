@@ -118,6 +118,7 @@ type allConfig struct {
 	IncludeV3                         *bool `json:"include_v3"`
 	IncludeZipkin                     *bool `json:"include_zipkin"`
 	IncludeIsolationSegments          *bool `json:"include_isolation_segments"`
+	IncludeRoutingIsolationSegments   *bool `json:"include_routing_isolation_segments"`
 
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image"`
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username"`
@@ -199,6 +200,8 @@ var _ = Describe("Config", func() {
 		Expect(config.GetPersistentAppSpace()).To(Equal("CATS-persistent-space"))
 
 		Expect(config.GetIsolationSegmentName()).To(Equal(""))
+		Expect(config.GetRoutingIsolationSegmentName()).To(Equal(""))
+		Expect(config.GetRoutingIsolationSegmentDomain()).To(Equal(""))
 
 		Expect(config.GetIncludeApps()).To(BeTrue())
 		Expect(config.GetIncludeDetect()).To(BeTrue())
@@ -214,6 +217,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeSsh()).To(BeFalse())
 		Expect(config.GetIncludeV3()).To(BeFalse())
 		Expect(config.GetIncludeIsolationSegments()).To(BeFalse())
+		Expect(config.GetIncludeRoutingIsolationSegments()).To(BeFalse())
 		Expect(config.GetIncludePrivateDockerRegistry()).To(BeFalse())
 		Expect(config.GetIncludePrivilegedContainerSupport()).To(BeFalse())
 		Expect(config.GetIncludeZipkin()).To(BeFalse())
