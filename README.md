@@ -277,7 +277,7 @@ You can of course combine the `-v` flag with the `-nodes=N` flag.
 Test Group Name| Compatable Backend | Description
 --- | --- | ---
 `apps`| DEA or Diego | Tests the core functionalities of Cloud Foundry: staging, running, logging, routing, buildpacks, etc.  This test group should always pass against a sound Cloud Foundry deployment.
-`backend_compatibility` | DEA and Diego are required simultaneously| Tests interoperability of droplets staged on Diego or the DEAs
+`backend_compatibility` | Diego | Tests interoperability of droplets staged on the DEAs running on Diego
 `detect` | DEA or Diego | Tests the ability of the platform to detect the correct buildpack for compiling an application if no buildpack is explicitly specified.
 `docker`| Diego |Test our ability to run docker containers on diego and that we handle docker metadata correctly.
 `internet_dependent`| DEA or Diego | This test group tests the feature of being able to specify a buildpack via a Github URL.  As such, this depends on your Cloud Foundry application containers having access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
