@@ -310,6 +310,22 @@ func IsolationSegmentExists(name string) bool {
 	return len(GetResponse.Resources) > 0
 }
 
+func OrgEntitledToIsolationSegment(orgGuid string, isoSegName string) bool {
+	session := cf.Cf("curl", fmt.Sprintf("/v3/isolation_segments?names=%s&organization_guids=%s", isoSegName, orgGuid))
+	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+
+	type resource struct {
+		Guid string `json:"guid"`
+	}
+	var GetResponse struct {
+		Resources []resource `json:"resources"`
+	}
+
+	err := json.Unmarshal(bytes, &GetResponse)
+	Expect(err).ToNot(HaveOccurred())
+	return len(GetResponse.Resources) > 0
+}
+
 func EntitleOrgToIsolationSegment(orgGuid, isoSegGuid string) {
 	Eventually(cf.Cf("curl",
 		fmt.Sprintf("/v3/isolation_segments/%s/relationships/organizations", isoSegGuid),

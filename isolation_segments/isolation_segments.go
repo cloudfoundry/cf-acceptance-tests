@@ -49,6 +49,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 	var isoSegGuid, isoSegName, isoSegDomain, defaultIsoSegGuid string
 	var testSetup *workflowhelpers.ReproducibleTestSuiteSetup
 	var created bool
+	var originallyEntitled bool
 
 	BeforeEach(func() {
 		// New up a organization since we will be assigning isolation segments.
@@ -67,17 +68,27 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 		bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 		orgGuid = v3_helpers.GetGuidFromResponse(bytes)
 		defaultIsoSegGuid = getDefaultIsolationSegment(orgGuid)
+		workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
+			originallyEntitled = v3_helpers.OrgEntitledToIsolationSegment(orgGuid, isoSegName)
+		})
 	})
 
 	AfterEach(func() {
-		setDefaultIsolationSegment(orgGuid, defaultIsoSegGuid)
+		workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
+			setDefaultIsolationSegment(orgGuid, defaultIsoSegGuid)
+			if !originallyEntitled && isoSegGuid != "" {
+				v3_helpers.RevokeOrgEntitlementForIsolationSegment(orgGuid, isoSegGuid)
+			}
+		})
 		testSetup.Teardown()
 	})
 
 	Context("When an organization has the shared segment as its default", func() {
 		BeforeEach(func() {
-			v3_helpers.EntitleOrgToIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
-			setDefaultIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
+			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
+				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
+				setDefaultIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
+			})
 		})
 
 		It("can run an app to a space with no assigned segment", func() {
