@@ -3,6 +3,7 @@ package v3_helpers
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -231,6 +232,24 @@ func GetGuidFromResponse(response []byte) string {
 	return GetResponse.Resources[0].Guid
 }
 
+func GetIsolationSegmentGuidFromResponse(response []byte) string {
+	type data struct {
+		Guid string `json:"guid"`
+	}
+	var GetResponse struct {
+		Data data `json:"data"`
+	}
+
+	err := json.Unmarshal(response, &GetResponse)
+	Expect(err).ToNot(HaveOccurred())
+
+	if (data{}) == GetResponse.Data {
+		return ""
+	}
+
+	return GetResponse.Data.Guid
+}
+
 func AssignIsolationSegmentToSpace(spaceGuid, isoSegGuid string) {
 	Eventually(cf.Cf("curl", fmt.Sprintf("/v3/spaces/%s/relationships/isolation_segment", spaceGuid),
 		"-X",
@@ -257,14 +276,17 @@ func DeleteIsolationSegment(guid string) {
 	Eventually(cf.Cf("curl", fmt.Sprintf("/v3/isolation_segments/%s", guid), "-X", "DELETE"), Config.DefaultTimeoutDuration()).Should(Exit(0))
 }
 
-func CreateOrGetIsolationSegment(name string) string {
+func CreateOrGetIsolationSegment(name string) (string, bool) {
 	var isoSegGuid string
+	var created bool
 	if IsolationSegmentExists(name) {
 		isoSegGuid = GetIsolationSegmentGuid(name)
+		created = true
 	} else {
 		isoSegGuid = CreateIsolationSegment(name)
+		created = false
 	}
-	return isoSegGuid
+	return isoSegGuid, created
 }
 
 func GetIsolationSegmentGuid(name string) string {
@@ -304,6 +326,15 @@ func RevokeOrgEntitlementForIsolationSegment(orgGuid, isoSegGuid string) {
 		"-X",
 		"DELETE",
 	), Config.DefaultTimeoutDuration()).Should(Exit(0))
+}
+
+func SendRequestWithHost(host, domain string) *http.Response {
+	req, _ := http.NewRequest("GET", fmt.Sprintf("http://wildcard-path.%s", domain), nil)
+	req.Host = host
+
+	resp, err := http.DefaultClient.Do(req)
+	Expect(err).NotTo(HaveOccurred())
+	return resp
 }
 
 func getHttpLoggregatorEndpoint() string {

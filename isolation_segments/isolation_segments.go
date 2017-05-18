@@ -2,6 +2,7 @@ package isolation_segments
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -35,11 +36,19 @@ func setDefaultIsolationSegment(orgGuid, isoSegGuid string) {
 		Config.DefaultTimeoutDuration()).Should(Exit(0))
 }
 
+func getDefaultIsolationSegment(orgGuid string) string {
+	session := cf.Cf("curl", fmt.Sprintf("/v3/organizations/%s/relationships/default_isolation_segment", orgGuid))
+	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+	return v3_helpers.GetIsolationSegmentGuidFromResponse(bytes)
+}
+
 var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
+	var appsDomain string
 	var orgGuid, orgName string
 	var spaceGuid, spaceName string
-	var isoSegGuid, isoSegName string
+	var isoSegGuid, isoSegName, isoSegDomain, defaultIsoSegGuid string
 	var testSetup *workflowhelpers.ReproducibleTestSuiteSetup
+	var created bool
 
 	BeforeEach(func() {
 		// New up a organization since we will be assigning isolation segments.
@@ -48,29 +57,27 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 		testSetup = workflowhelpers.NewTestSuiteSetup(cfg)
 		testSetup.Setup()
 
+		appsDomain = Config.GetAppsDomain()
 		orgName = testSetup.RegularUserContext().Org
 		spaceName = testSetup.RegularUserContext().Space
 		isoSegName = Config.GetIsolationSegmentName()
+		isoSegDomain = Config.GetIsolationSegmentDomain()
 
 		session := cf.Cf("curl", fmt.Sprintf("/v3/organizations?names=%s", orgName))
 		bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 		orgGuid = v3_helpers.GetGuidFromResponse(bytes)
+		defaultIsoSegGuid = getDefaultIsolationSegment(orgGuid)
 	})
 
 	AfterEach(func() {
+		setDefaultIsolationSegment(orgGuid, defaultIsoSegGuid)
 		testSetup.Teardown()
-
-		if isoSegGuid != "" {
-			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				v3_helpers.DeleteIsolationSegment(isoSegGuid)
-			})
-			isoSegGuid = ""
-		}
 	})
 
 	Context("When an organization has the shared segment as its default", func() {
 		BeforeEach(func() {
 			v3_helpers.EntitleOrgToIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
+			setDefaultIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
 		})
 
 		It("can run an app to a space with no assigned segment", func() {
@@ -81,23 +88,52 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 				"--no-start",
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-b", "binary_buildpack",
-				"-d", Config.GetAppsDomain(),
+				"-d", appsDomain,
 				"-c", "./app"),
 				Config.CfPushTimeoutDuration()).Should(Exit(0))
 
 			app_helpers.EnableDiego(appName)
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
+
 			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(binaryHi))
+		})
+
+		It("is not reachable from the isolation segment router", func() {
+			appName := random_name.CATSRandomName("APP")
+			Eventually(cf.Cf(
+				"push", appName,
+				"-p", assets.NewAssets().Binary,
+				"--no-start",
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-b", "binary_buildpack",
+				"-d", appsDomain,
+				"-c", "./app"),
+				Config.CfPushTimeoutDuration()).Should(Exit(0))
+
+			app_helpers.EnableDiego(appName)
+			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
+
+			//send a request to app in the shared domain, but through the isolation segment router
+			resp := v3_helpers.SendRequestWithHost(fmt.Sprintf("%s.%s", appName, appsDomain), isoSegDomain)
+			defer resp.Body.Close()
+
+			Expect(resp.StatusCode).To(Equal(404))
 		})
 	})
 
 	Context("When the user-provided Isolation Segment has an associated cell", func() {
 		BeforeEach(func() {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
+				isoSegGuid, created = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
 				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
 				setDefaultIsolationSegment(orgGuid, isoSegGuid)
 			})
+		})
+
+		AfterEach(func() {
+			if created {
+				v3_helpers.DeleteIsolationSegment(isoSegGuid)
+			}
 		})
 
 		It("can run an app to an org where the default is the user-provided isolation segment", func() {
@@ -108,13 +144,20 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 				"--no-start",
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-b", "binary_buildpack",
-				"-d", Config.GetAppsDomain(),
+				"-d", isoSegDomain,
 				"-c", "./app"),
 				Config.CfPushTimeoutDuration()).Should(Exit(0))
 
 			app_helpers.EnableDiego(appName)
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(binaryHi))
+
+			resp := v3_helpers.SendRequestWithHost(fmt.Sprintf("%s.%s", appName, isoSegDomain), isoSegDomain)
+			defer resp.Body.Close()
+
+			Expect(resp.StatusCode).To(Equal(200))
+			htmlData, err := ioutil.ReadAll(resp.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(htmlData)).To(ContainSubstring(binaryHi))
 		})
 	})
 
@@ -127,6 +170,10 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 			})
 		})
 
+		AfterEach(func() {
+			v3_helpers.DeleteIsolationSegment(isoSegGuid)
+		})
+
 		It("fails to start an app in the Isolation Segment", func() {
 			appName := random_name.CATSRandomName("APP")
 			Eventually(cf.Cf(
@@ -135,7 +182,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 				"--no-start",
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-b", "binary_buildpack",
-				"-d", Config.GetAppsDomain(),
+				"-d", isoSegDomain,
 				"-c", "./app"),
 				Config.CfPushTimeoutDuration()).Should(Exit(0))
 
@@ -147,8 +194,14 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 	Context("When the organization has not been entitled to the Isolation Segment", func() {
 		BeforeEach(func() {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
+				isoSegGuid, created = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
 			})
+		})
+
+		AfterEach(func() {
+			if created {
+				v3_helpers.DeleteIsolationSegment(isoSegGuid)
+			}
 		})
 
 		It("fails to set the isolation segment as the default", func() {
@@ -168,13 +221,19 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 	Context("When the space has been assigned an Isolation Segment", func() {
 		BeforeEach(func() {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
+				isoSegGuid, created = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
 				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
 				session := cf.Cf("curl", fmt.Sprintf("/v3/spaces?names=%s", spaceName))
 				bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 				spaceGuid = v3_helpers.GetGuidFromResponse(bytes)
 				v3_helpers.AssignIsolationSegmentToSpace(spaceGuid, isoSegGuid)
 			})
+		})
+
+		AfterEach(func() {
+			if created {
+				v3_helpers.DeleteIsolationSegment(isoSegGuid)
+			}
 		})
 
 		It("can run an app in that isolation segment", func() {
@@ -185,13 +244,42 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 				"--no-start",
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-b", "binary_buildpack",
-				"-d", Config.GetAppsDomain(),
+				"-d", isoSegDomain,
 				"-c", "./app"),
 				Config.CfPushTimeoutDuration()).Should(Exit(0))
 
 			app_helpers.EnableDiego(appName)
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(binaryHi))
+
+			resp := v3_helpers.SendRequestWithHost(fmt.Sprintf("%s.%s", appName, isoSegDomain), isoSegDomain)
+			defer resp.Body.Close()
+
+			Expect(resp.StatusCode).To(Equal(200))
+			htmlData, err := ioutil.ReadAll(resp.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(htmlData)).To(ContainSubstring(binaryHi))
+
+		})
+
+		It("the app is not reachable outside the isolation segment", func() {
+			appName := random_name.CATSRandomName("APP")
+			Eventually(cf.Cf(
+				"push", appName,
+				"-p", assets.NewAssets().Binary,
+				"--no-start",
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-b", "binary_buildpack",
+				"-d", isoSegDomain,
+				"-c", "./app"),
+				Config.CfPushTimeoutDuration()).Should(Exit(0))
+
+			app_helpers.EnableDiego(appName)
+			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
+
+			resp := v3_helpers.SendRequestWithHost(fmt.Sprintf("%s.%s", appName, isoSegDomain), appsDomain)
+			defer resp.Body.Close()
+
+			Expect(resp.StatusCode).To(Equal(404))
 		})
 	})
 })

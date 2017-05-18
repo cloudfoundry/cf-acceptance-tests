@@ -48,6 +48,9 @@ func IsolationSegmentsDescribe(description string, callback func()) bool {
 			if Config.GetIsolationSegmentName() == "" {
 				Skip(`Skipping this test because Config.IsolationSegmentName is not set.`)
 			}
+			if Config.GetIsolationSegmentDomain() == "" {
+				Skip(`Skipping this test because Config.IsolationSegmentDomain is not set.`)
+			}
 		})
 		callback()
 	})
@@ -137,21 +140,6 @@ func ZipkinDescribe(description string, callback func()) bool {
 
 			if !Config.GetIncludeZipkin() {
 				Skip(`Skipping this test because Config.IncludeZipkin is set to 'false'`)
-			}
-		})
-		callback()
-	})
-}
-
-func RoutingIsolationSegmentsDescribe(description string, callback func()) bool {
-	return Describe("[routing] "+description, func() {
-		BeforeEach(func() {
-			if !Config.GetIncludeRouting() {
-				Skip(`Skipping this test because Config.IncludeRouting is set to 'false'`)
-			}
-
-			if !Config.GetIncludeRoutingIsolationSegments() {
-				Skip(`Skipping this test because Config.IncludeRoutingIsolationSegments is set to 'false'`)
 			}
 		})
 		callback()

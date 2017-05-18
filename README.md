@@ -134,7 +134,6 @@ export CONFIG=$PWD/integration_config.json
 * `include_v3`: Flag to include tests for the the v3 API.
 * `include_zipkin`: Flag to include tests for Zipkin tracing. `include_routing` must also be set for tests to run. CF must be deployed with `router.tracing.enable_zipkin` set for tests to pass.
 * `include_isolation_segments`: Flag to include isolation segment tests.
-* `include_routing_isolation_segments`: Flag to include routing-level isolation segment tests. `routing_isolation_segment_name` and `routing_isolation_segment_domain` must be set. [See below](#explanation-of-test-groups).
 * `backend`: App tests push their apps using the backend specified. Incompatible tests will be skipped based on which backend is chosen. If left unspecified the default backend will be used where none is specified; all tests that specify a particular backend will be skipped.
 * `use_http`: Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
 * `use_existing_organization`: Set to true when you need to specify an existing organization to use rather than creating a new organization.
@@ -156,8 +155,7 @@ export CONFIG=$PWD/integration_config.json
 * `test_password`: Used to set the password for the test user. This may be needed if your CF installation has password policies.
 * `timeout_scale`: Used primarily to scale default timeouts for test setup and teardown actions (e.g. creating an org) as opposed to main test actions (e.g. pushing an app).
 * `isolation_segment_name`: Name of the isolation segment to use for the isolation segments test.
-* `routing_isolation_segment_name`: Name of the isolation segment to use for the routing isolation segments test.
-* `routing_isolation_segment_domain`: Domain to use for testing routing with isolation segments.
+* `isolation_segment_domain`: Domain that will route to the isolated router in the isolation segments test.
 * `private_docker_registry_image`: Name of the private docker image to use when testing private docker registries. [See below](#private-docker)
 * `private_docker_registry_username`: Username to access the private docker repository. [See below](#private-docker)
 * `private_docker_registry_password`: Password to access the private docker repository. [See below](#private-docker)
@@ -290,8 +288,7 @@ Test Group Name| Compatible Backend | Description
 `services`| DEA or Diego | This test group tests various features related to services, e.g. registering a service broker via the service broker API.  Some of these tests exercise special integrations, such as Single Sign-On authentication; you may wish to run some tests in this package but selectively skip others if you haven't configured the required integrations.
 `ssh`| Diego |This test group tests our ability to communicate with Diego apps via ssh, scp, and sftp.
 `v3`| Diego| This test group contains tests for the next-generation v3 Cloud Controller API.  As of this writing, the v3 API is not officially supported.
-`isolation_segments` | Diego | This test group requires that Diego be deployed with a minimum of 2 cells. One of those cells must have been deployed with a `placement_tag`. Finally, the `isolation_segment_name` must be set in the CATs properties to match this placement tag.
-`routing_isolation_segments` | Diego | This test group has the same requirements as the `isolation_segments` test group. Additionally, a minimum of two Gorouter instances must be deployed. One instance must be configured with the property `routing_table_sharding_mode: shared-and-segments`. The other instance must have the properties `routing_table_sharding_mode: segments` and `isolation_segments: [YOUR-PLACEMENT-TAG-HERE]`. Please note that the `isolation_segments` test group will fail if Gorouter is deployed in this configuration.
+`isolation_segments` | Diego | This test group requires that Diego be deployed with a minimum of 2 cells. One of those cells must have been deployed with a `placement_tag`. Additionally, a minimum of two Gorouter instances must be deployed. One instance must be configured with the property `routing_table_sharding_mode: shared-and-segments`. The other instance must have the properties `routing_table_sharding_mode: segments` and `isolation_segments: [YOUR_PLACEMENT_TAG_HERE]`. The `isolation_segment_name` in the CATs properties must match the `placement_tag` and `isolation_segment`. Finally, the `isolation_segment_domain` must be set and traffic to that domain should go to the isolation router.
 
 ## Contributing
 

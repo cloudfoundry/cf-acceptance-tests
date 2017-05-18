@@ -17,7 +17,6 @@ type CatsConfig interface {
 	GetIncludeRouteServices() bool
 	GetIncludeRouting() bool
 	GetIncludeZipkin() bool
-	GetIncludeRoutingIsolationSegments() bool
 	GetIncludeSSO() bool
 	GetIncludeSecurityGroups() bool
 	GetIncludeServices() bool
@@ -43,8 +42,7 @@ type CatsConfig interface {
 	GetExistingUserPassword() string
 	GetGoBuildpackName() string
 	GetIsolationSegmentName() string
-	GetRoutingIsolationSegmentName() string
-	GetRoutingIsolationSegmentDomain() string
+	GetIsolationSegmentDomain() string
 	GetJavaBuildpackName() string
 	GetNamePrefix() string
 	GetNodejsBuildpackName() string
