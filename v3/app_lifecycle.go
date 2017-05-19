@@ -55,8 +55,20 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 		})
 
 		It("can run apps with processes from the Procfile", func() {
+			lastUsageEventGuid := LastAppUsageEventGuid(TestSetup)
+
 			buildGuid := StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
+
+			usageEvents := UsageEventsAfterGuid(TestSetup, lastUsageEventGuid)
+			event := AppUsageEvent{Entity: Entity{State: "STAGING_STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
+			Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
+
 			WaitForBuildToStage(buildGuid)
+
+			usageEvents = UsageEventsAfterGuid(TestSetup, lastUsageEventGuid)
+			event = AppUsageEvent{Entity: Entity{State: "STAGING_STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
+			Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
+
 			dropletGuid := GetDropletFromBuild(buildGuid)
 
 			AssignDropletToApp(appGuid, dropletGuid)
@@ -70,7 +82,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			CreateAndMapRoute(appGuid, TestSetup.RegularUserContext().Space, Config.GetAppsDomain(), webProcess.Name)
 
-			lastUsageEventGuid := LastAppUsageEventGuid(TestSetup)
+			lastUsageEventGuid = LastAppUsageEventGuid(TestSetup)
 
 			StartApp(appGuid)
 
@@ -85,7 +97,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", workerProcess.Name)))
 
-			usageEvents := UsageEventsAfterGuid(TestSetup, lastUsageEventGuid)
+			usageEvents = UsageEventsAfterGuid(TestSetup, lastUsageEventGuid)
 
 			event1 := AppUsageEvent{Entity: Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
 			event2 := AppUsageEvent{Entity: Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
