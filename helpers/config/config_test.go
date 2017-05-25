@@ -42,6 +42,8 @@ type testConfig struct {
 	DetectTimeout                *int `json:"detect_timeout,omitempty"`
 	SleepTimeout                 *int `json:"sleep_timeout,omitempty"`
 
+	TimeoutScale *float64 `json:"timeout_scale,omitempty"`
+
 	// optional
 	Backend                       *string `json:"backend,omitempty"`
 	IncludePrivateDockerRegistry  *bool   `json:"include_private_docker_registry,omitempty"`
@@ -159,6 +161,10 @@ func ptrToInt(i int) *int {
 	return &i
 }
 
+func ptrToFloat(f float64) *float64 {
+	return &f
+}
+
 var _ = Describe("Config", func() {
 	BeforeEach(func() {
 		testCfg = testConfig{}
@@ -229,13 +235,13 @@ var _ = Describe("Config", func() {
 		Expect(config.GetExistingOrganization()).To(Equal(""))
 		Expect(config.GetUseExistingOrganization()).To(Equal(false))
 
-		Expect(config.AsyncServiceOperationTimeoutDuration()).To(Equal(2 * time.Minute))
-		Expect(config.BrokerStartTimeoutDuration()).To(Equal(5 * time.Minute))
-		Expect(config.CfPushTimeoutDuration()).To(Equal(2 * time.Minute))
-		Expect(config.DefaultTimeoutDuration()).To(Equal(30 * time.Second))
-		Expect(config.LongCurlTimeoutDuration()).To(Equal(2 * time.Minute))
+		Expect(config.AsyncServiceOperationTimeoutDuration()).To(Equal(4 * time.Minute))
+		Expect(config.BrokerStartTimeoutDuration()).To(Equal(10 * time.Minute))
+		Expect(config.CfPushTimeoutDuration()).To(Equal(4 * time.Minute))
+		Expect(config.DefaultTimeoutDuration()).To(Equal(60 * time.Second))
+		Expect(config.LongCurlTimeoutDuration()).To(Equal(4 * time.Minute))
 
-		Expect(config.GetScaledTimeout(1)).To(Equal(time.Duration(1)))
+		Expect(config.GetScaledTimeout(1)).To(Equal(time.Duration(2)))
 
 		Expect(config.GetArtifactsDirectory()).To(Equal(filepath.Join("..", "results")))
 
@@ -248,8 +254,8 @@ var _ = Describe("Config", func() {
 		Expect(config.Protocol()).To(Equal("http://"))
 
 		// undocumented
-		Expect(config.DetectTimeoutDuration()).To(Equal(5 * time.Minute))
-		Expect(config.SleepTimeoutDuration()).To(Equal(30 * time.Second))
+		Expect(config.DetectTimeoutDuration()).To(Equal(10 * time.Minute))
+		Expect(config.SleepTimeoutDuration()).To(Equal(60 * time.Second))
 	})
 
 	Context("when all values are null", func() {
@@ -340,6 +346,7 @@ var _ = Describe("Config", func() {
 			testCfg.AsyncServiceOperationTimeout = ptrToInt(90)
 			testCfg.DetectTimeout = ptrToInt(100)
 			testCfg.SleepTimeout = ptrToInt(101)
+			testCfg.TimeoutScale = ptrToFloat(1.0)
 		})
 
 		It("respects the overriden values", func() {
