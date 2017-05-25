@@ -78,7 +78,7 @@ var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
 		reporter := commandreporter.NewCommandReporter()
 		reporter.Report(time.Now(), cmd)
 
-		Eventually(cfCurlSession).Should(Exit(0))
+		Eventually(cfCurlSession, Config.DefaultTimeoutDuration()).Should(Exit(0))
 	})
 
 	AfterEach(func() {
