@@ -163,7 +163,7 @@ func getDefaults() config {
 
 	defaults.ConfigurableTestPassword = ptrToString("")
 
-	defaults.TimeoutScale = ptrToFloat(1.0)
+	defaults.TimeoutScale = ptrToFloat(2.0)
 
 	defaults.ArtifactsDirectory = ptrToString(filepath.Join("..", "results"))
 
