@@ -527,35 +527,35 @@ func (c config) GetScaledTimeout(timeout time.Duration) time.Duration {
 }
 
 func (c *config) DefaultTimeoutDuration() time.Duration {
-	return time.Duration(*c.DefaultTimeout) * time.Second
+	return c.GetScaledTimeout(time.Duration(*c.DefaultTimeout) * time.Second)
 }
 
 func (c *config) LongTimeoutDuration() time.Duration {
-	return time.Duration(*c.DefaultTimeout) * time.Second
+	return c.GetScaledTimeout(time.Duration(*c.DefaultTimeout) * time.Second)
 }
 
 func (c *config) LongCurlTimeoutDuration() time.Duration {
-	return time.Duration(*c.LongCurlTimeout) * time.Minute
+	return c.GetScaledTimeout(time.Duration(*c.LongCurlTimeout) * time.Minute)
 }
 
 func (c *config) SleepTimeoutDuration() time.Duration {
-	return time.Duration(*c.SleepTimeout) * time.Second
+	return c.GetScaledTimeout(time.Duration(*c.SleepTimeout) * time.Second)
 }
 
 func (c *config) DetectTimeoutDuration() time.Duration {
-	return time.Duration(*c.DetectTimeout) * time.Minute
+	return c.GetScaledTimeout(time.Duration(*c.DetectTimeout) * time.Minute)
 }
 
 func (c *config) CfPushTimeoutDuration() time.Duration {
-	return time.Duration(*c.CfPushTimeout) * time.Minute
+	return c.GetScaledTimeout(time.Duration(*c.CfPushTimeout) * time.Minute)
 }
 
 func (c *config) BrokerStartTimeoutDuration() time.Duration {
-	return time.Duration(*c.BrokerStartTimeout) * time.Minute
+	return c.GetScaledTimeout(time.Duration(*c.BrokerStartTimeout) * time.Minute)
 }
 
 func (c *config) AsyncServiceOperationTimeoutDuration() time.Duration {
-	return time.Duration(*c.AsyncServiceOperationTimeout) * time.Minute
+	return c.GetScaledTimeout(time.Duration(*c.AsyncServiceOperationTimeout) * time.Minute)
 }
 
 func (c *config) Protocol() string {
