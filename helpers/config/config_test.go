@@ -48,6 +48,9 @@ type testConfig struct {
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image,omitempty"`
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username,omitempty"`
 	PrivateDockerRegistryPassword *string `json:"private_docker_registry_password,omitempty"`
+
+	IncludeIsolationSegments *bool   `json:"include_isolation_segments,omitempty"`
+	IsolationSegmentName     *string `json:"isolation_segment_name,omitempty"`
 }
 
 type allConfig struct {
@@ -73,7 +76,8 @@ type allConfig struct {
 	PersistentAppQuotaName *string `json:"persistent_app_quota_name"`
 	PersistentAppSpace     *string `json:"persistent_app_space"`
 
-	IsolationSegmentName *string `json:"isolation_segment_name"`
+	IsolationSegmentName   *string `json:"isolation_segment_name"`
+	IsolationSegmentDomain *string `json:"isolation_segment_domain"`
 
 	Backend           *string `json:"backend"`
 	SkipSSLValidation *bool   `json:"skip_ssl_validation"`
@@ -118,7 +122,6 @@ type allConfig struct {
 	IncludeV3                         *bool `json:"include_v3"`
 	IncludeZipkin                     *bool `json:"include_zipkin"`
 	IncludeIsolationSegments          *bool `json:"include_isolation_segments"`
-	IncludeRoutingIsolationSegments   *bool `json:"include_routing_isolation_segments"`
 
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image"`
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username"`
@@ -279,6 +282,7 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'persistent_app_space' must not be null"))
 
 			Expect(err.Error()).To(ContainSubstring("'isolation_segment_name' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'isolation_segment_domain' must not be null"))
 
 			Expect(err.Error()).To(ContainSubstring("'backend' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'skip_ssl_validation' must not be null"))
@@ -399,6 +403,25 @@ var _ = Describe("Config", func() {
 				config, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(config).To(BeNil())
 				Expect(err).To(MatchError("* Invalid configuration: 'private_docker_registry_password' must be provided if 'include_private_docker_registry' is true"))
+			})
+		})
+	})
+
+	Context("when including isolation segment tests", func() {
+		BeforeEach(func() {
+			testCfg.IncludeIsolationSegments = ptrToBool(true)
+			testCfg.IsolationSegmentName = ptrToString("value")
+		})
+
+		Context("when image is an empty string", func() {
+			BeforeEach(func() {
+				testCfg.IsolationSegmentName = ptrToString("")
+			})
+
+			It("returns an error", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(config).To(BeNil())
+				Expect(err).To(MatchError("* Invalid configuration: 'isolation_segment_name' must be provided if 'include_isolation_segments' is true"))
 			})
 		})
 	})

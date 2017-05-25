@@ -63,6 +63,9 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 		spaceName = testSetup.RegularUserContext().Space
 		isoSegName = Config.GetIsolationSegmentName()
 		isoSegDomain = Config.GetIsolationSegmentDomain()
+		if isoSegDomain == "" {
+			isoSegDomain = appsDomain
+		}
 
 		session := cf.Cf("curl", fmt.Sprintf("/v3/organizations?names=%s", orgName))
 		bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
@@ -110,6 +113,10 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 		})
 
 		It("is not reachable from the isolation segment router", func() {
+			if Config.GetIsolationSegmentDomain() == "" {
+				Skip(`Skipping this routing isolation segment test because Config.IsolationSegmentDomain is not set.
+NOTE: Ensure that you have configured a load balancer to point to the isolation segment domain and deployed Gorouter with an isolation segment before running this test.`)
+			}
 			appName := random_name.CATSRandomName("APP")
 			Eventually(cf.Cf(
 				"push", appName,
@@ -273,6 +280,10 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 		})
 
 		It("the app is not reachable outside the isolation segment", func() {
+			if Config.GetIsolationSegmentDomain() == "" {
+				Skip(`Skipping this routing isolation segment test because Config.IsolationSegmentDomain is not set.
+NOTE: Ensure that you have configured a load balancer to point to the isolation segment domain and deployed Gorouter with an isolation segment before running this test.`)
+			}
 			appName := random_name.CATSRandomName("APP")
 			Eventually(cf.Cf(
 				"push", appName,
