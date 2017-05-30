@@ -42,6 +42,7 @@ type CatsConfig interface {
 	GetExistingUserPassword() string
 	GetGoBuildpackName() string
 	GetIsolationSegmentName() string
+	GetIsolationSegmentDomain() string
 	GetJavaBuildpackName() string
 	GetNamePrefix() string
 	GetNodejsBuildpackName() string
