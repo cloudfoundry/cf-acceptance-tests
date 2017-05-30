@@ -61,7 +61,7 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 		var session *Session
 
 		// The gzip and tar commands have been tested and works in both Linux and Windows environments. In Windows, it was tested using GNUWin32 executables. The reason why this is split into two steps instead of running 'tar -ztf file_name' is because the GNUWin32 tar.exe does not support '-z'.
-		cmd := exec.Command("gzip", "-dk", app_droplet_path_to_compressed_file)
+		cmd := exec.Command("gzip", "-d", app_droplet_path_to_compressed_file)
 		session, err = Start(cmd, GinkgoWriter, GinkgoWriter)
 		Expect(err).ToNot(HaveOccurred())
 		Eventually(session, Config.DefaultTimeoutDuration()).Should(Exit(0))
@@ -74,6 +74,11 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 		Expect(session.Out.Contents()).To(ContainSubstring("./app/config.ru"))
 		Expect(session.Out.Contents()).To(ContainSubstring("./tmp"))
 		Expect(session.Out.Contents()).To(ContainSubstring("./logs"))
+
+		cmd = exec.Command("gzip", app_droplet_path_to_tar_file)
+		session, err = Start(cmd, GinkgoWriter, GinkgoWriter)
+		Expect(err).ToNot(HaveOccurred())
+		Eventually(session, Config.DefaultTimeoutDuration()).Should(Exit(0))
 
 		By("Pushing a different version of the app")
 
