@@ -124,6 +124,17 @@ func RoutingDescribe(description string, callback func()) bool {
 	})
 }
 
+func RoutingIsolationSegmentsDescribe(description string, callback func()) bool {
+	return Describe("[routing_isolation_segments] "+description, func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeRoutingIsolationSegments() {
+				Skip(`Skipping this test because Config.IncludeRoutingIsolationSegments is set to 'false'.`)
+			}
+		})
+		callback()
+	})
+}
+
 func ZipkinDescribe(description string, callback func()) bool {
 	return Describe("[routing] "+description, func() {
 		BeforeEach(func() {

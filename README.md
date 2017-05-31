@@ -134,6 +134,7 @@ export CONFIG=$PWD/integration_config.json
 * `include_v3`: Flag to include tests for the the v3 API.
 * `include_zipkin`: Flag to include tests for Zipkin tracing. `include_routing` must also be set for tests to run. CF must be deployed with `router.tracing.enable_zipkin` set for tests to pass.
 * `include_isolation_segments`: Flag to include isolation segment tests.
+* `includ_routing_isolation_segments`: Flag to include routing isolation segments. [See below](#routing-isolation-segments)
 * `backend`: App tests push their apps using the backend specified. Incompatible tests will be skipped based on which backend is chosen. If left unspecified the default backend will be used where none is specified; all tests that specify a particular backend will be skipped.
 * `use_http`: Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
 * `use_existing_organization`: Set to true when you need to specify an existing organization to use rather than creating a new organization.
@@ -155,6 +156,7 @@ export CONFIG=$PWD/integration_config.json
 * `test_password`: Used to set the password for the test user. This may be needed if your CF installation has password policies.
 * `timeout_scale`: Used primarily to scale default timeouts for test setup and teardown actions (e.g. creating an org) as opposed to main test actions (e.g. pushing an app).
 * `isolation_segment_name`: Name of the isolation segment to use for the isolation segments test.
+* `isolation_segment_domain`: Domain that will route to the isolated router in the isolation segments and routing isolation segments tests. [See below](#routing-isolation-segments)
 * `private_docker_registry_image`: Name of the private docker image to use when testing private docker registries. [See below](#private-docker)
 * `private_docker_registry_username`: Username to access the private docker repository. [See below](#private-docker)
 * `private_docker_registry_password`: Password to access the private docker repository. [See below](#private-docker)
@@ -218,6 +220,13 @@ docker push <your-private-repo>:<some-tag>
 
 The value for the `private_docker_registry_image` config value in this case would be "<your-private-repo>:<some-tag>".
 
+#### Routing Isolation Segments
+To run tests that involve routing isolation segments, the following config values must be provided:
+* `isolation_segment_name`
+* `isolation_segment_domain`
+
+This suite also requires `cc.diego.temporary_local_apps` be set to true in your cf configuration, as well as additional setup. Read the documentation [here](http://docs.cloudfoundry.org/adminguide/routing-is.html) for further setup details.
+
 #### Capturing Test Output
 When a test fails, look for the test group name (`[services]` in the example below) in the test output:
 
@@ -274,7 +283,7 @@ You can of course combine the `-v` flag with the `-nodes=N` flag.
 
 ## Explanation of Test Groups
 
-Test Group Name| Compatable Backend | Description
+Test Group Name| Compatible Backend | Description
 --- | --- | ---
 `apps`| DEA or Diego | Tests the core functionalities of Cloud Foundry: staging, running, logging, routing, buildpacks, etc.  This test group should always pass against a sound Cloud Foundry deployment.
 `backend_compatibility` | Diego | Tests interoperability of droplets staged on the DEAs running on Diego
@@ -287,7 +296,8 @@ Test Group Name| Compatable Backend | Description
 `services`| DEA or Diego | This test group tests various features related to services, e.g. registering a service broker via the service broker API.  Some of these tests exercise special integrations, such as Single Sign-On authentication; you may wish to run some tests in this package but selectively skip others if you haven't configured the required integrations.
 `ssh`| Diego |This test group tests our ability to communicate with Diego apps via ssh, scp, and sftp.
 `v3`| Diego| This test group contains tests for the next-generation v3 Cloud Controller API.  As of this writing, the v3 API is not officially supported.
-`isolation_segments` | Diego | This test group requires that Diego be deployed with a minimum of 2 cells. One of those cells must have been deployed with a `placement_tag`. Finally, the `isolation_segment_name` must be set in the CATs properties to match this placement tag.
+`isolation_segments` | Diego | This test group requires that Diego be deployed with a minimum of 2 cells. One of those cells must have been deployed with a `placement_tag`. Additionally, a minimum of two Gorouter instances must be deployed. One instance must be configured with the property `routing_table_sharding_mode: shared-and-segments`. The other instance must have the properties `routing_table_sharding_mode: segments` and `isolation_segments: [YOUR_PLACEMENT_TAG_HERE]`. The `isolation_segment_name` in the CATs properties must match the `placement_tag` and `isolation_segment`. Finally, the `isolation_segment_domain` must be set and traffic to that domain should go to the isolation router.
+`routing_isolation_segments` | Diego | This group tests that requests to isolated apps are only routed through isolated routers, and vice versa.
 
 ## Contributing
 
