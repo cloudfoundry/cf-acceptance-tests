@@ -76,8 +76,8 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 					Expect(cf.Cf("delete-service", instanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 					Expect(cf.Cf("delete-space", spaceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				}
-				Expect(cf.Cf("delete-org", orgName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				Expect(cf.Cf("delete-quota", "-f", quotaName).Wait(TestSetup.ShortTimeout())).To(Exit(0))
+				Expect(cf.Cf("delete-org", orgName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			}
 		})
 	})
