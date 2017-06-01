@@ -44,10 +44,6 @@ func IsolationSegmentsDescribe(description string, callback func()) bool {
 			if !Config.GetIncludeIsolationSegments() {
 				Skip(`Skipping this test because Config.IncludeIsolationSegments is set to 'false'.`)
 			}
-
-			if Config.GetIsolationSegmentName() == "" {
-				Skip(`Skipping this test because Config.IsolationSegmentName is not set.`)
-			}
 		})
 		callback()
 	})

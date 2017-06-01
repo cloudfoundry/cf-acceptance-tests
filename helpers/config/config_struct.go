@@ -219,6 +219,11 @@ func validateConfig(config *config) Errors {
 		errs.Add(err)
 	}
 
+	err = validateIsolationSegments(config)
+	if err != nil {
+		errs.Add(err)
+	}
+
 	if config.UseHttp == nil {
 		errs.Add(fmt.Errorf("* 'use_http' must not be null"))
 	}
@@ -488,6 +493,24 @@ func validatePrivateDockerRegistry(config *config) error {
 		return fmt.Errorf("* Invalid configuration: 'private_docker_registry_password' must be provided if 'include_private_docker_registry' is true")
 	}
 
+	return nil
+}
+
+func validateIsolationSegments(config *config) error {
+	if config.IncludeIsolationSegments == nil {
+		return fmt.Errorf("* 'include_isolation_segments' must not be null")
+	}
+	if config.IsolationSegmentName == nil {
+		return fmt.Errorf("* 'isolation_segment_name' must not be null")
+	}
+
+	if !config.GetIncludeIsolationSegments() {
+		return nil
+	}
+
+	if config.GetIsolationSegmentName() == "" {
+		return fmt.Errorf("* Invalid configuration: 'isolation_segment_name' must be provided if 'include_isolation_segments' is true")
+	}
 	return nil
 }
 
