@@ -18,12 +18,10 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 
 	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
-	"regexp"
 )
 
 var _ = AppsDescribe("Default Environment Variables", func() {
@@ -38,9 +36,7 @@ var _ = AppsDescribe("Default Environment Variables", func() {
 				Name: "bin/compile",
 				Body: fmt.Sprintf(`#!/usr/bin/env bash
 sleep 5
-echo START_ENV_CMD
 env
-echo END_ENV_CMD
 exit 1
 `),
 			},
@@ -103,29 +99,19 @@ exit 1
 			).Should(Exit(0))
 
 			app_helpers.SetBackend(appName)
-			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(1))
+			startSession := cf.Cf("start", appName)
+			Eventually(startSession, Config.CfPushTimeoutDuration()).Should(Exit(1))
 
-			var appLogsSession *Session
-			Eventually(func() *Session {
-				appLogsSession = cf.Cf("logs", "--recent", appName)
-				Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				return appLogsSession
-			}, Config.DefaultTimeoutDuration()).Should(Say("END_ENV_CMD"))
-
-			output := string(appLogsSession.Out.Contents())
-			lines := filterEnvironmentLines(strings.Split(output, "\n"))
-			env := extractEnvironment(lines)
-
-			Expect(env["LANG"]).To(Equal("en_US.UTF-8"))
-			assertJsonParseable(env, "VCAP_APPLICATION", "VCAP_SERVICES")
-			assertPresent(env,
-				"CF_INSTANCE_ADDR",
-				"CF_INSTANCE_INTERNAL_IP",
-				"CF_INSTANCE_IP",
-				"CF_INSTANCE_PORT",
-				"CF_INSTANCE_PORTS",
-				"CF_STACK",
-			)
+			stdout := string(startSession.Out.Contents())
+			Expect(stdout).To(MatchRegexp("LANG=en_US\\.UTF-8"))
+			Expect(stdout).To(MatchRegexp("CF_INSTANCE_ADDR=.*"))
+			Expect(stdout).To(MatchRegexp("CF_INSTANCE_INTERNAL_IP=.*"))
+			Expect(stdout).To(MatchRegexp("CF_INSTANCE_IP=.*"))
+			Expect(stdout).To(MatchRegexp("CF_INSTANCE_PORT=.*"))
+			Expect(stdout).To(MatchRegexp("CF_INSTANCE_PORTS=.*"))
+			Expect(stdout).To(MatchRegexp("CF_STACK=.*"))
+			Expect(stdout).To(MatchRegexp("VCAP_APPLICATION=.*"))
+			Expect(stdout).To(MatchRegexp("VCAP_SERVICES=.*"))
 		})
 
 		It("applies default environment variables while running apps and tasks", func() {
@@ -180,26 +166,15 @@ exit 1
 				return appLogsSession
 			}, Config.DefaultTimeoutDuration()).Should(Exit(0))
 
-			lines := strings.Split(string(appLogsSession.Out.Contents()), "\n")
-			finalLines := []string{}
-			ptn := regexp.MustCompile(`\[APP/TASK/` + taskName + `/\d+\]\s+OUT\s+.*?=`)
-			for _, line := range(lines) {
-				if ptn.MatchString(line) {
-					finalLines = append(finalLines, line)
-				}
-			}
-			env = extractEnvironment(finalLines)
-
-			//TODO: Other changes?
-			Expect(env["LANG"]).To(Equal("en_US.UTF-8"))
-			assertJsonParseable(env, "VCAP_APPLICATION", "VCAP_SERVICES")
-			assertPresent(env,
-				"CF_INSTANCE_ADDR",
-				"CF_INSTANCE_INTERNAL_IP",
-				"CF_INSTANCE_IP",
-				"CF_INSTANCE_PORT",
-				"CF_INSTANCE_PORTS",
-			)
+			taskStdout := string(appLogsSession.Out.Contents())
+			Expect(taskStdout).To(MatchRegexp("TASK.*LANG=en_US\\.UTF-8"))
+			Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_ADDR=.*"))
+			Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_INTERNAL_IP=.*"))
+			Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_IP=.*"))
+			Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_PORT=.*"))
+			Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_PORTS=.*"))
+			Expect(taskStdout).To(MatchRegexp("TASK.*VCAP_APPLICATION=.*"))
+			Expect(taskStdout).To(MatchRegexp("TASK.*VCAP_SERVICES=.*"))
 		})
 	})
 })
@@ -219,36 +194,6 @@ func assertPresent(env map[string]string, varNames ...string) {
 		_, ok := env[varName]
 		Expect(ok).To(BeTrue())
 	}
-}
-
-func filterEnvironmentLines(lines []string) []string {
-	startIdx, endIdx := -1, -1
-	for i := range lines {
-		if strings.Contains(lines[i], "START_ENV_CMD") {
-			startIdx = i
-			continue
-		}
-		if startIdx > -1 && strings.Contains(lines[i], "END_ENV_CMD") {
-			endIdx = i
-			break
-		}
-	}
-	if startIdx == -1 {
-		// If there's no 'START_ENV_CMD' in this list, return everything
-		return lines
-	}
-	return lines[startIdx + 1 : endIdx]
-}
-
-func extractEnvironment(lines []string) map[string]string{
-	env := map[string]string{}
-
-	for _, line := range lines {
-		output := strings.SplitN(line, " ", 4)[3]
-		fields := strings.SplitN(output, "=", 2)
-		env[fields[0]] = fields[1]
-	}
-	return env
 }
 
 func getTaskDetails(appName string) []string {
