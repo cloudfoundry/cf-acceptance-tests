@@ -15,7 +15,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = AppsDescribe("Healthcheck", func() {
+var _ = V3Describe("Healthcheck", func() {
 	var (
 		appName    string
 		appGuid    string
