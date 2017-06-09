@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -136,10 +137,30 @@ func CreateRoute(space, domain, host string) {
 	Expect(cf.Cf("create-route", space, domain, "-n", host).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 }
 
-func DeleteApp(appGuid string) {
-	session := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s", appGuid), "-X", "DELETE", "-v")
+func HandleAsyncRequest(path string, method string) {
+	session := cf.Cf("curl", path, "-X", method, "-i")
 	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
-	Expect(bytes).To(ContainSubstring("204 No Content"))
+	Expect(string(bytes)).To(ContainSubstring("202 Accepted"))
+
+	jobPath := getJobPath(bytes)
+	pollJob(jobPath)
+}
+
+func getJobPath(response []byte) string {
+	r, err := regexp.Compile(`Location:.*(/v3/jobs/[\w-]*)`)
+	Expect(err).ToNot(HaveOccurred())
+	return r.FindStringSubmatch(string(response))[1]
+}
+
+func pollJob(jobPath string) {
+	Eventually(func() string {
+		jobSession := cf.Cf("curl", jobPath)
+		return string(jobSession.Wait(Config.DefaultTimeoutDuration()).Out.Contents())
+	}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("COMPLETE"))
+}
+
+func DeleteApp(appGuid string) {
+	HandleAsyncRequest(fmt.Sprintf("/v3/apps/%s", appGuid), "DELETE")
 }
 
 func DeleteIsolationSegment(guid string) {
