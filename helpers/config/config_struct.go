@@ -627,6 +627,14 @@ func (c *config) GetUseExistingOrganization() bool {
 	return *c.UseExistingOrganization
 }
 
+func (c *config) GetExistingSpace() string {
+	return ""
+}
+
+func (c *config) GetUseExistingSpace() bool {
+	return false
+}
+
 func (c *config) GetUseExistingUser() bool {
 	return *c.UseExistingUser
 }

@@ -38,6 +38,8 @@ type CatsConfig interface {
 	GetConfigurableTestPassword() string
 	GetExistingOrganization() string
 	GetUseExistingOrganization() bool
+	GetExistingSpace() string
+	GetUseExistingSpace() bool
 	GetExistingUser() string
 	GetExistingUserPassword() string
 	GetGoBuildpackName() string
