@@ -11,6 +11,7 @@ import (
 	workflowhelpersinternal "github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers/internal"
 	ginkgoconfig "github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 )
 
@@ -98,13 +99,22 @@ func (uc UserContext) AddUserToSpace() {
 	spaceName := uc.TestSpace.SpaceName()
 
 	spaceManager := internal.Cf(uc.CommandStarter, "set-space-role", username, orgName, spaceName, "SpaceManager")
-	EventuallyWithOffset(1, spaceManager, uc.Timeout).Should(Exit(0))
+	EventuallyWithOffset(1, spaceManager, uc.Timeout).Should(Exit())
+	if spaceManager.ExitCode() != 0 {
+		ExpectWithOffset(1, spaceManager.Out).Should(gbytes.Say("not authorized"))
+	}
 
 	spaceDeveloper := internal.Cf(uc.CommandStarter, "set-space-role", username, orgName, spaceName, "SpaceDeveloper")
-	EventuallyWithOffset(1, spaceDeveloper, uc.Timeout).Should(Exit(0))
+	EventuallyWithOffset(1, spaceDeveloper, uc.Timeout).Should(Exit())
+	if spaceDeveloper.ExitCode() != 0 {
+		ExpectWithOffset(1, spaceDeveloper.Out).Should(gbytes.Say("not authorized"))
+	}
 
 	spaceAuditor := internal.Cf(uc.CommandStarter, "set-space-role", username, orgName, spaceName, "SpaceAuditor")
-	EventuallyWithOffset(1, spaceAuditor, uc.Timeout).Should(Exit(0))
+	EventuallyWithOffset(1, spaceAuditor, uc.Timeout).Should(Exit())
+	if spaceAuditor.ExitCode() != 0 {
+		ExpectWithOffset(1, spaceAuditor.Out).Should(gbytes.Say("not authorized"))
+	}
 }
 
 func (uc UserContext) Logout() {

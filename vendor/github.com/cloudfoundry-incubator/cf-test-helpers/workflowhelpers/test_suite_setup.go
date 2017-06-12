@@ -27,7 +27,9 @@ type testSuiteConfig interface {
 	GetUseExistingUser() bool
 	GetAdminUser() string
 	GetUseExistingOrganization() bool
+	GetUseExistingSpace() bool
 	GetExistingOrganization() string
+	GetExistingSpace() string
 	GetSkipSSLValidation() bool
 	GetNamePrefix() string
 }
@@ -56,9 +58,13 @@ type ReproducibleTestSuiteSetup struct {
 const RUNAWAY_QUOTA_MEM_LIMIT = "99999G"
 
 func NewTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSuiteSetup {
-	testSpace := internal.NewRegularTestSpace(config, "10G")
-	testUser := internal.NewTestUser(config, commandstarter.NewCommandStarter())
-	adminUser := internal.NewAdminUser(config, commandstarter.NewCommandStarter())
+	var testSpace *internal.TestSpace
+	var testUser *internal.TestUser
+	var adminUser *internal.TestUser
+
+	testSpace = internal.NewRegularTestSpace(config, "10G")
+	testUser = internal.NewTestUser(config, commandstarter.NewCommandStarter())
+	adminUser = internal.NewAdminUser(config, commandstarter.NewCommandStarter())
 
 	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
 	regularUserContext := NewUserContext(config.GetApiEndpoint(), testUser, testSpace, config.GetSkipSSLValidation(), shortTimeout)
@@ -68,9 +74,13 @@ func NewTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSuiteSetup {
 }
 
 func NewPersistentAppTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSuiteSetup {
-	testSpace := internal.NewPersistentAppTestSpace(config)
-	testUser := internal.NewTestUser(config, commandstarter.NewCommandStarter())
-	adminUser := internal.NewAdminUser(config, commandstarter.NewCommandStarter())
+	var testSpace *internal.TestSpace
+	var testUser *internal.TestUser
+	var adminUser *internal.TestUser
+
+	testSpace = internal.NewPersistentAppTestSpace(config)
+	testUser = internal.NewTestUser(config, commandstarter.NewCommandStarter())
+	adminUser = internal.NewAdminUser(config, commandstarter.NewCommandStarter())
 
 	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
 	regularUserContext := NewUserContext(config.GetApiEndpoint(), testUser, testSpace, config.GetSkipSSLValidation(), shortTimeout)
@@ -128,7 +138,6 @@ func (testSetup *ReproducibleTestSuiteSetup) Setup() {
 		testSetup.TestUser.Create()
 		testSetup.regularUserContext.AddUserToSpace()
 	})
-
 	testSetup.originalCfHomeDir, testSetup.currentCfHomeDir = testSetup.regularUserContext.SetCfHomeDir()
 	testSetup.regularUserContext.Login()
 	testSetup.regularUserContext.TargetSpace()
@@ -137,6 +146,7 @@ func (testSetup *ReproducibleTestSuiteSetup) Setup() {
 func (testSetup *ReproducibleTestSuiteSetup) Teardown() {
 	testSetup.regularUserContext.Logout()
 	testSetup.regularUserContext.UnsetCfHomeDir(testSetup.originalCfHomeDir, testSetup.currentCfHomeDir)
+
 	AsUser(testSetup.AdminUserContext(), testSetup.shortTimeout, func() {
 		if !testSetup.TestUser.ShouldRemain() {
 			testSetup.TestUser.Destroy()

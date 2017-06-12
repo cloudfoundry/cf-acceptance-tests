@@ -17,12 +17,14 @@ type TestSpace struct {
 	spaceName                            string
 	isPersistent                         bool
 	isExistingOrganization               bool
+	isExistingSpace                      bool
 	QuotaDefinitionTotalMemoryLimit      string
 	QuotaDefinitionInstanceMemoryLimit   string
 	QuotaDefinitionRoutesLimit           string
 	QuotaDefinitionAppInstanceLimit      string
 	QuotaDefinitionServiceInstanceLimit  string
 	QuotaDefinitionAllowPaidServicesFlag string
+	QuotaDefinitionReservedRoutePorts    string
 	CommandStarter                       internal.Starter
 	Timeout                              time.Duration
 }
@@ -34,7 +36,9 @@ type spaceConfig interface {
 	GetPersistentAppQuotaName() string
 	GetNamePrefix() string
 	GetUseExistingOrganization() bool
+	GetUseExistingSpace() bool
 	GetExistingOrganization() string
+	GetExistingSpace() string
 }
 
 type Space interface {
@@ -45,14 +49,16 @@ type Space interface {
 }
 
 func NewRegularTestSpace(cfg spaceConfig, quotaLimit string) *TestSpace {
-	organizationName, isExistingOrganization := organizationName(cfg)
+	organizationName, _ := organizationName(cfg)
+	spaceName := spaceName(cfg)
 	return NewBaseTestSpace(
-		generator.PrefixedRandomName(cfg.GetNamePrefix(), "SPACE"),
+		spaceName,
 		organizationName,
 		generator.PrefixedRandomName(cfg.GetNamePrefix(), "QUOTA"),
 		quotaLimit,
 		false,
-		isExistingOrganization,
+		cfg.GetUseExistingOrganization(),
+		cfg.GetUseExistingSpace(),
 		cfg.GetScaledTimeout(1*time.Minute),
 		commandstarter.NewCommandStarter(),
 	)
@@ -66,13 +72,14 @@ func NewPersistentAppTestSpace(cfg spaceConfig) *TestSpace {
 		"10G",
 		true,
 		cfg.GetUseExistingOrganization(),
+		cfg.GetUseExistingSpace(),
 		cfg.GetScaledTimeout(1*time.Minute),
 		commandstarter.NewCommandStarter(),
 	)
 	return baseTestSpace
 }
 
-func NewBaseTestSpace(spaceName, organizationName, quotaDefinitionName, quotaDefinitionTotalMemoryLimit string, isPersistent bool, isExistingOrganization bool, timeout time.Duration, cmdStarter internal.Starter) *TestSpace {
+func NewBaseTestSpace(spaceName, organizationName, quotaDefinitionName, quotaDefinitionTotalMemoryLimit string, isPersistent bool, isExistingOrganization bool, isExistingSpace bool, timeout time.Duration, cmdStarter internal.Starter) *TestSpace {
 	testSpace := &TestSpace{
 		QuotaDefinitionName:                  quotaDefinitionName,
 		QuotaDefinitionTotalMemoryLimit:      quotaDefinitionTotalMemoryLimit,
@@ -81,12 +88,14 @@ func NewBaseTestSpace(spaceName, organizationName, quotaDefinitionName, quotaDef
 		QuotaDefinitionAppInstanceLimit:      "-1",
 		QuotaDefinitionServiceInstanceLimit:  "100",
 		QuotaDefinitionAllowPaidServicesFlag: "--allow-paid-service-plans",
+		QuotaDefinitionReservedRoutePorts:    "20",
 		organizationName:                     organizationName,
 		spaceName:                            spaceName,
 		CommandStarter:                       cmdStarter,
 		Timeout:                              timeout,
 		isPersistent:                         isPersistent,
 		isExistingOrganization:               isExistingOrganization,
+		isExistingSpace:                      isExistingSpace,
 	}
 	return testSpace
 }
@@ -100,6 +109,7 @@ func (ts *TestSpace) Create() {
 		"-r", ts.QuotaDefinitionRoutesLimit,
 		"-a", ts.QuotaDefinitionAppInstanceLimit,
 		"-s", ts.QuotaDefinitionServiceInstanceLimit,
+		"--reserved-route-ports", ts.QuotaDefinitionReservedRoutePorts,
 		ts.QuotaDefinitionAllowPaidServicesFlag,
 	}
 
@@ -114,12 +124,16 @@ func (ts *TestSpace) Create() {
 		EventuallyWithOffset(1, setQuota, ts.Timeout).Should(Exit(0))
 	}
 
-	createSpace := internal.Cf(ts.CommandStarter, "create-space", "-o", ts.organizationName, ts.spaceName)
-	EventuallyWithOffset(1, createSpace, ts.Timeout).Should(Exit(0))
+	if !ts.isExistingSpace {
+		createSpace := internal.Cf(ts.CommandStarter, "create-space", "-o", ts.organizationName, ts.spaceName)
+		EventuallyWithOffset(1, createSpace, ts.Timeout).Should(Exit(0))
+	}
 }
 
 func (ts *TestSpace) Destroy() {
-	if ts.isExistingOrganization {
+	if ts.isExistingSpace {
+		return
+	} else if ts.isExistingOrganization {
 		deleteSpace := internal.Cf(ts.CommandStarter, "delete-space", "-f", "-o", ts.organizationName, ts.spaceName)
 		EventuallyWithOffset(1, deleteSpace, ts.Timeout).Should(Exit(0))
 	} else {
@@ -151,8 +165,16 @@ func (ts *TestSpace) ShouldRemain() bool {
 
 func organizationName(cfg spaceConfig) (string, bool) {
 	if cfg.GetUseExistingOrganization() {
-		Expect(cfg.GetExistingOrganization()).To(Not(BeEmpty()), "existing_organization must be specified")
+		Expect(cfg.GetExistingOrganization()).ToNot(BeEmpty(), "existing_organization must be specified")
 		return cfg.GetExistingOrganization(), true
 	}
 	return generator.PrefixedRandomName(cfg.GetNamePrefix(), "ORG"), false
+}
+
+func spaceName(cfg spaceConfig) string {
+	if cfg.GetUseExistingSpace() {
+		Expect(cfg.GetExistingSpace()).ToNot(BeEmpty(), "existing_space must be specified")
+		return cfg.GetExistingSpace()
+	}
+	return generator.PrefixedRandomName(cfg.GetNamePrefix(), "SPACE")
 }
