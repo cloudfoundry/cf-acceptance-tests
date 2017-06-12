@@ -342,8 +342,7 @@ var _ = Describe("UserContext", func() {
 							userContext.AddUserToSpace()
 						})
 
-						Expect(failures).To(HaveLen(1))
-						Expect(failures[0]).To(MatchRegexp("to match exit code:\n.*0"))
+						Expect(failures[0]).To(MatchRegexp("not authorized"))
 					})
 				}
 			}
@@ -365,7 +364,6 @@ var _ = Describe("UserContext", func() {
 							userContext.AddUserToSpace()
 						})
 
-						Expect(failures).To(HaveLen(1))
 						Expect(failures[0]).To(MatchRegexp("Timed out after 2.*"))
 					})
 				}

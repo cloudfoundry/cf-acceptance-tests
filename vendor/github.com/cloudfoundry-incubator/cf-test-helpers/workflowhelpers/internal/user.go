@@ -72,7 +72,7 @@ func (user *TestUser) Create() {
 	session := internal.Cf(user.cmdStarter, "create-user", user.username, user.password)
 	EventuallyWithOffset(1, session, user.timeout).Should(Exit())
 	if session.ExitCode() != 0 {
-		ExpectWithOffset(1, session.Out).Should(Or(Say("scim_resource_already_exists"), Say("insufficient_scope")))
+		ExpectWithOffset(1, session.Out).Should(Say("scim_resource_already_exists|insufficient_scope"))
 	}
 }
 
