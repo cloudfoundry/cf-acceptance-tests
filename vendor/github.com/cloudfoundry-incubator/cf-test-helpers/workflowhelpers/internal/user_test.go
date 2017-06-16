@@ -122,7 +122,7 @@ var _ = Describe("User", func() {
 
 			Context("and the output mentions that the user already exists", func() {
 				BeforeEach(func() {
-					fakeStarter.ToReturn[0].Output = "scim_resource_already_exists"
+					fakeStarter.ToReturn[0].Stderr = "scim_resource_already_exists"
 				})
 
 				It("considers the command successful and does not fail", func() {

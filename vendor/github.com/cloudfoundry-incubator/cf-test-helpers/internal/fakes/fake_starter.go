@@ -18,6 +18,7 @@ type callToStartMethod struct {
 
 type startMethodStub struct {
 	Output    string
+	Stderr    string
 	Err       error
 	ExitCode  int
 	SleepTime int
@@ -41,6 +42,10 @@ func (s *FakeCmdStarter) Start(reporter internal.Reporter, executable string, ar
 	if output == "" {
 		output = `\{\}`
 	}
+	stderr := s.ToReturn[s.TotalCallsToStart].Stderr
+	if stderr == "" {
+		stderr = `\{\}`
+	}
 	sleepTime := s.ToReturn[s.TotalCallsToStart].SleepTime
 	exitCode := s.ToReturn[s.TotalCallsToStart].ExitCode
 	err := s.ToReturn[s.TotalCallsToStart].Err
@@ -59,8 +64,9 @@ func (s *FakeCmdStarter) Start(reporter internal.Reporter, executable string, ar
 		"bash",
 		"-c",
 		fmt.Sprintf(
-			"echo %s; sleep %d; exit %d",
+			"echo %s; echo %s > /dev/stderr; sleep %d; exit %d",
 			output,
+			stderr,
 			sleepTime,
 			exitCode,
 		),
