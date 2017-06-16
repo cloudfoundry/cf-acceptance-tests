@@ -134,7 +134,7 @@ export CONFIG=$PWD/integration_config.json
 * `include_v3`: Flag to include tests for the the v3 API.
 * `include_zipkin`: Flag to include tests for Zipkin tracing. `include_routing` must also be set for tests to run. CF must be deployed with `router.tracing.enable_zipkin` set for tests to pass.
 * `include_isolation_segments`: Flag to include isolation segment tests.
-* `includ_routing_isolation_segments`: Flag to include routing isolation segments. [See below](#routing-isolation-segments)
+* `include_routing_isolation_segments`: Flag to include routing isolation segments. [See below](#routing-isolation-segments)
 * `backend`: App tests push their apps using the backend specified. Incompatible tests will be skipped based on which backend is chosen. If left unspecified the default backend will be used where none is specified; all tests that specify a particular backend will be skipped.
 * `use_http`: Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
 * `use_existing_organization`: Set to true when you need to specify an existing organization to use rather than creating a new organization.
