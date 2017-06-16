@@ -35,7 +35,8 @@ type config struct {
 	PersistentAppQuotaName *string `json:"persistent_app_quota_name"`
 	PersistentAppSpace     *string `json:"persistent_app_space"`
 
-	IsolationSegmentName *string `json:"isolation_segment_name"`
+	IsolationSegmentName   *string `json:"isolation_segment_name"`
+	IsolationSegmentDomain *string `json:"isolation_segment_domain"`
 
 	Backend           *string `json:"backend"`
 	SkipSSLValidation *bool   `json:"skip_ssl_validation"`
@@ -80,6 +81,7 @@ type config struct {
 	IncludeV3                         *bool `json:"include_v3"`
 	IncludeZipkin                     *bool `json:"include_zipkin"`
 	IncludeIsolationSegments          *bool `json:"include_isolation_segments"`
+	IncludeRoutingIsolationSegments   *bool `json:"include_routing_isolation_segments"`
 
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image"`
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username"`
@@ -115,6 +117,7 @@ func getDefaults() config {
 	defaults.PersistentAppSpace = ptrToString("CATS-persistent-space")
 
 	defaults.IsolationSegmentName = ptrToString("")
+	defaults.IsolationSegmentDomain = ptrToString("")
 
 	defaults.BinaryBuildpackName = ptrToString("binary_buildpack")
 	defaults.GoBuildpackName = ptrToString("go_buildpack")
@@ -145,6 +148,7 @@ func getDefaults() config {
 	defaults.IncludeTasks = ptrToBool(false)
 	defaults.IncludeV3 = ptrToBool(false)
 	defaults.IncludeZipkin = ptrToBool(false)
+	defaults.IncludeRoutingIsolationSegments = ptrToBool(false)
 
 	defaults.UseHttp = ptrToBool(false)
 	defaults.UseExistingUser = ptrToBool(false)
@@ -224,6 +228,11 @@ func validateConfig(config *config) Errors {
 		errs.Add(err)
 	}
 
+	err = validateRoutingIsolationSegments(config)
+	if err != nil {
+		errs.Add(err)
+	}
+
 	if config.UseHttp == nil {
 		errs.Add(fmt.Errorf("* 'use_http' must not be null"))
 	}
@@ -250,6 +259,9 @@ func validateConfig(config *config) Errors {
 	}
 	if config.IsolationSegmentName == nil {
 		errs.Add(fmt.Errorf("* 'isolation_segment_name' must not be null"))
+	}
+	if config.IsolationSegmentDomain == nil {
+		errs.Add(fmt.Errorf("* 'isolation_segment_domain' must not be null"))
 	}
 	if config.SkipSSLValidation == nil {
 		errs.Add(fmt.Errorf("* 'skip_ssl_validation' must not be null"))
@@ -514,6 +526,30 @@ func validateIsolationSegments(config *config) error {
 	return nil
 }
 
+func validateRoutingIsolationSegments(config *config) error {
+	if config.IncludeRoutingIsolationSegments == nil {
+		return fmt.Errorf("* 'include_routing_isolation_segments' must not be null")
+	}
+	if config.IsolationSegmentName == nil {
+		return fmt.Errorf("* 'isolation_segment_name' must not be null")
+	}
+	if config.IsolationSegmentDomain == nil {
+		return fmt.Errorf("* 'isolation_segment_domain' must not be null")
+	}
+
+	if !config.GetIncludeRoutingIsolationSegments() {
+		return nil
+	}
+
+	if config.GetIsolationSegmentName() == "" {
+		return fmt.Errorf("* Invalid configuration: 'isolation_segment_name' must be provided if 'include_routing_isolation_segments' is true")
+	}
+	if config.GetIsolationSegmentDomain() == "" {
+		return fmt.Errorf("* Invalid configuration: 'isolation_segment_domain' must be provided if 'include_routing_isolation_segments' is true")
+	}
+	return nil
+}
+
 func load(path string, config *config) Errors {
 	errs := Errors{}
 	err := loadConfigFromPath(path, config)
@@ -613,6 +649,10 @@ func (c *config) GetPersistentAppQuotaName() string {
 
 func (c *config) GetIsolationSegmentName() string {
 	return *c.IsolationSegmentName
+}
+
+func (c *config) GetIsolationSegmentDomain() string {
+	return *c.IsolationSegmentDomain
 }
 
 func (c *config) GetNamePrefix() string {
@@ -741,6 +781,10 @@ func (c *config) GetIncludeV3() bool {
 
 func (c *config) GetIncludeIsolationSegments() bool {
 	return *c.IncludeIsolationSegments
+}
+
+func (c *config) GetIncludeRoutingIsolationSegments() bool {
+	return *c.IncludeRoutingIsolationSegments
 }
 
 func (c *config) GetRubyBuildpackName() string {

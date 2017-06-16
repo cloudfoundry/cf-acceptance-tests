@@ -51,8 +51,10 @@ type testConfig struct {
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username,omitempty"`
 	PrivateDockerRegistryPassword *string `json:"private_docker_registry_password,omitempty"`
 
-	IncludeIsolationSegments *bool   `json:"include_isolation_segments,omitempty"`
-	IsolationSegmentName     *string `json:"isolation_segment_name,omitempty"`
+	IncludeIsolationSegments        *bool   `json:"include_isolation_segments,omitempty"`
+	IncludeRoutingIsolationSegments *bool   `json:"include_routing_isolation_segments,omitempty"`
+	IsolationSegmentName            *string `json:"isolation_segment_name,omitempty"`
+	IsolationSegmentDomain          *string `json:"isolation_segment_domain,omitempty"`
 }
 
 type allConfig struct {
@@ -78,7 +80,8 @@ type allConfig struct {
 	PersistentAppQuotaName *string `json:"persistent_app_quota_name"`
 	PersistentAppSpace     *string `json:"persistent_app_space"`
 
-	IsolationSegmentName *string `json:"isolation_segment_name"`
+	IsolationSegmentName   *string `json:"isolation_segment_name"`
+	IsolationSegmentDomain *string `json:"isolation_segment_domain"`
 
 	Backend           *string `json:"backend"`
 	SkipSSLValidation *bool   `json:"skip_ssl_validation"`
@@ -208,6 +211,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetPersistentAppSpace()).To(Equal("CATS-persistent-space"))
 
 		Expect(config.GetIsolationSegmentName()).To(Equal(""))
+		Expect(config.GetIsolationSegmentDomain()).To(Equal(""))
 
 		Expect(config.GetIncludeApps()).To(BeTrue())
 		Expect(config.GetIncludeDetect()).To(BeTrue())
@@ -286,6 +290,7 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'persistent_app_space' must not be null"))
 
 			Expect(err.Error()).To(ContainSubstring("'isolation_segment_name' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'isolation_segment_domain' must not be null"))
 
 			Expect(err.Error()).To(ContainSubstring("'backend' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'skip_ssl_validation' must not be null"))
@@ -426,6 +431,38 @@ var _ = Describe("Config", func() {
 				config, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(config).To(BeNil())
 				Expect(err).To(MatchError("* Invalid configuration: 'isolation_segment_name' must be provided if 'include_isolation_segments' is true"))
+			})
+		})
+	})
+
+	Context("when including routing isolation segment tests", func() {
+		BeforeEach(func() {
+			testCfg.IncludeRoutingIsolationSegments = ptrToBool(true)
+			testCfg.IsolationSegmentName = ptrToString("value")
+			testCfg.IsolationSegmentDomain = ptrToString("value")
+		})
+
+		Context("when isolation_segment_name is an empty string", func() {
+			BeforeEach(func() {
+				testCfg.IsolationSegmentName = ptrToString("")
+			})
+
+			It("returns an error", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(config).To(BeNil())
+				Expect(err).To(MatchError("* Invalid configuration: 'isolation_segment_name' must be provided if 'include_routing_isolation_segments' is true"))
+			})
+		})
+
+		Context("when isolation_segment_domain is an empty string", func() {
+			BeforeEach(func() {
+				testCfg.IsolationSegmentDomain = ptrToString("")
+			})
+
+			It("returns an error", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(config).To(BeNil())
+				Expect(err).To(MatchError("* Invalid configuration: 'isolation_segment_domain' must be provided if 'include_routing_isolation_segments' is true"))
 			})
 		})
 	})

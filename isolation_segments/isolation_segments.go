@@ -2,6 +2,7 @@ package isolation_segments
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -26,7 +27,7 @@ const (
 )
 
 var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
-	var appsDomain string
+	var appsDomain, isoSegDomain string
 	var orgGuid, orgName string
 	var spaceGuid, spaceName string
 	var isoSegGuid, isoSegName, defaultIsoSegGuid string
@@ -45,6 +46,10 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 		orgName = testSetup.RegularUserContext().Org
 		spaceName = testSetup.RegularUserContext().Space
 		isoSegName = Config.GetIsolationSegmentName()
+		isoSegDomain = Config.GetIsolationSegmentDomain()
+		if isoSegDomain == "" {
+			isoSegDomain = appsDomain
+		}
 
 		session := cf.Cf("curl", fmt.Sprintf("/v3/organizations?names=%s", orgName))
 		bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
@@ -114,13 +119,20 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 				"--no-start",
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-b", "binary_buildpack",
-				"-d", appsDomain,
+				"-d", isoSegDomain,
 				"-c", "./app"),
 				Config.CfPushTimeoutDuration()).Should(Exit(0))
 
 			app_helpers.EnableDiego(appName)
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(binaryHi))
+
+			resp := v3_helpers.SendRequestWithSpoofedHeader(fmt.Sprintf("%s.%s", appName, isoSegDomain), isoSegDomain)
+			defer resp.Body.Close()
+
+			Expect(resp.StatusCode).To(Equal(200))
+			htmlData, err := ioutil.ReadAll(resp.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(htmlData)).To(ContainSubstring(binaryHi))
 		})
 	})
 
@@ -145,7 +157,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 				"--no-start",
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-b", "binary_buildpack",
-				"-d", appsDomain,
+				"-d", isoSegDomain,
 				"-c", "./app"),
 				Config.CfPushTimeoutDuration()).Should(Exit(0))
 
@@ -207,13 +219,20 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 				"--no-start",
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-b", "binary_buildpack",
-				"-d", appsDomain,
+				"-d", isoSegDomain,
 				"-c", "./app"),
 				Config.CfPushTimeoutDuration()).Should(Exit(0))
 
 			app_helpers.EnableDiego(appName)
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(binaryHi))
+
+			resp := v3_helpers.SendRequestWithSpoofedHeader(fmt.Sprintf("%s.%s", appName, isoSegDomain), isoSegDomain)
+			defer resp.Body.Close()
+
+			Expect(resp.StatusCode).To(Equal(200))
+			htmlData, err := ioutil.ReadAll(resp.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(htmlData)).To(ContainSubstring(binaryHi))
 		})
 	})
 })

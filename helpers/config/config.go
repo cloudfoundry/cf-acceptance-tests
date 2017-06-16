@@ -24,6 +24,7 @@ type CatsConfig interface {
 	GetIncludeTasks() bool
 	GetIncludeV3() bool
 	GetIncludeIsolationSegments() bool
+	GetIncludeRoutingIsolationSegments() bool
 	GetShouldKeepUser() bool
 	GetSkipSSLValidation() bool
 	GetUseExistingUser() bool
@@ -44,6 +45,7 @@ type CatsConfig interface {
 	GetExistingUserPassword() string
 	GetGoBuildpackName() string
 	GetIsolationSegmentName() string
+	GetIsolationSegmentDomain() string
 	GetJavaBuildpackName() string
 	GetNamePrefix() string
 	GetNodejsBuildpackName() string

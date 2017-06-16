@@ -357,6 +357,15 @@ func StopApp(appGuid string) {
 	Expect(cf.Cf("curl", stopURL, "-X", "PUT").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 }
 
+func UnassignIsolationSegmentFromSpace(spaceGuid string) {
+	Eventually(cf.Cf("curl", fmt.Sprintf("/v3/spaces/%s/relationships/isolation_segment", spaceGuid),
+		"-X",
+		"PATCH",
+		"-d",
+		`{"data":{"guid":null}}`),
+		Config.DefaultTimeoutDuration()).Should(Exit(0))
+}
+
 func UploadPackage(uploadUrl, packageZipPath, token string) {
 	bits := fmt.Sprintf(`bits=@%s`, packageZipPath)
 	curl := helpers.Curl(Config, "-v", "-s", uploadUrl, "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).Wait(Config.DefaultTimeoutDuration())
