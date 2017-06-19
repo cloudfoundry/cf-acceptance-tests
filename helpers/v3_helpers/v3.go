@@ -114,10 +114,10 @@ func CreateOrGetIsolationSegment(name string) (string, bool) {
 	var created bool
 	if IsolationSegmentExists(name) {
 		isoSegGuid = GetIsolationSegmentGuid(name)
-		created = true
+		created = false
 	} else {
 		isoSegGuid = CreateIsolationSegment(name)
-		created = false
+		created = true
 	}
 	return isoSegGuid, created
 }
