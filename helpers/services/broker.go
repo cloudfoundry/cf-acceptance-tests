@@ -22,8 +22,17 @@ import (
 )
 
 type Plan struct {
-	Name string `json:"name"`
-	ID   string `json:"id"`
+	Name    string      `json:"name"`
+	ID      string      `json:"id"`
+	Schemas PlanSchemas `json:"schemas"`
+}
+
+type PlanSchemas struct {
+	ServiceInstance struct {
+		Create struct {
+			Parameters map[string]interface{} `json:"parameters"`
+		} `json:"create"`
+	} `json:"service_instance"`
 }
 
 type ServiceBroker struct {
@@ -54,10 +63,15 @@ type ServiceResponse struct {
 	}
 }
 
+type ServicePlansResponse struct {
+	Resources []ServicePlanResponse
+}
+
 type ServicePlanResponse struct {
 	Entity struct {
-		Name   string
-		Public bool
+		Name    string
+		Public  bool
+		Schemas PlanSchemas
 	}
 	Metadata struct {
 		Url  string
@@ -89,6 +103,7 @@ func NewServiceBroker(name string, path string, TestSetup *workflowhelpers.Repro
 	b.Name = name
 	b.Service.Name = random_name.CATSRandomName("SVC")
 	b.Service.ID = random_name.CATSRandomName("SVC-ID")
+
 	b.SyncPlans = []Plan{
 		{Name: random_name.CATSRandomName("SVC-PLAN"), ID: random_name.CATSRandomName("SVC-PLAN-ID")},
 		{Name: random_name.CATSRandomName("SVC-PLAN"), ID: random_name.CATSRandomName("SVC-PLAN-ID")},
@@ -167,6 +182,9 @@ func (b ServiceBroker) ToJSON() string {
 	bytes, err := ioutil.ReadFile(assets.NewAssets().ServiceBroker + "/cats.json")
 	Expect(err).To(BeNil())
 
+	planSchema, err := json.Marshal(b.SyncPlans[0].Schemas)
+	Expect(err).To(BeNil())
+
 	replacer := strings.NewReplacer(
 		"<fake-service>", b.Service.Name,
 		"<fake-service-guid>", b.Service.ID,
@@ -181,6 +199,7 @@ func (b ServiceBroker) ToJSON() string {
 		"<fake-async-plan-guid>", b.AsyncPlans[0].ID,
 		"<fake-async-plan-2>", b.AsyncPlans[1].Name,
 		"<fake-async-plan-2-guid>", b.AsyncPlans[1].ID,
+		"\"<fake-plan-schema>\"", string(planSchema),
 	)
 
 	return replacer.Replace(string(bytes))
