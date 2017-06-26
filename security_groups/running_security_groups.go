@@ -175,9 +175,10 @@ func assertNetworkingPreconditions(clientAppName string, privateHost string, pri
 	doraCurlResponse := testAppConnectivity(clientAppName, privateHost, privatePort)
 	Expect(doraCurlResponse.ReturnCode).NotTo(Equal(0), "Expected default running security groups not to allow internal communication between app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
 
-	By("Asserting default running security group configuration from a running container to an external destination")
-	doraCurlResponse = testAppConnectivity(clientAppName, "www.google.com", 80)
-	Expect(doraCurlResponse.ReturnCode).To(Equal(0), "Expected default running security groups to allow external traffic from app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
+	// Runtime access to internet is disabled
+    //By("Asserting default running security group configuration from a running container to an external destination")
+	//doraCurlResponse = testAppConnectivity(clientAppName, "www.google.com", 80)
+	//Expect(doraCurlResponse.ReturnCode).To(Equal(0), "Expected default running security groups to allow external traffic from app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
 }
 
 var _ = SecurityGroupsDescribe("App Instance Networking", func() {
