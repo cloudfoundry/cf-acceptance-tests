@@ -17,18 +17,18 @@ import (
 
 var _ = NimbusDescribe("rabbitmq service federation", func() {
 
-	var appName, redisName, rabbitName string
+	var appName, postgresName, rabbitName string
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
-		redisName = random_name.CATSRandomName("SVC")
+		postgresName = random_name.CATSRandomName("SVC")
 		rabbitName = random_name.CATSRandomName("SVC")
 
-		Expect(cf.Cf("create-service", "cf-redis", "shared-vm", redisName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		Expect(cf.Cf("create-service", "l2-rabbitmq", "default", rabbitName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("create-service", "postgresql94", "default", postgresName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("create-service", "rabbitmq", "standard", rabbitName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().NimbusServices, "--no-start", "-i", "2").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-		Expect(cf.Cf("bind-service", appName, redisName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("bind-service", appName, postgresName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		Expect(cf.Cf("bind-service", appName, rabbitName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 		app_helpers.SetBackend(appName)
@@ -37,13 +37,12 @@ var _ = NimbusDescribe("rabbitmq service federation", func() {
 
 	AfterEach(func() {
 		Expect(cf.Cf("delete", appName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		Expect(cf.Cf("delete-service", redisName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete-service", postgresName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		Expect(cf.Cf("delete-service", rabbitName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
 
-	XIt("app instances in both data centres receive messages", func() {
-
+	It("app instances in both data centres receive messages", func() {
 		Eventually(func() string {
 			helpers.CurlApp(Config, appName, "/rabbit/publish")
 			return helpers.CurlApp(Config, appName, "/rabbit/check/2")
