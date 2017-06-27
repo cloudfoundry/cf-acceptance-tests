@@ -10,6 +10,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	_ "github.com/cloudfoundry/cf-acceptance-tests/apps"
+	_ "github.com/cloudfoundry/cf-acceptance-tests/nimbus"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/backend_compatibility"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/detect"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/docker"

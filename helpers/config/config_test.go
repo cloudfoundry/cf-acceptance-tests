@@ -197,6 +197,7 @@ var _ = Describe("Config", func() {
 		config, err := cfg.NewCatsConfig(requiredCfgFilePath)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(config.GetIncludeApps()).To(BeTrue())
+		Expect(config.GetIncludeNimbus()).To(BeTrue())
 		Expect(config.GetIncludePersistentApp()).To(BeTrue())
 		Expect(config.GetPersistentAppHost()).To(Equal("CATS-persistent-app"))
 

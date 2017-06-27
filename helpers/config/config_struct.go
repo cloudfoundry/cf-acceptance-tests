@@ -62,6 +62,7 @@ type config struct {
 	StaticFileBuildpackName *string `json:"staticfile_buildpack_name"`
 
 	IncludeApps                       *bool `json:"include_apps"`
+	IncludeNimbus                     *bool `json:"include_nimbus"`
 	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
 	IncludeContainerNetworking        *bool `json:"include_container_networking"`
 	IncludeDetect                     *bool `json:"include_detect"`
@@ -126,6 +127,7 @@ func getDefaults() config {
 	defaults.StaticFileBuildpackName = ptrToString("staticfile_buildpack")
 
 	defaults.IncludeApps = ptrToBool(true)
+	defaults.IncludeNimbus = ptrToBool(true)
 	defaults.IncludeDetect = ptrToBool(true)
 	defaults.IncludePersistentApp = ptrToBool(true)
 	defaults.IncludeRouting = ptrToBool(true)
@@ -302,6 +304,9 @@ func validateConfig(config *config) Errors {
 	}
 	if config.IncludeApps == nil {
 		errs.Add(fmt.Errorf("* 'include_apps' must not be null"))
+	}
+	if config.IncludeNimbus == nil {
+		errs.Add(fmt.Errorf("* 'include_nimbus' must not be null"))
 	}
 	if config.IncludeBackendCompatiblity == nil {
 		errs.Add(fmt.Errorf("* 'include_backend_compatibility' must not be null"))
@@ -710,6 +715,10 @@ func (c *config) GetIncludeV3() bool {
 
 func (c *config) GetIncludeIsolationSegments() bool {
 	return *c.IncludeIsolationSegments
+}
+
+func (c *config) GetIncludeNimbus() bool {
+	return *c.IncludeNimbus
 }
 
 func (c *config) GetRubyBuildpackName() string {

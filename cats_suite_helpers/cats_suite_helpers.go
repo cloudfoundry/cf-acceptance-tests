@@ -211,6 +211,17 @@ func PersistentAppDescribe(description string, callback func()) bool {
 	})
 }
 
+func NimbusDescribe(description string, callback func()) bool {
+	return Describe("[nimbus] "+description, func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeNimbus() {
+				Skip(`Skipping this test because Config.IncludeNimbus is set to 'false'.`)
+			}
+		})
+		callback()
+	})
+}
+
 func GuidForAppName(appName string) string {
 	cfApp := cf.Cf("app", appName, "--guid")
 	Expect(cfApp.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))

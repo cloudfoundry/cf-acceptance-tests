@@ -6,6 +6,7 @@ import (
 
 type CatsConfig interface {
 	GetIncludeApps() bool
+	GetIncludeNimbus() bool
 	GetIncludeBackendCompatiblity() bool
 	GetIncludeContainerNetworking() bool
 	GetIncludeDetect() bool
