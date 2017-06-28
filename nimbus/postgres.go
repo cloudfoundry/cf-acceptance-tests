@@ -36,7 +36,7 @@ var _ = NimbusDescribe("postgresql service", func() {
 		Expect(cf.Cf("delete-service", postgresName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
-	It("is accessible in hemel and slough datacenters", func() {
+	It("is accessible in datacenters", func() {
 
 		randomValue := random_name.CATSRandomName("VAL")
 
