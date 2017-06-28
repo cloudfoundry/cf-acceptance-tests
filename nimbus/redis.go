@@ -37,7 +37,7 @@ var _ = NimbusDescribe("redis service", func() {
 		Expect(cf.Cf("delete-service", redisName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
-	FIt("is accessible in datacenters", func() {
+	It("is accessible in datacenters", func() {
 
 		randomKey := random_name.CATSRandomName("KEY")
 		randomValue := random_name.CATSRandomName("VAL")
