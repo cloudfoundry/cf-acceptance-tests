@@ -157,12 +157,12 @@ func getDefaults() config {
 	defaults.UseExistingOrganization = ptrToBool(false)
 	defaults.ExistingOrganization = ptrToString("")
 
-	defaults.AsyncServiceOperationTimeout = ptrToInt(2)
-	defaults.BrokerStartTimeout = ptrToInt(5)
-	defaults.CfPushTimeout = ptrToInt(2)
+	defaults.AsyncServiceOperationTimeout = ptrToInt(120)
+	defaults.BrokerStartTimeout = ptrToInt(300)
+	defaults.CfPushTimeout = ptrToInt(120)
 	defaults.DefaultTimeout = ptrToInt(30)
-	defaults.DetectTimeout = ptrToInt(5)
-	defaults.LongCurlTimeout = ptrToInt(2)
+	defaults.DetectTimeout = ptrToInt(300)
+	defaults.LongCurlTimeout = ptrToInt(120)
 	defaults.SleepTimeout = ptrToInt(30)
 
 	defaults.ConfigurableTestPassword = ptrToString("")
@@ -594,7 +594,7 @@ func (c *config) LongTimeoutDuration() time.Duration {
 }
 
 func (c *config) LongCurlTimeoutDuration() time.Duration {
-	return c.GetScaledTimeout(time.Duration(*c.LongCurlTimeout) * time.Minute)
+	return c.GetScaledTimeout(time.Duration(*c.LongCurlTimeout) * time.Second)
 }
 
 func (c *config) SleepTimeoutDuration() time.Duration {
@@ -602,19 +602,19 @@ func (c *config) SleepTimeoutDuration() time.Duration {
 }
 
 func (c *config) DetectTimeoutDuration() time.Duration {
-	return c.GetScaledTimeout(time.Duration(*c.DetectTimeout) * time.Minute)
+	return c.GetScaledTimeout(time.Duration(*c.DetectTimeout) * time.Second)
 }
 
 func (c *config) CfPushTimeoutDuration() time.Duration {
-	return c.GetScaledTimeout(time.Duration(*c.CfPushTimeout) * time.Minute)
+	return c.GetScaledTimeout(time.Duration(*c.CfPushTimeout) * time.Second)
 }
 
 func (c *config) BrokerStartTimeoutDuration() time.Duration {
-	return c.GetScaledTimeout(time.Duration(*c.BrokerStartTimeout) * time.Minute)
+	return c.GetScaledTimeout(time.Duration(*c.BrokerStartTimeout) * time.Second)
 }
 
 func (c *config) AsyncServiceOperationTimeoutDuration() time.Duration {
-	return c.GetScaledTimeout(time.Duration(*c.AsyncServiceOperationTimeout) * time.Minute)
+	return c.GetScaledTimeout(time.Duration(*c.AsyncServiceOperationTimeout) * time.Second)
 }
 
 func (c *config) Protocol() string {
