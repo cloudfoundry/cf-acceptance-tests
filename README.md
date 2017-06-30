@@ -70,8 +70,6 @@ If you'd like to add a new dependency just `gvt fetch`
 
 You must set an environment variable `$CONFIG` which points to a JSON file that contains several pieces of data that will be used to configure the acceptance tests, e.g. telling the tests how to target your running Cloud Foundry deployment and what tests to run.
 
-You can see all available config keys [here](https://github.com/cloudfoundry/cf-acceptance-tests/blob/master/helpers/config/config_struct.go#L15-L76) and their defaults [here](https://github.com/cloudfoundry/cf-acceptance-tests/blob/master/helpers/config/config_struct.go#L96-L149).
-
 The following can be pasted into a terminal and will set up a sufficient `$CONFIG` to run the core test suites against a [BOSH-Lite](https://github.com/cloudfoundry/bosh-lite) deployment of CF.
 
 ```bash
@@ -89,10 +87,13 @@ cat > integration_config.json <<EOF
   "include_detect": true,
   "include_docker": false,
   "include_internet_dependent": false,
+  "include_isolation_segments": false,
+  "include_persistent_app": false,
   "include_private_docker_registry": false,
   "include_privileged_container_support": false,
   "include_route_services": false,
   "include_routing": true,
+  "include_routing_isolation_segments": false,
   "include_security_groups": true,
   "include_services": true,
   "include_ssh": false,
@@ -103,6 +104,15 @@ cat > integration_config.json <<EOF
 }
 EOF
 export CONFIG=$PWD/integration_config.json
+```
+
+Only the following test groups are run by default:
+
+```
+include_apps
+include_detect
+include_persistent_app
+include_routing
 ```
 
 #### The full set of config parameters is explained below:
