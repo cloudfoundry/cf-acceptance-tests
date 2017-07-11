@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/internal"
+	"github.com/onsi/ginkgo"
 	ginkgoconfig "github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -69,10 +70,14 @@ func NewAdminUser(config adminuserConfig, cmdStarter internal.Starter) *TestUser
 }
 
 func (user *TestUser) Create() {
-	session := internal.Cf(user.cmdStarter, "create-user", user.username, user.password)
+	redactor := internal.NewRedactor(user.password)
+	redactingReporter := internal.NewRedactingReporter(ginkgo.GinkgoWriter, redactor)
+
+	session := internal.CfWithCustomReporter(user.cmdStarter, redactingReporter, "create-user", user.username, user.password)
 	EventuallyWithOffset(1, session, user.timeout).Should(Exit())
+
 	if session.ExitCode() != 0 {
-		ExpectWithOffset(1, session.Out).Should(Say("scim_resource_already_exists|Insufficient scope"))
+		ExpectWithOffset(1, combineOutputAndRedact(session, redactor)).Should(Say("scim_resource_already_exists"))
 	}
 }
 
@@ -91,4 +96,11 @@ func (user *TestUser) Password() string {
 
 func (user *TestUser) ShouldRemain() bool {
 	return user.shouldKeepUser
+}
+
+func combineOutputAndRedact(session *Session, redactor internal.Redactor) *Buffer {
+	stdout := redactor.Redact(string(session.Out.Contents()))
+	stderr := redactor.Redact(string(session.Err.Contents()))
+
+	return BufferWithBytes(append([]byte(stdout), []byte(stderr)...))
 }

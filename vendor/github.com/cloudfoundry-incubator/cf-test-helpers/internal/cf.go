@@ -6,10 +6,14 @@ import (
 )
 
 func Cf(cmdStarter Starter, args ...string) *gexec.Session {
-	reporter := commandreporter.NewCommandReporter()
+	return CfWithCustomReporter(cmdStarter, commandreporter.NewCommandReporter(), args...)
+}
+
+func CfWithCustomReporter(cmdStarter Starter, reporter Reporter, args ...string) *gexec.Session {
 	request, err := cmdStarter.Start(reporter, "cf", args...)
 	if err != nil {
 		panic(err)
 	}
+
 	return request
 }

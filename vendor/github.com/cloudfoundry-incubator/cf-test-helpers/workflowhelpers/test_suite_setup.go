@@ -49,6 +49,8 @@ type ReproducibleTestSuiteSetup struct {
 
 	SkipSSLValidation bool
 
+	SkipUserCreation bool
+
 	isPersistent bool
 
 	originalCfHomeDir string
@@ -70,7 +72,23 @@ func NewTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSuiteSetup {
 	regularUserContext := NewUserContext(config.GetApiEndpoint(), testUser, testSpace, config.GetSkipSSLValidation(), shortTimeout)
 	adminUserContext := NewUserContext(config.GetApiEndpoint(), adminUser, nil, config.GetSkipSSLValidation(), shortTimeout)
 
-	return NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext)
+	return NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext, false)
+}
+
+func NewSmokeTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSuiteSetup {
+	var testSpace *internal.TestSpace
+	var testUser *internal.TestUser
+	var adminUser *internal.TestUser
+
+	testSpace = internal.NewRegularTestSpace(config, "10G")
+	testUser = internal.NewTestUser(config, commandstarter.NewCommandStarter())
+	adminUser = internal.NewAdminUser(config, commandstarter.NewCommandStarter())
+
+	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
+	regularUserContext := NewUserContext(config.GetApiEndpoint(), testUser, testSpace, config.GetSkipSSLValidation(), shortTimeout)
+	adminUserContext := NewUserContext(config.GetApiEndpoint(), adminUser, nil, config.GetSkipSSLValidation(), shortTimeout)
+
+	return NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext, true)
 }
 
 func NewPersistentAppTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSuiteSetup {
@@ -86,7 +104,7 @@ func NewPersistentAppTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSui
 	regularUserContext := NewUserContext(config.GetApiEndpoint(), testUser, testSpace, config.GetSkipSSLValidation(), shortTimeout)
 	adminUserContext := NewUserContext(config.GetApiEndpoint(), adminUser, nil, config.GetSkipSSLValidation(), shortTimeout)
 
-	testSuiteSetup := NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext)
+	testSuiteSetup := NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext, false)
 	testSuiteSetup.isPersistent = true
 
 	return testSuiteSetup
@@ -101,10 +119,10 @@ func NewRunawayAppTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSuiteS
 	regularUserContext := NewUserContext(config.GetApiEndpoint(), testUser, testSpace, config.GetSkipSSLValidation(), shortTimeout)
 	adminUserContext := NewUserContext(config.GetApiEndpoint(), adminUser, nil, config.GetSkipSSLValidation(), shortTimeout)
 
-	return NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext)
+	return NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext, false)
 }
 
-func NewBaseTestSuiteSetup(config testSuiteConfig, testSpace internal.Space, testUser remoteResource, regularUserContext, adminUserContext UserContext) *ReproducibleTestSuiteSetup {
+func NewBaseTestSuiteSetup(config testSuiteConfig, testSpace internal.Space, testUser remoteResource, regularUserContext, adminUserContext UserContext, skipUserCreation bool) *ReproducibleTestSuiteSetup {
 	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
 
 	return &ReproducibleTestSuiteSetup{
@@ -114,9 +132,10 @@ func NewBaseTestSuiteSetup(config testSuiteConfig, testSpace internal.Space, tes
 		regularUserContext: regularUserContext,
 		adminUserContext:   adminUserContext,
 
-		isPersistent: false,
-		TestSpace:    testSpace,
-		TestUser:     testUser,
+		isPersistent:     false,
+		SkipUserCreation: skipUserCreation,
+		TestSpace:        testSpace,
+		TestUser:         testUser,
 	}
 }
 
@@ -135,7 +154,9 @@ func (testSetup ReproducibleTestSuiteSetup) LongTimeout() time.Duration {
 func (testSetup *ReproducibleTestSuiteSetup) Setup() {
 	AsUser(testSetup.AdminUserContext(), testSetup.shortTimeout, func() {
 		testSetup.TestSpace.Create()
-		testSetup.TestUser.Create()
+		if !testSetup.SkipUserCreation {
+			testSetup.TestUser.Create()
+		}
 		testSetup.regularUserContext.AddUserToSpace()
 	})
 	testSetup.originalCfHomeDir, testSetup.currentCfHomeDir = testSetup.regularUserContext.SetCfHomeDir()
@@ -149,7 +170,9 @@ func (testSetup *ReproducibleTestSuiteSetup) Teardown() {
 
 	AsUser(testSetup.AdminUserContext(), testSetup.shortTimeout, func() {
 		if !testSetup.TestUser.ShouldRemain() {
-			testSetup.TestUser.Destroy()
+			if !testSetup.SkipUserCreation {
+				testSetup.TestUser.Destroy()
+			}
 		}
 
 		if !testSetup.TestSpace.ShouldRemain() {
