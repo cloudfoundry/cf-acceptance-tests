@@ -1,17 +1,17 @@
 package apps
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"path"
 	"strings"
-	"encoding/json"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -159,14 +159,16 @@ exit 1
 				return getTaskDetails(appName)[2]
 			}, Config.DefaultTimeoutDuration()).Should(Equal("SUCCEEDED"))
 
-			var appLogsSession *Session
-			Eventually(func() *Session {
-				appLogsSession = cf.Cf("logs", "--recent", appName)
-				Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				return appLogsSession
-			}, Config.DefaultTimeoutDuration()).Should(Exit(0))
+			var taskStdout string
+			Eventually(func() string {
+				appLogsSession := cf.Cf("logs", "--recent", appName)
+				appLogsSession.Wait(Config.DefaultTimeoutDuration())
 
-			taskStdout := string(appLogsSession.Out.Contents())
+				taskStdout = string(appLogsSession.Out.Contents())
+
+				return taskStdout
+			}, Config.DefaultTimeoutDuration()).Should(MatchRegexp("TASK.*VCAP_SERVICES=.*"))
+
 			Expect(taskStdout).To(MatchRegexp("TASK.*LANG=en_US\\.UTF-8"))
 			Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_ADDR=.*"))
 			Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_INTERNAL_IP=.*"))
