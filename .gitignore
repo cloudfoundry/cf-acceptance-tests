@@ -6,3 +6,4 @@ results
 .idea
 .DS_Store
 logs
+assets/*/.bundle
