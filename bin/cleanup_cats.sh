@@ -29,6 +29,12 @@ cf service-brokers | grep 'CATS-' | cut -f1 -d ' ' | while read -r service_broke
     cf delete-service-broker $service_broker -f
 done
 
+echo "Cleaning up domains..."
+cf domains | grep 'CATS-' | cut -f1 -d ' ' | while read -r domain ; do
+    echo "About to delete domain: $domain"
+    cf delete-shared-domain $domain -f
+done
+
 echo "Cleaning up users..."
 uaac users | grep username | grep 'CATS-USER-' | cut -f6 -d ' ' | while read -r user ; do
     echo "About to delete user: $user"
