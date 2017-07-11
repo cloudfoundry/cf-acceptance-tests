@@ -1,13 +1,13 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    daemons (1.2.3)
-    eventmachine (1.0.7)
-    rack (1.5.2)
-    thin (1.6.3)
+    daemons (1.2.4)
+    eventmachine (1.2.3)
+    rack (2.0.3)
+    thin (1.7.2)
       daemons (~> 1.0, >= 1.0.9)
-      eventmachine (~> 1.0)
-      rack (~> 1.0)
+      eventmachine (~> 1.0, >= 1.0.4)
+      rack (>= 1, < 3)
 
 PLATFORMS
   ruby
@@ -17,4 +17,4 @@ DEPENDENCIES
   thin
 
 BUNDLED WITH
-   1.10.5
+   1.15.1
