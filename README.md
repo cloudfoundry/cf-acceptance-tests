@@ -201,10 +201,10 @@ include_routing
 * `persistent_app_quota_name`: [See below](#persistent-app-test-setup).
 * `artifacts_directory`: If set, `cf` CLI trace output from test runs will be captured in files and placed in this directory. [See below](#capturing-test-output) for more.
 * `default_timeout`: Default time (in seconds) to wait for polling assertions that wait for asynchronous results.
-* `cf_push_timeout`: Default time (in minutes) to wait for `cf push` commands to succeed.
-* `long_curl_timeout`: Default time (in minutes) to wait for assertions that `curl` slow endpoints of test applications.
-* `broker_start_timeout` (only relevant for `services` test group): Time (in minutes) to wait for service broker test app to start.
-* `async_service_operation_timeout` (only relevant for the `services` test group): Time (in minutes) to wait for an asynchronous service operation to complete.
+* `cf_push_timeout`: Default time (in seconds) to wait for `cf push` commands to succeed.
+* `long_curl_timeout`: Default time (in seconds) to wait for assertions that `curl` slow endpoints of test applications.
+* `broker_start_timeout` (only relevant for `services` test group): Time (in seconds) to wait for service broker test app to start.
+* `async_service_operation_timeout` (only relevant for the `services` test group): Time (in seconds) to wait for an asynchronous service operation to complete.
 * `test_password`: Used to set the password for the test user. This may be needed if your CF installation has password policies.
 * `timeout_scale`: Used primarily to scale default timeouts for test setup and teardown actions (e.g. creating an org) as opposed to main test actions (e.g. pushing an app).
 * `isolation_segment_name`: Name of the isolation segment to use for the isolation segments test.
