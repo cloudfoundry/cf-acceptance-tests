@@ -1,15 +1,34 @@
 # CF Acceptance Tests (CATs)
+This suite exercises a [Cloud Foundry](https://github.com/cloudfoundry/cf-release)
+deployment using the `cf` CLI and `curl`.
+It is scoped to testing user-facing,
+end-to-end features.
 
+For example,
+one test pushes an app with `cf push`,
+hits an endpoint on the app with `curl`
+that causes it to crash,
+and asserts that we see
+a crash event in `cf events`.
 
-This test suite exercises a full [Cloud Foundry](https://github.com/cloudfoundry/cf-release) deployment using the golang `cf` CLI and `curl`.  It is restricted to testing user-facing features such as a user interacting with the system via the CLI.
+Tests that _won't_ be introduced here
+include things like basic CRUD of an object in the Cloud Controller.
+Such tests belong with the component they relate to.
 
-For example, one test pushes an app with `cf push`, hits an endpoint on the app with `curl` that causes it to crash, and asserts that we eventually see a crash event registered in `cf events`.
+These tests are not intended for use against production systems.
+They're meant for acceptance environments
+used by people developing Cloud Foundry's releases.
+While these tests attempt to clean up after themselves,
+there's no guarantee that they won't
+change the state of your system in an undesirable way.
+For lightweight system tests that are safe to run against a production environment,
+please use the [CF Smoke Tests](https://github.com/cloudfoundry/cf-smoke-tests).
 
-Tests that will NOT be introduced here are ones which could be tested at the component level, such as basic CRUD of an object in the Cloud Controller. These tests belong with that component.
-
-These tests are not intended for use against production systems, they are intended for acceptance environments for teams developing Cloud Foundry itself.  While these tests attempt to clean up after themselves, there is no guarantee that they will not mutate state of your system in an undesirable way.  For lightweight system tests that are safe to run against a production environment, please use the [CF Smoke Tests](https://github.com/cloudfoundry/cf-smoke-tests).
-
-NOTE: Because we want to parallelize execution, tests should be written in such a way as to be runnable individually.  This means that tests should not depend on state in other tests, and should not modify the CF state in such a way as to impact other tests.
+**NOTE:** Because we want to parallelize execution,
+tests should be written to be executable independently.
+Tests should not depend on state in other tests,
+and should not modify the CF state
+in such a way as to impact other tests.
 
 1. [Test Setup](#test-setup)
     1. [Install Required Dependencies](#install-required-dependencies)
@@ -64,13 +83,22 @@ gvt delete <import_path>
 gvt fetch -revision <revision_number> <import_path>
 ```
 
-If you'd like to add a new dependency just `gvt fetch`
+If you'd like to add a new dependency just `gvt fetch`.
 
 ## Test Configuration
+You must set the environment variable `$CONFIG`
+which points to a JSON file
+that contains several pieces of data
+that will be used to configure the acceptance tests,
+e.g. telling the tests how to target
+your running Cloud Foundry deployment
+and what tests to run.
 
-You must set an environment variable `$CONFIG` which points to a JSON file that contains several pieces of data that will be used to configure the acceptance tests, e.g. telling the tests how to target your running Cloud Foundry deployment and what tests to run.
-
-The following can be pasted into a terminal and will set up a sufficient `$CONFIG` to run the core test suites against a [BOSH-Lite](https://github.com/cloudfoundry/bosh-lite) deployment of CF.
+The following can be pasted into a terminal
+and will set up a sufficient `$CONFIG`
+to run the core test suites
+against a [BOSH-Lite](https://github.com/cloudfoundry/bosh-lite)
+deployment of CF.
 
 ```bash
 cat > integration_config.json <<EOF
@@ -107,7 +135,6 @@ export CONFIG=$PWD/integration_config.json
 ```
 
 Only the following test groups are run by default:
-
 ```
 include_apps
 include_detect
@@ -116,7 +143,6 @@ include_routing
 ```
 
 #### The full set of config parameters is explained below:
-
 ##### Required parameters:
 * `api`: Cloud Controller API endpoint.
 * `admin_user`: Name of a user in your CF instance with admin credentials.  This admin user must have the `doppler.firehose` scope.
@@ -197,7 +223,6 @@ Many tests specify a buildpack when pushing an app, so that on diego the app sta
 * `binary_buildpack_name: binary_buildpack`
 
 #### Route Services Test Group Setup
-
 The `route_services` test group pushes applications which must be able to reach the load balancer of your Cloud Foundry deployment. This requires configuring application security groups to support this. Your deployment manifest should include the following data if you are running the `route_services` group:
 
 ```yaml
