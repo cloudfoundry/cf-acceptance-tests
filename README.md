@@ -38,35 +38,47 @@ in such a way as to impact other tests.
 1. [Contributing](#contributing)
 
 ## Test Setup
-
-### Pre-Requisites for running CATS
-
-- Install golang >= 1.6. Set up your golang development environment, per
-[golang.org](http://golang.org/doc/install).
-- Install preferred SCM program in order to `go get` source code.
-  * [git](http://git-scm.com/)
-  * [mercurial](http://mercurial.selenic.com/)
-  * [bazaar](http://bazaar.canonical.com/)
+### Prerequisites for running CATS
+- Install golang >= `1.7`. Set up your golang development environment, per
+  [golang.org](http://golang.org/doc/install).
 - Install the [`cf CLI`](https://github.com/cloudfoundry/cli).
   Make sure that it is accessible in your `$PATH`.
+- Install the cf-networking plugin for the cf cli:
+  `cf install-plugin -r CF-Community "network-policy"`
+- Set `CF_PLUGIN_HOME` explicitly.
+  For example,
+  `export CF_PLUGIN_HOME=$HOME`.
+  This is necessary because CATs uses
+  ephemeral CF_HOME values.
+  In order to maintain access to installed plugins,
+  the CF_PLUGIN_HOME has to be correct.
+  If you are using a non-standard `CF_HOME` or `CF_PLUGIN_HOME`,
+  set `CF_PLUGIN_HOME` to the directory containing `.cf/plugins/network-policy`.
 - Install [curl](http://curl.haxx.se/)
-- Check out a copy of `cf-acceptance-tests` and make sure that it is added to your `$GOPATH`.
+- Check out a copy of `cf-acceptance-tests`
+  and make sure that it is added to your `$GOPATH`.
   The recommended way to do this is to run:
 
   ```bash
   go get -d github.com/cloudfoundry/cf-acceptance-tests
   ```
-  You will receive a warning `no buildable Go source files`; this can be ignored as there is no compilable go source code in the package, only test code.  - Ensure all submodules are checked out to the correct SHA.
+
+  You will receive a warning:
+  `no buildable Go source files`.
+  This can be ignored, as there is only test code in the package.
+- Ensure all submodules are checked out to the correct SHA.
   The easiest way to do this is by running:
 
   ```bash
   ./bin/update_submodules
   ```
-- Install a running Cloud Foundry deployment to run these acceptance tests against. For example, bosh-lite.
+- Install a running Cloud Foundry deployment
+  to run these acceptance tests against.
+  For example, bosh-lite.
 
 ### Updating `go` dependencies
-
-All `go` dependencies required by CATs are vendored in the `vendor` directory.
+All `go` dependencies required by CATs
+are vendored in the `vendor` directory.
 
 Install [gvt](https://github.com/FiloSottile/gvt) and make sure it is available
 in your $PATH. The recommended way to do this is to run:
@@ -154,7 +166,10 @@ include_routing
 `include_*` parameters are used to specify whether to skip tests based on how a deployment is configured.
 * `include_apps`: Flag to include the apps test group.
 * `include_backend_compatibility`: Flag to include whether we check DEA/Diego interoperability.
-* `include_container_networking`: Flag to include tests related to container networking. `include_security_groups` must also be set for tests to run. The [network-policy plugin](https://github.com/cloudfoundry-incubator/cf-networking-release/releases) is required to run these tests. Export `$CF_PLUGIN_HOME` to be the directory containing `.cf/plugins/network-policy`. (i.e. `export CF_PLUGIN_HOME=$HOME`)
+* `include_container_networking`: Flag to include tests related to container networking.
+  `include_security_groups` must also be set for tests to run.
+  The [network-policy plugin][networking-releases] is required to run these tests.
+  See setup section for instructions.
 * `include_detect`: Flag to include tests in the detect group.
 * `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
 * `include_internet_dependent`: Flag to include tests that require the deployment to have internet access.
@@ -388,3 +403,5 @@ unless the test specifically needs to use a buildpack name or URL specific to th
 1. Document the compatible backends in this repo's README.md.
 1. If you add a test that requires a new minimum `cf` CLI version, update the `minCliVersion` in `cats_suite_test.go`.
 1. If you add a test that is unsupported on a particular backend, add a ginkgo Skip() in an if Config.Backend != "your_backend" {} clause, [see Ginkgo's skip](https://onsi.github.io/ginkgo/#the-spec-runner).
+
+[networking-releases]: https://github.com/cloudfoundry-incubator/cf-networking-release/releases
