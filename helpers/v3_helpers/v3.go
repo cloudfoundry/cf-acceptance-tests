@@ -109,19 +109,6 @@ func CreateIsolationSegment(name string) string {
 	return isolation_segment.Guid
 }
 
-func CreateOrGetIsolationSegment(name string) (string, bool) {
-	var isoSegGuid string
-	var created bool
-	if IsolationSegmentExists(name) {
-		isoSegGuid = GetIsolationSegmentGuid(name)
-		created = false
-	} else {
-		isoSegGuid = CreateIsolationSegment(name)
-		created = true
-	}
-	return isoSegGuid, created
-}
-
 func CreatePackage(appGuid string) string {
 	packageCreateUrl := fmt.Sprintf("/v3/packages")
 	session := cf.Cf("curl", packageCreateUrl, "-X", "POST", "-d", fmt.Sprintf(`{"relationships":{"app":{"data":{"guid":"%s"}}},"type":"bits"}`, appGuid))
@@ -363,6 +350,16 @@ func UnassignIsolationSegmentFromSpace(spaceGuid string) {
 		"PATCH",
 		"-d",
 		`{"data":{"guid":null}}`),
+		Config.DefaultTimeoutDuration()).Should(Exit(0))
+}
+
+func UnsetDefaultIsolationSegment(orgGuid string) {
+	Eventually(cf.Cf("curl",
+		fmt.Sprintf("/v3/organizations/%s/relationships/default_isolation_segment", orgGuid),
+		"-X",
+		"PATCH",
+		"-d",
+		`{"data":{"guid": null}}`),
 		Config.DefaultTimeoutDuration()).Should(Exit(0))
 }
 

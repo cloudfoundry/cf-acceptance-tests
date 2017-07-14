@@ -22,7 +22,6 @@ import (
 const (
 	SHARED_ISOLATION_SEGMENT_GUID = "933b4c58-120b-499a-b85d-4b6fc9e2903b"
 	binaryHi                      = "Hello from a binary"
-	SHARED_ISOLATION_SEGMENT_NAME = "shared"
 )
 
 var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
@@ -31,8 +30,6 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 	var spaceGuid, spaceName string
 	var isoSegGuid, isoSegName, isoSegDomain string
 	var testSetup *workflowhelpers.ReproducibleTestSuiteSetup
-	var created bool
-	var originallyEntitledToShared bool
 
 	BeforeEach(func() {
 		// New up a organization since we will be assigning isolation segments.
@@ -51,18 +48,17 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 		session := cf.Cf("curl", fmt.Sprintf("/v3/organizations?names=%s", orgName))
 		bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 		orgGuid = v3_helpers.GetGuidFromResponse(bytes)
-		workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-			originallyEntitledToShared = v3_helpers.OrgEntitledToIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_NAME)
-		})
 	})
 
 	AfterEach(func() {
-		testSetup.Teardown()
-		if !originallyEntitledToShared && Config.GetUseExistingOrganization() {
-			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				v3_helpers.RevokeOrgEntitlementForIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
-			})
-		}
+		workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
+			v3_helpers.UnassignIsolationSegmentFromSpace(spaceGuid)
+			v3_helpers.UnsetDefaultIsolationSegment(orgGuid)
+			v3_helpers.RevokeOrgEntitlementForIsolationSegment(orgGuid, isoSegGuid)
+			if isoSegGuid != SHARED_ISOLATION_SEGMENT_GUID {
+				v3_helpers.DeleteIsolationSegment(isoSegGuid)
+			}
+		})
 	})
 
 	Context("When an app is pushed to a space assigned the shared isolation segment", func() {
@@ -70,8 +66,9 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 
 		BeforeEach(func() {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
-				v3_helpers.AssignIsolationSegmentToSpace(spaceGuid, SHARED_ISOLATION_SEGMENT_GUID)
+				isoSegGuid = SHARED_ISOLATION_SEGMENT_GUID
+				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
+				v3_helpers.AssignIsolationSegmentToSpace(spaceGuid, isoSegGuid)
 				appName = random_name.CATSRandomName("APP")
 			})
 			Eventually(cf.Cf(
@@ -112,7 +109,7 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 
 		BeforeEach(func() {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid, created = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
+				isoSegGuid = v3_helpers.CreateIsolationSegment(isoSegName)
 				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
 				session := cf.Cf("curl", fmt.Sprintf("/v3/spaces?names=%s", spaceName))
 				bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
@@ -134,15 +131,6 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 		})
 
-		AfterEach(func() {
-			if created {
-				workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-					v3_helpers.UnassignIsolationSegmentFromSpace(spaceGuid)
-					v3_helpers.RevokeOrgEntitlementForIsolationSegment(orgGuid, isoSegGuid)
-					v3_helpers.DeleteIsolationSegment(isoSegGuid)
-				})
-			}
-		})
 		It("the app is reachable from the isolated router", func() {
 			resp := v3_helpers.SendRequestWithSpoofedHeader(fmt.Sprintf("%s.%s", appName, isoSegDomain), isoSegDomain)
 			defer resp.Body.Close()
