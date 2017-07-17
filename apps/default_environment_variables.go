@@ -35,8 +35,9 @@ var _ = AppsDescribe("Default Environment Variables", func() {
 			{
 				Name: "bin/compile",
 				Body: fmt.Sprintf(`#!/usr/bin/env bash
-sleep 5
 env
+# wait for the log lines to make it through
+sleep 5
 exit 1
 `),
 			},
