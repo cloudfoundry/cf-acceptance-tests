@@ -298,9 +298,12 @@ func RevokeOrgEntitlementForIsolationSegment(orgGuid, isoSegGuid string) {
 }
 
 func ScaleProcess(appGuid, processType, memoryInMb string) {
-	scalePath := fmt.Sprintf("/v3/apps/%s/processes/%s/scale", appGuid, processType)
+	scalePath := fmt.Sprintf("/v3/apps/%s/processes/%s/actions/scale", appGuid, processType)
 	scaleBody := fmt.Sprintf(`{"memory_in_mb":"%s"}`, memoryInMb)
-	Expect(cf.Cf("curl", scalePath, "-X", "PUT", "-d", scaleBody).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+	session := cf.Cf("curl", scalePath, "-X", "POST", "-d", scaleBody).Wait(Config.DefaultTimeoutDuration())
+	Expect(session).To(Exit(0))
+	result := session.Out.Contents()
+	Expect(strings.Contains(string(result), "errors")).To(BeFalse())
 }
 
 func SendRequestWithSpoofedHeader(host, domain string) *http.Response {
