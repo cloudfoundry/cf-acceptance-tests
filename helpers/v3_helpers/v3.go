@@ -356,8 +356,8 @@ func StartApp(appGuid string) {
 }
 
 func StopApp(appGuid string) {
-	stopURL := fmt.Sprintf("/v3/apps/%s/stop", appGuid)
-	Expect(cf.Cf("curl", stopURL, "-X", "PUT").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+	stopURL := fmt.Sprintf("/v3/apps/%s/actions/stop", appGuid)
+	Expect(cf.Cf("curl", stopURL, "-X", "POST").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 }
 
 func UnassignIsolationSegmentFromSpace(spaceGuid string) {
