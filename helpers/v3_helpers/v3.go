@@ -351,8 +351,8 @@ func StageDockerPackage(packageGuid string) string {
 }
 
 func StartApp(appGuid string) {
-	startURL := fmt.Sprintf("/v3/apps/%s/start", appGuid)
-	Expect(cf.Cf("curl", startURL, "-X", "PUT").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+	startURL := fmt.Sprintf("/v3/apps/%s/actions/start", appGuid)
+	Expect(cf.Cf("curl", startURL, "-X", "POST").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 }
 
 func StopApp(appGuid string) {
