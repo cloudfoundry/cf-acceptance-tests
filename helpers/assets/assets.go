@@ -7,6 +7,7 @@ type Assets struct {
 	DoraZip                  string
 	DotnetCore               string
 	Fuse                     string
+	GoCallsRubyZip           string
 	Golang                   string
 	HelloWorld               string
 	HelloRouting             string
@@ -38,6 +39,7 @@ func NewAssets() Assets {
 		DoraZip:                  "assets/dora.zip",
 		DotnetCore:               "assets/dotnet-core",
 		Fuse:                     "assets/fuse-mount",
+		GoCallsRubyZip:           "assets/go_calls_ruby.zip",
 		Golang:                   "assets/golang",
 		HelloRouting:             "assets/hello-routing",
 		HelloWorld:               "assets/hello-world",
