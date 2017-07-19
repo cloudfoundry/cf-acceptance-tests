@@ -325,8 +325,8 @@ func SetDefaultIsolationSegment(orgGuid, isoSegGuid string) {
 		Config.DefaultTimeoutDuration()).Should(Exit(0))
 }
 
-func StageBuildpackPackage(packageGuid, buildpack string) string {
-	stageBody := fmt.Sprintf(`{"lifecycle":{ "type": "buildpack", "data": { "buildpacks": ["%s"] } }, "package": { "guid" : "%s"}}`, buildpack, packageGuid)
+func StageBuildpackPackage(packageGuid string, buildpacks ...string) string {
+	stageBody := fmt.Sprintf(`{"lifecycle":{ "type": "buildpack", "data": { "buildpacks": ["%s"] } }, "package": { "guid" : "%s"}}`, strings.Join(buildpacks, `", "`), packageGuid)
 	stageUrl := "/v3/builds"
 	session := cf.Cf("curl", stageUrl, "-X", "POST", "-d", stageBody)
 	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
