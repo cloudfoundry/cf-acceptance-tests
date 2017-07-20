@@ -102,7 +102,7 @@ var _ = V3Describe("buildpack", func() {
 		})
 	})
 
-	FContext("With a multi buildpack app", func() {
+	Context("With a multi buildpack app", func() {
 		BeforeEach(func() {
 			appName = random_name.CATSRandomName("APP")
 			spaceGuid = GetSpaceGuidFromName(TestSetup.RegularUserContext().Space)
