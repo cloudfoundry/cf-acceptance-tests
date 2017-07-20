@@ -120,7 +120,7 @@ var _ = V3Describe("buildpack", func() {
 			DeleteApp(appGuid)
 		})
 
-		It("Stages with a user specified admin buildpack", func() {
+		It("Stages with multiple admin buildpacks", func() {
 			buildGUID := StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName(), Config.GetGoBuildpackName())
 			WaitForBuildToStage(buildGUID)
 
