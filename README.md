@@ -44,7 +44,7 @@ in such a way as to impact other tests.
 - Install the [`cf CLI`](https://github.com/cloudfoundry/cli).
   Make sure that it is accessible in your `$PATH`.
 - Install the cf-networking plugin for the cf cli:
-  `cf install-plugin -r -f CF-Community "network-policy"`
+  `cf install-plugin -f -r CF-Community "network-policy"`
 - Set `CF_PLUGIN_HOME` explicitly.
   For example,
   `export CF_PLUGIN_HOME=$HOME`.
