@@ -7,3 +7,5 @@ results
 .DS_Store
 logs
 assets/*/.bundle
+assets/credhub-enabled-app/build
+assets/credhub-enabled-app/.gradle

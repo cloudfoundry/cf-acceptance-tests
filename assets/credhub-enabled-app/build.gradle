@@ -1,0 +1,49 @@
+
+description = 'CredHub Enabled App'
+
+buildscript {
+    ext {
+        springBootVersion = "1.5.4.RELEASE"
+    }
+
+    dependencies {
+        classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.7'
+        classpath 'io.spring.gradle:spring-io-plugin:0.0.7.RELEASE'
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+    }
+
+    repositories {
+        mavenCentral()
+        maven { url "https://repo.spring.io/plugins-release" }
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+
+apply plugin: 'propdeps'
+apply plugin: 'propdeps-maven'
+apply plugin: 'propdeps-idea'
+apply plugin: 'org.springframework.boot'
+
+dependencies {
+    compile group: 'org.springframework.credhub', name: 'spring-credhub-core', version: '1.0.0.BUILD-SNAPSHOT'
+
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web'
+}
+
+repositories {
+    mavenCentral()
+    maven { url "https://repo.spring.io/libs-snapshot-local" }
+}
+
+springBoot {
+    backupSource = false
+}
+
+jar {
+    baseName = 'credhub-enabled-app'
+    destinationDir = file("$rootDir")
+}
+
+bootRepackage.withJarTask = jar
