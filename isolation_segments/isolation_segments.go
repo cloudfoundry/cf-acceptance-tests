@@ -30,10 +30,8 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 	var appsDomain, isoSegDomain string
 	var orgGuid, orgName string
 	var spaceGuid, spaceName string
-	var isoSegGuid, isoSegName, defaultIsoSegGuid string
+	var isoSegGuid, isoSegName string
 	var testSetup *workflowhelpers.ReproducibleTestSuiteSetup
-	var created bool
-	var originallyEntitled bool
 
 	BeforeEach(func() {
 		// New up a organization since we will be assigning isolation segments.
@@ -54,20 +52,18 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 		session := cf.Cf("curl", fmt.Sprintf("/v3/organizations?names=%s", orgName))
 		bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 		orgGuid = v3_helpers.GetGuidFromResponse(bytes)
-		defaultIsoSegGuid = v3_helpers.GetDefaultIsolationSegment(orgGuid)
+
 		workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-			originallyEntitled = v3_helpers.OrgEntitledToIsolationSegment(orgGuid, isoSegName)
+			isoSegGuid = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
 		})
 	})
 
 	AfterEach(func() {
 		workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-			v3_helpers.SetDefaultIsolationSegment(orgGuid, defaultIsoSegGuid)
-			if !originallyEntitled && isoSegGuid != "" {
-				v3_helpers.RevokeOrgEntitlementForIsolationSegment(orgGuid, isoSegGuid)
-			}
+			v3_helpers.UnsetDefaultIsolationSegment(orgGuid)
+			v3_helpers.RevokeOrgEntitlementForIsolationSegment(orgGuid, isoSegGuid)
+			v3_helpers.RevokeOrgEntitlementForIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
 		})
-		testSetup.Teardown()
 	})
 
 	Context("When an organization has the shared segment as its default", func() {
@@ -99,16 +95,9 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 	Context("When the user-provided Isolation Segment has an associated cell", func() {
 		BeforeEach(func() {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid, created = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
 				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
 				v3_helpers.SetDefaultIsolationSegment(orgGuid, isoSegGuid)
 			})
-		})
-
-		AfterEach(func() {
-			if created {
-				v3_helpers.DeleteIsolationSegment(isoSegGuid)
-			}
 		})
 
 		It("can run an app to an org where the default is the user-provided isolation segment", func() {
@@ -137,16 +126,24 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 	})
 
 	Context("When the Isolation Segment has no associated cells", func() {
+		var (
+			fakeIsoSegGuid string
+		)
+
 		BeforeEach(func() {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid = v3_helpers.CreateIsolationSegment(random_name.CATSRandomName("fake-iso-seg"))
-				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
-				v3_helpers.SetDefaultIsolationSegment(orgGuid, isoSegGuid)
+				fakeIsoSegGuid = v3_helpers.CreateIsolationSegment(random_name.CATSRandomName("fake-iso-seg"))
+				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, fakeIsoSegGuid)
+				v3_helpers.SetDefaultIsolationSegment(orgGuid, fakeIsoSegGuid)
 			})
 		})
 
 		AfterEach(func() {
-			v3_helpers.DeleteIsolationSegment(isoSegGuid)
+			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
+				v3_helpers.UnsetDefaultIsolationSegment(orgGuid)
+				v3_helpers.RevokeOrgEntitlementForIsolationSegment(orgGuid, fakeIsoSegGuid)
+				v3_helpers.DeleteIsolationSegment(fakeIsoSegGuid)
+			})
 		})
 
 		It("fails to start an app in the Isolation Segment", func() {
@@ -167,18 +164,6 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 	})
 
 	Context("When the organization has not been entitled to the Isolation Segment", func() {
-		BeforeEach(func() {
-			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid, created = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
-			})
-		})
-
-		AfterEach(func() {
-			if created {
-				v3_helpers.DeleteIsolationSegment(isoSegGuid)
-			}
-		})
-
 		It("fails to set the isolation segment as the default", func() {
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				session := cf.Cf("curl",
@@ -196,7 +181,6 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 	Context("When the space has been assigned an Isolation Segment", func() {
 		BeforeEach(func() {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid, created = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
 				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
 				session := cf.Cf("curl", fmt.Sprintf("/v3/spaces?names=%s", spaceName))
 				bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
@@ -206,9 +190,9 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 		})
 
 		AfterEach(func() {
-			if created {
-				v3_helpers.DeleteIsolationSegment(isoSegGuid)
-			}
+			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
+				v3_helpers.UnassignIsolationSegmentFromSpace(spaceGuid)
+			})
 		})
 
 		It("can run an app in that isolation segment", func() {
