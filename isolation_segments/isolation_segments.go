@@ -52,24 +52,25 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 		session := cf.Cf("curl", fmt.Sprintf("/v3/organizations?names=%s", orgName))
 		bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 		orgGuid = v3_helpers.GetGuidFromResponse(bytes)
+
+		workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
+			isoSegGuid = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
+		})
 	})
 
 	AfterEach(func() {
 		workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
 			v3_helpers.UnsetDefaultIsolationSegment(orgGuid)
 			v3_helpers.RevokeOrgEntitlementForIsolationSegment(orgGuid, isoSegGuid)
-			if isoSegGuid != SHARED_ISOLATION_SEGMENT_GUID {
-				v3_helpers.DeleteIsolationSegment(isoSegGuid)
-			}
+			v3_helpers.RevokeOrgEntitlementForIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
 		})
 	})
 
 	Context("When an organization has the shared segment as its default", func() {
 		BeforeEach(func() {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid = SHARED_ISOLATION_SEGMENT_GUID
-				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
-				v3_helpers.SetDefaultIsolationSegment(orgGuid, isoSegGuid)
+				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
+				v3_helpers.SetDefaultIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
 			})
 		})
 
@@ -94,7 +95,6 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 	Context("When the user-provided Isolation Segment has an associated cell", func() {
 		BeforeEach(func() {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid = v3_helpers.CreateIsolationSegment(isoSegName)
 				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
 				v3_helpers.SetDefaultIsolationSegment(orgGuid, isoSegGuid)
 			})
@@ -126,11 +126,23 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 	})
 
 	Context("When the Isolation Segment has no associated cells", func() {
+		var (
+			fakeIsoSegGuid string
+		)
+
 		BeforeEach(func() {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid = v3_helpers.CreateIsolationSegment(random_name.CATSRandomName("fake-iso-seg"))
-				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
-				v3_helpers.SetDefaultIsolationSegment(orgGuid, isoSegGuid)
+				fakeIsoSegGuid = v3_helpers.CreateIsolationSegment(random_name.CATSRandomName("fake-iso-seg"))
+				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, fakeIsoSegGuid)
+				v3_helpers.SetDefaultIsolationSegment(orgGuid, fakeIsoSegGuid)
+			})
+		})
+
+		AfterEach(func() {
+			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
+				v3_helpers.UnsetDefaultIsolationSegment(orgGuid)
+				v3_helpers.RevokeOrgEntitlementForIsolationSegment(orgGuid, fakeIsoSegGuid)
+				v3_helpers.DeleteIsolationSegment(fakeIsoSegGuid)
 			})
 		})
 
@@ -152,12 +164,6 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 	})
 
 	Context("When the organization has not been entitled to the Isolation Segment", func() {
-		BeforeEach(func() {
-			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid = v3_helpers.CreateIsolationSegment(isoSegName)
-			})
-		})
-
 		It("fails to set the isolation segment as the default", func() {
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				session := cf.Cf("curl",
@@ -175,7 +181,6 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 	Context("When the space has been assigned an Isolation Segment", func() {
 		BeforeEach(func() {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid = v3_helpers.CreateIsolationSegment(isoSegName)
 				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
 				session := cf.Cf("curl", fmt.Sprintf("/v3/spaces?names=%s", spaceName))
 				bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()

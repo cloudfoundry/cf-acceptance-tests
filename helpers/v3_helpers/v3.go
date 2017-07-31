@@ -109,6 +109,14 @@ func CreateIsolationSegment(name string) string {
 	return isolation_segment.Guid
 }
 
+func CreateOrGetIsolationSegment(name string) string {
+	if IsolationSegmentExists(name) {
+		return GetIsolationSegmentGuid(name)
+	}
+
+	return CreateIsolationSegment(name)
+}
+
 func CreatePackage(appGuid string) string {
 	packageCreateUrl := fmt.Sprintf("/v3/packages")
 	session := cf.Cf("curl", packageCreateUrl, "-X", "POST", "-d", fmt.Sprintf(`{"relationships":{"app":{"data":{"guid":"%s"}}},"type":"bits"}`, appGuid))

@@ -48,6 +48,10 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 		session := cf.Cf("curl", fmt.Sprintf("/v3/organizations?names=%s", orgName))
 		bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 		orgGuid = v3_helpers.GetGuidFromResponse(bytes)
+
+		workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
+			isoSegGuid = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
+		})
 	})
 
 	AfterEach(func() {
@@ -55,9 +59,7 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 			v3_helpers.UnassignIsolationSegmentFromSpace(spaceGuid)
 			v3_helpers.UnsetDefaultIsolationSegment(orgGuid)
 			v3_helpers.RevokeOrgEntitlementForIsolationSegment(orgGuid, isoSegGuid)
-			if isoSegGuid != SHARED_ISOLATION_SEGMENT_GUID {
-				v3_helpers.DeleteIsolationSegment(isoSegGuid)
-			}
+			v3_helpers.RevokeOrgEntitlementForIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
 		})
 	})
 
@@ -66,11 +68,11 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 
 		BeforeEach(func() {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid = SHARED_ISOLATION_SEGMENT_GUID
-				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
-				v3_helpers.AssignIsolationSegmentToSpace(spaceGuid, isoSegGuid)
+				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
+				v3_helpers.AssignIsolationSegmentToSpace(spaceGuid, SHARED_ISOLATION_SEGMENT_GUID)
 				appName = random_name.CATSRandomName("APP")
 			})
+
 			Eventually(cf.Cf(
 				"push", appName,
 				"-p", assets.NewAssets().Binary,
@@ -109,7 +111,6 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 
 		BeforeEach(func() {
 			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-				isoSegGuid = v3_helpers.CreateIsolationSegment(isoSegName)
 				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
 				session := cf.Cf("curl", fmt.Sprintf("/v3/spaces?names=%s", spaceName))
 				bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
