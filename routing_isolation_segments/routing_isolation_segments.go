@@ -3,7 +3,6 @@ package routing_isolation_segments
 import (
 	"fmt"
 	"io/ioutil"
-	"os"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/ginkgo"
@@ -14,7 +13,6 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 )
@@ -25,41 +23,48 @@ const (
 )
 
 var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
-	var appsDomain string
-	var orgGuid, orgName string
-	var spaceGuid, spaceName string
-	var isoSegGuid, isoSegName, isoSegDomain string
-	var testSetup *workflowhelpers.ReproducibleTestSuiteSetup
+	var (
+		appsDomain                           string
+		quotaName                            string
+		orgGuid, orgName                     string
+		spaceGuid, spaceName                 string
+		isoSegGuid, isoSegName, isoSegDomain string
+	)
 
 	BeforeEach(func() {
-		// New up a organization since we will be assigning isolation segments.
-		// This has a potential to cause other tests to fail if running in parallel mode.
-		cfg, _ := config.NewCatsConfig(os.Getenv("CONFIG"))
-		testSetup = workflowhelpers.NewTestSuiteSetup(cfg)
-		testSetup.Setup()
+		orgName = random_name.CATSRandomName("ORG")
+		spaceName = random_name.CATSRandomName("SPACE")
+		quotaName = random_name.CATSRandomName("QUOTA")
 
 		appsDomain = Config.GetAppsDomain()
-		orgName = testSetup.RegularUserContext().Org
-		spaceName = testSetup.RegularUserContext().Space
-		spaceGuid = v3_helpers.GetSpaceGuidFromName(spaceName)
 		isoSegName = Config.GetIsolationSegmentName()
 		isoSegDomain = Config.GetIsolationSegmentDomain()
 
-		session := cf.Cf("curl", fmt.Sprintf("/v3/organizations?names=%s", orgName))
-		bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
-		orgGuid = v3_helpers.GetGuidFromResponse(bytes)
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			createQuota := cf.Cf("create-quota", quotaName, "-m", "10G", "-r", "1000", "-s", "5").Wait(TestSetup.ShortTimeout())
+			Expect(createQuota).To(Exit(0))
 
-		workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
+			createOrg := cf.Cf("create-org", orgName).Wait(Config.DefaultTimeoutDuration())
+			Expect(createOrg).To(Exit(0), "failed to create org")
+
+			setQuota := cf.Cf("set-quota", orgName, quotaName).Wait(TestSetup.ShortTimeout())
+			Expect(setQuota).To(Exit(0))
+
+			createSpace := cf.Cf("create-space", spaceName, "-o", orgName).Wait(Config.DefaultTimeoutDuration())
+			Expect(createSpace).To(Exit(0), "failed to create space")
+
+			session := cf.Cf("curl", fmt.Sprintf("/v3/organizations?names=%s", orgName))
+			bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+			orgGuid = v3_helpers.GetGuidFromResponse(bytes)
+
 			isoSegGuid = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
 		})
 	})
 
 	AfterEach(func() {
-		workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
-			v3_helpers.UnassignIsolationSegmentFromSpace(spaceGuid)
-			v3_helpers.UnsetDefaultIsolationSegment(orgGuid)
-			v3_helpers.RevokeOrgEntitlementForIsolationSegment(orgGuid, isoSegGuid)
-			v3_helpers.RevokeOrgEntitlementForIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
+			deleteOrg := cf.Cf("delete-org", orgName, "-f").Wait(Config.DefaultTimeoutDuration())
+			Expect(deleteOrg).To(Exit(0), "failed to delete org")
 		})
 	})
 
@@ -67,24 +72,26 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 		var appName string
 
 		BeforeEach(func() {
-			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
 				v3_helpers.AssignIsolationSegmentToSpace(spaceGuid, SHARED_ISOLATION_SEGMENT_GUID)
+				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+				Expect(target).To(Exit(0), "failed targeting")
 				appName = random_name.CATSRandomName("APP")
+
+				Eventually(cf.Cf(
+					"push", appName,
+					"-p", assets.NewAssets().Binary,
+					"--no-start",
+					"-m", DEFAULT_MEMORY_LIMIT,
+					"-b", "binary_buildpack",
+					"-d", appsDomain,
+					"-c", "./app"),
+					Config.CfPushTimeoutDuration()).Should(Exit(0))
+
+				app_helpers.EnableDiego(appName)
+				Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 			})
-
-			Eventually(cf.Cf(
-				"push", appName,
-				"-p", assets.NewAssets().Binary,
-				"--no-start",
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-b", "binary_buildpack",
-				"-d", appsDomain,
-				"-c", "./app"),
-				Config.CfPushTimeoutDuration()).Should(Exit(0))
-
-			app_helpers.EnableDiego(appName)
-			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 		})
 
 		It("is reachable from the shared router", func() {
@@ -110,26 +117,29 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 		var appName string
 
 		BeforeEach(func() {
-			workflowhelpers.AsUser(testSetup.AdminUserContext(), testSetup.ShortTimeout(), func() {
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
 				session := cf.Cf("curl", fmt.Sprintf("/v3/spaces?names=%s", spaceName))
 				bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 				spaceGuid = v3_helpers.GetGuidFromResponse(bytes)
 				v3_helpers.AssignIsolationSegmentToSpace(spaceGuid, isoSegGuid)
-			})
-			appName = random_name.CATSRandomName("APP")
-			Eventually(cf.Cf(
-				"push", appName,
-				"-p", assets.NewAssets().Binary,
-				"--no-start",
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-b", "binary_buildpack",
-				"-d", isoSegDomain,
-				"-c", "./app"),
-				Config.CfPushTimeoutDuration()).Should(Exit(0))
 
-			app_helpers.EnableDiego(appName)
-			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
+				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+				Expect(target).To(Exit(0), "failed targeting")
+				appName = random_name.CATSRandomName("APP")
+				Eventually(cf.Cf(
+					"push", appName,
+					"-p", assets.NewAssets().Binary,
+					"--no-start",
+					"-m", DEFAULT_MEMORY_LIMIT,
+					"-b", "binary_buildpack",
+					"-d", isoSegDomain,
+					"-c", "./app"),
+					Config.CfPushTimeoutDuration()).Should(Exit(0))
+
+				app_helpers.EnableDiego(appName)
+				Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
+			})
 		})
 
 		It("the app is reachable from the isolated router", func() {
