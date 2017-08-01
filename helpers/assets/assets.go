@@ -2,6 +2,8 @@ package assets
 
 type Assets struct {
 	AsyncServiceBroker       string
+	CredHubEnabledApp        string
+	CredHubServiceBroker     string
 	Dora                     string
 	DoraDroplet              string
 	DoraZip                  string
@@ -34,6 +36,8 @@ type Assets struct {
 func NewAssets() Assets {
 	return Assets{
 		AsyncServiceBroker:       "assets/service_broker",
+		CredHubEnabledApp:        "assets/credhub-enabled-app/credhub-enabled-app.jar",
+		CredHubServiceBroker:     "assets/credhub-service-broker",
 		Dora:                     "assets/dora",
 		DoraDroplet:              "assets/dora-droplet.tar.gz",
 		DoraZip:                  "assets/dora.zip",

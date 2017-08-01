@@ -133,6 +133,21 @@ func (b ServiceBroker) Push(config cats_config.CatsConfig) {
 	Expect(cf.Cf("start", b.Name).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
 }
 
+func (b ServiceBroker) PushWithBuildpackAndManifest(config cats_config.CatsConfig, buildpackName string) {
+	Expect(cf.Cf(
+		"push", b.Name,
+		"--no-start",
+		"-b", buildpackName,
+		"-m", DEFAULT_MEMORY_LIMIT,
+		"-p", b.Path,
+		"-f", b.Path + "/manifest.yml",
+		"-d", config.GetAppsDomain(),
+	).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
+	app_helpers.SetBackend(b.Name)
+	Expect(cf.Cf("set-health-check", b.Name, "http", "--endpoint", "/v2/catalog").Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
+	Expect(cf.Cf("start", b.Name).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
+}
+
 func (b ServiceBroker) Configure() {
 	Expect(helpers.Curl(Config, helpers.AppUri(b.Name, "/config", Config), "-d", b.ToJSON()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 }

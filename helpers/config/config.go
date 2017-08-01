@@ -8,6 +8,7 @@ type CatsConfig interface {
 	GetIncludeApps() bool
 	GetIncludeBackendCompatiblity() bool
 	GetIncludeContainerNetworking() bool
+	GetIncludeCredHub() bool
 	GetIncludeDetect() bool
 	GetIncludeDocker() bool
 	GetIncludeInternetDependent() bool

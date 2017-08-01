@@ -12,6 +12,7 @@ import (
 	"crypto/tls"
 	"time"
 	"strconv"
+	"github.com/satori/go.uuid"
 )
 
 func main() {
@@ -61,15 +62,18 @@ func WriteResponse(w http.ResponseWriter, code int, response string) {
 }
 
 func (s *ServiceBroker) Catalog(w http.ResponseWriter, r *http.Request) {
+	serviceUUID := uuid.NewV4().String()
+	planUUID := uuid.NewV4().String()
+
 	catalog := `{
 	"services": [{
 		"name": "credhub-read",
-		"id": "110049a1-3e3e-4ab4-84c3-f41c430ad1f9",
+		"id": "` + serviceUUID + `",
 		"description": "credhub read service for tests",
 		"bindable": true,
 		"plans": [{
 			"name": "credhub-read-plan",
-			"id": "12873401-28fb-44aa-b931-7f09806ca76f",
+			"id": "` + planUUID + `",
 			"description": "credhub read service for tests"
 		}]
 	}]
