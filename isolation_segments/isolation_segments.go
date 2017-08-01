@@ -58,6 +58,9 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 			createSpace := cf.Cf("create-space", spaceName, "-o", orgName).Wait(Config.DefaultTimeoutDuration())
 			Expect(createSpace).To(Exit(0), "failed to create space")
 
+			addSpaceDeveloper := cf.Cf("set-space-role", TestSetup.RegularUserContext().Username, orgName, spaceName, "SpaceDeveloper").Wait(Config.DefaultTimeoutDuration())
+			Expect(addSpaceDeveloper).To(Exit(0), "failed to add space developer role")
+
 			session := cf.Cf("curl", fmt.Sprintf("/v3/organizations?names=%s", orgName))
 			bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 			orgGuid = v3_helpers.GetGuidFromResponse(bytes)
@@ -82,7 +85,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 		})
 
 		It("can run an app to a space with no assigned segment", func() {
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
 				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(target).To(Exit(0), "failed targeting")
 
@@ -113,7 +116,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 		})
 
 		It("can run an app to an org where the default is the user-provided isolation segment", func() {
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
 				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(target).To(Exit(0), "failed targeting")
 
@@ -164,7 +167,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 		})
 
 		It("fails to start an app in the Isolation Segment", func() {
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
 				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(target).To(Exit(0), "failed targeting")
 
@@ -218,7 +221,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 		})
 
 		It("can run an app in that isolation segment", func() {
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
 				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(target).To(Exit(0), "failed targeting")
 
