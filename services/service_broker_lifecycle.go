@@ -59,11 +59,31 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				Expect(plans).To(Say(broker.SyncPlans[0].Name))
 				Expect(plans).To(Say(broker.SyncPlans[1].Name))
 
+				// Confirm default schemas show up in CAPI
+				cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/service_plans?q=unique_id:%s", broker.SyncPlans[0].ID)).
+					Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+
+				var plansResponse ServicePlansResponse
+				err := json.Unmarshal(cfResponse, &plansResponse)
+				Expect(err).To(BeNil())
+
+				var emptySchemas PlanSchemas
+				emptySchemas.ServiceInstance.Create.Parameters = map[string]interface{}{}
+
+				Expect(plansResponse.Resources[0].Entity.Schemas).To(Equal(emptySchemas))
+
 				// Changing the catalog on the broker
 				oldServiceName = broker.Service.Name
 				oldPlanName = broker.SyncPlans[0].Name
 				broker.Service.Name = random_name.CATSRandomName("SVC")
 				broker.SyncPlans[0].Name = random_name.CATSRandomName("SVC-PLAN")
+
+				var basicSchema PlanSchemas
+				basicSchema.ServiceInstance.Create.Parameters = map[string]interface{}{
+					"$schema": "http://json-schema.org/draft-04/schema#", "type": "object",
+				}
+				broker.SyncPlans[0].Schemas = basicSchema
+
 				broker.Configure()
 				broker.Update()
 
@@ -74,6 +94,14 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				Expect(plans).NotTo(Say(oldPlanName))
 				Expect(plans).To(Say(broker.Service.Name))
 				Expect(plans).To(Say(broker.Plans()[0].Name))
+
+				// Confirm plan schemas show up in CAPI
+				cfResponse = cf.Cf("curl", fmt.Sprintf("/v2/service_plans?q=unique_id:%s", broker.SyncPlans[0].ID)).
+					Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+
+				err = json.Unmarshal(cfResponse, &plansResponse)
+				Expect(err).To(BeNil())
+				Expect(plansResponse.Resources[0].Entity.Schemas).To(Equal(broker.SyncPlans[0].Schemas))
 
 				// Deleting the service broker and confirming the plans no longer display
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
