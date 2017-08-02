@@ -42,32 +42,30 @@ func testAppConnectivity(clientAppName string, privateHost string, privatePort i
 	return doraCurlResponse
 }
 
-var _ = InternetDependentDescribe("InternetConnectivity", func() {
-	Describe("connecting to an external IP address", func() {
-		var clientAppName string
-		var doraCurlResponse DoraCurlResponse
+var _ = InternetDependentDescribe("App container DNS behavior", func() {
+	var clientAppName string
+	var doraCurlResponse DoraCurlResponse
 
-		BeforeEach(func() {
-			if !Config.GetIncludeInternetDependent() {
-				Skip(skip_messages.SkipInternetDependentMessage)
-			}
+	BeforeEach(func() {
+		if !Config.GetIncludeInternetDependent() {
+			Skip(skip_messages.SkipInternetDependentMessage)
+		}
 
-		})
+	})
 
-		AfterEach(func() {
-			app_helpers.AppReport(clientAppName, Config.DefaultTimeoutDuration())
-			Expect(cf.Cf("delete", clientAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+	AfterEach(func() {
+		app_helpers.AppReport(clientAppName, Config.DefaultTimeoutDuration())
+		Expect(cf.Cf("delete", clientAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-		})
+	})
 
-		It("Can connect", func() {
-			clientAppName = random_name.CATSRandomName("APP")
-			pushApp(clientAppName, Config.GetRubyBuildpackName())
-			Expect(cf.Cf("start", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+	It("allows app containers to resolve public DNS", func() {
+		clientAppName = random_name.CATSRandomName("APP")
+		pushApp(clientAppName, Config.GetRubyBuildpackName())
+		Expect(cf.Cf("start", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-			By("Connecting from running container to an external destination")
-			doraCurlResponse = testAppConnectivity(clientAppName, "www.google.com", 80)
-			Expect(doraCurlResponse.ReturnCode).To(Equal(0), "Expected external traffic to be allowed from app containers to external addresses.")
-		})
+		By("Connecting from running container to an external destination")
+		doraCurlResponse = testAppConnectivity(clientAppName, "www.google.com", 80)
+		Expect(doraCurlResponse.ReturnCode).To(Equal(0), "Expected external traffic to be allowed from app containers to external addresses.")
 	})
 })
