@@ -219,7 +219,7 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 			By("adding policy")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(cf.Cf("allow-access", clientAppName, serverAppName, "--port", fmt.Sprintf("%d", containerPort), "--protocol", "tcp").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("add-network-policy", clientAppName, "--destination-app", serverAppName, "--port", fmt.Sprintf("%d", containerPort), "--protocol", "tcp").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			})
 
 			By("waiting for policy to be added on cell")
@@ -232,7 +232,7 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 			By("removing policy")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(cf.Cf("remove-access", clientAppName, serverAppName, "--port", fmt.Sprintf("%d", containerPort), "--protocol", "tcp").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("remove-network-policy", clientAppName, "--destination-app", serverAppName, "--port", fmt.Sprintf("%d", containerPort), "--protocol", "tcp").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			})
 
 			By("waiting for policy to be removed on cell")
