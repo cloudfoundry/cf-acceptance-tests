@@ -4,11 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.credhub.core.CredHubTemplate;
 import org.springframework.credhub.support.ServicesData;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,17 +32,6 @@ public class CredHubEnabledController {
 
   private ServicesData buildServicesData(String vcapServices) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
-    return (ServicesData)mapper.readValue(vcapServices, ServicesData.class);
-  }
-
-  @PostMapping({"/cleanup"})
-  public void doCleanup() throws Exception {
-    if (servicesData != null) {
-      HashMap<String, String> credentials = (HashMap) servicesData.get("credhub-read").get(0)
-          .get("credentials");
-      String credentialName = credentials.get("credhub-ref");
-      credHubTemplate.deleteByName(credentialName);
-    }
-
+    return mapper.readValue(vcapServices, ServicesData.class);
   }
 }
