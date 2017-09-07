@@ -49,6 +49,20 @@ func TestCATS(t *testing.T) {
 
 		Expect(ParseRawCliVersionString(installedVersion).AtLeast(ParseRawCliVersionString(minCliVersion))).To(BeTrue(), "CLI version "+minCliVersion+" is required")
 
+		if validationError != nil {
+			fmt.Println("Invalid configuration.  ")
+			fmt.Println(validationError)
+			Fail("Please fix the contents of $CONFIG:\n  " + os.Getenv("CONFIG") + "\nbefore proceeding.")
+		}
+
+		if Config.GetIncludeSsh() {
+			ScpPath, err = exec.LookPath("scp")
+			Expect(err).NotTo(HaveOccurred())
+
+			SftpPath, err = exec.LookPath("sftp")
+			Expect(err).NotTo(HaveOccurred())
+		}
+
 		appPath := "assets/catnip"
 		goPath := os.Getenv("GOPATH")
 
@@ -63,23 +77,7 @@ func TestCATS(t *testing.T) {
 
 		return []byte{}
 	}, func([]byte) {
-		var err error
-
-		if validationError != nil {
-			fmt.Println("Invalid configuration.  ")
-			fmt.Println(validationError)
-			Fail("Please fix the contents of $CONFIG:\n  " + os.Getenv("CONFIG") + "\nbefore proceeding.")
-		}
-
 		TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
-
-		if Config.GetIncludeSsh() {
-			ScpPath, err = exec.LookPath("scp")
-			Expect(err).NotTo(HaveOccurred())
-
-			SftpPath, err = exec.LookPath("sftp")
-			Expect(err).NotTo(HaveOccurred())
-		}
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.GetScaledTimeout(1*time.Minute), func() {
 			buildpacks, err := GetBuildpacks()
