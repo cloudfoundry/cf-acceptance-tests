@@ -44,9 +44,9 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 			Expect(cf.Cf(
 				"push", appName,
 				"--no-start",
-				"-b", Config.GetRubyBuildpackName(),
+				"-b", Config.GetGoBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().Dora,
+				"-p", assets.NewAssets().Catnip,
 				"-d", Config.GetAppsDomain(),
 				"-c", "FOO=foo bundle exec rackup config.ru -p $PORT",
 			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))

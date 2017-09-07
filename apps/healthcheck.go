@@ -82,7 +82,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 
 			By("verifying it's up")
-			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("Hi, I'm Dora!"))
+			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("Catnip?"))
 		})
 	})
 
@@ -108,7 +108,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 
 			By("verifying it's up")
-			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("Hi, I'm Dora!"))
+			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("Catnip?"))
 		})
 	})
 })

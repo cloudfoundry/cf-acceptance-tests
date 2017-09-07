@@ -81,7 +81,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, appName)
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
 	})
 
 	AfterEach(func() {

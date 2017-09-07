@@ -38,7 +38,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
 		})
 	})
 

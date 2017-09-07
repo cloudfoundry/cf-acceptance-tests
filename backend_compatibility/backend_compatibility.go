@@ -71,7 +71,7 @@ var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
 		})
 	})
 })

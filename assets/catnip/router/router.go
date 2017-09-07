@@ -39,5 +39,5 @@ func New(out io.Writer, clock clock.Clock) *mux.Router {
 }
 
 func HomeHandler(res http.ResponseWriter, req *http.Request) {
-	io.WriteString(res, "Hi, I'm Dora!")
+	io.WriteString(res, "Catnip?")
 }

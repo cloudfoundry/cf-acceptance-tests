@@ -100,11 +100,11 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 
 			Eventually(func() string {
 				return curlRoute("foo", "/")
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
 
 			Eventually(func() string {
 				return curlRoute("foo.baz", "/")
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
 		})
 	})
 })

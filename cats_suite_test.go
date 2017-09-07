@@ -49,6 +49,18 @@ func TestCATS(t *testing.T) {
 
 		Expect(ParseRawCliVersionString(installedVersion).AtLeast(ParseRawCliVersionString(minCliVersion))).To(BeTrue(), "CLI version "+minCliVersion+" is required")
 
+		appPath := "assets/catnip"
+		goPath := os.Getenv("GOPATH")
+
+		buildCmd := exec.Command("go", "build", "-o", "bin/catnip")
+		buildCmd.Dir = appPath
+		buildCmd.Env = []string{"GOPATH=" + goPath, "GOOS=linux", "GOARCH=amd64"}
+		buildCmd.Stdout = GinkgoWriter
+		buildCmd.Stderr = GinkgoWriter
+
+		err = buildCmd.Run()
+		Expect(err).NotTo(HaveOccurred())
+
 		return []byte{}
 	}, func([]byte) {
 		var err error

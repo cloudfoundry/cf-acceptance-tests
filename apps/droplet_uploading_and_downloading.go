@@ -80,7 +80,7 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 		Expect(cf.Cf("push", helloWorldAppName, "-p", assets.NewAssets().Dora).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, helloWorldAppName)
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
 
 		By("Uploading the originally downloaded droplet of the app")
 

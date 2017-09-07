@@ -2,6 +2,7 @@ package assets
 
 type Assets struct {
 	AsyncServiceBroker       string
+	Catnip                   string
 	Dora                     string
 	DoraDroplet              string
 	DoraZip                  string
@@ -35,6 +36,7 @@ func NewAssets() Assets {
 	return Assets{
 		AsyncServiceBroker:       "assets/service_broker",
 		Dora:                     "assets/dora",
+		Catnip:                   "assets/catnip/bin",
 		DoraDroplet:              "assets/dora-droplet.tar.gz",
 		DoraZip:                  "assets/dora.zip",
 		DotnetCore:               "assets/dotnet-core",
