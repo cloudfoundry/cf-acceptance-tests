@@ -20,7 +20,7 @@ func New(out io.Writer, clock clock.Clock) *mux.Router {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", HomeHandler).Methods(http.MethodGet)
-	r.HandleFunc("/id", env.InstanceIdHandler).Methods(http.MethodGet)
+	r.HandleFunc("/id", env.InstanceGuidHandler).Methods(http.MethodGet)
 	r.HandleFunc("/myip", linux.MyIPHandler).Methods(http.MethodGet)
 	r.HandleFunc("/health", health.HealthHander).Methods(http.MethodGet)
 	r.HandleFunc("/session", session.StickyHandler).Methods(http.MethodPost)

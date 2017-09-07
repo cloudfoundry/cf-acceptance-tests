@@ -22,12 +22,12 @@ var _ = Describe("Session", func() {
 
 	BeforeEach(func() {
 		server = httptest.NewServer(router.New(os.Stdout, clock.NewClock()))
-		os.Setenv("VCAP_APPLICATION", `{"instance_id":"FAKE_INSTANCE_ID"}`)
+		os.Setenv("CF_INSTANCE_GUID", "FAKE_INSTANCE_ID")
 	})
 
 	AfterEach(func() {
 		server.Close()
-		os.Unsetenv("VCAP_APPLICATION")
+		os.Unsetenv("CF_INSTANCE_GUID")
 	})
 
 	Describe("StickyHandler", func() {

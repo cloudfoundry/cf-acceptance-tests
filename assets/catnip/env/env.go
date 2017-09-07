@@ -27,20 +27,10 @@ func JSONHandler(res http.ResponseWriter, req *http.Request) {
 	res.Write(envJSON)
 }
 
-func InstanceIdHandler(res http.ResponseWriter, req *http.Request) {
-	instanceId, _ := InstanceId()
-
-	io.WriteString(res, instanceId)
+func InstanceGuidHandler(res http.ResponseWriter, req *http.Request) {
+	io.WriteString(res, InstanceGuid())
 }
 
-func InstanceId() (string, error) {
-	vcapString := os.Getenv("VCAP_APPLICATION")
-	vcapMap := make(map[string]string)
-
-	err := json.Unmarshal([]byte(vcapString), &vcapMap)
-	if err != nil {
-		return "", err
-	}
-
-	return vcapMap["instance_id"], nil
+func InstanceGuid() string {
+	return os.Getenv("CF_INSTANCE_GUID")
 }

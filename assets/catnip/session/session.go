@@ -8,9 +8,9 @@ import (
 )
 
 func StickyHandler(res http.ResponseWriter, req *http.Request) {
-	instanceId, _ := env.InstanceId()
+	instanceGuid := env.InstanceGuid()
 
-	cookie := http.Cookie{Name: "JSESSIONID", Value: instanceId}
+	cookie := http.Cookie{Name: "JSESSIONID", Value: instanceGuid}
 	http.SetCookie(res, &cookie)
 
 	io.WriteString(res, "Please read the README.md for help on how to use sticky sessions.")
