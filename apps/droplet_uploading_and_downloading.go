@@ -77,10 +77,10 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 
 		By("Pushing a different version of the app")
 
-		Expect(cf.Cf("push", helloWorldAppName, "-p", assets.NewAssets().Dora).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("push", helloWorldAppName, "-p", assets.NewAssets().RubySimple).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, helloWorldAppName)
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
+		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Healthy"))
 
 		By("Uploading the originally downloaded droplet of the app")
 

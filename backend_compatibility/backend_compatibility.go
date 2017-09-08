@@ -26,10 +26,10 @@ var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
 		appName = random_name.CATSRandomName("APP")
 		Eventually(cf.Cf(
 			"push", appName,
-			"-p", assets.NewAssets().Dora,
 			"--no-start",
+			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
-			"-b", Config.GetRubyBuildpackName(),
+			"-p", assets.NewAssets().Catnip,
 			"-d", Config.GetAppsDomain()),
 			Config.CfPushTimeoutDuration()).Should(Exit(0))
 	})
@@ -71,7 +71,7 @@ var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 	})
 })

@@ -32,13 +32,18 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("ruby", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push",
+				appName,
+				"--no-start",
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().HelloWorld,
+				"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
 			Expect(cf.Cf("start", appName).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello, world!"))
 		})
 	})
 

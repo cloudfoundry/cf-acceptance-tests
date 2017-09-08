@@ -15,7 +15,7 @@ import (
 )
 
 var _ = AppsDescribe("Wildcard Routes", func() {
-	var appNameDora string
+	var appNameCatnip string
 	var appNameSimple string
 	var domainName string
 	var orgName string
@@ -39,20 +39,21 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 			Expect(cf.Cf("create-shared-domain", domainName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
-		appNameDora = random_name.CATSRandomName("APP")
+		appNameCatnip = random_name.CATSRandomName("APP")
 		appNameSimple = random_name.CATSRandomName("APP")
 
 		Expect(cf.Cf(
-			"push", appNameDora,
+			"push", appNameCatnip,
 			"--no-start",
-			"-b", Config.GetRubyBuildpackName(),
+			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", assets.NewAssets().Dora,
+			"-p", assets.NewAssets().Catnip,
+			"-c", "./catnip",
 			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-		app_helpers.SetBackend(appNameDora)
-		Expect(cf.Cf("start", appNameDora).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		app_helpers.SetBackend(appNameCatnip)
+		Expect(cf.Cf("start", appNameCatnip).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		Expect(cf.Cf(
 			"push", appNameSimple,
@@ -68,7 +69,7 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appNameDora, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(appNameCatnip, Config.DefaultTimeoutDuration())
 		app_helpers.AppReport(appNameSimple, Config.DefaultTimeoutDuration())
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
@@ -76,7 +77,7 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 			Expect(cf.Cf("delete-shared-domain", domainName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		})
 
-		Expect(cf.Cf("delete", appNameDora, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete", appNameCatnip, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		Expect(cf.Cf("delete", appNameSimple, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
@@ -91,7 +92,7 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 			})
 			Expect(cf.Cf("create-route", spaceName, domainName, "-n", regularRoute).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
-			Expect(cf.Cf("map-route", appNameDora, domainName, "-n", wildCardRoute).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("map-route", appNameCatnip, domainName, "-n", wildCardRoute).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			Expect(cf.Cf("map-route", appNameSimple, domainName, "-n", regularRoute).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {

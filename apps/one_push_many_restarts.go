@@ -54,7 +54,14 @@ var _ = PersistentAppDescribe("An application that's already been pushed", func(
 		output = output + string(appQuery.Out.Contents())
 
 		if appQuery.ExitCode() == 1 && strings.Contains(output, "not found") {
-			pushCommand := cf.Cf("push", appName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())
+			pushCommand := cf.Cf("push",
+				appName,
+				"--no-start",
+				"-b", Config.GetBinaryBuildpackName(),
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().Catnip,
+				"-c", "./catnip",
+				"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())
 			if pushCommand.ExitCode() != 0 {
 				Expect(cf.Cf("delete", "-f", "-r", appName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				Fail("failed to create app")

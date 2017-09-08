@@ -67,10 +67,11 @@ var _ = AppsDescribe("Healthcheck", func() {
 			By("pushing it")
 			Eventually(cf.Cf(
 				"push", appName,
-				"-p", assets.NewAssets().Dora,
 				"--no-start",
-				"-b", Config.GetRubyBuildpackName(),
+				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().Catnip,
+				"-c", "./catnip",
 				"-d", Config.GetAppsDomain(),
 				"-i", "1",
 				"-u", "port"),
@@ -91,10 +92,11 @@ var _ = AppsDescribe("Healthcheck", func() {
 			By("pushing it")
 			Eventually(cf.Cf(
 				"push", appName,
-				"-p", assets.NewAssets().Dora,
 				"--no-start",
-				"-b", Config.GetRubyBuildpackName(),
+				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().Catnip,
+				"-c", "./catnip",
 				"-d", Config.GetAppsDomain(),
 				"-i", "1",
 				"-u", "port"),

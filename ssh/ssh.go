@@ -35,10 +35,11 @@ var _ = SshDescribe("SSH", func() {
 		appName = random_name.CATSRandomName("APP")
 		Eventually(cf.Cf(
 			"push", appName,
-			"-p", assets.NewAssets().Dora,
 			"--no-start",
-			"-b", "ruby_buildpack",
+			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
+			"-p", assets.NewAssets().Catnip,
+			"-c", "./catnip",
 			"-d", Config.GetAppsDomain(),
 			"-i", "1"),
 			Config.DefaultTimeoutDuration(),
@@ -143,7 +144,7 @@ var _ = SshDescribe("SSH", func() {
 			Eventually(func() string {
 				curl := helpers.Curl(Config, "http://127.0.0.1:61007/").Wait(Config.DefaultTimeoutDuration())
 				return string(curl.Out.Contents())
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
 
 			err = stdin.Close()
 			Expect(err).NotTo(HaveOccurred())

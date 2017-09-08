@@ -44,11 +44,11 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 			Expect(cf.Cf(
 				"push", appName,
 				"--no-start",
-				"-b", Config.GetGoBuildpackName(),
+				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-d", Config.GetAppsDomain(),
-				"-c", "FOO=foo bundle exec rackup config.ru -p $PORT",
+				"-c", "FOO=foo ./catnip",
 			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -67,7 +67,7 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 				"/v2/apps/"+appGuid,
 				nil,
 				Config.DefaultTimeoutDuration(),
-				`{"command":"FOO=bar bundle exec rackup config.ru -p $PORT"}`,
+				`{"command":"FOO=bar ./catnip"}`,
 			)
 
 			Expect(cf.Cf("stop", appName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))

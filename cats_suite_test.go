@@ -63,12 +63,13 @@ func TestCATS(t *testing.T) {
 			Expect(err).NotTo(HaveOccurred())
 		}
 
-		appPath := "assets/catnip"
-		goPath := os.Getenv("GOPATH")
-
 		buildCmd := exec.Command("go", "build", "-o", "bin/catnip")
-		buildCmd.Dir = appPath
-		buildCmd.Env = []string{"GOPATH=" + goPath, "GOOS=linux", "GOARCH=amd64"}
+		buildCmd.Dir = "assets/catnip"
+		buildCmd.Env = []string{
+			fmt.Sprintf("GOPATH=%s", os.Getenv("GOPATH")),
+			"GOOS=linux",
+			"GOARCH=amd64",
+		}
 		buildCmd.Stdout = GinkgoWriter
 		buildCmd.Stderr = GinkgoWriter
 
