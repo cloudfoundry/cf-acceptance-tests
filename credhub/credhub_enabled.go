@@ -67,9 +67,6 @@ var _ = CredHubDescribe("CredHub Integration", func() {
 		AfterEach(func() {
 			app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
 
-			curlCmd := helpers.CurlSkipSSL(true, appURL + "/cleanup").Wait(Config.DefaultTimeoutDuration())
-			Expect(curlCmd).To(Exit(0))
-
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				TestSetup.RegularUserContext().TargetSpace()
 				unbindService := cf.Cf("unbind-service", appName, instanceName).Wait(Config.DefaultTimeoutDuration())
