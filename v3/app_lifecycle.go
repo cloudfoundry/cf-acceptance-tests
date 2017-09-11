@@ -88,7 +88,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, webProcess.Name)
-			}, Config.CfPushTimeoutDuration()).Should(ContainSubstring("Catnip?"))
+			}, Config.CfPushTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 
 			output := helpers.CurlApp(Config, webProcess.Name, "/env")
 			Expect(output).To(ContainSubstring(fmt.Sprintf("application_name\\\":\\\"%s", appName)))
