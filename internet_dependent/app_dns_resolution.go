@@ -18,7 +18,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
-type DoraCurlResponse struct {
+type CatnipCurlResponse struct {
 	Stdout     string
 	Stderr     string
 	ReturnCode int `json:"return_code"`
@@ -30,21 +30,22 @@ func pushApp(appName, buildpack string) {
 		"--no-start",
 		"-b", buildpack,
 		"-m", DEFAULT_MEMORY_LIMIT,
-		"-p", assets.NewAssets().Dora,
+		"-p", assets.NewAssets().Catnip,
+		"-c", "./catnip",
 		"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	app_helpers.SetBackend(appName)
 }
 
-func testAppConnectivity(clientAppName string, privateHost string, privatePort int) DoraCurlResponse {
-	var doraCurlResponse DoraCurlResponse
+func testAppConnectivity(clientAppName string, privateHost string, privatePort int) CatnipCurlResponse {
+	var catnipCurlResponse CatnipCurlResponse
 	curlResponse := helpers.CurlApp(Config, clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort))
-	json.Unmarshal([]byte(curlResponse), &doraCurlResponse)
-	return doraCurlResponse
+	json.Unmarshal([]byte(curlResponse), &catnipCurlResponse)
+	return catnipCurlResponse
 }
 
 var _ = InternetDependentDescribe("App container DNS behavior", func() {
 	var clientAppName string
-	var doraCurlResponse DoraCurlResponse
+	var catnipCurlResponse CatnipCurlResponse
 
 	BeforeEach(func() {
 		if !Config.GetIncludeInternetDependent() {
@@ -61,11 +62,11 @@ var _ = InternetDependentDescribe("App container DNS behavior", func() {
 
 	It("allows app containers to resolve public DNS", func() {
 		clientAppName = random_name.CATSRandomName("APP")
-		pushApp(clientAppName, Config.GetRubyBuildpackName())
+		pushApp(clientAppName, Config.GetBinaryBuildpackName())
 		Expect(cf.Cf("start", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		By("Connecting from running container to an external destination")
-		doraCurlResponse = testAppConnectivity(clientAppName, "www.google.com", 80)
-		Expect(doraCurlResponse.ReturnCode).To(Equal(0), "Expected external traffic to be allowed from app containers to external addresses.")
+		catnipCurlResponse = testAppConnectivity(clientAppName, "www.google.com", 80)
+		Expect(catnipCurlResponse.ReturnCode).To(Equal(0), "Expected external traffic to be allowed from app containers to external addresses.")
 	})
 })

@@ -24,9 +24,10 @@ var _ = AppsDescribe("A running application", func() {
 		Expect(cf.Cf("push",
 			appName,
 			"--no-start",
-			"-b", Config.GetRubyBuildpackName(),
+			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", assets.NewAssets().Dora,
+			"-p", assets.NewAssets().Catnip,
+			"-c", "./catnip",
 			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
 		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -49,11 +50,11 @@ var _ = AppsDescribe("A running application", func() {
 
 		files = cf.Cf("files", appName, "app/").Wait(Config.DefaultTimeoutDuration())
 		Expect(files).To(Exit(0))
-		Expect(files).To(Say("config.ru"))
+		Expect(files).To(Say("main.go"))
 
-		files = cf.Cf("files", appName, "app/config.ru").Wait(Config.DefaultTimeoutDuration())
+		files = cf.Cf("files", appName, "app/main.go").Wait(Config.DefaultTimeoutDuration())
 		Expect(files).To(Exit(0))
-		Expect(files).To(Say("run Dora"))
+		Expect(files).To(Say("package main"))
 	})
 
 	It("shows crash events and recovers from crashes", func() {

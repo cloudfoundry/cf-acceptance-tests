@@ -40,9 +40,9 @@ var _ = AppsDescribe("Crashing", func() {
 				appName,
 				"-c", "/bin/false",
 				"--no-start",
-				"-b", Config.GetRubyBuildpackName(),
+				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().Dora,
+				"-p", assets.NewAssets().Catnip,
 				"-d", Config.GetAppsDomain(),
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
@@ -63,9 +63,10 @@ var _ = AppsDescribe("Crashing", func() {
 				"push",
 				appName,
 				"--no-start",
-				"-b", Config.GetRubyBuildpackName(),
+				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().Dora,
+				"-p", assets.NewAssets().Catnip,
+				"-c", "./catnip",
 				"-d", Config.GetAppsDomain(),
 			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 

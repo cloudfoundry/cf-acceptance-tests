@@ -7,3 +7,4 @@ results
 .DS_Store
 logs
 assets/*/.bundle
+assets/catnip/bin
