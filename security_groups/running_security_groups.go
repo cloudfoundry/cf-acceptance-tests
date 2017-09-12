@@ -278,8 +278,7 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 
 			By("Testing that connection is not refused (but may be unreachable for other reasons)")
 			catnipCurlResponse := testAppConnectivity(clientAppName, dest.IP, dest.Port)
-			const CurlExitCode_FailedToConnectToHost = 7
-			Expect(catnipCurlResponse.ReturnCode).NotTo(Equal(CurlExitCode_FailedToConnectToHost))
+			Expect(catnipCurlResponse.Stderr).NotTo(ContainSubstring("refused"))
 
 			By("unbinding security group")
 			unbindSecurityGroup(securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space)
@@ -287,7 +286,7 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 
 			By("Testing the connect is refused")
 			catnipCurlResponse = testAppConnectivity(clientAppName, dest.IP, dest.Port)
-			Expect(catnipCurlResponse.ReturnCode).To(Equal(CurlExitCode_FailedToConnectToHost))
+			Expect(catnipCurlResponse.Stderr).To(ContainSubstring("refused"))
 		})
 	})
 
