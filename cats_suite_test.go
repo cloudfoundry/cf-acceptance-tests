@@ -67,6 +67,7 @@ func TestCATS(t *testing.T) {
 		buildCmd.Dir = "assets/catnip"
 		buildCmd.Env = []string{
 			fmt.Sprintf("GOPATH=%s", os.Getenv("GOPATH")),
+			fmt.Sprintf("GOROOT=%s", os.Getenv("GOROOT")),
 			"GOOS=linux",
 			"GOARCH=amd64",
 		}
