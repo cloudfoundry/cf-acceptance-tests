@@ -82,18 +82,18 @@ var _ = PersistentAppDescribe("An application that's already been pushed", func(
 	It("can be restarted and still come up", func() {
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, appName)
-		}, Config.CfPushTimeoutDuration()).Should(ContainSubstring("Catnip?"))
+		}, Config.CfPushTimeoutDuration()).Should(MatchRegexp("Catnip?|Hi, I'm Dora!"))
 
 		Expect(cf.Cf("stop", appName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, appName)
-		}, Config.DefaultTimeoutDuration()).ShouldNot(ContainSubstring("Catnip?"))
+		}, Config.DefaultTimeoutDuration()).ShouldNot(MatchRegexp("Catnip?|Hi, I'm Dora!"))
 
 		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, appName)
-		}, Config.CfPushTimeoutDuration()).Should(ContainSubstring("Catnip?"))
+		}, Config.CfPushTimeoutDuration()).Should(MatchRegexp("Catnip?|Hi, I'm Dora!"))
 	})
 })
