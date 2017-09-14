@@ -11,6 +11,7 @@ import (
 
 	_ "github.com/cloudfoundry/cf-acceptance-tests/apps"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/backend_compatibility"
+	_ "github.com/cloudfoundry/cf-acceptance-tests/capi_experimental"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/detect"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/docker"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/internet_dependent"

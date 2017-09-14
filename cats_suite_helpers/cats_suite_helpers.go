@@ -196,6 +196,17 @@ func V3Describe(description string, callback func()) bool {
 	})
 }
 
+func CapiExperimentalDescribe(description string, callback func()) bool {
+	return Describe("[capi_experimental] "+description, func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeCapiExperimental() {
+				Skip(`Skipping this test because Config.IncludeCapiExperimental is set to 'false'.`)
+			}
+		})
+		callback()
+	})
+}
+
 func TasksDescribe(description string, callback func()) bool {
 	return Describe("[tasks] "+description, func() {
 		BeforeEach(func() {
