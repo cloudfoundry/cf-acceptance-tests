@@ -109,6 +109,8 @@ type allConfig struct {
 
 	IncludeApps                       *bool `json:"include_apps"`
 	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
+	IncludeCapiExperimental           *bool `json:"include_capi_experimental"`
+	IncludeCapiNoBridge               *bool `json:"include_capi_no_bridge"`
 	IncludeContainerNetworking        *bool `json:"include_container_networking"`
 	IncludeCredHub                    *bool `json:"include_credhub"`
 	IncludeDetect                     *bool `json:"include_detect"`
@@ -217,8 +219,11 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeApps()).To(BeTrue())
 		Expect(config.GetIncludeDetect()).To(BeTrue())
 		Expect(config.GetIncludeRouting()).To(BeTrue())
+		Expect(config.GetIncludeV3()).To(BeTrue())
 
 		Expect(config.GetIncludeBackendCompatiblity()).To(BeFalse())
+		Expect(config.GetIncludeCapiExperimental()).To(BeFalse())
+		Expect(config.GetIncludeCapiNoBridge()).To(BeFalse())
 		Expect(config.GetIncludeDocker()).To(BeFalse())
 		Expect(config.GetIncludeInternetDependent()).To(BeFalse())
 		Expect(config.GetIncludeRouteServices()).To(BeFalse())
@@ -226,7 +231,6 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeSecurityGroups()).To(BeFalse())
 		Expect(config.GetIncludeServices()).To(BeFalse())
 		Expect(config.GetIncludeSsh()).To(BeFalse())
-		Expect(config.GetIncludeV3()).To(BeFalse())
 		Expect(config.GetIncludeIsolationSegments()).To(BeFalse())
 		Expect(config.GetIncludePrivateDockerRegistry()).To(BeFalse())
 		Expect(config.GetIncludePrivilegedContainerSupport()).To(BeFalse())
@@ -321,6 +325,8 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_apps' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_backend_compatibility' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'backend' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_capi_experimental' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_capi_no_bridge' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_detect' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_docker' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_internet_dependent' must not be null"))

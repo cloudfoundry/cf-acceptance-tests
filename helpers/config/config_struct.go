@@ -64,6 +64,8 @@ type config struct {
 
 	IncludeApps                       *bool `json:"include_apps"`
 	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
+	IncludeCapiExperimental           *bool `json:"include_capi_experimental"`
+	IncludeCapiNoBridge               *bool `json:"include_capi_no_bridge"`
 	IncludeContainerNetworking        *bool `json:"include_container_networking"`
 	IncludeCredHub					  *bool `json:"include_credhub"`
 	IncludeDetect                     *bool `json:"include_detect"`
@@ -133,8 +135,11 @@ func getDefaults() config {
 	defaults.IncludeDetect = ptrToBool(true)
 	defaults.IncludePersistentApp = ptrToBool(true)
 	defaults.IncludeRouting = ptrToBool(true)
+	defaults.IncludeV3 = ptrToBool(true)
 
 	defaults.IncludeBackendCompatiblity = ptrToBool(false)
+	defaults.IncludeCapiExperimental = ptrToBool(false)
+	defaults.IncludeCapiNoBridge = ptrToBool(false)
 	defaults.IncludeContainerNetworking = ptrToBool(false)
 	defaults.IncludeCredHub = ptrToBool(false)
 	defaults.IncludeDocker = ptrToBool(false)
@@ -143,14 +148,13 @@ func getDefaults() config {
 	defaults.IncludePrivilegedContainerSupport = ptrToBool(false)
 	defaults.IncludePrivateDockerRegistry = ptrToBool(false)
 	defaults.IncludeRouteServices = ptrToBool(false)
+	defaults.IncludeRoutingIsolationSegments = ptrToBool(false)
 	defaults.IncludeSSO = ptrToBool(false)
 	defaults.IncludeSecurityGroups = ptrToBool(false)
 	defaults.IncludeServices = ptrToBool(false)
 	defaults.IncludeSsh = ptrToBool(false)
 	defaults.IncludeTasks = ptrToBool(false)
-	defaults.IncludeV3 = ptrToBool(false)
 	defaults.IncludeZipkin = ptrToBool(false)
-	defaults.IncludeRoutingIsolationSegments = ptrToBool(false)
 
 	defaults.UseHttp = ptrToBool(false)
 	defaults.UseExistingUser = ptrToBool(false)
@@ -325,6 +329,15 @@ func validateConfig(config *config) Errors {
 	if config.IncludeBackendCompatiblity == nil {
 		errs.Add(fmt.Errorf("* 'include_backend_compatibility' must not be null"))
 	}
+
+	if config.IncludeCapiExperimental == nil {
+		errs.Add(fmt.Errorf("* 'include_capi_experimental' must not be null"))
+	}
+
+	if config.IncludeCapiNoBridge == nil {
+		errs.Add(fmt.Errorf("* 'include_capi_no_bridge' must not be null"))
+	}
+
 	if config.IncludeContainerNetworking == nil {
 		errs.Add(fmt.Errorf("* 'include_container_networking' must not be null"))
 	}
@@ -790,6 +803,14 @@ func (c *config) GetIncludeIsolationSegments() bool {
 
 func (c *config) GetIncludeRoutingIsolationSegments() bool {
 	return *c.IncludeRoutingIsolationSegments
+}
+
+func (c *config) GetIncludeCapiExperimental() bool {
+	return *c.IncludeCapiExperimental
+}
+
+func (c *config) GetIncludeCapiNoBridge() bool {
+	return *c.IncludeCapiNoBridge
 }
 
 func (c *config) GetIncludeCredHub() bool {

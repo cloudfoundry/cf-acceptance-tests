@@ -1,4 +1,4 @@
-package v3
+package capi_experimental
 
 import (
 	"encoding/json"
@@ -16,7 +16,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = V3Describe("route_mapping", func() {
+var _ = CapiExperimentalDescribe("route_mapping", func() {
 	type RouteList struct {
 		Resources []struct {
 			Metadata struct {

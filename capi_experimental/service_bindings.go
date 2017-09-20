@@ -1,4 +1,4 @@
-package v3
+package capi_experimental
 
 import (
 	"fmt"
@@ -24,7 +24,7 @@ import (
 	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
 )
 
-var _ = V3Describe("service bindings", func() {
+var _ = CapiExperimentalDescribe("service bindings", func() {
 	var (
 		appName     string
 		spaceGuid   string

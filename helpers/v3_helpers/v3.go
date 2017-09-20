@@ -55,14 +55,7 @@ func CreateAndMapRoute(appGuid, space, domain, host string) {
 	}{}
 	json.Unmarshal([]byte(routeBody), &routeJSON)
 	routeGuid := routeJSON.Resources[0].Metadata.Guid
-	addRouteBody := fmt.Sprintf(`
-	{
-		"relationships": {
-			"app":   {"guid": "%s"},
-			"route": {"guid": "%s"}
-		}
-	}`, appGuid, routeGuid)
-	Expect(cf.Cf("curl", "/v3/route_mappings", "-X", "POST", "-d", addRouteBody).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+	Expect(cf.Cf("curl", fmt.Sprintf("/v2/routes/%s/apps/%s", routeGuid, appGuid), "-X", "PUT").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 }
 
 func CreateApp(appName, spaceGuid, environmentVariables string) string {
