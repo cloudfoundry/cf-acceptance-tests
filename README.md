@@ -123,6 +123,8 @@ cat > integration_config.json <<EOF
   "use_http": true,
   "include_apps": true,
   "include_backend_compatibility": false,
+  "include_capi_experimental": false,
+  "include_capi_no_bridge": false,
   "include_container_networking": false,
   "include_credhub" : false,
   "include_detect": true,
@@ -140,7 +142,7 @@ cat > integration_config.json <<EOF
   "include_ssh": false,
   "include_sso": true,
   "include_tasks": true,
-  "include_v3": false,
+  "include_v3": true,
   "include_zipkin": false
 }
 EOF
@@ -172,6 +174,8 @@ include_routing
   The [network-policy plugin][networking-releases] is required to run these tests.
   See setup section for instructions.
 * `include_credhub`: Flag to include tests for CredHub-delivered Secure Service Credentials. [CredHub configuration][credhub-secure-service-credentials] is required to run these tests.
+* `include_capi_experimental`: Flag to run experimental tests for the CAPI release. Not stable!
+* `include_capi_no_bridge`: Flag to run tests that require CAPI's (currently optional) bridge consumption features.
 * `include_detect`: Flag to include tests in the detect group.
 * `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
 * `include_internet_dependent`: Flag to include tests that require the deployment to have internet access.
