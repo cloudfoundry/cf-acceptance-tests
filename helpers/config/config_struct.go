@@ -67,6 +67,7 @@ type config struct {
 	IncludeCapiExperimental           *bool `json:"include_capi_experimental"`
 	IncludeCapiNoBridge               *bool `json:"include_capi_no_bridge"`
 	IncludeContainerNetworking        *bool `json:"include_container_networking"`
+	IncludeCredHub					  *bool `json:"include_credhub"`
 	IncludeDetect                     *bool `json:"include_detect"`
 	IncludeDocker                     *bool `json:"include_docker"`
 	IncludeInternetDependent          *bool `json:"include_internet_dependent"`
@@ -140,6 +141,7 @@ func getDefaults() config {
 	defaults.IncludeCapiExperimental = ptrToBool(false)
 	defaults.IncludeCapiNoBridge = ptrToBool(false)
 	defaults.IncludeContainerNetworking = ptrToBool(false)
+	defaults.IncludeCredHub = ptrToBool(false)
 	defaults.IncludeDocker = ptrToBool(false)
 	defaults.IncludeInternetDependent = ptrToBool(false)
 	defaults.IncludeIsolationSegments = ptrToBool(false)
@@ -338,6 +340,9 @@ func validateConfig(config *config) Errors {
 
 	if config.IncludeContainerNetworking == nil {
 		errs.Add(fmt.Errorf("* 'include_container_networking' must not be null"))
+	}
+	if config.IncludeCredHub == nil {
+		errs.Add(fmt.Errorf("* 'include_credhub' must not be null"))
 	}
 	if config.IncludeDetect == nil {
 		errs.Add(fmt.Errorf("* 'include_detect' must not be null"))
@@ -803,8 +808,13 @@ func (c *config) GetIncludeRoutingIsolationSegments() bool {
 func (c *config) GetIncludeCapiExperimental() bool {
 	return *c.IncludeCapiExperimental
 }
+
 func (c *config) GetIncludeCapiNoBridge() bool {
 	return *c.IncludeCapiNoBridge
+}
+
+func (c *config) GetIncludeCredHub() bool {
+	return *c.IncludeCredHub
 }
 
 func (c *config) GetRubyBuildpackName() string {

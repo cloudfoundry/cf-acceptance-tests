@@ -8,3 +8,5 @@ results
 logs
 assets/*/.bundle
 assets/catnip/bin
+assets/credhub-enabled-app/build
+assets/credhub-enabled-app/.gradle

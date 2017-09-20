@@ -123,7 +123,10 @@ cat > integration_config.json <<EOF
   "use_http": true,
   "include_apps": true,
   "include_backend_compatibility": false,
+  "include_capi_experimental": false,
+  "include_capi_no_bridge": false,
   "include_container_networking": false,
+  "include_credhub" : false,
   "include_detect": true,
   "include_docker": false,
   "include_internet_dependent": false,
@@ -139,7 +142,7 @@ cat > integration_config.json <<EOF
   "include_ssh": false,
   "include_sso": true,
   "include_tasks": true,
-  "include_v3": false,
+  "include_v3": true,
   "include_zipkin": false
 }
 EOF
@@ -170,6 +173,9 @@ include_routing
   `include_security_groups` must also be set for tests to run.
   The [network-policy plugin][networking-releases] is required to run these tests.
   See setup section for instructions.
+* `include_credhub`: Flag to include tests for CredHub-delivered Secure Service Credentials. [CredHub configuration][credhub-secure-service-credentials] is required to run these tests.
+* `include_capi_experimental`: Flag to run experimental tests for the CAPI release. Not stable!
+* `include_capi_no_bridge`: Flag to run tests that require CAPI's (currently optional) bridge consumption features.
 * `include_detect`: Flag to include tests in the detect group.
 * `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
 * `include_internet_dependent`: Flag to include tests that require the deployment to have internet access.
@@ -349,6 +355,7 @@ Test Group Name| Compatible Backend | Description
 `v3`| Diego| This test group contains tests for the next-generation v3 Cloud Controller API.  As of this writing, the v3 API is not officially supported.
 `isolation_segments` | Diego | This test group requires that Diego be deployed with a minimum of 2 cells. One of those cells must have been deployed with a `placement_tag`. If the deployment has been deployed with a routing isolation segment, `isolation_segment_domain` must also be set.
 `routing_isolation_segments` | Diego | This group tests that requests to isolated apps are only routed through isolated routers, and vice versa. It requires all of the setup for the isolation segments test suite. Additionally, a minimum of two Gorouter instances must be deployed. One instance must be configured with the property `routing_table_sharding_mode: shared-and-segments`. The other instance must have the properties `routing_table_sharding_mode: segments` and `isolation_segments: [YOUR_PLACEMENT_TAG_HERE]`. The `isolation_segment_name` in the CATs properties must match the `placement_tag` and `isolation_segment`.`isolation_segment_domain` must be set and traffic to that domain should go to the isolated router. CF deployment must also be updated with the property `properties.cc.diego.temporary_local_apps: true`.
+`credhub`|Diego|Tests CredHub-delivered Secure Service credentials in the service binding. [CredHub configuration][credhub-secure-service-credentials] is required to run these tests.
 
 ## Contributing
 
@@ -405,3 +412,4 @@ unless the test specifically needs to use a buildpack name or URL specific to th
 1. If you add a test that is unsupported on a particular backend, add a ginkgo Skip() in an if Config.Backend != "your_backend" {} clause, [see Ginkgo's skip](https://onsi.github.io/ginkgo/#the-spec-runner).
 
 [networking-releases]: https://github.com/cloudfoundry-incubator/cf-networking-release/releases
+[credhub-secure-service-credentials]: https://github.com/pivotal-cf/credhub-release/blob/master/docs/secure-service-credentials.md

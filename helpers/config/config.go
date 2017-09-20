@@ -10,6 +10,7 @@ type CatsConfig interface {
 	GetIncludeCapiExperimental() bool
 	GetIncludeCapiNoBridge() bool
 	GetIncludeContainerNetworking() bool
+	GetIncludeCredHub() bool
 	GetIncludeDetect() bool
 	GetIncludeDocker() bool
 	GetIncludeInternetDependent() bool

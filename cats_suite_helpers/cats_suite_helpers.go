@@ -237,3 +237,15 @@ func GuidForAppName(appName string) string {
 	Expect(appGuid).NotTo(Equal(""))
 	return appGuid
 }
+
+
+func CredHubDescribe(description string, callback func()) bool {
+	return Describe("[credhub] "+description, func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeCredHub() {
+				Skip(`Skipping this test because Config.IncludeCredHub is set to 'false'.`)
+			}
+		})
+		callback()
+	})
+}

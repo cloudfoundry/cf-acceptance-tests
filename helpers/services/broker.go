@@ -32,7 +32,15 @@ type PlanSchemas struct {
 		Create struct {
 			Parameters map[string]interface{} `json:"parameters"`
 		} `json:"create"`
+		Update struct {
+			Parameters map[string]interface{} `json:"parameters"`
+		} `json:"update"`
 	} `json:"service_instance"`
+	ServiceBinding struct {
+		Create struct {
+			Parameters map[string]interface{} `json:"parameters"`
+		} `json:"create"`
+	} `json:"service_binding"`
 }
 
 type ServiceBroker struct {
@@ -126,6 +134,21 @@ func (b ServiceBroker) Push(config cats_config.CatsConfig) {
 		"-b", config.GetRubyBuildpackName(),
 		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", b.Path,
+		"-d", config.GetAppsDomain(),
+	).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
+	app_helpers.SetBackend(b.Name)
+	Expect(cf.Cf("set-health-check", b.Name, "http", "--endpoint", "/v2/catalog").Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
+	Expect(cf.Cf("start", b.Name).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
+}
+
+func (b ServiceBroker) PushWithBuildpackAndManifest(config cats_config.CatsConfig, buildpackName string) {
+	Expect(cf.Cf(
+		"push", b.Name,
+		"--no-start",
+		"-b", buildpackName,
+		"-m", DEFAULT_MEMORY_LIMIT,
+		"-p", b.Path,
+		"-f", b.Path + "/manifest.yml",
 		"-d", config.GetAppsDomain(),
 	).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
 	app_helpers.SetBackend(b.Name)

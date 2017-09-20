@@ -112,6 +112,7 @@ type allConfig struct {
 	IncludeCapiExperimental           *bool `json:"include_capi_experimental"`
 	IncludeCapiNoBridge               *bool `json:"include_capi_no_bridge"`
 	IncludeContainerNetworking        *bool `json:"include_container_networking"`
+	IncludeCredHub                    *bool `json:"include_credhub"`
 	IncludeDetect                     *bool `json:"include_detect"`
 	IncludeDocker                     *bool `json:"include_docker"`
 	IncludeInternetDependent          *bool `json:"include_internet_dependent"`
@@ -236,6 +237,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeZipkin()).To(BeFalse())
 		Expect(config.GetIncludeSSO()).To(BeFalse())
 		Expect(config.GetIncludeTasks()).To(BeFalse())
+		Expect(config.GetIncludeCredHub()).To(BeFalse())
 
 		Expect(config.GetBackend()).To(Equal(""))
 
@@ -342,6 +344,7 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_v3' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_zipkin' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_isolation_segments' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_credhub' must not be null"))
 
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_image' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_username' must not be null"))
