@@ -69,6 +69,8 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 
 				var emptySchemas PlanSchemas
 				emptySchemas.ServiceInstance.Create.Parameters = map[string]interface{}{}
+				emptySchemas.ServiceInstance.Update.Parameters = map[string]interface{}{}
+				emptySchemas.ServiceBinding.Create.Parameters = map[string]interface{}{}
 
 				Expect(plansResponse.Resources[0].Entity.Schemas).To(Equal(emptySchemas))
 
@@ -80,7 +82,19 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 
 				var basicSchema PlanSchemas
 				basicSchema.ServiceInstance.Create.Parameters = map[string]interface{}{
-					"$schema": "http://json-schema.org/draft-04/schema#", "type": "object",
+					"$schema": "http://json-schema.org/draft-04/schema#",
+					"type":    "object",
+					"title":   "create instance schema",
+				}
+				basicSchema.ServiceInstance.Update.Parameters = map[string]interface{}{
+					"$schema": "http://json-schema.org/draft-04/schema#",
+					"type":    "object",
+					"title":   "update instance schema",
+				}
+				basicSchema.ServiceBinding.Create.Parameters = map[string]interface{}{
+					"$schema": "http://json-schema.org/draft-04/schema#",
+					"type":    "object",
+					"title":   "create binding schema",
 				}
 				broker.SyncPlans[0].Schemas = basicSchema
 

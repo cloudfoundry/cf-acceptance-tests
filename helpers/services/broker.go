@@ -32,7 +32,15 @@ type PlanSchemas struct {
 		Create struct {
 			Parameters map[string]interface{} `json:"parameters"`
 		} `json:"create"`
+		Update struct {
+			Parameters map[string]interface{} `json:"parameters"`
+		} `json:"update"`
 	} `json:"service_instance"`
+	ServiceBinding struct {
+		Create struct {
+			Parameters map[string]interface{} `json:"parameters"`
+		} `json:"create"`
+	} `json:"service_binding"`
 }
 
 type ServiceBroker struct {
