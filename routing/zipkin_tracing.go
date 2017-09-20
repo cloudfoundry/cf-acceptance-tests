@@ -25,7 +25,7 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 
 	BeforeEach(func() {
 		app1 = random_name.CATSRandomName("APP")
-		helpers.PushApp(app1, helloRoutingAsset, Config.GetJavaBuildpackName(), Config.GetAppsDomain(), CF_JAVA_TIMEOUT, "512M")
+		helpers.PushApp(app1, helloRoutingAsset, Config.GetJavaBuildpackName(), Config.GetAppsDomain(), CF_JAVA_TIMEOUT, "1024M")
 
 		hostname = app1
 	})

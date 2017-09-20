@@ -39,7 +39,7 @@ type StatsResponse map[string]struct {
 	}
 }
 
-type DoraCurlResponse struct {
+type CatnipCurlResponse struct {
 	Stdout     string
 	Stderr     string
 	ReturnCode int `json:"return_code"`
@@ -51,7 +51,8 @@ func pushApp(appName, buildpack string) {
 		"--no-start",
 		"-b", buildpack,
 		"-m", DEFAULT_MEMORY_LIMIT,
-		"-p", assets.NewAssets().Dora,
+		"-p", assets.NewAssets().Catnip,
+		"-c", "./catnip",
 		"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	app_helpers.SetBackend(appName)
 }
@@ -69,11 +70,11 @@ func getAppHostIpAndPort(appName string) (string, int) {
 	return statsResponse["0"].Stats.Host, statsResponse["0"].Stats.Port
 }
 
-func testAppConnectivity(clientAppName string, privateHost string, privatePort int) DoraCurlResponse {
-	var doraCurlResponse DoraCurlResponse
+func testAppConnectivity(clientAppName string, privateHost string, privatePort int) CatnipCurlResponse {
+	var catnipCurlResponse CatnipCurlResponse
 	curlResponse := helpers.CurlApp(Config, clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort))
-	json.Unmarshal([]byte(curlResponse), &doraCurlResponse)
-	return doraCurlResponse
+	json.Unmarshal([]byte(curlResponse), &catnipCurlResponse)
+	return catnipCurlResponse
 }
 
 func getAppContainerIpAndPort(appName string) (string, int) {
@@ -156,7 +157,7 @@ func getStagingOutput(appName string) func() *Session {
 
 func pushServerApp() (serverAppName string, privateHost string, privatePort int) {
 	serverAppName = random_name.CATSRandomName("APP")
-	pushApp(serverAppName, Config.GetRubyBuildpackName())
+	pushApp(serverAppName, Config.GetBinaryBuildpackName())
 	Expect(cf.Cf("start", serverAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 	privateHost, privatePort = getAppHostIpAndPort(serverAppName)
@@ -165,19 +166,19 @@ func pushServerApp() (serverAppName string, privateHost string, privatePort int)
 
 func pushClientApp() (clientAppName string) {
 	clientAppName = random_name.CATSRandomName("APP")
-	pushApp(clientAppName, Config.GetRubyBuildpackName())
+	pushApp(clientAppName, Config.GetBinaryBuildpackName())
 	Expect(cf.Cf("start", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	return
 }
 
 func assertNetworkingPreconditions(clientAppName string, privateHost string, privatePort int) {
 	By("Asserting default running security group configuration for traffic between containers")
-	doraCurlResponse := testAppConnectivity(clientAppName, privateHost, privatePort)
-	Expect(doraCurlResponse.ReturnCode).NotTo(Equal(0), "Expected default running security groups not to allow internal communication between app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
+	catnipCurlResponse := testAppConnectivity(clientAppName, privateHost, privatePort)
+	Expect(catnipCurlResponse.ReturnCode).NotTo(Equal(0), "Expected default running security groups not to allow internal communication between app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
 
 	By("Asserting default running security group configuration from a running container to an external destination")
-	doraCurlResponse = testAppConnectivity(clientAppName, "www.google.com", 80)
-	Expect(doraCurlResponse.ReturnCode).To(Equal(0), "Expected default running security groups to allow external traffic from app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
+	catnipCurlResponse = testAppConnectivity(clientAppName, "www.google.com", 80)
+	Expect(catnipCurlResponse.ReturnCode).To(Equal(0), "Expected default running security groups to allow external traffic from app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
 }
 
 var _ = SecurityGroupsDescribe("App Instance Networking", func() {
@@ -213,8 +214,8 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 			spaceName := TestSetup.RegularUserContext().Space
 
 			By("Testing that app cannot connect")
-			doraCurlResponse := testAppConnectivity(clientAppName, containerIp, containerPort)
-			Expect(doraCurlResponse.ReturnCode).NotTo(Equal(0))
+			catnipCurlResponse := testAppConnectivity(clientAppName, containerIp, containerPort)
+			Expect(catnipCurlResponse.ReturnCode).NotTo(Equal(0))
 
 			By("adding policy")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
@@ -226,8 +227,8 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 			time.Sleep(10 * time.Second)
 
 			By("Testing that app can connect")
-			doraCurlResponse = testAppConnectivity(clientAppName, containerIp, containerPort)
-			Expect(doraCurlResponse.ReturnCode).To(Equal(0))
+			catnipCurlResponse = testAppConnectivity(clientAppName, containerIp, containerPort)
+			Expect(catnipCurlResponse.ReturnCode).To(Equal(0))
 
 			By("removing policy")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
@@ -239,8 +240,8 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 			time.Sleep(10 * time.Second)
 
 			By("Testing that app can no longer connect")
-			doraCurlResponse = testAppConnectivity(clientAppName, containerIp, containerPort)
-			Expect(doraCurlResponse.ReturnCode).NotTo(Equal(0))
+			catnipCurlResponse = testAppConnectivity(clientAppName, containerIp, containerPort)
+			Expect(catnipCurlResponse.ReturnCode).NotTo(Equal(0))
 		})
 	})
 
@@ -276,17 +277,16 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			By("Testing that connection is not refused (but may be unreachable for other reasons)")
-			doraCurlResponse := testAppConnectivity(clientAppName, dest.IP, dest.Port)
-			const CurlExitCode_FailedToConnectToHost = 7
-			Expect(doraCurlResponse.ReturnCode).NotTo(Equal(CurlExitCode_FailedToConnectToHost))
+			catnipCurlResponse := testAppConnectivity(clientAppName, dest.IP, dest.Port)
+			Expect(catnipCurlResponse.Stderr).NotTo(ContainSubstring("refused"))
 
 			By("unbinding security group")
 			unbindSecurityGroup(securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space)
 			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			By("Testing the connect is refused")
-			doraCurlResponse = testAppConnectivity(clientAppName, dest.IP, dest.Port)
-			Expect(doraCurlResponse.ReturnCode).To(Equal(CurlExitCode_FailedToConnectToHost))
+			catnipCurlResponse = testAppConnectivity(clientAppName, dest.IP, dest.Port)
+			Expect(catnipCurlResponse.Stderr).To(ContainSubstring("refused"))
 		})
 	})
 

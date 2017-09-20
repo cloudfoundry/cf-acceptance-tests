@@ -75,13 +75,20 @@ var _ = TasksDescribe("v3 tasks", func() {
 		}
 		appName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Cf("push", appName, "--no-start", "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("push",
+			appName,
+			"--no-start",
+			"-b", Config.GetBinaryBuildpackName(),
+			"-m", DEFAULT_MEMORY_LIMIT,
+			"-p", assets.NewAssets().Catnip,
+			"-c", "./catnip",
+			"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
 		appGuid = app_helpers.GetAppGuid(appName)
 		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, appName)
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
 	})
 
 	AfterEach(func() {

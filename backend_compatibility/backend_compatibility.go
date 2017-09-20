@@ -26,10 +26,10 @@ var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
 		appName = random_name.CATSRandomName("APP")
 		Eventually(cf.Cf(
 			"push", appName,
-			"-p", assets.NewAssets().Dora,
 			"--no-start",
+			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
-			"-b", Config.GetRubyBuildpackName(),
+			"-p", assets.NewAssets().Catnip,
 			"-d", Config.GetAppsDomain()),
 			Config.CfPushTimeoutDuration()).Should(Exit(0))
 	})

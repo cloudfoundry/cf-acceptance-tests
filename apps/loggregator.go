@@ -42,6 +42,7 @@ var _ = AppsDescribe("loggregator", func() {
 			"-b", Config.GetRubyBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().LoggregatorLoadGenerator,
+			"-i", "2",
 			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
 		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -119,13 +120,18 @@ var _ = AppsDescribe("loggregator", func() {
 			go noaaConnection.Firehose(CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
 			defer close(stopchan)
 
+			containerMetrics := make([]*events.ContainerMetric, 2)
 			Eventually(func() bool {
 				for {
 					select {
 					case msg := <-msgChan:
 						if cm := msg.GetContainerMetric(); cm != nil {
-							if cm.GetApplicationId() == appGuid && cm.GetInstanceIndex() == 0 {
-								return true
+							if cm.GetApplicationId() == appGuid {
+								containerMetrics[cm.GetInstanceIndex()] = cm
+
+								if containerMetrics[0] != nil && containerMetrics[1] != nil {
+									return true
+								}
 							}
 						}
 					case e := <-errorChan:
@@ -135,6 +141,11 @@ var _ = AppsDescribe("loggregator", func() {
 					}
 				}
 			}, 2*Config.DefaultTimeoutDuration()).Should(BeTrue())
+
+			for _, cm := range containerMetrics {
+				Expect(cm.GetMemoryBytes()).ToNot(BeZero())
+				Expect(cm.GetDiskBytes()).ToNot(BeZero())
+			}
 		})
 	})
 })

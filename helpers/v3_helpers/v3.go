@@ -20,7 +20,7 @@ import (
 
 const (
 	V3_DEFAULT_MEMORY_LIMIT = "256"
-	V3_JAVA_MEMORY_LIMIT    = "512"
+	V3_JAVA_MEMORY_LIMIT    = "1024"
 )
 
 func AssignDropletToApp(appGuid, dropletGuid string) {

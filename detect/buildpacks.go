@@ -32,13 +32,18 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("ruby", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Dora, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push",
+				appName,
+				"--no-start",
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().HelloWorld,
+				"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
 			Expect(cf.Cf("start", appName).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello, world!"))
 		})
 	})
 
@@ -56,7 +61,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("java", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "--no-start", "-p", assets.NewAssets().Java, "-m", "512M", "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-p", assets.NewAssets().Java, "-m", "1024M", "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			app_helpers.SetBackend(appName)
 			Expect(cf.Cf("set-env", appName, "JAVA_OPTS", "-Djava.security.egd=file:///dev/urandom").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			Expect(cf.Cf("start", appName).Wait(CF_JAVA_TIMEOUT)).To(Exit(0))

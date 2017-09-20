@@ -50,17 +50,11 @@ func TestCATS(t *testing.T) {
 
 		Expect(ParseRawCliVersionString(installedVersion).AtLeast(ParseRawCliVersionString(minCliVersion))).To(BeTrue(), "CLI version "+minCliVersion+" is required")
 
-		return []byte{}
-	}, func([]byte) {
-		var err error
-
 		if validationError != nil {
 			fmt.Println("Invalid configuration.  ")
 			fmt.Println(validationError)
 			Fail("Please fix the contents of $CONFIG:\n  " + os.Getenv("CONFIG") + "\nbefore proceeding.")
 		}
-
-		TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
 
 		if Config.GetIncludeSsh() {
 			ScpPath, err = exec.LookPath("scp")
@@ -69,6 +63,24 @@ func TestCATS(t *testing.T) {
 			SftpPath, err = exec.LookPath("sftp")
 			Expect(err).NotTo(HaveOccurred())
 		}
+
+		buildCmd := exec.Command("go", "build", "-o", "bin/catnip")
+		buildCmd.Dir = "assets/catnip"
+		buildCmd.Env = []string{
+			fmt.Sprintf("GOPATH=%s", os.Getenv("GOPATH")),
+			fmt.Sprintf("GOROOT=%s", os.Getenv("GOROOT")),
+			"GOOS=linux",
+			"GOARCH=amd64",
+		}
+		buildCmd.Stdout = GinkgoWriter
+		buildCmd.Stderr = GinkgoWriter
+
+		err = buildCmd.Run()
+		Expect(err).NotTo(HaveOccurred())
+
+		return []byte{}
+	}, func([]byte) {
+		TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.GetScaledTimeout(1*time.Minute), func() {
 			buildpacks, err := GetBuildpacks()

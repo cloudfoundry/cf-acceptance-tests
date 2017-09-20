@@ -67,10 +67,11 @@ var _ = AppsDescribe("Healthcheck", func() {
 			By("pushing it")
 			Eventually(cf.Cf(
 				"push", appName,
-				"-p", assets.NewAssets().Dora,
 				"--no-start",
-				"-b", Config.GetRubyBuildpackName(),
+				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().Catnip,
+				"-c", "./catnip",
 				"-d", Config.GetAppsDomain(),
 				"-i", "1",
 				"-u", "port"),
@@ -82,7 +83,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 
 			By("verifying it's up")
-			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("Hi, I'm Dora!"))
+			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("Catnip?"))
 		})
 	})
 
@@ -91,10 +92,11 @@ var _ = AppsDescribe("Healthcheck", func() {
 			By("pushing it")
 			Eventually(cf.Cf(
 				"push", appName,
-				"-p", assets.NewAssets().Dora,
 				"--no-start",
-				"-b", Config.GetRubyBuildpackName(),
+				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().Catnip,
+				"-c", "./catnip",
 				"-d", Config.GetAppsDomain(),
 				"-i", "1",
 				"-u", "port"),
@@ -108,7 +110,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 
 			By("verifying it's up")
-			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("Hi, I'm Dora!"))
+			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("Catnip?"))
 		})
 	})
 })
