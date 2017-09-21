@@ -35,7 +35,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-const minCliVersion = "6.16.1"
+const minCliVersion = "6.30.0"
 
 func TestCATS(t *testing.T) {
 	RegisterFailHandler(Fail)
