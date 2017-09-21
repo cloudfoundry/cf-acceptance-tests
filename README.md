@@ -43,17 +43,6 @@ in such a way as to impact other tests.
   [golang.org](http://golang.org/doc/install).
 - Install the [`cf CLI`](https://github.com/cloudfoundry/cli).
   Make sure that it is accessible in your `$PATH`.
-- Install the cf-networking plugin for the cf cli:
-  `cf install-plugin -f -r CF-Community "network-policy"`
-- Set `CF_PLUGIN_HOME` explicitly.
-  For example,
-  `export CF_PLUGIN_HOME=$HOME`.
-  This is necessary because CATs uses
-  ephemeral CF_HOME values.
-  In order to maintain access to installed plugins,
-  the CF_PLUGIN_HOME has to be correct.
-  If you are using a non-standard `CF_HOME` or `CF_PLUGIN_HOME`,
-  set `CF_PLUGIN_HOME` to the directory containing `.cf/plugins/network-policy`.
 - Install [curl](http://curl.haxx.se/)
 - Check out a copy of `cf-acceptance-tests`
   and make sure that it is added to your `$GOPATH`.
@@ -171,8 +160,6 @@ include_routing
 * `include_backend_compatibility`: Flag to include whether we check DEA/Diego interoperability.
 * `include_container_networking`: Flag to include tests related to container networking.
   `include_security_groups` must also be set for tests to run.
-  The [network-policy plugin][networking-releases] is required to run these tests.
-  See setup section for instructions.
 * `include_credhub`: Flag to include tests for CredHub-delivered Secure Service Credentials. [CredHub configuration][credhub-secure-service-credentials] is required to run these tests.
 * `include_capi_experimental`: Flag to run experimental tests for the CAPI release. Not stable!
 * `include_capi_no_bridge`: Flag to run tests that require CAPI's (currently optional) bridge consumption features.
