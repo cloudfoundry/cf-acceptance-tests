@@ -26,7 +26,8 @@ type Server struct {
 }
 
 type bindRequest struct {
-	AppGuid string `json:"app_guid"`
+	AppGuid            string `json:"app_guid"`
+	CredentialClientId string `json:"credential_client_id"`
 }
 
 type permissions struct {
@@ -69,9 +70,14 @@ func (s *ServiceBroker) Catalog(w http.ResponseWriter, r *http.Request) {
 	serviceUUID := uuid.NewV4().String()
 	planUUID := uuid.NewV4().String()
 
+	serviceName := "credhub-read"
+	if os.Getenv("SERVICE_NAME") != "" {
+		serviceName = os.Getenv("SERVICE_NAME")
+	}
+
 	catalog := `{
 	"services": [{
-		"name": "credhub-read",
+		"name": "` + serviceName + `",
 		"id": "` + serviceUUID + `",
 		"description": "credhub read service for tests",
 		"bindable": true,
@@ -107,8 +113,14 @@ func (s *ServiceBroker) Bind(w http.ResponseWriter, r *http.Request) {
 		"password":  "rainbowDash",
 	}
 
+	actorId := "mtls-app:" + body.AppGuid
+
+	if body.AppGuid == "" {
+		actorId = "uaa-client:" + body.CredentialClientId
+	}
+
 	permissionJson := permissions{
-		Actor:      "mtls-app:" + body.AppGuid,
+		Actor:      actorId,
 		Operations: []string{"read", "delete"},
 	}
 
