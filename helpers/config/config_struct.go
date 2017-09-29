@@ -67,7 +67,7 @@ type config struct {
 	IncludeCapiExperimental           *bool `json:"include_capi_experimental"`
 	IncludeCapiNoBridge               *bool `json:"include_capi_no_bridge"`
 	IncludeContainerNetworking        *bool `json:"include_container_networking"`
-	IncludeCredHub					  *bool `json:"include_credhub"`
+	IncludeCredHub                    *bool `json:"include_credhub"`
 	IncludeDetect                     *bool `json:"include_detect"`
 	IncludeDocker                     *bool `json:"include_docker"`
 	IncludeInternetDependent          *bool `json:"include_internet_dependent"`

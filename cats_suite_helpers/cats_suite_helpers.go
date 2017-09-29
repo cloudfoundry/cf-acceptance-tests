@@ -238,7 +238,6 @@ func GuidForAppName(appName string) string {
 	return appGuid
 }
 
-
 func CredHubDescribe(description string, callback func()) bool {
 	return Describe("[credhub] "+description, func() {
 		BeforeEach(func() {

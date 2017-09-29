@@ -148,7 +148,7 @@ func (b ServiceBroker) PushWithBuildpackAndManifest(config cats_config.CatsConfi
 		"-b", buildpackName,
 		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", b.Path,
-		"-f", b.Path + "/manifest.yml",
+		"-f", b.Path+"/manifest.yml",
 		"-d", config.GetAppsDomain(),
 	).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
 	app_helpers.SetBackend(b.Name)
