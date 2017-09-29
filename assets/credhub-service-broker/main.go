@@ -26,8 +26,10 @@ type Server struct {
 }
 
 type bindRequest struct {
-	AppGuid            string `json:"app_guid"`
-	CredentialClientId string `json:"credential_client_id"`
+	AppGuid      string `json:"app_guid"`
+	BindResource struct {
+								 CredentialClientId string `json:"credential_client_id"`
+							 } `json:"bind_resource"`
 }
 
 type permissions struct {
@@ -116,7 +118,7 @@ func (s *ServiceBroker) Bind(w http.ResponseWriter, r *http.Request) {
 	actorId := "mtls-app:" + body.AppGuid
 
 	if body.AppGuid == "" {
-		actorId = "uaa-client:" + body.CredentialClientId
+		actorId = "uaa-client:" + body.BindResource.CredentialClientId
 	}
 
 	permissionJson := permissions{

@@ -146,6 +146,8 @@ var _ = CredHubDescribe("CredHub Integration", func() {
 
 			Context("when a service key for a service instance is requested from a CredHub-enabled broker", func() {
 				It("Cloud Controller retrieves the value from CredHub for the service key", func() {
+					TestSetup.RegularUserContext().TargetSpace()
+
 					serviceKeyName = random_name.CATSRandomName("SVKEY-CH")
 					createKey := cf.Cf("create-service-key", instanceName, serviceKeyName).Wait(Config.DefaultTimeoutDuration())
 					Expect(createKey).To(Exit(0), "failed to create key")
