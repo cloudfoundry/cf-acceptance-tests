@@ -89,6 +89,7 @@ type config struct {
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image"`
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username"`
 	PrivateDockerRegistryPassword *string `json:"private_docker_registry_password"`
+	PublicDockerAppImage          *string `json:"public_docker_app_image"`
 
 	NamePrefix *string `json:"name_prefix"`
 }
@@ -180,6 +181,7 @@ func getDefaults() config {
 	defaults.PrivateDockerRegistryImage = ptrToString("")
 	defaults.PrivateDockerRegistryUsername = ptrToString("")
 	defaults.PrivateDockerRegistryPassword = ptrToString("")
+	defaults.PublicDockerAppImage = ptrToString("cloudfoundry/diego-docker-app-custom:latest")
 
 	defaults.NamePrefix = ptrToString("CATS")
 	return defaults
@@ -220,6 +222,11 @@ func validateConfig(config *config) Errors {
 	}
 
 	err = validateBackend(config)
+	if err != nil {
+		errs.Add(err)
+	}
+
+	err = validatePublicDockerAppImage(config)
 	if err != nil {
 		errs.Add(err)
 	}
@@ -492,6 +499,16 @@ func validateAdminPassword(config *config) error {
 		return fmt.Errorf("* Invalid configuration: 'admin_password' must be provided")
 	}
 
+	return nil
+}
+
+func validatePublicDockerAppImage(config *config) error {
+	if config.PublicDockerAppImage == nil {
+		return fmt.Errorf("* 'public_docker_app_image' must not be null")
+	}
+	if config.GetPublicDockerAppImage() == "" {
+		return fmt.Errorf("* Invalid configuration: 'public_docker_app_image' must be set to a valid image source")
+	}
 	return nil
 }
 
@@ -855,4 +872,8 @@ func (c *config) GetPrivateDockerRegistryUsername() string {
 
 func (c *config) GetPrivateDockerRegistryPassword() string {
 	return *c.PrivateDockerRegistryPassword
+}
+
+func (c *config) GetPublicDockerAppImage() string {
+	return *c.PublicDockerAppImage
 }

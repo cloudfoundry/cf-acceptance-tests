@@ -50,6 +50,7 @@ type testConfig struct {
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image,omitempty"`
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username,omitempty"`
 	PrivateDockerRegistryPassword *string `json:"private_docker_registry_password,omitempty"`
+	PublicDockerAppImage          *string `json:"public_docker_app_image,omitempty"`
 
 	IncludeIsolationSegments        *bool   `json:"include_isolation_segments,omitempty"`
 	IncludeRoutingIsolationSegments *bool   `json:"include_routing_isolation_segments,omitempty"`
@@ -133,6 +134,7 @@ type allConfig struct {
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image"`
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username"`
 	PrivateDockerRegistryPassword *string `json:"private_docker_registry_password"`
+	PublicDockerAppImage          *string `json:"public_docker_app_image"`
 
 	NamePrefix *string `json:"name_prefix"`
 }
@@ -150,6 +152,7 @@ func writeConfigFile(updatedConfig interface{}) string {
 
 	encoder := json.NewEncoder(configFile)
 	err = encoder.Encode(updatedConfig)
+
 	Expect(err).NotTo(HaveOccurred())
 
 	err = configFile.Close()
@@ -269,6 +272,8 @@ var _ = Describe("Config", func() {
 		// undocumented
 		Expect(config.DetectTimeoutDuration()).To(Equal(10 * time.Minute))
 		Expect(config.SleepTimeoutDuration()).To(Equal(60 * time.Second))
+
+		Expect(config.GetPublicDockerAppImage()).To(Equal("cloudfoundry/diego-docker-app-custom:latest"))
 	})
 
 	Context("when all values are null", func() {
@@ -377,6 +382,7 @@ var _ = Describe("Config", func() {
 			Expect(config.AsyncServiceOperationTimeoutDuration()).To(Equal(90 * time.Second))
 			Expect(config.DetectTimeoutDuration()).To(Equal(100 * time.Second))
 			Expect(config.SleepTimeoutDuration()).To(Equal(101 * time.Second))
+			Expect(config.SleepTimeoutDuration()).To(Equal(101 * time.Second))
 		})
 	})
 
@@ -421,6 +427,33 @@ var _ = Describe("Config", func() {
 				config, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(config).To(BeNil())
 				Expect(err).To(MatchError("* Invalid configuration: 'private_docker_registry_password' must be provided if 'include_private_docker_registry' is true"))
+			})
+		})
+	})
+
+	Context("when including public_docker_app_image", func() {
+		Context("when image name is set", func() {
+			var image = "some-image"
+			BeforeEach(func() {
+				testCfg.PublicDockerAppImage = ptrToString(image)
+			})
+
+			It("has the value in the config", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(config.GetPublicDockerAppImage()).To(Equal(image))
+			})
+		})
+
+		Context("when image is an empty string", func() {
+			BeforeEach(func() {
+				testCfg.PublicDockerAppImage = ptrToString("")
+			})
+
+			It("returns an error", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(config).To(BeNil())
+				Expect(err).To(MatchError("* Invalid configuration: 'public_docker_app_image' must be set to a valid image source"))
 			})
 		})
 	})
