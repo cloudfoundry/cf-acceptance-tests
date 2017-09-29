@@ -41,7 +41,7 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 		Expect(cf.Cf("delete", helloWorldAppName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
-	It("Users can manage droplet bits for an app", func() {
+	FIt("Users can manage droplet bits for an app", func() {
 		By("Downloading the droplet for the app")
 
 		guid := cf.Cf("app", helloWorldAppName, "--guid").Wait(Config.DefaultTimeoutDuration()).Out.Contents()
@@ -56,7 +56,19 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 		app_droplet_path_to_tar_file := fmt.Sprintf("%s.tar", app_droplet_path)
 		app_droplet_path_to_compressed_file := fmt.Sprintf("%s.tar.gz", app_droplet_path)
 
-		cf.Cf("curl", fmt.Sprintf("/v2/apps/%s/droplet/download", appGuid), "--output", app_droplet_path_to_compressed_file).Wait(Config.DefaultTimeoutDuration())
+		//cf.Cf("curl", fmt.Sprintf("/v2/apps/%s/droplet/download", appGuid), "--output", app_droplet_path_to_compressed_file).Wait(Config.DefaultTimeoutDuration())
+
+		downloadUrl := fmt.Sprintf("/v2/apps/%s/droplet/download", appGuid)
+		oauthToken := v3_helpers.GetAuthToken()
+		downloadCurl := helpers.Curl(
+			Config,
+			"-v", fmt.Sprintf("%s%s", Config.GetApiEndpoint(), downloadUrl),
+			"-H", fmt.Sprintf("Authorization: %s", oauthToken),
+			"--output", app_droplet_path_to_compressed_file,
+			"-L",
+			"-f",
+		).Wait(Config.DefaultTimeoutDuration())
+		Expect(downloadCurl).To(Exit(0))
 
 		var session *Session
 
