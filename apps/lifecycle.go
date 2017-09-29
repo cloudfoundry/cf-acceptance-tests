@@ -202,12 +202,32 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			Eventually(func() string {
 				envOutput = helpers.CurlApp(Config, appName, "/env.json")
 				return envOutput
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(`"CF_INSTANCE_INDEX":"0"`))
-			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_IP":"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"`))
-			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_INTERNAL_IP":"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+"`))
-			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_PORT":"[0-9]+"`))
-			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_ADDR":"[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+"`))
-			Expect(envOutput).To(MatchRegexp(`"CF_INSTANCE_PORTS":"\[(\{\\"external\\":[0-9]+,\\"internal\\":[0-9]+\},?)+\]"`))
+			}, Config.DefaultTimeoutDuration()).ShouldNot(Equal(""))
+			type env struct {
+				Index      string `json:"CF_INSTANCE_INDEX"`
+				IP         string `json:"CF_INSTANCE_IP"`
+				InternalIP string `json:"CF_INSTANCE_INTERNAL_IP"`
+				Port       string `json:"CF_INSTANCE_PORT"`
+				Addr       string `json:"CF_INSTANCE_ADDR"`
+				Ports      string `json:"CF_INSTANCE_PORTS"`
+			}
+			var envValues env
+			err := json.Unmarshal([]byte(envOutput), &envValues)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(envValues.Index).To(Equal("0"))
+			Expect(envValues.IP).To(MatchRegexp(`[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+`))
+			Expect(envValues.InternalIP).To(MatchRegexp(`[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+`))
+			Expect(envValues.Port).To(MatchRegexp(`[0-9]+`))
+			Expect(envValues.Addr).To(MatchRegexp(`[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+`))
+			var ports []struct {
+				External int `json:"external"`
+				Internal int `json:"internal"`
+			}
+			err = json.Unmarshal([]byte(envValues.Ports), &ports)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(ports)).NotTo(BeZero())
+			Expect(ports[0].Internal).NotTo(BeZero())
+			Expect(ports[0].External).NotTo(BeZero())
 		})
 
 		It("generates an app usage 'started' event", func() {
