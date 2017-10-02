@@ -22,7 +22,8 @@ public class CredHubEnabledController {
   @GetMapping({"/test"})
   public Object runTests() throws Exception {
     String vcapServices = System.getenv("VCAP_SERVICES");
-    return ((Map)((List)this.interpolateServiceData(vcapServices).get("credhub-read")).get(0)).get("credentials");
+    String serviceOfferingName = System.getenv("SERVICE_NAME") != null ? System.getenv("SERVICE_NAME") : "credhub-read";
+    return ((Map)((List)this.interpolateServiceData(vcapServices).get(serviceOfferingName)).get(0)).get("credentials");
   }
 
   private ServicesData interpolateServiceData(String vcapServices) throws IOException {
