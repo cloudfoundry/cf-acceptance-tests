@@ -64,8 +64,7 @@ var _ = CredHubDescribe("CredHub Integration", func() {
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				TestSetup.RegularUserContext().TargetSpace()
 
-				Expect(cf.Cf("delete-service", instanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(cf.Cf("purge-service-offering", chServiceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("purge-service-instance", instanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				Expect(cf.Cf("delete-service-broker", chBrokerName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			})
 		})
@@ -95,6 +94,7 @@ var _ = CredHubDescribe("CredHub Integration", func() {
 
 			AfterEach(func() {
 				app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+				app_helpers.AppReport(chBrokerName, Config.DefaultTimeoutDuration())
 
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 					TestSetup.RegularUserContext().TargetSpace()
@@ -137,6 +137,8 @@ var _ = CredHubDescribe("CredHub Integration", func() {
 			var serviceKeyName string
 
 			AfterEach(func() {
+				app_helpers.AppReport(chBrokerName, Config.DefaultTimeoutDuration())
+
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 					TestSetup.RegularUserContext().TargetSpace()
 
