@@ -123,7 +123,7 @@ func (s *ServiceBroker) Bind(w http.ResponseWriter, r *http.Request) {
 
 	permissionJson := permissions{
 		Actor:      actorId,
-		Operations: []string{"read", "delete"},
+		Operations: []string{"read"},
 	}
 
 	credentialName := strconv.FormatInt(time.Now().UnixNano(), 10)
