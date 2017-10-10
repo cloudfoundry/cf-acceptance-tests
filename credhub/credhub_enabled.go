@@ -26,28 +26,37 @@ var _ = CredHubDescribe("CredHub Integration", func() {
 	})
 
 	Context("when CredHub is configured", func() {
-		var chBrokerName, chServiceName, instanceName string
+		var chBrokerAppName, chServiceName, instanceName string
 
 		BeforeEach(func() {
 			TestSetup.RegularUserContext().TargetSpace()
 			cf.Cf("target", "-o", TestSetup.RegularUserContext().Org)
 			Expect(string(cf.Cf("running-environment-variable-group").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring("CREDHUB_API"), "CredHub API environment not set")
 
-			chBrokerName = random_name.CATSRandomName("BRKR-CH")
+			chBrokerAppName = random_name.CATSRandomName("BRKR-CH")
 
-			pushBroker := cf.Cf("push", chBrokerName, "-b", Config.GetGoBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().CredHubServiceBroker, "-f", assets.NewAssets().CredHubServiceBroker+"/manifest.yml", "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())
-			Expect(pushBroker).To(Exit(0), "failed pushing credhub-enabled service broker")
+			Expect(cf.Cf(
+				"push", chBrokerAppName,
+				"-b", Config.GetGoBuildpackName(),
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().CredHubServiceBroker,
+				"-f", assets.NewAssets().CredHubServiceBroker+"/manifest.yml",
+				"-d", Config.GetAppsDomain(),
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed pushing credhub-enabled service broker")
 
 			chServiceName = random_name.CATSRandomName("SERVICE-NAME")
-			setServiceName := cf.Cf("set-env", chBrokerName, "SERVICE_NAME", chServiceName).Wait(Config.DefaultTimeoutDuration())
-			Expect(setServiceName).To(Exit(0), "failed setting SERVICE_NAME env var on credhub-enabled service broker")
+			Expect(cf.Cf(
+				"set-env", chBrokerAppName,
+					"SERVICE_NAME", chServiceName,
+			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting SERVICE_NAME env var on credhub-enabled service broker")
 
-			restartBroker := cf.Cf("restart", chBrokerName).Wait(Config.CfPushTimeoutDuration())
-			Expect(restartBroker).To(Exit(0), "failed restarting credhub-enabled service broker")
+			Expect(cf.Cf(
+				"restart", chBrokerAppName,
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed restarting credhub-enabled service broker")
 
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				serviceUrl := "https://" + chBrokerName + "." + Config.GetAppsDomain()
-				createServiceBroker := cf.Cf("create-service-broker", chBrokerName, Config.GetAdminUser(), Config.GetAdminPassword(), serviceUrl).Wait(Config.DefaultTimeoutDuration())
+				serviceUrl := "https://" + chBrokerAppName + "." + Config.GetAppsDomain()
+				createServiceBroker := cf.Cf("create-service-broker", chBrokerAppName, Config.GetAdminUser(), Config.GetAdminPassword(), serviceUrl).Wait(Config.DefaultTimeoutDuration())
 				Expect(createServiceBroker).To(Exit(0), "failed creating credhub-enabled service broker")
 
 				enableAccess := cf.Cf("enable-service-access", chServiceName, "-o", TestSetup.RegularUserContext().Org).Wait(Config.DefaultTimeoutDuration())
@@ -65,7 +74,7 @@ var _ = CredHubDescribe("CredHub Integration", func() {
 				TestSetup.RegularUserContext().TargetSpace()
 
 				Expect(cf.Cf("purge-service-instance", instanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(cf.Cf("delete-service-broker", chBrokerName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("delete-service-broker", chBrokerAppName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			})
 		})
 
@@ -75,7 +84,14 @@ var _ = CredHubDescribe("CredHub Integration", func() {
 			BeforeEach(func() {
 				appName = random_name.CATSRandomName("APP-CH")
 				appURL = "https://" + appName + "." + Config.GetAppsDomain()
-				createApp := cf.Cf("push", appName, "--no-start", "-b", Config.GetJavaBuildpackName(), "-m", "1024M", "-p", assets.NewAssets().CredHubEnabledApp, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())
+				createApp := cf.Cf(
+					"push", appName,
+						"--no-start",
+						"-b", Config.GetJavaBuildpackName(),
+						"-m", "1024M",
+						"-p", assets.NewAssets().CredHubEnabledApp,
+						"-d", Config.GetAppsDomain(),
+				).Wait(Config.CfPushTimeoutDuration())
 				Expect(createApp).To(Exit(0), "failed creating credhub-enabled app")
 				app_helpers.SetBackend(appName)
 
@@ -94,7 +110,7 @@ var _ = CredHubDescribe("CredHub Integration", func() {
 
 			AfterEach(func() {
 				app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
-				app_helpers.AppReport(chBrokerName, Config.DefaultTimeoutDuration())
+				app_helpers.AppReport(chBrokerAppName, Config.DefaultTimeoutDuration())
 
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 					TestSetup.RegularUserContext().TargetSpace()
@@ -137,7 +153,7 @@ var _ = CredHubDescribe("CredHub Integration", func() {
 			var serviceKeyName string
 
 			AfterEach(func() {
-				app_helpers.AppReport(chBrokerName, Config.DefaultTimeoutDuration())
+				app_helpers.AppReport(chBrokerAppName, Config.DefaultTimeoutDuration())
 
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 					TestSetup.RegularUserContext().TargetSpace()
