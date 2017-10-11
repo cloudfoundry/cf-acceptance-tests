@@ -8,6 +8,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -242,7 +243,7 @@ func CredHubDescribe(description string, callback func()) bool {
 	return Describe("[credhub]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeCredHub() {
-				Skip(`Skipping this test because Config.IncludeCredHub is set to 'false'.`)
+				Skip(skip_messages.SkipCredHubMessage)
 			}
 		})
 		Describe(description, callback)

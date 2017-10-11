@@ -28,8 +28,8 @@ type Server struct {
 type bindRequest struct {
 	AppGuid      string `json:"app_guid"`
 	BindResource struct {
-								 CredentialClientId string `json:"credential_client_id"`
-							 } `json:"bind_resource"`
+		CredentialClientId string `json:"credential_client_id"`
+	} `json:"bind_resource"`
 }
 
 type permissions struct {

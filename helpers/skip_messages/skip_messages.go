@@ -16,6 +16,8 @@ NOTE: Ensure that your platform has access to the internet before running this t
 const SkipPrivateDockerRegistryMessage string = `Skipping this test because config.IncludePrivateDockerRegistry is set to 'false'.
 NOTE: Ensure that you've provided values for config.PrivateDockerRegistryImage, config.PrivateDockerRegistryUsername,
 and config.PrivateDockerRegistryPassword before running this test.`
+const SkipCredHubMessage = `Skipping this test because Config.IncludeCredHub is set to 'false'.
+NOTE: Ensure instance identity credential is turned on and CredHub is deployed before enabling this test`
 const SkipPersistentAppMessage string = `Skipping this test because config.IncludePersistentApp is set to 'false'.`
 const SkipPrivilegedContainerSupportMessage string = `Skipping this test because Config.IncludePrivilegedContainerSupport is set to 'false'.
 NOTE: Ensure privileged containers are allowed on your platform before enabling this test.`
