@@ -46,6 +46,8 @@ type Space interface {
 	Destroy()
 	ShouldRemain() bool
 	OrganizationName() string
+	SpaceName() string
+	QuotaName() string
 }
 
 func NewRegularTestSpace(cfg spaceConfig, quotaLimit string) *TestSpace {
@@ -143,6 +145,13 @@ func (ts *TestSpace) Destroy() {
 		deleteQuota := internal.Cf(ts.CommandStarter, "delete-quota", "-f", ts.QuotaDefinitionName)
 		EventuallyWithOffset(1, deleteQuota, ts.Timeout).Should(Exit(0))
 	}
+}
+
+func (ts *TestSpace) QuotaName() string {
+	if ts == nil {
+		return ""
+	}
+	return ts.QuotaDefinitionName
 }
 
 func (ts *TestSpace) OrganizationName() string {
