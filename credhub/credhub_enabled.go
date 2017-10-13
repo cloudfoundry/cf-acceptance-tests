@@ -18,7 +18,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
-var _ = CredHubDescribe("CredHub Integration", func() {
+var _ = NonAssistedCredhubDescribe("CredHub Integration", func() {
 	BeforeEach(func() {
 		if Config.GetBackend() != "diego" {
 			Skip(skip_messages.SkipDiegoMessage)
@@ -47,7 +47,7 @@ var _ = CredHubDescribe("CredHub Integration", func() {
 			chServiceName = random_name.CATSRandomName("SERVICE-NAME")
 			Expect(cf.Cf(
 				"set-env", chBrokerAppName,
-					"SERVICE_NAME", chServiceName,
+				"SERVICE_NAME", chServiceName,
 			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting SERVICE_NAME env var on credhub-enabled service broker")
 
 			Expect(cf.Cf(
@@ -86,11 +86,11 @@ var _ = CredHubDescribe("CredHub Integration", func() {
 				appURL = "https://" + appName + "." + Config.GetAppsDomain()
 				createApp := cf.Cf(
 					"push", appName,
-						"--no-start",
-						"-b", Config.GetJavaBuildpackName(),
-						"-m", "1024M",
-						"-p", assets.NewAssets().CredHubEnabledApp,
-						"-d", Config.GetAppsDomain(),
+					"--no-start",
+					"-b", Config.GetJavaBuildpackName(),
+					"-m", "1024M",
+					"-p", assets.NewAssets().CredHubEnabledApp,
+					"-d", Config.GetAppsDomain(),
 				).Wait(Config.CfPushTimeoutDuration())
 				Expect(createApp).To(Exit(0), "failed creating credhub-enabled app")
 				app_helpers.SetBackend(appName)
