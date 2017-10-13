@@ -239,11 +239,22 @@ func GuidForAppName(appName string) string {
 	return appGuid
 }
 
-func CredHubDescribe(description string, callback func()) bool {
-	return Describe("[credhub]", func() {
+func AssistedCredhubDescribe(description string, callback func()) bool {
+	return Describe("[assisted credhub]", func() {
 		BeforeEach(func() {
-			if !Config.GetIncludeCredHub() {
-				Skip(skip_messages.SkipCredHubMessage)
+			if !Config.GetIncludeCredhubAssisted() {
+				Skip(skip_messages.SkipAssistedCredhubMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
+func NonAssistedCredhubDescribe(description string, callback func()) bool {
+	return Describe("[non-assisted credhub]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeCredhubNonAssisted() {
+				Skip(skip_messages.SkipNonAssistedCredhubMessage)
 			}
 		})
 		Describe(description, callback)

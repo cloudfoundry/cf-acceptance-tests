@@ -22,16 +22,12 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 		if Config.GetBackend() != "diego" {
 			Skip(skip_messages.SkipDiegoMessage)
 		}
-
-		if !Config.GetIncludeCredHub() {
-			Skip(skip_messages.SkipCredHubMessage)
-		}
 	})
 
 	Context("when CredHub is configured", func() {
 		var chBrokerName, chServiceName, instanceName string
 
-		BeforeEach(func() {
+		JustBeforeEach(func() {
 			TestSetup.RegularUserContext().TargetSpace()
 			cf.Cf("target", "-o", TestSetup.RegularUserContext().Org)
 			Expect(string(cf.Cf("running-environment-variable-group").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring("CREDHUB_API"), "CredHub API environment not set")
@@ -74,16 +70,16 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 		})
 
 		Describe("service bindings", func() {
-			var appName, appURL string
+			var appName, appURL, dockerImage string
 
-			BeforeEach(func() {
+			JustBeforeEach(func() {
 				appName = random_name.CATSRandomName("APP-CH")
 				appURL = "https://" + appName + "." + Config.GetAppsDomain()
 				Eventually(cf.Cf(
 					"push", appName,
 					"--no-start",
 					// app is defined by cloudfoundry-incubator/diego-dockerfiles
-					"-o", Config.GetPublicDockerAppImage(),
+					"-o", dockerImage,
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-d", Config.GetAppsDomain(),
 					"-i", "1",
@@ -113,11 +109,39 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 				})
 			})
 
-			It("the app should see the service creds", func() {
-				env := helpers.CurlApp(Config, appName, "/env")
-				Expect(env).NotTo(ContainSubstring("credhub-ref"), "credhub-ref not found")
-				Expect(env).To(ContainSubstring("pinkyPie"))
-				Expect(env).To(ContainSubstring("rainbowDash"))
+			Context("in assisted mode", func() {
+				BeforeEach(func() {
+					if !Config.GetIncludeCredhubAssisted() {
+						Skip(skip_messages.SkipAssistedCredhubMessage)
+					}
+
+					dockerImage = Config.GetPublicDockerAppImage()
+				})
+
+				It("the app should see the service creds", func() {
+					env := helpers.CurlApp(Config, appName, "/env")
+					Expect(env).NotTo(ContainSubstring("credhub-ref"), "credhub-ref not found")
+					Expect(env).To(ContainSubstring("pinkyPie"))
+					Expect(env).To(ContainSubstring("rainbowDash"))
+				})
+			})
+
+			Context("in non-assisted mode", func() {
+				BeforeEach(func() {
+					if !Config.GetIncludeCredhubNonAssisted() {
+						Skip(skip_messages.SkipNonAssistedCredhubMessage)
+					}
+
+					// TODO: use the credhub enabled app docker image and interpolate the vcap_services manually
+					dockerImage = Config.GetPublicDockerAppImage()
+				})
+
+				It("the app should not automatically see the service creds", func() {
+					env := helpers.CurlApp(Config, appName, "/env")
+					Expect(env).To(ContainSubstring("credhub-ref"), "credhub-ref not found")
+					Expect(env).NotTo(ContainSubstring("pinkyPie"))
+					Expect(env).NotTo(ContainSubstring("rainbowDash"))
+				})
 			})
 		})
 	})

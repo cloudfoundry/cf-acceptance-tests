@@ -12,6 +12,11 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/validationerrors"
 )
 
+const (
+	CredhubAssistedMode    = "assisted"
+	CredhubNonAssistedMode = "non-assisted"
+)
+
 type config struct {
 	ApiEndpoint *string `json:"api"`
 	AppsDomain  *string `json:"apps_domain"`
@@ -62,29 +67,29 @@ type config struct {
 	RubyBuildpackName       *string `json:"ruby_buildpack_name"`
 	StaticFileBuildpackName *string `json:"staticfile_buildpack_name"`
 
-	IncludeApps                       *bool `json:"include_apps"`
-	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
-	IncludeCapiExperimental           *bool `json:"include_capi_experimental"`
-	IncludeCapiNoBridge               *bool `json:"include_capi_no_bridge"`
-	IncludeContainerNetworking        *bool `json:"include_container_networking"`
-	IncludeCredHub                    *bool `json:"include_credhub"`
-	IncludeDetect                     *bool `json:"include_detect"`
-	IncludeDocker                     *bool `json:"include_docker"`
-	IncludeInternetDependent          *bool `json:"include_internet_dependent"`
-	IncludePersistentApp              *bool `json:"include_persistent_app"`
-	IncludePrivateDockerRegistry      *bool `json:"include_private_docker_registry"`
-	IncludePrivilegedContainerSupport *bool `json:"include_privileged_container_support"`
-	IncludeRouteServices              *bool `json:"include_route_services"`
-	IncludeRouting                    *bool `json:"include_routing"`
-	IncludeSSO                        *bool `json:"include_sso"`
-	IncludeSecurityGroups             *bool `json:"include_security_groups"`
-	IncludeServices                   *bool `json:"include_services"`
-	IncludeSsh                        *bool `json:"include_ssh"`
-	IncludeTasks                      *bool `json:"include_tasks"`
-	IncludeV3                         *bool `json:"include_v3"`
-	IncludeZipkin                     *bool `json:"include_zipkin"`
-	IncludeIsolationSegments          *bool `json:"include_isolation_segments"`
-	IncludeRoutingIsolationSegments   *bool `json:"include_routing_isolation_segments"`
+	IncludeApps                       *bool   `json:"include_apps"`
+	IncludeBackendCompatiblity        *bool   `json:"include_backend_compatibility"`
+	IncludeCapiExperimental           *bool   `json:"include_capi_experimental"`
+	IncludeCapiNoBridge               *bool   `json:"include_capi_no_bridge"`
+	IncludeContainerNetworking        *bool   `json:"include_container_networking"`
+	CredhubMode                       *string `json:"credhub_mode"`
+	IncludeDetect                     *bool   `json:"include_detect"`
+	IncludeDocker                     *bool   `json:"include_docker"`
+	IncludeInternetDependent          *bool   `json:"include_internet_dependent"`
+	IncludePersistentApp              *bool   `json:"include_persistent_app"`
+	IncludePrivateDockerRegistry      *bool   `json:"include_private_docker_registry"`
+	IncludePrivilegedContainerSupport *bool   `json:"include_privileged_container_support"`
+	IncludeRouteServices              *bool   `json:"include_route_services"`
+	IncludeRouting                    *bool   `json:"include_routing"`
+	IncludeSSO                        *bool   `json:"include_sso"`
+	IncludeSecurityGroups             *bool   `json:"include_security_groups"`
+	IncludeServices                   *bool   `json:"include_services"`
+	IncludeSsh                        *bool   `json:"include_ssh"`
+	IncludeTasks                      *bool   `json:"include_tasks"`
+	IncludeV3                         *bool   `json:"include_v3"`
+	IncludeZipkin                     *bool   `json:"include_zipkin"`
+	IncludeIsolationSegments          *bool   `json:"include_isolation_segments"`
+	IncludeRoutingIsolationSegments   *bool   `json:"include_routing_isolation_segments"`
 
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image"`
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username"`
@@ -142,7 +147,7 @@ func getDefaults() config {
 	defaults.IncludeCapiExperimental = ptrToBool(false)
 	defaults.IncludeCapiNoBridge = ptrToBool(false)
 	defaults.IncludeContainerNetworking = ptrToBool(false)
-	defaults.IncludeCredHub = ptrToBool(false)
+	defaults.CredhubMode = ptrToString("")
 	defaults.IncludeDocker = ptrToBool(false)
 	defaults.IncludeInternetDependent = ptrToBool(false)
 	defaults.IncludeIsolationSegments = ptrToBool(false)
@@ -347,9 +352,6 @@ func validateConfig(config *config) Errors {
 
 	if config.IncludeContainerNetworking == nil {
 		errs.Add(fmt.Errorf("* 'include_container_networking' must not be null"))
-	}
-	if config.IncludeCredHub == nil {
-		errs.Add(fmt.Errorf("* 'include_credhub' must not be null"))
 	}
 	if config.IncludeDetect == nil {
 		errs.Add(fmt.Errorf("* 'include_detect' must not be null"))
@@ -830,8 +832,12 @@ func (c *config) GetIncludeCapiNoBridge() bool {
 	return *c.IncludeCapiNoBridge
 }
 
-func (c *config) GetIncludeCredHub() bool {
-	return *c.IncludeCredHub
+func (c *config) GetIncludeCredhubAssisted() bool {
+	return *c.CredhubMode == CredhubAssistedMode
+}
+
+func (c *config) GetIncludeCredhubNonAssisted() bool {
+	return *c.CredhubMode == CredhubNonAssistedMode
 }
 
 func (c *config) GetRubyBuildpackName() string {

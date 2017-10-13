@@ -240,7 +240,8 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeZipkin()).To(BeFalse())
 		Expect(config.GetIncludeSSO()).To(BeFalse())
 		Expect(config.GetIncludeTasks()).To(BeFalse())
-		Expect(config.GetIncludeCredHub()).To(BeFalse())
+		Expect(config.GetIncludeCredhubAssisted()).To(BeFalse())
+		Expect(config.GetIncludeCredhubNonAssisted()).To(BeFalse())
 
 		Expect(config.GetBackend()).To(Equal(""))
 
@@ -349,8 +350,6 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_v3' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_zipkin' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_isolation_segments' must not be null"))
-			Expect(err.Error()).To(ContainSubstring("'include_credhub' must not be null"))
-
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_image' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_username' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_password' must not be null"))
