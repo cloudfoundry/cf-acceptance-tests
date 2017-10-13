@@ -17,7 +17,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
-var _ = DockerDescribe("Docker", func() {
+var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 	BeforeEach(func() {
 		if Config.GetBackend() != "diego" {
 			Skip(skip_messages.SkipDiegoMessage)
