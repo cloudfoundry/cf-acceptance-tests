@@ -119,6 +119,32 @@ var _ = ServicesDescribe("Service Instance Sharing", func() {
 				Expect(envVars["VCAP_SERVICES"]).To(ContainSubstring("credentials"))
 			})
 		})
+
+		It("allows User A to unshare the service", func() {
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				orgName := TestSetup.RegularUserContext().Org
+				spaceName := TestSetup.RegularUserContext().Space
+
+				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+				Expect(target).To(Exit(0))
+
+				userBSpaceGuid := getGuidFor("space", TestSetup.RegularUserContext().Space)
+
+				unShareSpace := cf.Cf("curl",
+					fmt.Sprintf("/v3/service_instances/%s/relationships/shared_spaces/%s", serviceInstanceGuid, userBSpaceGuid),
+					"-X", "DELETE").Wait(Config.DefaultTimeoutDuration())
+
+				Expect(unShareSpace).To(Exit(0))
+				Expect(unShareSpace).ToNot(Say("errors"))
+			})
+
+			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
+				By("Asserting the User B can no longer see the service after it has been unshared")
+				spaceCmd := cf.Cf("services").Wait(Config.DefaultTimeoutDuration())
+				Expect(spaceCmd).To(Exit(0))
+				Expect(spaceCmd).ToNot(Say(serviceInstanceName))
+			})
+		})
 	})
 })
 
