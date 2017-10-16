@@ -116,7 +116,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 
 			Expect(ouputCommand).To(Equal(command))
 			Expect(outputName).To(Equal(taskName))
-			Expect(outputState).To(Equal("RUNNING"))
+			Expect(outputState).To(Or(Equal("RUNNING"), Equal("SUCCEEDED")))
 
 			taskGuid := getGuid(appGuid, sequenceId)
 
