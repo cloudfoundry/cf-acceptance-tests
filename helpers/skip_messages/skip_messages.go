@@ -16,6 +16,8 @@ NOTE: Ensure that your platform has access to the internet before running this t
 const SkipPrivateDockerRegistryMessage string = `Skipping this test because config.IncludePrivateDockerRegistry is set to 'false'.
 NOTE: Ensure that you've provided values for config.PrivateDockerRegistryImage, config.PrivateDockerRegistryUsername,
 and config.PrivateDockerRegistryPassword before running this test.`
+const SkipCredhubMessage = `Skipping this test because Config.CredhubMode is not set to either 'assisted' or 'non-assisted'.
+NOTE: Ensure instance identity credential is turned on and CredHub is deployed before enabling this test`
 const SkipAssistedCredhubMessage = `Skipping this test because Config.CredhubMode is not set to 'assisted'.
 NOTE: Ensure instance identity credential is turned on and CredHub is deployed before enabling this test`
 const SkipNonAssistedCredhubMessage = `Skipping this test because Config.CredhubMode is not set to 'non-assisted'.
