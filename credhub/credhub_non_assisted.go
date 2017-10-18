@@ -4,7 +4,6 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 
 	"encoding/json"
@@ -18,7 +17,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
-var _ = NonAssistedCredhubDescribe("CredHub Integration", func() {
+var _ = NonAssistedCredhubDescribe("CredHub Non-Assisted Integration", func() {
 	BeforeEach(func() {
 		if Config.GetBackend() != "diego" {
 			Skip(skip_messages.SkipDiegoMessage)
@@ -145,36 +144,6 @@ var _ = NonAssistedCredhubDescribe("CredHub Integration", func() {
 					json.Unmarshal(bytes, &response)
 					Expect(response.UserName).To(Equal("pinkyPie"))
 					Expect(response.Password).To(Equal("rainbowDash"))
-				})
-			})
-		})
-
-		Describe("service keys", func() {
-			var serviceKeyName string
-
-			AfterEach(func() {
-				app_helpers.AppReport(chBrokerAppName, Config.DefaultTimeoutDuration())
-
-				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-					TestSetup.RegularUserContext().TargetSpace()
-
-					Expect(cf.Cf("delete-service-key", instanceName, serviceKeyName, "-f").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-				})
-			})
-
-			Context("when a service key for a service instance is requested from a CredHub-enabled broker", func() {
-				It("Cloud Controller retrieves the value from CredHub for the service key", func() {
-					TestSetup.RegularUserContext().TargetSpace()
-
-					serviceKeyName = random_name.CATSRandomName("SVKEY-CH")
-					createKey := cf.Cf("create-service-key", instanceName, serviceKeyName).Wait(Config.DefaultTimeoutDuration())
-					Expect(createKey).To(Exit(0), "failed to create key")
-
-					keyInfo := cf.Cf("service-key", instanceName, serviceKeyName).Wait(Config.DefaultTimeoutDuration())
-					Expect(keyInfo).To(Exit(0), "failed key info")
-
-					Expect(keyInfo).To(Say(`"password": "rainbowDash"`))
-					Expect(keyInfo).To(Say(`"user-name": "pinkyPie"`))
 				})
 			})
 		})
