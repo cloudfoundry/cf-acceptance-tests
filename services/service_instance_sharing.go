@@ -120,7 +120,29 @@ var _ = ServicesDescribe("Service Instance Sharing", func() {
 			})
 		})
 
-		It("allows User A to unshare the service", func() {
+		It("allows User A to unshare the service regardless of bindings in target space", func() {
+			By("Asserting User B can bind to the shared service")
+			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
+				appName = random_name.CATSRandomName("APP")
+				Expect(cf.Cf("push",
+					appName,
+					"-b", Config.GetBinaryBuildpackName(),
+					"-m", DEFAULT_MEMORY_LIMIT,
+					"-p", assets.NewAssets().Catnip,
+					"-c", "./catnip",
+					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+				appGuid := getGuidFor("app", appName)
+
+				bindCmd := cf.Cf("curl", "/v2/service_bindings", "-X", "POST", "-d",
+					fmt.Sprintf(`{ "service_instance_guid" : "%s", "app_guid": "%s" }`, serviceInstanceGuid, appGuid)).Wait(Config.DefaultTimeoutDuration())
+				Expect(bindCmd).To(Exit(0))
+				Expect(bindCmd).To(Say("entity"))
+
+				Expect(cf.Cf("restage", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			})
+
+			By("Unsharing the service as User A")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				orgName := TestSetup.RegularUserContext().Org
 				spaceName := TestSetup.RegularUserContext().Space
@@ -138,8 +160,8 @@ var _ = ServicesDescribe("Service Instance Sharing", func() {
 				Expect(unShareSpace).ToNot(Say("errors"))
 			})
 
+			By("Asserting the User B can no longer see the service after it has been unshared")
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
-				By("Asserting the User B can no longer see the service after it has been unshared")
 				spaceCmd := cf.Cf("services").Wait(Config.DefaultTimeoutDuration())
 				Expect(spaceCmd).To(Exit(0))
 				Expect(spaceCmd).ToNot(Say(serviceInstanceName))
