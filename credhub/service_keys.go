@@ -14,7 +14,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-var _ = Describe("service keys", func() {
+var _ = CredhubDescribe("service keys", func() {
 	var (
 		chBrokerAppName string
 		chServiceName   string
