@@ -60,7 +60,7 @@ var _ = ServicesDescribe("Service Instance Sharing", func() {
 
 				By("Creating a service instance in User A's space")
 				createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
-				Eventually(createService).Should(Exit(0))
+				Expect(createService).To(Exit(0))
 
 				By("Sharing the service instance into User B's space")
 				serviceInstanceGuid = getGuidFor("service", serviceInstanceName)
@@ -68,9 +68,9 @@ var _ = ServicesDescribe("Service Instance Sharing", func() {
 
 				shareSpace := cf.Cf("curl",
 					fmt.Sprintf("/v3/service_instances/%s/relationships/shared_spaces", serviceInstanceGuid),
-					"-X", "POST", "-d", fmt.Sprintf(`{ "data": [ { "guid": "%s" } ] }`, userBSpaceGuid))
-				Eventually(shareSpace).Should(Exit(0))
-				Eventually(shareSpace).Should(Say("data"))
+					"-X", "POST", "-d", fmt.Sprintf(`{ "data": [ { "guid": "%s" } ] }`, userBSpaceGuid)).Wait(Config.DefaultTimeoutDuration())
+				Expect(shareSpace).To(Exit(0))
+				Expect(shareSpace).To(Say("data"))
 			})
 		})
 
