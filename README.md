@@ -160,7 +160,7 @@ include_routing
 * `include_backend_compatibility`: Flag to include whether we check DEA/Diego interoperability.
 * `include_container_networking`: Flag to include tests related to container networking.
   `include_security_groups` must also be set for tests to run.
-* `include_credhub`: Flag to include tests for CredHub-delivered Secure Service Credentials. [CredHub configuration][credhub-secure-service-credentials] is required to run these tests.
+* `credhub_mode`: Valid values are `assisted` or `non-assisted`. [See below](#credhub-modes).
 * `include_capi_experimental`: Flag to run experimental tests for the CAPI release. Not stable!
 * `include_capi_no_bridge`: Flag to run tests that require CAPI's (currently optional) bridge consumption features.
 * `include_detect`: Flag to include tests in the detect group.
@@ -270,6 +270,10 @@ To run tests that involve routing isolation segments, the following config value
 * `isolation_segment_domain`
 
 This suite also requires `cc.diego.temporary_local_apps` be set to true in your cf configuration, as well as additional setup. Read the documentation [here](http://docs.cloudfoundry.org/adminguide/routing-is.html) for further setup details.
+
+#### Credhub Modes
+- `non-assisted` mode means that apps are responsible for resolving Credhub refs for credentials. When the user binds a service to an app, the service broker will store a credential in Credhub and pass the ref back to the Cloud Controller. When the user restages the app, the Cloud Controller will pass the Credhub ref to the app in the `VCAP_SERVICES` environment variable, at which point the app can make a request directly to Credhub to resolve the ref and obtain the credential.
+- `assisted` mode means that the Credhub ref will be resolved before the app starts running. As before, when the user binds a service to an app, the service broker will store a credential in Credhub and pass the ref back to the Cloud Controller. This time, when the user restages the app, the Cloud Controller will pass the Credhub ref to the Diego runtime, at which point the launcher (from the buildpackapplifecycle or the dockerapplifecycle components) will resolve the Credhub ref, and store the credential in `VCAP_SERVICES` for the app to consume.
 
 #### Capturing Test Output
 When a test fails, look for the test group name (`[services]` in the example below) in the test output:
