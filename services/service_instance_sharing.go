@@ -114,12 +114,9 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 					"-c", "./catnip",
 					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-				appGuid := getGuidFor("app", appName)
-
-				bindCmd := cf.Cf("curl", "/v2/service_bindings", "-X", "POST", "-d",
-					fmt.Sprintf(`{ "service_instance_guid" : "%s", "app_guid": "%s" }`, serviceInstanceGuid, appGuid)).Wait(Config.DefaultTimeoutDuration())
+				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(bindCmd).To(Exit(0))
-				Expect(bindCmd).To(Say("entity"))
+				Expect(bindCmd).To(Say("OK"))
 
 				Expect(cf.Cf("restage", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 				envJSON := helpers.CurlApp(Config, appName, "/env.json")
@@ -146,37 +143,18 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 
 				appGuid = getGuidFor("app", appName)
 
-				bindCmd := cf.Cf("curl", "/v2/service_bindings", "-X", "POST", "-d",
-					fmt.Sprintf(`{ "service_instance_guid" : "%s", "app_guid": "%s" }`, serviceInstanceGuid, appGuid)).Wait(Config.DefaultTimeoutDuration())
+				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(bindCmd).To(Exit(0))
-				Expect(bindCmd).To(Say("entity"))
+				Expect(bindCmd).To(Say("OK"))
 
 				Expect(cf.Cf("restage", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			})
 
-			//Target users currently do not have access to /v2/app/:guid/service_bindings so discover this as the admin
-			var bindingUrl string
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				appBindingsCmd := cf.Cf("curl", fmt.Sprintf("/v2/apps/%s/service_bindings", appGuid)).Wait(Config.DefaultTimeoutDuration())
-				Expect(appBindingsCmd).To(Exit(0))
-
-				type AppBindings struct {
-					Resources []struct {
-						Metadata struct {
-							Url string
-						}
-					}
-				}
-
-				bindings := AppBindings{}
-				json.Unmarshal(appBindingsCmd.Buffer().Contents(), &bindings)
-				bindingUrl = bindings.Resources[0].Metadata.Url
-			})
-
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
 				By("Asserting User B can unbind from the shared service")
-				unbindCmd := cf.Cf("curl", "-X", "DELETE", bindingUrl).Wait(Config.DefaultTimeoutDuration())
+				unbindCmd := cf.Cf("unbind-service", appName, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(unbindCmd).To(Exit(0))
+				Expect(unbindCmd).To(Say("OK"))
 			})
 		})
 
@@ -192,12 +170,9 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 					"-c", "./catnip",
 					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-				appGuid := getGuidFor("app", appName)
-
-				bindCmd := cf.Cf("curl", "/v2/service_bindings", "-X", "POST", "-d",
-					fmt.Sprintf(`{ "service_instance_guid" : "%s", "app_guid": "%s" }`, serviceInstanceGuid, appGuid)).Wait(Config.DefaultTimeoutDuration())
+				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(bindCmd).To(Exit(0))
-				Expect(bindCmd).To(Say("entity"))
+				Expect(bindCmd).To(Say("OK"))
 
 				Expect(cf.Cf("restage", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			})
@@ -212,12 +187,12 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 
 				userBSpaceGuid := getGuidFor("space", TestSetup.RegularUserContext().Space)
 
-				unShareSpace := cf.Cf("curl",
+				unshareSpace := cf.Cf("curl",
 					fmt.Sprintf("/v3/service_instances/%s/relationships/shared_spaces/%s", serviceInstanceGuid, userBSpaceGuid),
 					"-X", "DELETE").Wait(Config.DefaultTimeoutDuration())
 
-				Expect(unShareSpace).To(Exit(0))
-				Expect(unShareSpace).ToNot(Say("errors"))
+				Expect(unshareSpace).To(Exit(0))
+				Expect(unshareSpace).ToNot(Say("errors"))
 			})
 
 			By("Asserting the User B can no longer see the service after it has been unshared")
