@@ -120,6 +120,56 @@ var _ = ServicesDescribe("Service Instance Sharing", func() {
 			})
 		})
 
+		It("Allows User B to unbind an app from the shared service instance", func() {
+			var appGuid string
+
+			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
+				By("Asserting User B can bind to the shared service")
+				appName = random_name.CATSRandomName("APP")
+				Expect(cf.Cf("push",
+					appName,
+					"-b", Config.GetBinaryBuildpackName(),
+					"-m", DEFAULT_MEMORY_LIMIT,
+					"-p", assets.NewAssets().Catnip,
+					"-c", "./catnip",
+					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+				appGuid = getGuidFor("app", appName)
+
+				bindCmd := cf.Cf("curl", "/v2/service_bindings", "-X", "POST", "-d",
+					fmt.Sprintf(`{ "service_instance_guid" : "%s", "app_guid": "%s" }`, serviceInstanceGuid, appGuid)).Wait(Config.DefaultTimeoutDuration())
+				Expect(bindCmd).To(Exit(0))
+				Expect(bindCmd).To(Say("entity"))
+
+				Expect(cf.Cf("restage", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			})
+
+			//Target users currently do not have access to /v2/app/:guid/service_bindings so discover this as the admin
+			var bindingUrl string
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				appBindingsCmd := cf.Cf("curl", fmt.Sprintf("/v2/apps/%s/service_bindings", appGuid)).Wait(Config.DefaultTimeoutDuration())
+				Expect(appBindingsCmd).To(Exit(0))
+
+				type AppBindings struct {
+					Resources []struct {
+						Metadata struct {
+							Url string
+						}
+					}
+				}
+
+				bindings := AppBindings{}
+				json.Unmarshal(appBindingsCmd.Buffer().Contents(), &bindings)
+				bindingUrl = bindings.Resources[0].Metadata.Url
+			})
+
+			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
+				By("Asserting User B can unbind from the shared service")
+				unbindCmd := cf.Cf("curl", "-X", "DELETE", bindingUrl).Wait(Config.DefaultTimeoutDuration())
+				Expect(unbindCmd).To(Exit(0))
+			})
+		})
+
 		It("allows User A to unshare the service regardless of bindings in target space", func() {
 			By("Asserting User B can bind to the shared service")
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
