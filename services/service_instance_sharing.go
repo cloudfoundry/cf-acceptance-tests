@@ -87,13 +87,23 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			}
 		})
 
+		It("allows User B to view the shared service", func() {
+			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
+				By("Asserting the User B sees the service instance listed in `cf services`")
+				servicesCmd := cf.Cf("services").Wait(Config.DefaultTimeoutDuration())
+				Expect(servicesCmd).To(Exit(0))
+				Expect(servicesCmd).To(Say(serviceInstanceName))
+
+				By("Asserting the User B sees the service instance in `cf service service-name` output")
+				serviceCmd := cf.Cf("service", serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
+				Expect(serviceCmd).To(Exit(0))
+				Expect(serviceCmd).To(Say("Service instance: " + serviceInstanceName))
+				Expect(serviceCmd).To(Say("Service: " + broker.Service.Name))
+			})
+		})
+
 		It("allows User B to bind an app to the shared service instance", func() {
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
-				By("Asserting the User B can see the shared service")
-				spaceCmd := cf.Cf("services").Wait(Config.DefaultTimeoutDuration())
-				Expect(spaceCmd).To(Exit(0))
-				Expect(spaceCmd).To(Say(serviceInstanceName))
-
 				By("Asserting the User B can bind to the shared service")
 				appName = random_name.CATSRandomName("APP")
 				Expect(cf.Cf("push",
