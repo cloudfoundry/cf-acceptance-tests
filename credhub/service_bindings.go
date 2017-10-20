@@ -22,7 +22,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-var _ = CredhubDescribe("CredHub Integration", func() {
+var _ = CredhubDescribe("service bindings", func() {
 	var (
 		chBrokerAppName string
 		chServiceName   string
