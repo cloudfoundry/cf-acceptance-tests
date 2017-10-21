@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"regexp"
 	"strings"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -23,6 +24,87 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 )
+
+func appGuid(appName string) string {
+	guid := cf.Cf("app", appName, "--guid").Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+	return strings.TrimSpace(string(guid))
+}
+
+func makeTempDir() string {
+	// This defers from the typical way temp directories are created (using the OS default), because the GNUWin32 tar.exe does not allow file paths to be prefixed with a drive letter.
+	tmpdir, err := ioutil.TempDir(".", "droplet-download")
+	Expect(err).ToNot(HaveOccurred())
+	return tmpdir
+}
+
+func curlAndFollowRedirectWithoutHeaders(downloadURL, appDropletPathToCompressedFile string) {
+	oauthToken := v3_helpers.GetAuthToken()
+	downloadCurl := helpers.Curl(
+		Config,
+		"-v", fmt.Sprintf("%s%s", Config.GetApiEndpoint(), downloadURL),
+		"-H", fmt.Sprintf("Authorization: %s", oauthToken),
+		"-f",
+	).Wait(Config.DefaultTimeoutDuration())
+	Expect(downloadCurl).To(Exit(0))
+
+	curlOutput := string(downloadCurl.Err.Contents())
+	locationHeaderRegex := regexp.MustCompile("Location: (.*)\r\n")
+	redirectURI := locationHeaderRegex.FindStringSubmatch(curlOutput)[1]
+
+	downloadCurl = helpers.Curl(
+		Config,
+		"-v", redirectURI,
+		"--output", appDropletPathToCompressedFile,
+		"-f",
+	).Wait(Config.DefaultTimeoutDuration())
+	Expect(downloadCurl).To(Exit(0))
+}
+
+func downloadDroplet(appGuid, downloadDirectory string) string {
+	appDropletPathToCompressedFile := fmt.Sprintf("%s.tar.gz", downloadDirectory)
+	downloadUrl := fmt.Sprintf("/v2/apps/%s/droplet/download", appGuid)
+
+	curlAndFollowRedirectWithoutHeaders(downloadUrl, appDropletPathToCompressedFile)
+	return appDropletPathToCompressedFile
+}
+
+func uploadDroplet(appGuid, dropletPath string) {
+	token := v3_helpers.GetAuthToken()
+	uploadUrl := fmt.Sprintf("%s%s/v2/apps/%s/droplet/upload", Config.Protocol(), Config.GetApiEndpoint(), appGuid)
+	bits := fmt.Sprintf(`droplet=@%s`, dropletPath)
+	curl := helpers.Curl(Config, "-v", uploadUrl, "-X", "PUT", "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).Wait(Config.DefaultTimeoutDuration())
+	Expect(curl).To(Exit(0))
+
+	var job struct {
+		Metadata struct {
+			Url string `json:"url"`
+		} `json:"metadata"`
+	}
+	bytes := curl.Out.Contents()
+	json.Unmarshal(bytes, &job)
+	pollingUrl := job.Metadata.Url
+
+	Eventually(func() *Session {
+		return cf.Cf("curl", pollingUrl).Wait(Config.DefaultTimeoutDuration())
+	}, Config.DefaultTimeoutDuration()).Should(Say("finished"))
+}
+
+func unpackTarball(tarballPath string) {
+	// The gzip and tar commands have been tested and works in both Linux and Windows environments. In Windows, it was tested using GNUWin32 executables. The reason why this is split into two steps instead of running 'tar -ztf file_name' is because the GNUWin32 tar.exe does not support '-z'.
+	cmd := exec.Command("gzip", "-dk", tarballPath)
+	session, err := Start(cmd, GinkgoWriter, GinkgoWriter)
+	Expect(err).ToNot(HaveOccurred())
+	Eventually(session, Config.DefaultTimeoutDuration()).Should(Exit(0))
+
+	cmd = exec.Command("tar", "-tf", strings.Trim(tarballPath, ".gz"))
+	session, err = Start(cmd, GinkgoWriter, GinkgoWriter)
+	Expect(err).ToNot(HaveOccurred())
+	Eventually(session, Config.DefaultTimeoutDuration()).Should(Exit(0))
+
+	Expect(session.Out.Contents()).To(ContainSubstring("./app/config.ru"))
+	Expect(session.Out.Contents()).To(ContainSubstring("./tmp"))
+	Expect(session.Out.Contents()).To(ContainSubstring("./logs"))
+}
 
 var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 	var helloWorldAppName string
@@ -42,81 +124,25 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 	})
 
 	FIt("Users can manage droplet bits for an app", func() {
-		By("Downloading the droplet for the app")
-
-		guid := cf.Cf("app", helloWorldAppName, "--guid").Wait(Config.DefaultTimeoutDuration()).Out.Contents()
-		appGuid := strings.TrimSpace(string(guid))
-
-		// This defers from the typical way temp directories are created (using the OS default), because the GNUWin32 tar.exe does not allow file paths to be prefixed with a drive letter.
-		tmpdir, err := ioutil.TempDir(".", "droplet-download")
-		Expect(err).ToNot(HaveOccurred())
+		guid := appGuid(helloWorldAppName)
+		tmpdir := makeTempDir()
 		defer os.RemoveAll(tmpdir)
 
-		app_droplet_path := path.Join(tmpdir, helloWorldAppName)
-		app_droplet_path_to_tar_file := fmt.Sprintf("%s.tar", app_droplet_path)
-		app_droplet_path_to_compressed_file := fmt.Sprintf("%s.tar.gz", app_droplet_path)
-
-		//cf.Cf("curl", fmt.Sprintf("/v2/apps/%s/droplet/download", appGuid), "--output", app_droplet_path_to_compressed_file).Wait(Config.DefaultTimeoutDuration())
-
-		downloadUrl := fmt.Sprintf("/v2/apps/%s/droplet/download", appGuid)
-		oauthToken := v3_helpers.GetAuthToken()
-		downloadCurl := helpers.Curl(
-			Config,
-			"-v", fmt.Sprintf("%s%s", Config.GetApiEndpoint(), downloadUrl),
-			"-H", fmt.Sprintf("Authorization: %s", oauthToken),
-			"--output", app_droplet_path_to_compressed_file,
-			"-L",
-			"-f",
-		).Wait(Config.DefaultTimeoutDuration())
-		Expect(downloadCurl).To(Exit(0))
-
-		var session *Session
-
-		// The gzip and tar commands have been tested and works in both Linux and Windows environments. In Windows, it was tested using GNUWin32 executables. The reason why this is split into two steps instead of running 'tar -ztf file_name' is because the GNUWin32 tar.exe does not support '-z'.
-		cmd := exec.Command("gzip", "-dk", app_droplet_path_to_compressed_file)
-		session, err = Start(cmd, GinkgoWriter, GinkgoWriter)
-		Expect(err).ToNot(HaveOccurred())
-		Eventually(session, Config.DefaultTimeoutDuration()).Should(Exit(0))
-
-		cmd = exec.Command("tar", "-tf", app_droplet_path_to_tar_file)
-		session, err = Start(cmd, GinkgoWriter, GinkgoWriter)
-		Expect(err).ToNot(HaveOccurred())
-		Eventually(session, Config.DefaultTimeoutDuration()).Should(Exit(0))
-
-		Expect(session.Out.Contents()).To(ContainSubstring("./app/config.ru"))
-		Expect(session.Out.Contents()).To(ContainSubstring("./tmp"))
-		Expect(session.Out.Contents()).To(ContainSubstring("./logs"))
+		By("Downloading the droplet for the app")
+		appDropletPath := path.Join(tmpdir, helloWorldAppName)
+		appDropletPathToCompressedFile := downloadDroplet(guid, appDropletPath)
+		unpackTarball(appDropletPathToCompressedFile)
 
 		By("Pushing a different version of the app")
-
 		Expect(cf.Cf("push", helloWorldAppName, "-p", assets.NewAssets().RubySimple).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, helloWorldAppName)
 		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Healthy"))
 
 		By("Uploading the originally downloaded droplet of the app")
-
-		token := v3_helpers.GetAuthToken()
-		uploadUrl := fmt.Sprintf("%s%s/v2/apps/%s/droplet/upload", Config.Protocol(), Config.GetApiEndpoint(), appGuid)
-		bits := fmt.Sprintf(`droplet=@%s`, app_droplet_path_to_compressed_file)
-		curl := helpers.Curl(Config, "-v", uploadUrl, "-X", "PUT", "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).Wait(Config.DefaultTimeoutDuration())
-		Expect(curl).To(Exit(0))
-
-		var job struct {
-			Metadata struct {
-				Url string `json:"url"`
-			} `json:"metadata"`
-		}
-		bytes := curl.Out.Contents()
-		json.Unmarshal(bytes, &job)
-		pollingUrl := job.Metadata.Url
-
-		Eventually(func() *Session {
-			return cf.Cf("curl", pollingUrl).Wait(Config.DefaultTimeoutDuration())
-		}, Config.DefaultTimeoutDuration()).Should(Say("finished"))
+		uploadDroplet(guid, appDropletPathToCompressedFile)
 
 		By("Running the original droplet for the app")
-
 		cf.Cf("restart", helloWorldAppName).Wait(Config.DefaultTimeoutDuration())
 
 		Eventually(func() string {
