@@ -266,7 +266,7 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 
 		It("allows ip traffic from a container to a private, non-container destination after binding a security group and refuses it after unbinding the security group", func() {
 			dest := Destination{
-				IP:       "10.0.244.255", // some random IP that isn't covered by an existing Security Group rule
+				IP:       Config.GetUnallocatedIPForSecurityGroup(), // some random IP that isn't covered by an existing Security Group rule
 				Port:     80,
 				Protocol: "tcp",
 			}
