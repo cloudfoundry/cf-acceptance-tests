@@ -123,7 +123,7 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 		Expect(cf.Cf("delete", helloWorldAppName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
-	FIt("Users can manage droplet bits for an app", func() {
+	It("Users can manage droplet bits for an app", func() {
 		guid := appGuid(helloWorldAppName)
 		tmpdir := makeTempDir()
 		defer os.RemoveAll(tmpdir)
