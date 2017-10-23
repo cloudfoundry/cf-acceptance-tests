@@ -61,6 +61,7 @@ type CatsConfig interface {
 	GetPersistentAppQuotaName() string
 	GetPersistentAppSpace() string
 	GetRubyBuildpackName() string
+	GetUnallocatedIPForSecurityGroup() string
 	Protocol() string
 
 	AsyncServiceOperationTimeoutDuration() time.Duration
