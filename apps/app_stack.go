@@ -87,7 +87,7 @@ config_vars:
   PATH: bin:/usr/local/bin:/usr/bin:/bin
   FROM_BUILD_PACK: "yes"
 default_process_types:
-  web: while true; do { echo -e 'HTTP/1.1 200 OK\r\n'; echo -e "\$(cat /etc/lsb-release)"; } | nc -l \$PORT; done
+  web: while true; do { echo -e 'HTTP/1.1 200 OK\r\n'; echo -e "\$(cat /etc/lsb-release)"; } | nc -q 1 -l \$PORT; done
 EOF
 `,
 				},
