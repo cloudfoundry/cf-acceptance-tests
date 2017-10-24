@@ -10,7 +10,8 @@ type CatsConfig interface {
 	GetIncludeCapiExperimental() bool
 	GetIncludeCapiNoBridge() bool
 	GetIncludeContainerNetworking() bool
-	GetIncludeCredHub() bool
+	GetIncludeCredhubAssisted() bool
+	GetIncludeCredhubNonAssisted() bool
 	GetIncludeDetect() bool
 	GetIncludeDocker() bool
 	GetIncludeInternetDependent() bool
@@ -71,6 +72,8 @@ type CatsConfig interface {
 	LongCurlTimeoutDuration() time.Duration
 	LongTimeoutDuration() time.Duration
 	SleepTimeoutDuration() time.Duration
+
+	GetPublicDockerAppImage() string
 }
 
 func NewCatsConfig(path string) (CatsConfig, error) {

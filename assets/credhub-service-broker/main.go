@@ -1,18 +1,18 @@
 package main
 
 import (
-	"net/http"
-	"os"
+	"bytes"
+	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"encoding/json"
-	"bytes"
+	"github.com/satori/go.uuid"
 	"io/ioutil"
 	"log"
-	"crypto/tls"
-	"time"
+	"net/http"
+	"os"
 	"strconv"
-	"github.com/satori/go.uuid"
+	"time"
 )
 
 func main() {
@@ -26,18 +26,21 @@ type Server struct {
 }
 
 type bindRequest struct {
-	AppGuid string `json:"app_guid"`
+	AppGuid      string `json:"app_guid"`
+	BindResource struct {
+		CredentialClientId string `json:"credential_client_id"`
+	} `json:"bind_resource"`
 }
 
 type permissions struct {
-	Actor string `json:"actor"`
+	Actor      string   `json:"actor"`
 	Operations []string `json:"operations"`
 }
 
 func (s *Server) Start() {
 	router := mux.NewRouter()
 
-	s.sb = &ServiceBroker {
+	s.sb = &ServiceBroker{
 		NameMap: make(map[string]string),
 	}
 
@@ -57,7 +60,7 @@ func (s *Server) Start() {
 }
 
 type ServiceBroker struct {
-	NameMap map[string] string
+	NameMap map[string]string
 }
 
 func WriteResponse(w http.ResponseWriter, code int, response string) {
@@ -69,9 +72,14 @@ func (s *ServiceBroker) Catalog(w http.ResponseWriter, r *http.Request) {
 	serviceUUID := uuid.NewV4().String()
 	planUUID := uuid.NewV4().String()
 
+	serviceName := "credhub-read"
+	if os.Getenv("SERVICE_NAME") != "" {
+		serviceName = os.Getenv("SERVICE_NAME")
+	}
+
 	catalog := `{
 	"services": [{
-		"name": "credhub-read",
+		"name": "` + serviceName + `",
 		"id": "` + serviceUUID + `",
 		"description": "credhub read service for tests",
 		"bindable": true,
@@ -102,14 +110,20 @@ func (s *ServiceBroker) Bind(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 	}
 
-	storedJson := map[string]string {
+	storedJson := map[string]string{
 		"user-name": "pinkyPie",
-		"password": "rainbowDash",
+		"password":  "rainbowDash",
+	}
+
+	actorId := "mtls-app:" + body.AppGuid
+
+	if body.AppGuid == "" {
+		actorId = "uaa-client:" + body.BindResource.CredentialClientId
 	}
 
 	permissionJson := permissions{
-		Actor: "mtls-app:" + body.AppGuid,
-		Operations: []string{"read", "delete"},
+		Actor:      actorId,
+		Operations: []string{"read"},
 	}
 
 	credentialName := strconv.FormatInt(time.Now().UnixNano(), 10)
@@ -136,7 +150,7 @@ func (s *ServiceBroker) Bind(w http.ResponseWriter, r *http.Request) {
 
 	credentials := `{
   "credentials": {
-    "credhub-ref": "`+ responseData["name"] + `"
+    "credhub-ref": "` + responseData["name"] + `"
   }
 }`
 
@@ -164,7 +178,7 @@ func makeMtlsRequest(url string, requestData map[string]interface{}, verb string
 	jsonValue, err := json.Marshal(requestData)
 	handleError(err)
 
-	request, err := http.NewRequest(verb, url,bytes.NewBuffer(jsonValue))
+	request, err := http.NewRequest(verb, url, bytes.NewBuffer(jsonValue))
 	request.Header.Set("Content-type", "application/json")
 
 	handleError(err)
@@ -192,7 +206,6 @@ func handleError(err error) {
 		log.Fatal("Fatal", err)
 	}
 }
-
 
 func createMtlsClient() (*http.Client, error) {
 	clientCertPath := os.Getenv("CF_INSTANCE_CERT")

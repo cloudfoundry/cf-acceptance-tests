@@ -3,9 +3,9 @@
 package gosteno
 
 import (
+	"errors"
 	syslog "github.com/cloudfoundry/gosteno/syslog"
 	"sync"
-	"errors"
 )
 
 const (
