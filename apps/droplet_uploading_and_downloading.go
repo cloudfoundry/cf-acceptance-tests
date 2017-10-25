@@ -1,20 +1,16 @@
 package apps
 
 import (
-	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
-	"regexp"
 	"strings"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -22,7 +18,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 )
 
 func appGuid(appName string) string {
@@ -35,58 +30,6 @@ func makeTempDir() string {
 	tmpdir, err := ioutil.TempDir(".", "droplet-download")
 	Expect(err).ToNot(HaveOccurred())
 	return tmpdir
-}
-
-func curlAndFollowRedirectWithoutHeaders(downloadURL, appDropletPathToCompressedFile string) {
-	oauthToken := v3_helpers.GetAuthToken()
-	downloadCurl := helpers.Curl(
-		Config,
-		"-v", fmt.Sprintf("%s%s", Config.GetApiEndpoint(), downloadURL),
-		"-H", fmt.Sprintf("Authorization: %s", oauthToken),
-		"-f",
-	).Wait(Config.DefaultTimeoutDuration())
-	Expect(downloadCurl).To(Exit(0))
-
-	curlOutput := string(downloadCurl.Err.Contents())
-	locationHeaderRegex := regexp.MustCompile("Location: (.*)\r\n")
-	redirectURI := locationHeaderRegex.FindStringSubmatch(curlOutput)[1]
-
-	downloadCurl = helpers.Curl(
-		Config,
-		"-v", redirectURI,
-		"--output", appDropletPathToCompressedFile,
-		"-f",
-	).Wait(Config.DefaultTimeoutDuration())
-	Expect(downloadCurl).To(Exit(0))
-}
-
-func downloadDroplet(appGuid, downloadDirectory string) string {
-	appDropletPathToCompressedFile := fmt.Sprintf("%s.tar.gz", downloadDirectory)
-	downloadUrl := fmt.Sprintf("/v2/apps/%s/droplet/download", appGuid)
-
-	curlAndFollowRedirectWithoutHeaders(downloadUrl, appDropletPathToCompressedFile)
-	return appDropletPathToCompressedFile
-}
-
-func uploadDroplet(appGuid, dropletPath string) {
-	token := v3_helpers.GetAuthToken()
-	uploadUrl := fmt.Sprintf("%s%s/v2/apps/%s/droplet/upload", Config.Protocol(), Config.GetApiEndpoint(), appGuid)
-	bits := fmt.Sprintf(`droplet=@%s`, dropletPath)
-	curl := helpers.Curl(Config, "-v", uploadUrl, "-X", "PUT", "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).Wait(Config.DefaultTimeoutDuration())
-	Expect(curl).To(Exit(0))
-
-	var job struct {
-		Metadata struct {
-			Url string `json:"url"`
-		} `json:"metadata"`
-	}
-	bytes := curl.Out.Contents()
-	json.Unmarshal(bytes, &job)
-	pollingUrl := job.Metadata.Url
-
-	Eventually(func() *Session {
-		return cf.Cf("curl", pollingUrl).Wait(Config.DefaultTimeoutDuration())
-	}, Config.DefaultTimeoutDuration()).Should(Say("finished"))
 }
 
 func unpackTarball(tarballPath string) {
@@ -129,8 +72,9 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 		defer os.RemoveAll(tmpdir)
 
 		By("Downloading the droplet for the app")
+		appDroplet := app_helpers.NewAppDroplet(guid, Config)
 		appDropletPath := path.Join(tmpdir, helloWorldAppName)
-		appDropletPathToCompressedFile := downloadDroplet(guid, appDropletPath)
+		appDropletPathToCompressedFile := appDroplet.DownloadTo(appDropletPath)
 		unpackTarball(appDropletPathToCompressedFile)
 
 		By("Pushing a different version of the app")
@@ -140,7 +84,7 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Healthy"))
 
 		By("Uploading the originally downloaded droplet of the app")
-		uploadDroplet(guid, appDropletPathToCompressedFile)
+		appDroplet.UploadFrom(appDropletPathToCompressedFile)
 
 		By("Running the original droplet for the app")
 		cf.Cf("restart", helloWorldAppName).Wait(Config.DefaultTimeoutDuration())
