@@ -42,8 +42,10 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 	var ASYNC_OPERATION_POLL_INTERVAL = 5 * time.Second
 
 	waitForAsyncDeletionToComplete := func(broker ServiceBroker, instanceName string) {
-		Eventually(func() *Session {
-			return cf.Cf("service", instanceName).Wait(Config.DefaultTimeoutDuration())
+		Eventually(func() *Buffer {
+			session := cf.Cf("service", instanceName).Wait(Config.DefaultTimeoutDuration())
+			combinedOutputBytes := append(session.Out.Contents(), session.Err.Contents()...)
+			return BufferWithBytes(combinedOutputBytes)
 		}, Config.AsyncServiceOperationTimeoutDuration(), ASYNC_OPERATION_POLL_INTERVAL).Should(Say("not found"))
 	}
 
@@ -95,7 +97,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 				os.Setenv("CF_TRACE", "true")
 				serviceInfo := cf.Cf("service", instanceName).Wait(Config.DefaultTimeoutDuration())
-				Expect(serviceInfo).To(Say("Plan:\\s+%s", broker.SyncPlans[0].Name))
+				Expect(serviceInfo).To(Say("[P|p]lan:\\s+%s", broker.SyncPlans[0].Name))
 				Expect(serviceInfo.Out.Contents()).To(MatchRegexp(`"tags":\s*\[\n.*tag1.*\n.*tag2.*\n.*\]`))
 				os.Setenv("CF_TRACE", "false")
 			})
@@ -112,7 +114,8 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					Expect(deleteService).To(Exit(0))
 
 					serviceInfo := cf.Cf("service", instanceName).Wait(Config.DefaultTimeoutDuration())
-					Expect(serviceInfo).To(Say("not found"))
+					combinedBuffer := BufferWithBytes(append(serviceInfo.Out.Contents(), serviceInfo.Err.Contents()...))
+					Expect(combinedBuffer).To(Say("not found"))
 				})
 
 				Context("updating a service instance", func() {
@@ -137,7 +140,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 						Expect(updateService).To(Exit(0))
 
 						serviceInfo := cf.Cf("service", instanceName).Wait(Config.DefaultTimeoutDuration())
-						Expect(serviceInfo).To(Say("Plan:\\s+%s", broker.SyncPlans[1].Name))
+						Expect(serviceInfo).To(Say("[P|p]lan:\\s+%s", broker.SyncPlans[1].Name))
 					})
 
 					It("can update service tags", func() {
@@ -166,7 +169,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 						os.Setenv("CF_TRACE", "true")
 						serviceInfo := cf.Cf("service", instanceName).Wait(Config.DefaultTimeoutDuration())
-						Expect(serviceInfo).To(Say("Plan:\\s+%s", broker.SyncPlans[1].Name))
+						Expect(serviceInfo).To(Say("[P|p]lan:\\s+%s", broker.SyncPlans[1].Name))
 						Expect(serviceInfo.Out.Contents()).To(MatchRegexp(`"tags":\s*\[\n.*tag1.*\n.*tag2.*\n.*\]`))
 						os.Setenv("CF_TRACE", "false")
 					})
@@ -334,9 +337,9 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 			defer os.Setenv("CF_TRACE", "false")
 
 			serviceInfo := cf.Cf("service", instanceName).Wait(Config.DefaultTimeoutDuration())
-			Expect(serviceInfo).To(Say("Plan:\\s+%s", broker.AsyncPlans[0].Name))
-			Expect(serviceInfo).To(Say("Status: create succeeded"))
-			Expect(serviceInfo).To(Say("Message: 100 percent done"))
+			Expect(serviceInfo).To(Say("[P|p]lan:\\s+%s", broker.AsyncPlans[0].Name))
+			Expect(serviceInfo).To(Say("[S|s]tatus:\\s+create succeeded"))
+			Expect(serviceInfo).To(Say("[M|m]essage:\\s+100 percent done"))
 			Expect(serviceInfo.Out.Contents()).To(MatchRegexp(`"tags":\s*\[\n.*tag1.*\n.*tag2.*\n.*\]`))
 		})
 
@@ -361,13 +364,13 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 				serviceInfo := cf.Cf("service", instanceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(serviceInfo).To(Exit(0), "failed getting service instance details")
-				Expect(serviceInfo).To(Say("Plan:\\s+%s", broker.AsyncPlans[0].Name))
+				Expect(serviceInfo).To(Say("[P|p]lan:\\s+%s", broker.AsyncPlans[0].Name))
 
 				waitForAsyncOperationToComplete(broker, instanceName)
 
 				serviceInfo = cf.Cf("service", instanceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(serviceInfo).To(Exit(0), "failed getting service instance details")
-				Expect(serviceInfo).To(Say("Plan:\\s+%s", broker.AsyncPlans[1].Name))
+				Expect(serviceInfo).To(Say("[P|p]lan:\\s+%s", broker.AsyncPlans[1].Name))
 			})
 
 			It("can update the arbitrary params", func() {
@@ -393,7 +396,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 				os.Setenv("CF_TRACE", "true")
 				serviceInfo := cf.Cf("service", instanceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(serviceInfo).To(Exit(0), "failed getting service instance details")
-				Expect(serviceInfo).To(Say("Plan:\\s+%s", broker.AsyncPlans[1].Name))
+				Expect(serviceInfo).To(Say("[P|p]lan:\\s+%s", broker.AsyncPlans[1].Name))
 				Expect(serviceInfo.Out.Contents()).To(MatchRegexp(`"tags":\s*\[\n.*tag1.*\n.*tag2.*\n.*\]`))
 				os.Setenv("CF_TRACE", "false")
 			})
