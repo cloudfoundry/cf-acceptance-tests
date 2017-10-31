@@ -62,11 +62,6 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 				createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(createService).To(Exit(0))
 
-				By("Ensuring that the service instance exists")
-				listService := cf.Cf("curl", "/v3/service_instances").Wait(Config.DefaultTimeoutDuration())
-				Expect(listService).To(Exit(0))
-				Expect(listService).To(Say(serviceInstanceName))
-
 				By("Sharing the service instance into User B's space")
 				serviceInstanceGuid = getGuidFor("service", serviceInstanceName)
 				userBSpaceGuid := getGuidFor("space", TestSetup.RegularUserContext().Space)
@@ -104,6 +99,11 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 				Expect(serviceCmd).To(Exit(0))
 				Expect(serviceCmd).To(Say("Service instance: " + serviceInstanceName))
 				Expect(serviceCmd).To(Say("Service: " + broker.Service.Name))
+
+				By("Asserting the User B sees the service instance in v3 `cf curl v3/service_instances`")
+				listService := cf.Cf("curl", "/v3/service_instances").Wait(Config.DefaultTimeoutDuration())
+				Expect(listService).To(Exit(0))
+				Expect(listService).To(Say(serviceInstanceName))
 			})
 		})
 
@@ -132,7 +132,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			})
 		})
 
-		It("Allows User B to unbind an app from the shared service instance", func() {
+		It("allows User B to unbind an app from the shared service instance", func() {
 			var appGuid string
 
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
