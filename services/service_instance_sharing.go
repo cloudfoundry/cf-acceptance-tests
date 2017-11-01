@@ -99,11 +99,6 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 				Expect(serviceCmd).To(Exit(0))
 				Expect(serviceCmd).To(Say("Service instance: " + serviceInstanceName))
 				Expect(serviceCmd).To(Say("Service: " + broker.Service.Name))
-
-				By("Asserting the User B sees the service instance in v3 `cf curl v3/service_instances`")
-				listService := cf.Cf("curl", "/v3/service_instances").Wait(Config.DefaultTimeoutDuration())
-				Expect(listService).To(Exit(0))
-				Expect(listService).To(Say(serviceInstanceName))
 			})
 		})
 
