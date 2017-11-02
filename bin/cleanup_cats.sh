@@ -35,5 +35,3 @@ while [  $COUNTER -lt 6 ]; do
 
   let COUNTER=COUNTER+1
 done
-
-

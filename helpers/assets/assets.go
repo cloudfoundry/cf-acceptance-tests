@@ -28,6 +28,7 @@ type Assets struct {
 	WorkerApp                string
 	MultiPortApp             string
 	SpringSleuthZip          string
+	NimbusServices           string
 }
 
 func NewAssets() Assets {
@@ -59,5 +60,6 @@ func NewAssets() Assets {
 		WorkerApp:              "assets/worker-app",
 		MultiPortApp:           "assets/multi-port-app",
 		SpringSleuthZip:        "assets/spring-sleuth/spring-sleuth.jar",
+		NimbusServices:			"assets/nimbus_services",
 	}
 }
