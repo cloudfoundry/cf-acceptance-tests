@@ -31,7 +31,7 @@ func (droplet *AppDroplet) DownloadTo(downloadPath string) (string, error) {
 	dropletTarballPath := fmt.Sprintf("%s.tar.gz", downloadPath)
 	downloadUrl := fmt.Sprintf("/v2/apps/%s/droplet/download", droplet.appGuid)
 
-	err := download.DownloadWithRedirect(downloadUrl, dropletTarballPath, droplet.config)
+	err := download.WithRedirect(downloadUrl, dropletTarballPath, droplet.config)
 	return dropletTarballPath, err
 }
 

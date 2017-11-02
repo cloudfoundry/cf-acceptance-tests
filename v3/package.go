@@ -7,6 +7,8 @@ import (
 	"os"
 	"path"
 
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/download"
+
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -81,8 +83,9 @@ var _ = V3Describe("package features", func() {
 			app_package_path := path.Join(tmpdir, destinationAppName)
 
 			// DOWNLOAD
-			session = cf.Cf("curl", fmt.Sprintf("/v3/packages/%s/download", copiedPackageGuid), "--output", app_package_path).Wait(Config.DefaultTimeoutDuration())
-			Expect(session).To(Exit(0))
+			downloadURL := fmt.Sprintf("/v3/packages/%s/download", copiedPackageGuid)
+			err = download.WithRedirect(downloadURL, app_package_path, Config)
+			Expect(err).ToNot(HaveOccurred())
 
 			session = helpers.Run("unzip", "-l", app_package_path)
 			Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))

@@ -9,7 +9,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 )
 
-func DownloadWithRedirect(url, path string, config config.CatsConfig) error {
+func WithRedirect(url, path string, config config.CatsConfig) error {
 	oauthToken := v3_helpers.GetAuthToken()
 	downloadCurl := helpers.Curl(
 		config,
