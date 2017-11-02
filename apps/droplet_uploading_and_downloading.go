@@ -74,7 +74,8 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 		By("Downloading the droplet for the app")
 		appDroplet := app_helpers.NewAppDroplet(guid, Config)
 		appDropletPath := path.Join(tmpdir, helloWorldAppName)
-		appDropletPathToCompressedFile := appDroplet.DownloadTo(appDropletPath)
+		appDropletPathToCompressedFile, err := appDroplet.DownloadTo(appDropletPath)
+		Expect(err).ToNot(HaveOccurred())
 		unpackTarball(appDropletPathToCompressedFile)
 
 		By("Pushing a different version of the app")
