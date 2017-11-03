@@ -126,8 +126,9 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 						} `json:"entity"`
 					} `json:"resources"`
 				}
-				json.Unmarshal([]byte(routeBody), &routeJSON)
+				Expect(json.Unmarshal([]byte(routeBody), &routeJSON)).To(Succeed())
 
+				Expect(len(routeJSON.Resources)).To(BeNumerically(">=", 1))
 				spaceGuid := routeJSON.Resources[0].Entity.SpaceGuid
 				domainGuid := routeJSON.Resources[0].Entity.DomainGuid
 				appGuid := cf.Cf("app", app2, "--guid").Wait(Config.DefaultTimeoutDuration()).Out.Contents()
