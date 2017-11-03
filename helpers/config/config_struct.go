@@ -64,6 +64,7 @@ type config struct {
 	IncludeNimbus                     *bool `json:"include_nimbus"`
 	IncludeNimbusServiceInternalProxy *bool `json:"include_nimbus_service_internal_proxy"`
 	IncludeNimbusNBConfig             *bool `json:"include_nimbus_nb_config"`
+	IncludeNimbusNoCache              *bool `json:"include_nimbus_no_cache"`
 
 	NimbusServiceNameInternalProxy *string `json:"nimbus_service_name_internal_proxy"`
 
@@ -180,6 +181,7 @@ func getDefaults() config {
 	defaults.IncludeNimbus = ptrToBool(true)
 	defaults.IncludeNimbusServiceInternalProxy = ptrToBool(false)
 	defaults.IncludeNimbusNBConfig = ptrToBool(false)
+	defaults.IncludeNimbusNoCache = ptrToBool(false)
 
 	defaults.NimbusServiceNameInternalProxy = ptrToString("internal-proxy")
 
@@ -741,6 +743,10 @@ func (c *config) GetNimbusServiceNameInternalProxy() string {
 
 func (c *config) GetIncludeNimbusNBConfig() bool {
 	return *c.IncludeNimbusNBConfig
+}
+
+func (c *config) GetIncludeNimbusNoCache() bool {
+	return *c.IncludeNimbusNoCache
 }
 
 func (c *config) GetRubyBuildpackName() string {

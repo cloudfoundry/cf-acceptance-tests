@@ -1,7 +1,6 @@
 package nimbus
 
 import (
-
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -9,17 +8,21 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
-
 
 var _ = NimbusDescribe("nocache=true request param", func() {
 
 	var appName string
 
 	BeforeEach(func() {
+
+		if Config.GetIncludeNimbusNoCache() != true {
+			Skip("include_nimbus_no_cache was not set to true")
+		}
+
 		appName = random_name.CATSRandomName("APP")
 		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().NimbusServices, "--no-start", "-i", "2").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
