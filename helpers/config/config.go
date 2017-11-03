@@ -38,6 +38,10 @@ type CatsConfig interface {
 	GetIncludeNimbusServiceRabbit() bool
 	GetNimbusServiceNameRabbit() string
 	GetNimbusServicePlanRabbit() string
+	GetIncludeNimbusServiceRedis() bool
+	GetNimbusServiceNameRedis() string
+	GetIncludeNimbusServiceSCMSMongo() bool
+	GetNimbusServiceNameSCMSMongo() string
 
 	GetAdminPassword() string
 	GetAdminUser() string

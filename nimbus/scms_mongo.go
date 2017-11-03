@@ -7,32 +7,36 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
-
 
 var _ = NimbusDescribe("mongo service", func() {
 
 	var appName, mongoName, orgName string
 
 	BeforeEach(func() {
+
+		if Config.GetIncludeNimbusServiceSCMSMongo() != true {
+			Skip("include_nimbus_service_scms_mongo was not set to true")
+		}
+
 		appName = random_name.CATSRandomName("APP")
 		mongoName = random_name.CATSRandomName("SVC")
 		orgName = TestSetup.RegularUserContext().Org
 
 		// as admin enable service access to scms-mongo
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
-			session := cf.Cf("enable-service-access", "scms-mongo3", "-p", "default", "-o", orgName)
+			session := cf.Cf("enable-service-access", Config.GetNimbusServiceNameSCMSMongo(), "-p", "default", "-o", orgName)
 			Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		})
 
 		// as user create and bind the scms-mongo service
 		workflowhelpers.AsUser(TestSetup.RegularUserContext(), TestSetup.ShortTimeout(), func() {
-			Expect(cf.Cf("create-service", "scms-mongo3", "default", mongoName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("create-service", Config.GetNimbusServiceNameSCMSMongo(), "default", mongoName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 			Expect(cf.Cf("push", appName, "-p", assets.NewAssets().NimbusServices, "--no-start", "-i", "2").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			Expect(cf.Cf("bind-service", appName, mongoName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
@@ -53,12 +57,11 @@ var _ = NimbusDescribe("mongo service", func() {
 		randomValue := random_name.CATSRandomName("VAL")
 
 		Eventually(func() string {
-			return helpers.CurlApp(Config, appName, "/mongo/insert/" + randomValue)
+			return helpers.CurlApp(Config, appName, "/mongo/insert/"+randomValue)
 		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("OK"))
 
-
 		Eventually(func() string {
-			return helpers.CurlApp(Config, appName, "/mongo/read/" + randomValue)
+			return helpers.CurlApp(Config, appName, "/mongo/read/"+randomValue)
 		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("OK"))
 
 	})
