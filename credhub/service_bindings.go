@@ -136,7 +136,7 @@ env
 						Name: "bin/detect",
 						Body: `#!/bin/bash
 
-exit 0
+exit 1
 `,
 					},
 					{
@@ -157,7 +157,7 @@ EOF
 				_, err = os.Create(path.Join(appPath, "some-file"))
 				Expect(err).ToNot(HaveOccurred())
 
-				createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "0").Wait(Config.DefaultTimeoutDuration())
+				createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "100").Wait(Config.DefaultTimeoutDuration())
 				Expect(createBuildpack).Should(Exit(0))
 				Expect(createBuildpack).Should(Say("Creating"))
 				Expect(createBuildpack).Should(Say("OK"))
