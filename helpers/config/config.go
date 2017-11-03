@@ -6,7 +6,6 @@ import (
 
 type CatsConfig interface {
 	GetIncludeApps() bool
-	GetIncludeNimbus() bool
 	GetIncludeBackendCompatiblity() bool
 	GetIncludeContainerNetworking() bool
 	GetIncludeDetect() bool
@@ -28,6 +27,10 @@ type CatsConfig interface {
 	GetShouldKeepUser() bool
 	GetSkipSSLValidation() bool
 	GetUseExistingUser() bool
+
+	GetIncludeNimbus() bool
+	GetIncludeNimbusServiceInternalProxy() bool
+	GetNimbusServiceNameInternalProxy() string
 
 	GetAdminPassword() string
 	GetAdminUser() string

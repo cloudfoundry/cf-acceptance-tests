@@ -61,8 +61,12 @@ type config struct {
 	RubyBuildpackName       *string `json:"ruby_buildpack_name"`
 	StaticFileBuildpackName *string `json:"staticfile_buildpack_name"`
 
-	IncludeApps                       *bool `json:"include_apps"`
 	IncludeNimbus                     *bool `json:"include_nimbus"`
+	IncludeNimbusServiceInternalProxy *bool `json:"include_nimbus_service_internal_proxy"`
+
+	NimbusServiceNameInternalProxy *string `json:"nimbus_service_name_internal_proxy"`
+
+	IncludeApps                       *bool `json:"include_apps"`
 	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
 	IncludeContainerNetworking        *bool `json:"include_container_networking"`
 	IncludeDetect                     *bool `json:"include_detect"`
@@ -127,7 +131,6 @@ func getDefaults() config {
 	defaults.StaticFileBuildpackName = ptrToString("staticfile_buildpack")
 
 	defaults.IncludeApps = ptrToBool(true)
-	defaults.IncludeNimbus = ptrToBool(true)
 	defaults.IncludeDetect = ptrToBool(true)
 	defaults.IncludePersistentApp = ptrToBool(true)
 	defaults.IncludeRouting = ptrToBool(true)
@@ -172,6 +175,11 @@ func getDefaults() config {
 	defaults.PrivateDockerRegistryImage = ptrToString("")
 	defaults.PrivateDockerRegistryUsername = ptrToString("")
 	defaults.PrivateDockerRegistryPassword = ptrToString("")
+
+	defaults.IncludeNimbus = ptrToBool(true)
+	defaults.IncludeNimbusServiceInternalProxy = ptrToBool(false)
+
+	defaults.NimbusServiceNameInternalProxy = ptrToString("internal-proxy")
 
 	defaults.NamePrefix = ptrToString("CATS")
 	return defaults
@@ -719,6 +727,14 @@ func (c *config) GetIncludeIsolationSegments() bool {
 
 func (c *config) GetIncludeNimbus() bool {
 	return *c.IncludeNimbus
+}
+
+func (c *config) GetIncludeNimbusServiceInternalProxy() bool {
+	return *c.IncludeNimbusServiceInternalProxy
+}
+
+func (c *config) GetNimbusServiceNameInternalProxy() string {
+	return *c.NimbusServiceNameInternalProxy
 }
 
 func (c *config) GetRubyBuildpackName() string {
