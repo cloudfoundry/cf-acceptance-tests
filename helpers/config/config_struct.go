@@ -66,9 +66,12 @@ type config struct {
 	IncludeNimbusNBConfig             *bool `json:"include_nimbus_nb_config"`
 	IncludeNimbusNoCache              *bool `json:"include_nimbus_no_cache"`
 	IncludeNimbusServicePostgres      *bool `json:"include_nimbus_service_postgres"`
+	IncludeNimbusServiceRabbit        *bool `json:"include_nimbus_service_rabbit"`
 
 	NimbusServiceNameInternalProxy *string `json:"nimbus_service_name_internal_proxy"`
 	NimbusServiceNamePostgres      *string `json:"nimbus_service_name_postgres"`
+	NimbusServiceNameRabbit        *string `json:"nimbus_service_name_rabbit"`
+	NimbusServicePlanRabbit        *string `json:"nimbus_service_plan_rabbit"`
 
 	IncludeApps                       *bool `json:"include_apps"`
 	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
@@ -185,9 +188,12 @@ func getDefaults() config {
 	defaults.IncludeNimbusNBConfig = ptrToBool(false)
 	defaults.IncludeNimbusNoCache = ptrToBool(false)
 	defaults.IncludeNimbusServicePostgres = ptrToBool(false)
+	defaults.IncludeNimbusServiceRabbit = ptrToBool(false)
 
 	defaults.NimbusServiceNameInternalProxy = ptrToString("internal-proxy")
 	defaults.NimbusServiceNamePostgres = ptrToString("postgresql94")
+	defaults.NimbusServiceNameRabbit = ptrToString("l2-rabbitmq")
+	defaults.NimbusServicePlanRabbit = ptrToString("default")
 
 	defaults.NamePrefix = ptrToString("CATS")
 	return defaults
@@ -759,6 +765,18 @@ func (c *config) GetIncludeNimbusServicePostgres() bool {
 
 func (c *config) GetNimbusServiceNamePostgres() string {
 	return *c.NimbusServiceNamePostgres
+}
+
+func (c *config) GetIncludeNimbusServiceRabbit() bool {
+	return *c.IncludeNimbusServiceRabbit
+}
+
+func (c *config) GetNimbusServiceNameRabbit() string {
+	return *c.NimbusServiceNameRabbit
+}
+
+func (c *config) GetNimbusServicePlanRabbit() string {
+	return *c.NimbusServicePlanRabbit
 }
 
 func (c *config) GetRubyBuildpackName() string {
