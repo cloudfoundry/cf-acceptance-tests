@@ -8,21 +8,25 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
-
 
 var _ = NimbusDescribe("postgresql service", func() {
 
 	var appName, postgresName string
 
 	BeforeEach(func() {
+
+		if Config.GetIncludeNimbusServicePostgres() != true {
+			Skip("include_nimbus_service_postgres was not set to true")
+		}
+
 		appName = random_name.CATSRandomName("APP")
 		postgresName = random_name.CATSRandomName("SVC")
 
-		Expect(cf.Cf("create-service", "postgresql94", "default", postgresName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("create-service", Config.GetNimbusServiceNamePostgres(), "default", postgresName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().NimbusServices, "--no-start", "-i", "2").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Expect(cf.Cf("bind-service", appName, postgresName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
@@ -41,12 +45,11 @@ var _ = NimbusDescribe("postgresql service", func() {
 		randomValue := random_name.CATSRandomName("VAL")
 
 		Eventually(func() string {
-			return helpers.CurlApp(Config, appName, "/postgres/insert/" + randomValue)
+			return helpers.CurlApp(Config, appName, "/postgres/insert/"+randomValue)
 		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("OK"))
 
-
 		Eventually(func() string {
-			return helpers.CurlApp(Config, appName, "/postgres/read/" + randomValue)
+			return helpers.CurlApp(Config, appName, "/postgres/read/"+randomValue)
 		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("OK"))
 	})
 

@@ -33,6 +33,8 @@ type CatsConfig interface {
 	GetNimbusServiceNameInternalProxy() string
 	GetIncludeNimbusNBConfig() bool
 	GetIncludeNimbusNoCache() bool
+	GetIncludeNimbusServicePostgres() bool
+	GetNimbusServiceNamePostgres() string
 
 	GetAdminPassword() string
 	GetAdminUser() string
