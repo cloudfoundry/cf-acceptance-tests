@@ -29,6 +29,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			serviceInstanceName string
 			serviceInstanceGuid string
 			appName             string
+			userASpaceName      string
 		)
 
 		BeforeEach(func() {
@@ -37,6 +38,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 				assets.NewAssets().ServiceBroker,
 				TestSetup,
 			)
+
 			broker.Push(Config)
 			broker.Configure()
 			broker.Create()
@@ -49,7 +51,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 				Expect(target).To(Exit(0), "failed targeting")
 
 				By("Creating a space that only User A can view")
-				userASpaceName := random_name.CATSRandomName("SPACE")
+				userASpaceName = random_name.CATSRandomName("SPACE")
 				createSpace := cf.Cf("create-space", userASpaceName, "-o", orgName).Wait(Config.DefaultTimeoutDuration())
 				Expect(createSpace).To(Exit(0), "failed to create space")
 
@@ -66,6 +68,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 				serviceInstanceGuid = getGuidFor("service", serviceInstanceName)
 				userBSpaceGuid := getGuidFor("space", TestSetup.RegularUserContext().Space)
 
+				//This should be replaced by the CLI command when available
 				shareSpace := cf.Cf("curl",
 					fmt.Sprintf("/v3/service_instances/%s/relationships/shared_spaces", serviceInstanceGuid),
 					"-X", "POST", "-d", fmt.Sprintf(`{ "data": [ { "guid": "%s" } ] }`, userBSpaceGuid)).Wait(Config.DefaultTimeoutDuration())
@@ -99,6 +102,57 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 				Expect(serviceCmd).To(Exit(0))
 				Expect(serviceCmd).To(Say("Service instance: " + serviceInstanceName))
 				Expect(serviceCmd).To(Say("Service: " + broker.Service.Name))
+			})
+		})
+
+		It("allows User A to view share information about the service instance", func() {
+			By("Asserting User B can bind to the shared service")
+			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
+				appName = random_name.CATSRandomName("APP")
+				Expect(cf.Cf("push",
+					appName,
+					"-b", Config.GetBinaryBuildpackName(),
+					"-m", DEFAULT_MEMORY_LIMIT,
+					"-p", assets.NewAssets().Catnip,
+					"-c", "./catnip",
+					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
+				Expect(bindCmd).To(Exit(0))
+				Expect(bindCmd).To(Say("OK"))
+			})
+
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				By("Asserting the User A sees the share information for the shared service")
+				orgName := TestSetup.RegularUserContext().Org
+
+				target := cf.Cf("target", "-o", orgName, "-s", userASpaceName).Wait(Config.DefaultTimeoutDuration())
+				Expect(target).To(Exit(0))
+
+				serviceInstanceGuid = getGuidFor("service", serviceInstanceName)
+
+				//This should be replaced by the CLI command when available
+				sharedToCmd := cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/shared_to", serviceInstanceGuid)).Wait(Config.DefaultTimeoutDuration())
+				Expect(sharedToCmd).To(Exit(0))
+				Expect(sharedToCmd).To(Say(TestSetup.RegularUserContext().Space))
+
+				type sharedInfo struct {
+					OrgName       string `json:"organization_name"`
+					SpaceName     string `json:"space_name"`
+					BoundAppCount int    `json:"bound_app_count"`
+				}
+
+				type sharedToResponse struct {
+					Resources []sharedInfo
+				}
+
+				var sharedTo sharedToResponse
+				json.Unmarshal(sharedToCmd.Out.Contents(), &sharedTo)
+
+				Expect(sharedTo.Resources).To(HaveLen(1))
+				Expect(sharedTo.Resources[0].OrgName).To(Equal(orgName))
+				Expect(sharedTo.Resources[0].SpaceName).To(Equal(TestSetup.RegularUserContext().Space))
+				Expect(sharedTo.Resources[0].BoundAppCount).To(Equal(1))
 			})
 		})
 
@@ -180,13 +234,13 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			By("Unsharing the service as User A")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				orgName := TestSetup.RegularUserContext().Org
-				spaceName := TestSetup.RegularUserContext().Space
 
-				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+				target := cf.Cf("target", "-o", orgName, "-s", userASpaceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(target).To(Exit(0))
 
 				userBSpaceGuid := getGuidFor("space", TestSetup.RegularUserContext().Space)
 
+				//This should be replaced by the CLI command when available
 				unshareSpace := cf.Cf("curl",
 					fmt.Sprintf("/v3/service_instances/%s/relationships/shared_spaces/%s", serviceInstanceGuid, userBSpaceGuid),
 					"-X", "DELETE").Wait(Config.DefaultTimeoutDuration())
