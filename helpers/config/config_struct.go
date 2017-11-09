@@ -71,6 +71,7 @@ type config struct {
 	IncludeNimbusServiceSCMSMongo     *bool `json:"include_nimbus_service_scms_mongo"`
 	IncludeNimbusServiceCassandra     *bool `json:"include_nimbus_service_cassandra"`
 	IncludeNimbusServiceMySQL         *bool `json:"include_nimbus_service_mysql"`
+	IncludeNimbusServiceOCPShopRedis  *bool `json:"include_nimbus_service_ocp_shop_redis"`
 
 	NimbusServiceNameInternalProxy *string `json:"nimbus_service_name_internal_proxy"`
 	NimbusServiceNamePostgres      *string `json:"nimbus_service_name_postgres"`
@@ -81,6 +82,7 @@ type config struct {
 	NimbusServiceNameCassandra     *string `json:"nimbus_service_name_cassandra"`
 	NimbusServicePlanCassandra     *string `json:"nimbus_service_plan_cassandra"`
 	NimbusServiceNameMySQL         *string `json:"nimbus_service_name_mysql"`
+	NimbusServiceNameOCPShopRedis  *string `json:"nimbus_service_name_ocp_shop_redis"`
 
 	IncludeApps                       *bool `json:"include_apps"`
 	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
@@ -202,6 +204,7 @@ func getDefaults() config {
 	defaults.IncludeNimbusServiceSCMSMongo = ptrToBool(false)
 	defaults.IncludeNimbusServiceCassandra = ptrToBool(false)
 	defaults.IncludeNimbusServiceMySQL = ptrToBool(false)
+	defaults.IncludeNimbusServiceOCPShopRedis = ptrToBool(false)
 
 	defaults.NimbusServiceNameInternalProxy = ptrToString("internal-proxy")
 	defaults.NimbusServiceNamePostgres = ptrToString("postgresql94")
@@ -212,6 +215,7 @@ func getDefaults() config {
 	defaults.NimbusServiceNameCassandra = ptrToString("cassandra")
 	defaults.NimbusServicePlanCassandra = ptrToString("default")
 	defaults.NimbusServiceNameMySQL = ptrToString("l2-mysql")
+	defaults.NimbusServiceNameOCPShopRedis = ptrToString("ocpshop-redis")
 
 	defaults.NamePrefix = ptrToString("CATS")
 	return defaults
@@ -831,6 +835,14 @@ func (c *config) GetIncludeNimbusServiceMySQL() bool {
 
 func (c *config) GetNimbusServiceNameMySQL() string {
 	return *c.NimbusServiceNameMySQL
+}
+
+func (c *config) GetIncludeNimbusServiceOCPShopRedis() bool {
+	return *c.IncludeNimbusServiceOCPShopRedis
+}
+
+func (c *config) GetNimbusServiceNameOCPShopRedis() string {
+	return *c.NimbusServiceNameOCPShopRedis
 }
 
 func (c *config) GetRubyBuildpackName() string {

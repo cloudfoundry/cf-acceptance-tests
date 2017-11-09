@@ -47,6 +47,8 @@ type CatsConfig interface {
 	GetNimbusServicePlanCassandra() string
 	GetIncludeNimbusServiceMySQL() bool
 	GetNimbusServiceNameMySQL() string
+	GetIncludeNimbusServiceOCPShopRedis() bool
+	GetNimbusServiceNameOCPShopRedis() string
 
 	GetAdminPassword() string
 	GetAdminUser() string
