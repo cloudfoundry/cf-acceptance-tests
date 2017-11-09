@@ -42,6 +42,9 @@ type CatsConfig interface {
 	GetNimbusServiceNameRedis() string
 	GetIncludeNimbusServiceSCMSMongo() bool
 	GetNimbusServiceNameSCMSMongo() string
+	GetIncludeNimbusServiceCassandra() bool
+	GetNimbusServiceNameCassandra() string
+	GetNimbusServicePlanCassandra() string
 
 	GetAdminPassword() string
 	GetAdminUser() string

@@ -69,6 +69,7 @@ type config struct {
 	IncludeNimbusServiceRabbit        *bool `json:"include_nimbus_service_rabbit"`
 	IncludeNimbusServiceRedis         *bool `json:"include_nimbus_service_redis"`
 	IncludeNimbusServiceSCMSMongo     *bool `json:"include_nimbus_service_scms_mongo"`
+	IncludeNimbusServiceCassandra     *bool `json:"include_nimbus_service_cassandra"`
 
 	NimbusServiceNameInternalProxy *string `json:"nimbus_service_name_internal_proxy"`
 	NimbusServiceNamePostgres      *string `json:"nimbus_service_name_postgres"`
@@ -76,6 +77,8 @@ type config struct {
 	NimbusServicePlanRabbit        *string `json:"nimbus_service_plan_rabbit"`
 	NimbusServiceNameRedis         *string `json:"nimbus_service_name_redis"`
 	NimbusServiceNameSCMSMongo     *string `json:"nimbus_service_name_scms_mongo"`
+	NimbusServiceNameCassandra     *string `json:"nimbus_service_name_cassandra"`
+	NimbusServicePlanCassandra     *string `json:"nimbus_service_plan_cassandra"`
 
 	IncludeApps                       *bool `json:"include_apps"`
 	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
@@ -195,6 +198,7 @@ func getDefaults() config {
 	defaults.IncludeNimbusServiceRabbit = ptrToBool(false)
 	defaults.IncludeNimbusServiceRedis = ptrToBool(false)
 	defaults.IncludeNimbusServiceSCMSMongo = ptrToBool(false)
+	defaults.IncludeNimbusServiceCassandra = ptrToBool(false)
 
 	defaults.NimbusServiceNameInternalProxy = ptrToString("internal-proxy")
 	defaults.NimbusServiceNamePostgres = ptrToString("postgresql94")
@@ -202,6 +206,8 @@ func getDefaults() config {
 	defaults.NimbusServicePlanRabbit = ptrToString("default")
 	defaults.NimbusServiceNameRedis = ptrToString("redis")
 	defaults.NimbusServiceNameSCMSMongo = ptrToString("scms-mongo3")
+	defaults.NimbusServiceNameCassandra = ptrToString("cassandra")
+	defaults.NimbusServicePlanCassandra = ptrToString("default")
 
 	defaults.NamePrefix = ptrToString("CATS")
 	return defaults
@@ -801,6 +807,18 @@ func (c *config) GetIncludeNimbusServiceSCMSMongo() bool {
 
 func (c *config) GetNimbusServiceNameSCMSMongo() string {
 	return *c.NimbusServiceNameSCMSMongo
+}
+
+func (c *config) GetIncludeNimbusServiceCassandra() bool {
+	return *c.IncludeNimbusServiceCassandra
+}
+
+func (c *config) GetNimbusServiceNameCassandra() string {
+	return *c.NimbusServiceNameCassandra
+}
+
+func (c *config) GetNimbusServicePlanCassandra() string {
+	return *c.NimbusServicePlanCassandra
 }
 
 func (c *config) GetRubyBuildpackName() string {
