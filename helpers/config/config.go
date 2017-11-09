@@ -49,6 +49,12 @@ type CatsConfig interface {
 	GetNimbusServiceNameMySQL() string
 	GetIncludeNimbusServiceOCPShopRedis() bool
 	GetNimbusServiceNameOCPShopRedis() string
+	GetIncludeNimbusServiceProxy() bool
+	GetNimbusServiceNameProxy() string
+	GetIncludeNimbusServiceVault() bool
+	GetNimbusServiceNameVault() string
+	GetIncludeNimbusServiceSSDMRedis() bool
+	GetNimbusServiceNameSSDMRedis() string
 
 	GetAdminPassword() string
 	GetAdminUser() string

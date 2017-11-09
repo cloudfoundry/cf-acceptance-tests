@@ -72,6 +72,9 @@ type config struct {
 	IncludeNimbusServiceCassandra     *bool `json:"include_nimbus_service_cassandra"`
 	IncludeNimbusServiceMySQL         *bool `json:"include_nimbus_service_mysql"`
 	IncludeNimbusServiceOCPShopRedis  *bool `json:"include_nimbus_service_ocp_shop_redis"`
+	IncludeNimbusServiceProxy         *bool `json:"include_nimbus_service_proxy"`
+	IncludeNimbusServiceVault         *bool `json:"include_nimbus_service_vault"`
+	IncludeNimbusServiceSSDMRedis     *bool `json:"include_nimbus_service_ssdm_redis"`
 
 	NimbusServiceNameInternalProxy *string `json:"nimbus_service_name_internal_proxy"`
 	NimbusServiceNamePostgres      *string `json:"nimbus_service_name_postgres"`
@@ -83,6 +86,9 @@ type config struct {
 	NimbusServicePlanCassandra     *string `json:"nimbus_service_plan_cassandra"`
 	NimbusServiceNameMySQL         *string `json:"nimbus_service_name_mysql"`
 	NimbusServiceNameOCPShopRedis  *string `json:"nimbus_service_name_ocp_shop_redis"`
+	NimbusServiceNameProxy         *string `json:"nimbus_service_name_proxy"`
+	NimbusServiceNameVault         *string `json:"nimbus_service_name_vault"`
+	NimbusServiceNameSSDMRedis     *string `json:"nimbus_service_name_ssdm_redis"`
 
 	IncludeApps                       *bool `json:"include_apps"`
 	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
@@ -205,6 +211,9 @@ func getDefaults() config {
 	defaults.IncludeNimbusServiceCassandra = ptrToBool(false)
 	defaults.IncludeNimbusServiceMySQL = ptrToBool(false)
 	defaults.IncludeNimbusServiceOCPShopRedis = ptrToBool(false)
+	defaults.IncludeNimbusServiceProxy = ptrToBool(false)
+	defaults.IncludeNimbusServiceVault = ptrToBool(false)
+	defaults.IncludeNimbusServiceSSDMRedis = ptrToBool(false)
 
 	defaults.NimbusServiceNameInternalProxy = ptrToString("internal-proxy")
 	defaults.NimbusServiceNamePostgres = ptrToString("postgresql94")
@@ -216,6 +225,9 @@ func getDefaults() config {
 	defaults.NimbusServicePlanCassandra = ptrToString("default")
 	defaults.NimbusServiceNameMySQL = ptrToString("l2-mysql")
 	defaults.NimbusServiceNameOCPShopRedis = ptrToString("ocpshop-redis")
+	defaults.NimbusServiceNameProxy = ptrToString("proxy")
+	defaults.NimbusServiceNameVault = ptrToString("vault-ha")
+	defaults.NimbusServiceNameSSDMRedis = ptrToString("ssdm-redis")
 
 	defaults.NamePrefix = ptrToString("CATS")
 	return defaults
@@ -843,6 +855,30 @@ func (c *config) GetIncludeNimbusServiceOCPShopRedis() bool {
 
 func (c *config) GetNimbusServiceNameOCPShopRedis() string {
 	return *c.NimbusServiceNameOCPShopRedis
+}
+
+func (c *config) GetIncludeNimbusServiceProxy() bool {
+	return *c.IncludeNimbusServiceProxy
+}
+
+func (c *config) GetNimbusServiceNameProxy() string {
+	return *c.NimbusServiceNameProxy
+}
+
+func (c *config) GetIncludeNimbusServiceVault() bool {
+	return *c.IncludeNimbusServiceVault
+}
+
+func (c *config) GetNimbusServiceNameVault() string {
+	return *c.NimbusServiceNameVault
+}
+
+func (c *config) GetIncludeNimbusServiceSSDMRedis() bool {
+	return *c.IncludeNimbusServiceSSDMRedis
+}
+
+func (c *config) GetNimbusServiceNameSSDMRedis() string {
+	return *c.NimbusServiceNameSSDMRedis
 }
 
 func (c *config) GetRubyBuildpackName() string {
