@@ -70,6 +70,7 @@ type config struct {
 	IncludeNimbusServiceRedis         *bool `json:"include_nimbus_service_redis"`
 	IncludeNimbusServiceSCMSMongo     *bool `json:"include_nimbus_service_scms_mongo"`
 	IncludeNimbusServiceCassandra     *bool `json:"include_nimbus_service_cassandra"`
+	IncludeNimbusServiceMySQL         *bool `json:"include_nimbus_service_mysql"`
 
 	NimbusServiceNameInternalProxy *string `json:"nimbus_service_name_internal_proxy"`
 	NimbusServiceNamePostgres      *string `json:"nimbus_service_name_postgres"`
@@ -79,6 +80,7 @@ type config struct {
 	NimbusServiceNameSCMSMongo     *string `json:"nimbus_service_name_scms_mongo"`
 	NimbusServiceNameCassandra     *string `json:"nimbus_service_name_cassandra"`
 	NimbusServicePlanCassandra     *string `json:"nimbus_service_plan_cassandra"`
+	NimbusServiceNameMySQL         *string `json:"nimbus_service_name_mysql"`
 
 	IncludeApps                       *bool `json:"include_apps"`
 	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
@@ -199,6 +201,7 @@ func getDefaults() config {
 	defaults.IncludeNimbusServiceRedis = ptrToBool(false)
 	defaults.IncludeNimbusServiceSCMSMongo = ptrToBool(false)
 	defaults.IncludeNimbusServiceCassandra = ptrToBool(false)
+	defaults.IncludeNimbusServiceMySQL = ptrToBool(false)
 
 	defaults.NimbusServiceNameInternalProxy = ptrToString("internal-proxy")
 	defaults.NimbusServiceNamePostgres = ptrToString("postgresql94")
@@ -208,6 +211,7 @@ func getDefaults() config {
 	defaults.NimbusServiceNameSCMSMongo = ptrToString("scms-mongo3")
 	defaults.NimbusServiceNameCassandra = ptrToString("cassandra")
 	defaults.NimbusServicePlanCassandra = ptrToString("default")
+	defaults.NimbusServiceNameMySQL = ptrToString("l2-mysql")
 
 	defaults.NamePrefix = ptrToString("CATS")
 	return defaults
@@ -819,6 +823,14 @@ func (c *config) GetNimbusServiceNameCassandra() string {
 
 func (c *config) GetNimbusServicePlanCassandra() string {
 	return *c.NimbusServicePlanCassandra
+}
+
+func (c *config) GetIncludeNimbusServiceMySQL() bool {
+	return *c.IncludeNimbusServiceMySQL
+}
+
+func (c *config) GetNimbusServiceNameMySQL() string {
+	return *c.NimbusServiceNameMySQL
 }
 
 func (c *config) GetRubyBuildpackName() string {

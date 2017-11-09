@@ -45,6 +45,8 @@ type CatsConfig interface {
 	GetIncludeNimbusServiceCassandra() bool
 	GetNimbusServiceNameCassandra() string
 	GetNimbusServicePlanCassandra() string
+	GetIncludeNimbusServiceMySQL() bool
+	GetNimbusServiceNameMySQL() string
 
 	GetAdminPassword() string
 	GetAdminUser() string
