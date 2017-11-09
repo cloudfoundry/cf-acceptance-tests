@@ -61,6 +61,20 @@ module Nimbus
         nil
       end
 
+      def memcache
+        memcache_entry = vcap_services.select { |key, _| key.include? 'memcache' }.values[0][0]
+        memcache_entry['credentials']
+      rescue
+        nil
+      end
+
+      def mysql
+        mysql_entry = vcap_services.select { |key, _| key.include? 'mysql' }.values[0][0]
+        mysql_entry['credentials']
+      rescue
+        nil
+      end
+
       def mongo
         mongo_entry = vcap_services.select { |key, _| key.include? 'mongo' }.values[0][0]
         mongo_entry['credentials']
@@ -78,6 +92,34 @@ module Nimbus
       def proxy
         proxy_entry = vcap_services.select { |key, _| key.include? 'proxy' }.values[0][0]
         proxy_entry['credentials']['http_proxy']
+      rescue
+        nil
+      end
+
+      def internalproxy
+        proxy_entry = vcap_services.select { |key, _| key.include? 'internal-proxy' }.values[0][0]
+        proxy_entry['credentials']['http_proxy']
+      rescue
+        nil
+      end
+
+      def sharedfs
+        proxy_entry = vcap_services.select { |key, _| key.include? 'sharedfs' }.values[0][0]
+        proxy_entry['credentials']
+      rescue
+        nil
+      end
+
+      def vault
+        vault_entry = vcap_services.select { |key, _| key.include? 'vault' }.values[0][0]
+        vault_entry['credentials']
+      rescue
+        nil
+      end
+
+      def cassandra
+        vault_entry = vcap_services.select { |key, _| key.include? 'cassandra' }.values[0][0]
+        vault_entry['credentials']
       rescue
         nil
       end

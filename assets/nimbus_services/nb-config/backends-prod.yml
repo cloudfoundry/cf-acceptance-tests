@@ -1,6 +1,5 @@
 ---
 backends:
-
     - name: other apps
       description: other apps
       justification: other apps
@@ -10,3 +9,12 @@ backends:
             ip: 10.106.188.4
           - dns: cfvip1.nimbus.glb.bskyb.com
             ip: 10.138.188.4
+    - name: other apps in nimbus2
+      description: other apps in nimbus2
+      justification: other apps in nimbus2
+      port: 80
+      destination:
+          - dns: cfvip1.paas.glb.sky.com
+            ip: 10.92.60.77
+          - dns: cfvip1.paas.glb.sky.com
+            ip: 10.76.60.77

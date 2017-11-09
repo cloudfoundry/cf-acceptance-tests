@@ -9,3 +9,12 @@ backends:
             ip: 10.106.188.1
           - dns: test-cfvip1.nimbus.glb.bskyb.com
             ip: 10.138.188.1
+    - name: other apps in nimbus2
+      description: other apps in nimbus2
+      justification: other apps in nimbus2
+      port: 80
+      destination:
+          - dns: test-01-cfvip1.paas.glb.sky.com
+            ip: 10.92.60.1
+          - dns: test-01-cfvip1.paas.glb.sky.com
+            ip: 10.76.60.1

@@ -18,6 +18,7 @@ module Nimbus
       ActiveRecord::Base.logger = nil
 
       unless ActiveRecord::Base.connection.data_source_exists?(:test)
+      # unless ActiveRecord::Base.connection.table_exists?(:test)
         puts 'creating test table'
         ActiveRecord::Base.connection.create_table :test do |t|
           t.string :value
