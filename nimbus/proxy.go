@@ -26,7 +26,7 @@ var _ = NimbusDescribe("proxy service", func() {
 		appName = random_name.CATSRandomName("APP")
 		proxyName = random_name.CATSRandomName("SVC")
 
-		Expect(cf.Cf("create-service", "proxy", "default", proxyName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("create-service", Config.GetNimbusServiceNameProxy(), "default", proxyName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		Expect(cf.Cf("set-schema", proxyName, assets.NewAssets().NimbusServices+"/proxy-schema.txt").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 		Expect(cf.Cf("push", appName, "-p", assets.NewAssets().NimbusServices, "--no-start", "-i", "2").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
