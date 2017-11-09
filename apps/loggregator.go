@@ -92,7 +92,7 @@ var _ = AppsDescribe("loggregator", func() {
 		})
 	})
 
-	Context("firehose data", func() {
+	XContext("firehose data", func() {
 		It("shows logs and metrics", func() {
 			noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.GetSkipSSLValidation()}, nil)
 			msgChan := make(chan *events.Envelope, 100000)
