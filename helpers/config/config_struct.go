@@ -147,7 +147,7 @@ func getDefaults() config {
 
 	defaults.IncludeBackendCompatiblity = ptrToBool(false)
 	defaults.IncludeCapiExperimental = ptrToBool(false)
-	defaults.IncludeCapiNoBridge = ptrToBool(false)
+	defaults.IncludeCapiNoBridge = ptrToBool(true)
 	defaults.IncludeContainerNetworking = ptrToBool(false)
 	defaults.CredhubMode = ptrToString("")
 	defaults.IncludeDocker = ptrToBool(false)

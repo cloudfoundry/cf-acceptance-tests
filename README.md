@@ -269,7 +269,7 @@ To run tests that involve routing isolation segments, the following config value
 * `isolation_segment_name`
 * `isolation_segment_domain`
 
-This suite also requires `cc.diego.temporary_local_apps` be set to true in your cf configuration, as well as additional setup. Read the documentation [here](http://docs.cloudfoundry.org/adminguide/routing-is.html) for further setup details.
+Read the documentation [here](http://docs.cloudfoundry.org/adminguide/routing-is.html) for further setup details.
 
 #### Credhub Modes
 - `non-assisted` mode means that apps are responsible for resolving Credhub refs for credentials.
@@ -354,7 +354,7 @@ Test Group Name| Compatible Backend | Description
 `ssh`| Diego |This test group tests our ability to communicate with Diego apps via ssh, scp, and sftp.
 `v3`| Diego| This test group contains tests for the next-generation v3 Cloud Controller API.  As of this writing, the v3 API is not officially supported.
 `isolation_segments` | Diego | This test group requires that Diego be deployed with a minimum of 2 cells. One of those cells must have been deployed with a `placement_tag`. If the deployment has been deployed with a routing isolation segment, `isolation_segment_domain` must also be set.
-`routing_isolation_segments` | Diego | This group tests that requests to isolated apps are only routed through isolated routers, and vice versa. It requires all of the setup for the isolation segments test suite. Additionally, a minimum of two Gorouter instances must be deployed. One instance must be configured with the property `routing_table_sharding_mode: shared-and-segments`. The other instance must have the properties `routing_table_sharding_mode: segments` and `isolation_segments: [YOUR_PLACEMENT_TAG_HERE]`. The `isolation_segment_name` in the CATs properties must match the `placement_tag` and `isolation_segment`.`isolation_segment_domain` must be set and traffic to that domain should go to the isolated router. CF deployment must also be updated with the property `properties.cc.diego.temporary_local_apps: true`.
+`routing_isolation_segments` | Diego | This group tests that requests to isolated apps are only routed through isolated routers, and vice versa. It requires all of the setup for the isolation segments test suite. Additionally, a minimum of two Gorouter instances must be deployed. One instance must be configured with the property `routing_table_sharding_mode: shared-and-segments`. The other instance must have the properties `routing_table_sharding_mode: segments` and `isolation_segments: [YOUR_PLACEMENT_TAG_HERE]`. The `isolation_segment_name` in the CATs properties must match the `placement_tag` and `isolation_segment`.`isolation_segment_domain` must be set and traffic to that domain should go to the isolated router.
 `credhub`|Diego|Tests CredHub-delivered Secure Service credentials in the service binding. [CredHub configuration][credhub-secure-service-credentials] is required to run these tests.
 
 ## Contributing
