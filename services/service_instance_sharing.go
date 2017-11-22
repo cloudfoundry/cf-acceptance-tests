@@ -100,8 +100,9 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 				By("Asserting the User B sees the service instance in `cf service service-name` output")
 				serviceCmd := cf.Cf("service", serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(serviceCmd).To(Exit(0))
-				Expect(serviceCmd).To(Say("Service instance: " + serviceInstanceName))
-				Expect(serviceCmd).To(Say("Service: " + broker.Service.Name))
+				Expect(serviceCmd).To(Say(serviceInstanceName))
+				Expect(serviceCmd).To(Say(broker.Service.Name))
+				Expect(serviceCmd).To(Say("create succeeded"))
 			})
 		})
 
