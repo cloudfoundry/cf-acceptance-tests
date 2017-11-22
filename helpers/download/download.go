@@ -13,7 +13,7 @@ func WithRedirect(url, path string, config config.CatsConfig) error {
 	oauthToken := v3_helpers.GetAuthToken()
 	downloadCurl := helpers.Curl(
 		config,
-		"-v", fmt.Sprintf("%s%s", config.GetApiEndpoint(), url),
+		"-v", fmt.Sprintf("%s%s%s", config.Protocol(), config.GetApiEndpoint(), url),
 		"-H", fmt.Sprintf("Authorization: %s", oauthToken),
 		"-f",
 	).Wait(config.DefaultTimeoutDuration())
