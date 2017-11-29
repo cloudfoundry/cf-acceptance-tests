@@ -174,6 +174,17 @@ func ServicesDescribe(description string, callback func()) bool {
 	})
 }
 
+func ServiceInstanceSharingDescribe(description string, callback func()) bool {
+	return Describe("[service instance sharing]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeServiceInstanceSharing() {
+				Skip(`Skipping this test because Config.IncludeServiceInstanceSharing is set to 'false'.`)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
 func SshDescribe(description string, callback func()) bool {
 	return Describe("[ssh]", func() {
 		BeforeEach(func() {
