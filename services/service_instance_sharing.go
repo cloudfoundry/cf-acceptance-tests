@@ -222,5 +222,9 @@ var _ = ServicesDescribe("Service Instance Sharing", func() {
 
 func getGuidFor(resourceType, resourceName string) string {
 	session := cf.Cf(resourceType, resourceName, "--guid").Wait(Config.DefaultTimeoutDuration())
-	return strings.TrimSpace(string(session.Out.Contents()))
+
+	// temporary for: https://github.com/cloudfoundry/cli/issues/1271
+	out := string(session.Out.Contents())
+	outs := strings.Split(out, "\n")
+	return strings.TrimSpace(outs[len(outs)-2])
 }
