@@ -2,6 +2,7 @@ package download
 
 import (
 	"fmt"
+	"io/ioutil"
 	"regexp"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
@@ -28,7 +29,8 @@ func WithRedirect(url, path string, config config.CatsConfig) error {
 
 	matches := locationHeaderRegex.FindStringSubmatch(string(downloadCurl.Err.Contents()))
 	if len(matches) < 2 {
-		return fmt.Errorf("didn't find location for redirect")
+		ioutil.WriteFile(path, downloadCurl.Out.Contents(), 0644)
+		return nil
 	}
 
 	redirectURI := matches[1]
