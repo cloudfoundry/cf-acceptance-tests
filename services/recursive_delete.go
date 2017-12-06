@@ -60,7 +60,7 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
+				"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())
 			Expect(createApp).To(Exit(0), "failed creating app")
 			app_helpers.SetBackend(appName)
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))

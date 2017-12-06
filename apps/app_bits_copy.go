@@ -27,13 +27,13 @@ var _ = AppsDescribe("Copy app bits", func() {
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Golang,
 			"-d", Config.GetAppsDomain(),
-		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		Expect(cf.Cf("push", helloWorldAppName,
 			"--no-start",
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().HelloWorld,
 			"-d", Config.GetAppsDomain(),
-		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {
