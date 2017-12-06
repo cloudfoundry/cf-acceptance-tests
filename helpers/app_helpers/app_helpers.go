@@ -37,16 +37,6 @@ func DisableDiego(appName string) {
 	Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": false}`), Config.DefaultTimeoutDuration()).Should(Exit(0))
 }
 
-func DisableDiegoAndCheckResponse(appName, expectedSubstring string) {
-	guid := GetAppGuid(appName)
-	Eventually(func() string {
-		response := cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego":false}`)
-		Expect(response.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-
-		return string(response.Out.Contents())
-	}, Config.DefaultTimeoutDuration(), "1s").Should(ContainSubstring(expectedSubstring))
-}
-
 func AppReport(appName string, timeout time.Duration) {
 	if appName == "" {
 		return
