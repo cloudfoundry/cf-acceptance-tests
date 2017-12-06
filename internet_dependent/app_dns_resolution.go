@@ -32,7 +32,7 @@ func pushApp(appName, buildpack string) {
 		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", assets.NewAssets().Catnip,
 		"-c", "./catnip",
-		"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	app_helpers.SetBackend(appName)
 }
 
