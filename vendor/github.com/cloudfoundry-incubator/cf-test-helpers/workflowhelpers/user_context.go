@@ -13,6 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
+	"github.com/onsi/ginkgo"
 )
 
 type userValues interface {
@@ -70,7 +71,10 @@ func (uc UserContext) Login() {
 	session := internal.Cf(uc.CommandStarter, args...)
 	EventuallyWithOffset(1, session, uc.Timeout).Should(Exit(0))
 
-	session = workflowhelpersinternal.CfAuth(uc.CommandStarter, uc.TestUser.Username(), uc.TestUser.Password())
+	redactor := internal.NewRedactor(uc.TestUser.Password())
+	redactingReporter := internal.NewRedactingReporter(ginkgo.GinkgoWriter, redactor)
+
+	session = workflowhelpersinternal.CfAuth(uc.CommandStarter, redactingReporter, uc.TestUser.Username(), uc.TestUser.Password())
 	EventuallyWithOffset(1, session, uc.Timeout).Should(Exit(0))
 }
 
