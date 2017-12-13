@@ -71,8 +71,9 @@ func NewTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSuiteSetup {
 	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
 	regularUserContext := NewUserContext(config.GetApiEndpoint(), testUser, testSpace, config.GetSkipSSLValidation(), shortTimeout)
 	adminUserContext := NewUserContext(config.GetApiEndpoint(), adminUser, nil, config.GetSkipSSLValidation(), shortTimeout)
+	skipUserCreation := config.GetUseExistingUser()
 
-	return NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext, false)
+	return NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext, skipUserCreation)
 }
 
 func NewSmokeTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSuiteSetup {
@@ -103,8 +104,9 @@ func NewPersistentAppTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSui
 	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
 	regularUserContext := NewUserContext(config.GetApiEndpoint(), testUser, testSpace, config.GetSkipSSLValidation(), shortTimeout)
 	adminUserContext := NewUserContext(config.GetApiEndpoint(), adminUser, nil, config.GetSkipSSLValidation(), shortTimeout)
+	skipUserCreation := config.GetUseExistingUser()
 
-	testSuiteSetup := NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext, false)
+	testSuiteSetup := NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext, skipUserCreation)
 	testSuiteSetup.isPersistent = true
 
 	return testSuiteSetup
@@ -118,8 +120,9 @@ func NewRunawayAppTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSuiteS
 	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
 	regularUserContext := NewUserContext(config.GetApiEndpoint(), testUser, testSpace, config.GetSkipSSLValidation(), shortTimeout)
 	adminUserContext := NewUserContext(config.GetApiEndpoint(), adminUser, nil, config.GetSkipSSLValidation(), shortTimeout)
+	skipUserCreation := config.GetUseExistingUser()
 
-	return NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext, false)
+	return NewBaseTestSuiteSetup(config, testSpace, testUser, regularUserContext, adminUserContext, skipUserCreation)
 }
 
 func NewBaseTestSuiteSetup(config testSuiteConfig, testSpace internal.Space, testUser remoteResource, regularUserContext, adminUserContext UserContext, skipUserCreation bool) *ReproducibleTestSuiteSetup {
