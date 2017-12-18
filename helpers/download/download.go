@@ -22,7 +22,7 @@ func WithRedirect(url, path string, config config.CatsConfig) error {
 		return fmt.Errorf("curl exited with code: %d", downloadCurl.ExitCode())
 	}
 
-	locationHeaderRegex, err := regexp.Compile("Location: (.*)\r\n")
+	locationHeaderRegex, err := regexp.Compile("(?i)Location: (.*)\r\n")
 	if err != nil {
 		return err
 	}
