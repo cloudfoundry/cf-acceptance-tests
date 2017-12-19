@@ -3,7 +3,6 @@ package services_test
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
