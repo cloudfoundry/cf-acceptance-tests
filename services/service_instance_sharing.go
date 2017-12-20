@@ -29,6 +29,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			serviceInstanceName string
 			serviceInstanceGuid string
 			appName             string
+			userASpaceName      string
 		)
 
 		BeforeEach(func() {
@@ -37,6 +38,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 				assets.NewAssets().ServiceBroker,
 				TestSetup,
 			)
+
 			broker.Push(Config)
 			broker.Configure()
 			broker.Create()
@@ -49,7 +51,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 				Expect(target).To(Exit(0), "failed targeting")
 
 				By("Creating a space that only User A can view")
-				userASpaceName := random_name.CATSRandomName("SPACE")
+				userASpaceName = random_name.CATSRandomName("SPACE")
 				createSpace := cf.Cf("create-space", userASpaceName, "-o", orgName).Wait(Config.DefaultTimeoutDuration())
 				Expect(createSpace).To(Exit(0), "failed to create space")
 
@@ -66,6 +68,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 				serviceInstanceGuid = getGuidFor("service", serviceInstanceName)
 				userBSpaceGuid := getGuidFor("space", TestSetup.RegularUserContext().Space)
 
+				//This should be replaced by the CLI command when available
 				shareSpace := cf.Cf("curl",
 					fmt.Sprintf("/v3/service_instances/%s/relationships/shared_spaces", serviceInstanceGuid),
 					"-X", "POST", "-d", fmt.Sprintf(`{ "data": [ { "guid": "%s" } ] }`, userBSpaceGuid)).Wait(Config.DefaultTimeoutDuration())
@@ -87,13 +90,75 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			}
 		})
 
+		It("allows User B to view the shared service", func() {
+			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
+				By("Asserting the User B sees the service instance listed in `cf services`")
+				servicesCmd := cf.Cf("services").Wait(Config.DefaultTimeoutDuration())
+				Expect(servicesCmd).To(Exit(0))
+				Expect(servicesCmd).To(Say(serviceInstanceName))
+
+				By("Asserting the User B sees the service instance in `cf service service-name` output")
+				serviceCmd := cf.Cf("service", serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
+				Expect(serviceCmd).To(Exit(0))
+				Expect(serviceCmd).To(Say(serviceInstanceName))
+				Expect(serviceCmd).To(Say(broker.Service.Name))
+				Expect(serviceCmd).To(Say("create succeeded"))
+			})
+		})
+
+		It("allows User A to view share information about the service instance", func() {
+			By("Asserting User B can bind to the shared service")
+			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
+				appName = random_name.CATSRandomName("APP")
+				Expect(cf.Cf("push",
+					appName,
+					"-b", Config.GetBinaryBuildpackName(),
+					"-m", DEFAULT_MEMORY_LIMIT,
+					"-p", assets.NewAssets().Catnip,
+					"-c", "./catnip",
+					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
+				Expect(bindCmd).To(Exit(0))
+				Expect(bindCmd).To(Say("OK"))
+			})
+
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				By("Asserting the User A sees the share information for the shared service")
+				orgName := TestSetup.RegularUserContext().Org
+
+				target := cf.Cf("target", "-o", orgName, "-s", userASpaceName).Wait(Config.DefaultTimeoutDuration())
+				Expect(target).To(Exit(0))
+
+				serviceInstanceGuid = getGuidFor("service", serviceInstanceName)
+
+				//This should be replaced by the CLI command when available
+				sharedToCmd := cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/shared_to", serviceInstanceGuid)).Wait(Config.DefaultTimeoutDuration())
+				Expect(sharedToCmd).To(Exit(0))
+				Expect(sharedToCmd).To(Say(TestSetup.RegularUserContext().Space))
+
+				type sharedInfo struct {
+					OrgName       string `json:"organization_name"`
+					SpaceName     string `json:"space_name"`
+					BoundAppCount int    `json:"bound_app_count"`
+				}
+
+				type sharedToResponse struct {
+					Resources []sharedInfo
+				}
+
+				var sharedTo sharedToResponse
+				json.Unmarshal(sharedToCmd.Out.Contents(), &sharedTo)
+
+				Expect(sharedTo.Resources).To(HaveLen(1))
+				Expect(sharedTo.Resources[0].OrgName).To(Equal(orgName))
+				Expect(sharedTo.Resources[0].SpaceName).To(Equal(TestSetup.RegularUserContext().Space))
+				Expect(sharedTo.Resources[0].BoundAppCount).To(Equal(1))
+			})
+		})
+
 		It("allows User B to bind an app to the shared service instance", func() {
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
-				By("Asserting the User B can see the shared service")
-				spaceCmd := cf.Cf("services").Wait(Config.DefaultTimeoutDuration())
-				Expect(spaceCmd).To(Exit(0))
-				Expect(spaceCmd).To(Say(serviceInstanceName))
-
 				By("Asserting the User B can bind to the shared service")
 				appName = random_name.CATSRandomName("APP")
 				Expect(cf.Cf("push",
@@ -104,12 +169,9 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 					"-c", "./catnip",
 					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-				appGuid := getGuidFor("app", appName)
-
-				bindCmd := cf.Cf("curl", "/v2/service_bindings", "-X", "POST", "-d",
-					fmt.Sprintf(`{ "service_instance_guid" : "%s", "app_guid": "%s" }`, serviceInstanceGuid, appGuid)).Wait(Config.DefaultTimeoutDuration())
+				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(bindCmd).To(Exit(0))
-				Expect(bindCmd).To(Say("entity"))
+				Expect(bindCmd).To(Say("OK"))
 
 				Expect(cf.Cf("restage", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 				envJSON := helpers.CurlApp(Config, appName, "/env.json")
@@ -120,7 +182,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			})
 		})
 
-		It("Allows User B to unbind an app from the shared service instance", func() {
+		It("allows User B to unbind an app from the shared service instance", func() {
 			var appGuid string
 
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
@@ -136,37 +198,18 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 
 				appGuid = getGuidFor("app", appName)
 
-				bindCmd := cf.Cf("curl", "/v2/service_bindings", "-X", "POST", "-d",
-					fmt.Sprintf(`{ "service_instance_guid" : "%s", "app_guid": "%s" }`, serviceInstanceGuid, appGuid)).Wait(Config.DefaultTimeoutDuration())
+				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(bindCmd).To(Exit(0))
-				Expect(bindCmd).To(Say("entity"))
+				Expect(bindCmd).To(Say("OK"))
 
 				Expect(cf.Cf("restage", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			})
 
-			//Target users currently do not have access to /v2/app/:guid/service_bindings so discover this as the admin
-			var bindingUrl string
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				appBindingsCmd := cf.Cf("curl", fmt.Sprintf("/v2/apps/%s/service_bindings", appGuid)).Wait(Config.DefaultTimeoutDuration())
-				Expect(appBindingsCmd).To(Exit(0))
-
-				type AppBindings struct {
-					Resources []struct {
-						Metadata struct {
-							Url string
-						}
-					}
-				}
-
-				bindings := AppBindings{}
-				json.Unmarshal(appBindingsCmd.Buffer().Contents(), &bindings)
-				bindingUrl = bindings.Resources[0].Metadata.Url
-			})
-
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
 				By("Asserting User B can unbind from the shared service")
-				unbindCmd := cf.Cf("curl", "-X", "DELETE", bindingUrl).Wait(Config.DefaultTimeoutDuration())
+				unbindCmd := cf.Cf("unbind-service", appName, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(unbindCmd).To(Exit(0))
+				Expect(unbindCmd).To(Say("OK"))
 			})
 		})
 
@@ -182,12 +225,9 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 					"-c", "./catnip",
 					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-				appGuid := getGuidFor("app", appName)
-
-				bindCmd := cf.Cf("curl", "/v2/service_bindings", "-X", "POST", "-d",
-					fmt.Sprintf(`{ "service_instance_guid" : "%s", "app_guid": "%s" }`, serviceInstanceGuid, appGuid)).Wait(Config.DefaultTimeoutDuration())
+				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(bindCmd).To(Exit(0))
-				Expect(bindCmd).To(Say("entity"))
+				Expect(bindCmd).To(Say("OK"))
 
 				Expect(cf.Cf("restage", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			})
@@ -195,19 +235,19 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			By("Unsharing the service as User A")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				orgName := TestSetup.RegularUserContext().Org
-				spaceName := TestSetup.RegularUserContext().Space
 
-				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+				target := cf.Cf("target", "-o", orgName, "-s", userASpaceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(target).To(Exit(0))
 
 				userBSpaceGuid := getGuidFor("space", TestSetup.RegularUserContext().Space)
 
-				unShareSpace := cf.Cf("curl",
+				//This should be replaced by the CLI command when available
+				unshareSpace := cf.Cf("curl",
 					fmt.Sprintf("/v3/service_instances/%s/relationships/shared_spaces/%s", serviceInstanceGuid, userBSpaceGuid),
 					"-X", "DELETE").Wait(Config.DefaultTimeoutDuration())
 
-				Expect(unShareSpace).To(Exit(0))
-				Expect(unShareSpace).ToNot(Say("errors"))
+				Expect(unshareSpace).To(Exit(0))
+				Expect(unshareSpace).ToNot(Say("errors"))
 			})
 
 			By("Asserting the User B can no longer see the service after it has been unshared")
