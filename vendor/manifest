@@ -174,7 +174,7 @@
 			"importpath": "github.com/onsi/ginkgo",
 			"repository": "https://github.com/onsi/ginkgo",
 			"vcs": "git",
-			"revision": "e185767ab450dd717718019ebe6115112af5c575",
+			"revision": "6c46eb8334b30dc55b42f1a1c725d5ce97375390",
 			"branch": "master",
 			"notests": true
 		},
