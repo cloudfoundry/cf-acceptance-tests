@@ -111,6 +111,7 @@ type config struct {
 	IncludeIsolationSegments          *bool `json:"include_isolation_segments"`
 
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image"`
+	PublicDockerRegistryImage     *string `json:"public_docker_registry_image"`
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username"`
 	PrivateDockerRegistryPassword *string `json:"private_docker_registry_password"`
 
@@ -197,6 +198,7 @@ func getDefaults() config {
 	defaults.ArtifactsDirectory = ptrToString(filepath.Join("..", "results"))
 
 	defaults.PrivateDockerRegistryImage = ptrToString("")
+	defaults.PublicDockerRegistryImage = ptrToString("cloudfoundry/diego-docker-app-custom:latest")
 	defaults.PrivateDockerRegistryUsername = ptrToString("")
 	defaults.PrivateDockerRegistryPassword = ptrToString("")
 
@@ -919,4 +921,8 @@ func (c *config) GetPrivateDockerRegistryUsername() string {
 
 func (c *config) GetPrivateDockerRegistryPassword() string {
 	return *c.PrivateDockerRegistryPassword
+}
+
+func (c *config) GetPublicDockerRegistryImage() string {
+	return *c.PublicDockerRegistryImage
 }
