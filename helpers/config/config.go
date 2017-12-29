@@ -74,6 +74,7 @@ type CatsConfig interface {
 	GetNamePrefix() string
 	GetNodejsBuildpackName() string
 	GetPrivateDockerRegistryImage() string
+	GetPublicDockerRegistryImage() string
 	GetPrivateDockerRegistryUsername() string
 	GetPrivateDockerRegistryPassword() string
 	GetPersistentAppHost() string

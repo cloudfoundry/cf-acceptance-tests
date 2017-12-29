@@ -30,7 +30,7 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 	JustBeforeEach(func() {
 		app_helpers.SetBackend(appName)
 
-		By("downloading from dockerhub (starting the app)")
+		By("downloading from docker registry (starting the app)")
 		Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 		Eventually(func() string {
 			return helpers.CurlApp(Config, appName, "/env/INSTANCE_INDEX")
@@ -54,7 +54,7 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 				"push", appName,
 				"--no-start",
 				// app is defined by cloudfoundry-incubator/diego-dockerfiles
-				"-o", "cloudfoundry/diego-docker-app-custom:latest",
+				"-o", Config.GetPublicDockerRegistryImage(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-d", Config.GetAppsDomain(),
 				"-i", "1",
@@ -84,7 +84,7 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 				"push", appName,
 				"--no-start",
 				// app is defined by cloudfoundry-incubator/diego-dockerfiles
-				"-o", "cloudfoundry/diego-docker-app-custom:latest",
+				"-o", Config.GetPublicDockerRegistryImage(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-d", Config.GetAppsDomain(),
 				"-i", "1"),
