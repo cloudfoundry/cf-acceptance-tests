@@ -121,16 +121,16 @@ var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
 		})
 	})
 
-	Context("when the correct username and password are not given", func() {
+	Context("when an incorrect username and password are given", func() {
 		BeforeEach(func() {
 			username = Config.GetPrivateDockerRegistryUsername() + "wrong"
 			password = Config.GetPrivateDockerRegistryPassword() + "wrong"
 		})
 
-		It("does not start the docker app successfully", func() {
+		It("fails to start the docker app since the credentials are invalid", func() {
 			session := cf.Cf("start", appName)
 			Eventually(session, Config.CfPushTimeoutDuration()).Should(Exit(1))
-			Expect(session).To(gbytes.Say("401 Unauthorized"))
+			Expect(session).To(gbytes.Say("invalid username/password"))
 		})
 	})
 })
