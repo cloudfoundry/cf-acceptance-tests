@@ -228,7 +228,7 @@ var _ = Describe("Config", func() {
 
 		Expect(config.GetIncludeBackendCompatiblity()).To(BeFalse())
 		Expect(config.GetIncludeCapiExperimental()).To(BeFalse())
-		Expect(config.GetIncludeCapiNoBridge()).To(BeFalse())
+		Expect(config.GetIncludeCapiNoBridge()).To(BeTrue())
 		Expect(config.GetIncludeDocker()).To(BeFalse())
 		Expect(config.GetIncludeInternetDependent()).To(BeFalse())
 		Expect(config.GetIncludeRouteServices()).To(BeFalse())
