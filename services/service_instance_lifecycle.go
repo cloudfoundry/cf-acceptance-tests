@@ -3,6 +3,7 @@ package services_test
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -34,6 +35,14 @@ type Resource struct {
 
 type Response struct {
 	Resources []Resource `json:"resources"`
+}
+
+type Binding struct {
+	Resources []struct {
+		Metadata struct {
+			URL string
+		}
+	}
 }
 
 var _ = ServicesDescribe("Service Instance Lifecycle", func() {
@@ -274,6 +283,17 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 						Expect(bindService).To(Exit(0), "failed binding app to service")
 					})
 
+					It("can retrieve parameters", func() {
+						appGUID := app_helpers.GetAppGuid(appName)
+						serviceInstanceGUID := getServiceInstanceGuid(instanceName)
+						paramsEndpoint := getParamsEndpoint(appGUID, serviceInstanceGUID)
+
+						fetchBindingParameters := cf.Cf("curl", paramsEndpoint).Wait(Config.DefaultTimeoutDuration())
+						Expect(fetchBindingParameters).To(Exit(0), "failed to fetch binding parameters")
+						Expect(fetchBindingParameters).ToNot(Say("This service does not support fetching service binding parameters."))
+						Expect(fetchBindingParameters).ToNot(Say("The service binding could not be found"))
+					})
+
 					It("can unbind service to app and check app env and events", func() {
 						unbindService := cf.Cf("unbind-service", appName, instanceName).Wait(Config.DefaultTimeoutDuration())
 						Expect(unbindService).To(Exit(0), "failed unbinding app to service")
@@ -286,7 +306,6 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					})
 				})
 			})
-
 		})
 	})
 
@@ -471,4 +490,23 @@ func checkForEvents(name string, eventNames []string) {
 	for _, eventName := range eventNames {
 		Expect(events).To(Say(eventName), "failed to find event")
 	}
+}
+
+func getServiceInstanceGuid(instanceName string) string {
+	getServiceInstanceGuid := cf.Cf("service", instanceName, "--guid")
+	Eventually(getServiceInstanceGuid, Config.DefaultTimeoutDuration()).Should(Exit(0))
+
+	serviceInstanceGuid := strings.TrimSpace(string(getServiceInstanceGuid.Out.Contents()))
+	Expect(serviceInstanceGuid).NotTo(Equal(""))
+
+	return serviceInstanceGuid
+}
+
+func getParamsEndpoint(appGUID string, instanceGUID string) string {
+	jsonResults := Binding{}
+	bindingCurl := cf.Cf("curl", fmt.Sprintf("/v2/apps/%s/service_bindings?q=service_instance_guid:%s", appGUID, instanceGUID)).Wait(Config.DefaultTimeoutDuration())
+	Expect(bindingCurl).To(Exit(0))
+	json.Unmarshal(bindingCurl.Out.Contents(), &jsonResults)
+
+	return fmt.Sprintf("%s/parameters", jsonResults.Resources[0].Metadata.URL)
 }
