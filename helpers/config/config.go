@@ -55,6 +55,10 @@ type CatsConfig interface {
 	GetNimbusServiceNameVault() string
 	GetIncludeNimbusServiceSSDMRedis() bool
 	GetNimbusServiceNameSSDMRedis() string
+	GetIncludeNimbusServiceNFS() bool
+	GetNimbusServiceNameNFS() string
+	GetNimbusServicePlanNFS() string
+	GetNimbusServiceNFSShare() string
 
 	GetAdminPassword() string
 	GetAdminUser() string

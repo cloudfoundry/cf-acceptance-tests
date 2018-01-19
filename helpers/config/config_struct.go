@@ -75,6 +75,7 @@ type config struct {
 	IncludeNimbusServiceProxy         *bool `json:"include_nimbus_service_proxy"`
 	IncludeNimbusServiceVault         *bool `json:"include_nimbus_service_vault"`
 	IncludeNimbusServiceSSDMRedis     *bool `json:"include_nimbus_service_ssdm_redis"`
+	IncludeNimbusServiceNFS           *bool `json:"include_nimbus_service_nfs"`
 
 	NimbusServiceNameInternalProxy *string `json:"nimbus_service_name_internal_proxy"`
 	NimbusServiceNamePostgres      *string `json:"nimbus_service_name_postgres"`
@@ -89,6 +90,9 @@ type config struct {
 	NimbusServiceNameProxy         *string `json:"nimbus_service_name_proxy"`
 	NimbusServiceNameVault         *string `json:"nimbus_service_name_vault"`
 	NimbusServiceNameSSDMRedis     *string `json:"nimbus_service_name_ssdm_redis"`
+	NimbusServiceNameNFS           *string `json:"nimbus_service_name_nfs"`
+	NimbusServicePlanNFS           *string `json:"nimbus_service_plan_nfs"`
+	NimbusServiceNFSShare          *string `json:"nimbus_service_nfs_share"`
 
 	IncludeApps                       *bool `json:"include_apps"`
 	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
@@ -216,6 +220,7 @@ func getDefaults() config {
 	defaults.IncludeNimbusServiceProxy = ptrToBool(false)
 	defaults.IncludeNimbusServiceVault = ptrToBool(false)
 	defaults.IncludeNimbusServiceSSDMRedis = ptrToBool(false)
+	defaults.IncludeNimbusServiceNFS = ptrToBool(false)
 
 	defaults.NimbusServiceNameInternalProxy = ptrToString("internal-proxy")
 	defaults.NimbusServiceNamePostgres = ptrToString("postgresql94")
@@ -229,7 +234,9 @@ func getDefaults() config {
 	defaults.NimbusServiceNameOCPShopRedis = ptrToString("ocpshop-redis")
 	defaults.NimbusServiceNameProxy = ptrToString("proxy")
 	defaults.NimbusServiceNameVault = ptrToString("vault-ha")
-	defaults.NimbusServiceNameSSDMRedis = ptrToString("ssdm-redis")
+	defaults.NimbusServiceNameNFS = ptrToString("nfs")
+	defaults.NimbusServicePlanNFS = ptrToString("Existing")
+	defaults.NimbusServiceNFSShare = ptrToString("")
 
 	defaults.NamePrefix = ptrToString("CATS")
 	return defaults
@@ -431,6 +438,9 @@ func validateConfig(config *config) Errors {
 	}
 	if config.NamePrefix == nil {
 		errs.Add(fmt.Errorf("* 'name_prefix' must not be null"))
+	}
+	if *config.IncludeNimbusServiceNFS == true && *config.NimbusServiceNFSShare == "" {
+		errs.Add(fmt.Errorf("* 'nimbus_service_nfs_share' must not be null"))
 	}
 
 	return errs
@@ -881,6 +891,22 @@ func (c *config) GetIncludeNimbusServiceSSDMRedis() bool {
 
 func (c *config) GetNimbusServiceNameSSDMRedis() string {
 	return *c.NimbusServiceNameSSDMRedis
+}
+
+func (c *config) GetIncludeNimbusServiceNFS() bool {
+	return *c.IncludeNimbusServiceNFS
+}
+
+func (c *config) GetNimbusServiceNameNFS() string {
+	return *c.NimbusServiceNameNFS
+}
+
+func (c *config) GetNimbusServicePlanNFS() string {
+	return *c.NimbusServicePlanNFS
+}
+
+func (c *config) GetNimbusServiceNFSShare() string {
+	return *c.NimbusServiceNFSShare
 }
 
 func (c *config) GetRubyBuildpackName() string {
