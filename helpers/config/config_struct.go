@@ -237,6 +237,7 @@ func getDefaults() config {
 	defaults.NimbusServiceNameNFS = ptrToString("nfs")
 	defaults.NimbusServicePlanNFS = ptrToString("Existing")
 	defaults.NimbusServiceNFSShare = ptrToString("")
+	defaults.NimbusServiceNameSSDMRedis = ptrToString("ssdm-redis")
 
 	defaults.NamePrefix = ptrToString("CATS")
 	return defaults
