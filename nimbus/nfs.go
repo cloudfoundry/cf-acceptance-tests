@@ -8,6 +8,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -33,41 +34,46 @@ var _ = NimbusDescribe("nfs service", func() {
 		orgName = TestSetup.RegularUserContext().Org
 		shareConfig := "{\"share\": \"" + Config.GetNimbusServiceNFSShare() + "\"}"
 
-		Expect(cf.Cf(
-			"enable-service-access",
-			Config.GetNimbusServiceNameNFS(),
-			"-p", Config.GetNimbusServicePlanNFS(),
-			"-o", orgName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			Expect(cf.Cf(
+				"enable-service-access",
+				Config.GetNimbusServiceNameNFS(),
+				"-p", Config.GetNimbusServicePlanNFS(),
+				"-o", orgName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		})
 
-		Expect(cf.Cf(
-			"create-service",
-			Config.GetNimbusServiceNameNFS(),
-			Config.GetNimbusServicePlanNFS(),
-			serviceName,
-			"-c", shareConfig).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
+			Expect(cf.Cf(
+				"create-service",
+				Config.GetNimbusServiceNameNFS(),
+				Config.GetNimbusServicePlanNFS(),
+				serviceName,
+				"-c", shareConfig).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
-		Expect(cf.Cf(
-			"push",
-			appName,
-			"-p", assets.NewAssets().Pora,
-			"-b", Config.GetGoBuildpackName(),
-			"-i", "2",
-			"--no-start").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf(
+				"push",
+				appName,
+				"-p", assets.NewAssets().Pora,
+				"-b", Config.GetGoBuildpackName(),
+				"-i", "2",
+				"--no-start").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-		Expect(cf.Cf(
-			"set-env",
-			appName,
-			"GOPACKAGENAME",
-			"pora").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf(
+				"set-env",
+				appName,
+				"GOPACKAGENAME",
+				"pora").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-		Expect(cf.Cf(
-			"bind-service",
-			appName,
-			serviceName,
-			"-c", "{\"uid\":\"1000\",\"gid\":\"1000\"}").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf(
+				"bind-service",
+				appName,
+				serviceName,
+				"-c", "{\"uid\":\"1000\",\"gid\":\"1000\"}").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
-		app_helpers.EnableDiego(appName)
-		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			app_helpers.EnableDiego(appName)
+			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		})
+
 	})
 
 	AfterEach(func() {
