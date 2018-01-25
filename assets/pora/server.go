@@ -6,7 +6,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"encoding/json"
+	"regexp"
 	"strings"
 	"path/filepath"
 	"strconv"
@@ -41,19 +41,6 @@ func main() {
 	}
 }
 
-type VCAPServices struct {
-    NFS []struct {
-        Credentials    map[string]string   `json:"credentials"`
-        Label          string              `json:"label"`
-        Name           string              `json:"name"`
-        Plan           string              `json:"plan"`
-        Provider       string              `json:"provider"`
-        SyslogDrainURL string              `json:"syslog_drain_url"`
-        Tags           []string            `json:"tags"`
-        VolumeMounts   []map[string]string `json:"volume_mounts"`
-    } `json:"nfs"`
-}
-
 type VCAPApplication struct {
 	InstanceIndex int `json:"instance_index"`
 }
@@ -62,25 +49,20 @@ func hello(res http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(res, "instance index: %s", os.Getenv("INSTANCE_INDEX"))
 }
 
-func LoadVCAPServices(input string) (VCAPServices, error) {
-    var config VCAPServices
-    configFile := strings.NewReader(input)
-
-    jsonParser := json.NewDecoder(configFile)
-    err := jsonParser.Decode(&config)
-
-    return config, err
-}
-
 func getPath() string {
-    vcapEnv := os.Getenv("VCAP_SERVICES")
-    config, err := LoadVCAPServices(vcapEnv)
-    if err != nil {
-        panic(err)
-    }
+	r, err := regexp.Compile(`"container_dir":\s*"([^"]+)"`)
+	if err != nil {
+		panic(err)
+	}
 
-    // the first mount will be used if more than one is attached
-    return config.NFS[0].VolumeMounts[0]["container_dir"]
+	vcapEnv := os.Getenv("VCAP_SERVICES")
+	match := r.FindStringSubmatch(vcapEnv)
+	if len(match) < 2 {
+		fmt.Fprintf(os.Stderr, "VCAP_SERVICES is %s", vcapEnv)
+		panic("failed to find container_dir in environment json")
+	}
+
+	return match[1]
 }
 
 func write(res http.ResponseWriter, req *http.Request) {
