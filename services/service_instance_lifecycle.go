@@ -279,19 +279,18 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 				Context("when there is an existing binding", func() {
 					BeforeEach(func() {
-						bindService := cf.Cf("bind-service", appName, instanceName).Wait(Config.DefaultTimeoutDuration())
+						bindService := cf.Cf("bind-service", appName, instanceName, "-c", "{\"max_clients\": 5}").Wait(Config.DefaultTimeoutDuration())
 						Expect(bindService).To(Exit(0), "failed binding app to service")
 					})
 
 					It("can retrieve parameters", func() {
 						appGUID := app_helpers.GetAppGuid(appName)
 						serviceInstanceGUID := getServiceInstanceGuid(instanceName)
-						paramsEndpoint := getParamsEndpoint(appGUID, serviceInstanceGUID)
+						paramsEndpoint := getBindingParamsEndpoint(appGUID, serviceInstanceGUID)
 
 						fetchBindingParameters := cf.Cf("curl", paramsEndpoint).Wait(Config.DefaultTimeoutDuration())
-						Expect(fetchBindingParameters).To(Exit(0), "failed to fetch binding parameters")
-						Expect(fetchBindingParameters).ToNot(Say("This service does not support fetching service binding parameters."))
-						Expect(fetchBindingParameters).ToNot(Say("The service binding could not be found"))
+						Expect(fetchBindingParameters).To(Say("\"max_clients\": 5"))
+						Expect(fetchBindingParameters).To(Exit(0), "failed to curl fetch binding parameters")
 					})
 
 					It("can unbind service to app and check app env and events", func() {
@@ -502,7 +501,7 @@ func getServiceInstanceGuid(instanceName string) string {
 	return serviceInstanceGuid
 }
 
-func getParamsEndpoint(appGUID string, instanceGUID string) string {
+func getBindingParamsEndpoint(appGUID string, instanceGUID string) string {
 	jsonResults := Binding{}
 	bindingCurl := cf.Cf("curl", fmt.Sprintf("/v2/apps/%s/service_bindings?q=service_instance_guid:%s", appGUID, instanceGUID)).Wait(Config.DefaultTimeoutDuration())
 	Expect(bindingCurl).To(Exit(0))
