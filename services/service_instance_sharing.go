@@ -2,8 +2,6 @@ package services_test
 
 import (
 	"encoding/json"
-	"fmt"
-	"strings"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
@@ -27,7 +25,6 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 		var (
 			broker              services.ServiceBroker
 			serviceInstanceName string
-			serviceInstanceGuid string
 			appName             string
 			userASpaceName      string
 		)
@@ -65,15 +62,12 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 				Expect(createService).To(Exit(0))
 
 				By("Sharing the service instance into User B's space")
-				serviceInstanceGuid = getGuidFor("service", serviceInstanceName)
-				userBSpaceGuid := getGuidFor("space", TestSetup.RegularUserContext().Space)
+				userBSpaceName := TestSetup.RegularUserContext().TestSpace.SpaceName()
 
-				//This should be replaced by the CLI command when available
-				shareSpace := cf.Cf("curl",
-					fmt.Sprintf("/v3/service_instances/%s/relationships/shared_spaces", serviceInstanceGuid),
-					"-X", "POST", "-d", fmt.Sprintf(`{ "data": [ { "guid": "%s" } ] }`, userBSpaceGuid)).Wait(Config.DefaultTimeoutDuration())
-				Expect(shareSpace).To(Exit(0))
-				Expect(shareSpace).To(Say("data"))
+				shareSpace := cf.Cf("v3-share-service", serviceInstanceName, "-s", userBSpaceName).Wait(Config.DefaultTimeoutDuration())
+
+				Expect(shareSpace).To(Exit(0), "failed to share")
+				Expect(shareSpace).To(Say("OK"))
 			})
 		})
 
@@ -130,30 +124,9 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 				target := cf.Cf("target", "-o", orgName, "-s", userASpaceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(target).To(Exit(0))
 
-				serviceInstanceGuid = getGuidFor("service", serviceInstanceName)
-
-				//This should be replaced by the CLI command when available
-				sharedToCmd := cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/shared_to", serviceInstanceGuid)).Wait(Config.DefaultTimeoutDuration())
+				sharedToCmd := cf.Cf("service", serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(sharedToCmd).To(Exit(0))
-				Expect(sharedToCmd).To(Say(TestSetup.RegularUserContext().Space))
-
-				type sharedInfo struct {
-					OrgName       string `json:"organization_name"`
-					SpaceName     string `json:"space_name"`
-					BoundAppCount int    `json:"bound_app_count"`
-				}
-
-				type sharedToResponse struct {
-					Resources []sharedInfo
-				}
-
-				var sharedTo sharedToResponse
-				json.Unmarshal(sharedToCmd.Out.Contents(), &sharedTo)
-
-				Expect(sharedTo.Resources).To(HaveLen(1))
-				Expect(sharedTo.Resources[0].OrgName).To(Equal(orgName))
-				Expect(sharedTo.Resources[0].SpaceName).To(Equal(TestSetup.RegularUserContext().Space))
-				Expect(sharedTo.Resources[0].BoundAppCount).To(Equal(1))
+				Expect(sharedToCmd).To(Say("shared with spaces"))
 			})
 		})
 
@@ -183,8 +156,6 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 		})
 
 		It("allows User B to unbind an app from the shared service instance", func() {
-			var appGuid string
-
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
 				By("Asserting User B can bind to the shared service")
 				appName = random_name.CATSRandomName("APP")
@@ -195,8 +166,6 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 					"-p", assets.NewAssets().Catnip,
 					"-c", "./catnip",
 					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-				appGuid = getGuidFor("app", appName)
 
 				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(bindCmd).To(Exit(0))
@@ -239,13 +208,9 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 				target := cf.Cf("target", "-o", orgName, "-s", userASpaceName).Wait(Config.DefaultTimeoutDuration())
 				Expect(target).To(Exit(0))
 
-				userBSpaceGuid := getGuidFor("space", TestSetup.RegularUserContext().Space)
+				userBSpaceName := TestSetup.RegularUserContext().TestSpace.SpaceName()
 
-				//This should be replaced by the CLI command when available
-				unshareSpace := cf.Cf("curl",
-					fmt.Sprintf("/v3/service_instances/%s/relationships/shared_spaces/%s", serviceInstanceGuid, userBSpaceGuid),
-					"-X", "DELETE").Wait(Config.DefaultTimeoutDuration())
-
+				unshareSpace := cf.Cf("v3-unshare-service", serviceInstanceName, "-s", userBSpaceName, "-f").Wait(Config.DefaultTimeoutDuration())
 				Expect(unshareSpace).To(Exit(0))
 				Expect(unshareSpace).ToNot(Say("errors"))
 			})
@@ -259,12 +224,3 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 		})
 	})
 })
-
-func getGuidFor(resourceType, resourceName string) string {
-	session := cf.Cf(resourceType, resourceName, "--guid").Wait(Config.DefaultTimeoutDuration())
-
-	// temporary for: https://github.com/cloudfoundry/cli/issues/1271
-	out := string(session.Out.Contents())
-	outs := strings.Split(out, "\n")
-	return strings.TrimSpace(outs[len(outs)-2])
-}
