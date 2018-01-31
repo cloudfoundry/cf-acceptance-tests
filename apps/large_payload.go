@@ -18,6 +18,7 @@ import (
 )
 
 var _ = AppsDescribe("Large_payload", func() {
+	const payloadSize = 200
 	var appName string
 	AfterEach(func() {
 		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
@@ -38,8 +39,8 @@ var _ = AppsDescribe("Large_payload", func() {
 		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		Eventually(func() int {
-			curlResponse := helpers.CurlApp(Config, appName, fmt.Sprintf("/largetext/5"))
+			curlResponse := helpers.CurlApp(Config, appName, fmt.Sprintf("/largetext/%d", payloadSize))
 			return len(curlResponse)
-		}, 10*time.Second, 10*time.Second).Should(Equal(5 * 1024))
+		}, 10*time.Second, 10*time.Second).Should(Equal(payloadSize * 1024))
 	})
 })
