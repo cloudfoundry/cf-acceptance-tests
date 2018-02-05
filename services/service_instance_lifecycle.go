@@ -110,9 +110,18 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 			Context("when there is an existing service instance", func() {
 				BeforeEach(func() {
+					type Params struct{ Param1 string }
+					params, _ := json.Marshal(Params{Param1: "value"})
 					instanceName = random_name.CATSRandomName("SVIN")
-					createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName).Wait(Config.DefaultTimeoutDuration())
+					createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName, "-c", string(params)).Wait(Config.DefaultTimeoutDuration())
 					Expect(createService).To(Exit(0), "failed creating service")
+				})
+
+				It("fetch the configuration parameters", func() {
+					instanceGUID := getServiceInstanceGuid(instanceName)
+					configParams := cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/parameters", instanceGUID)).Wait(Config.DefaultTimeoutDuration())
+					Expect(configParams).To(Exit(0), "failed to curl fetch binding parameters")
+					Expect(configParams).To(Say("\"Param1\": \"value\""))
 				})
 
 				It("can delete a service instance", func() {

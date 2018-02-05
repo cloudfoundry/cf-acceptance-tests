@@ -15,6 +15,7 @@
             ],
             "max_db_per_node": 5,
             "bindable": true,
+            "instances_retrievable": true,
             "bindings_retrievable": true,
             "metadata": {
               "provider": {
