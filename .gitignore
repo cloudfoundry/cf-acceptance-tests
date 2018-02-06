@@ -5,7 +5,7 @@ tags
 results
 .idea
 .DS_Store
-logs
+/logs
 assets/*/.bundle
 assets/catnip/bin
 assets/credhub-enabled-app/build

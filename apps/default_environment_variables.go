@@ -14,6 +14,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 
 	. "github.com/onsi/ginkgo"
@@ -162,7 +163,7 @@ exit 1
 
 			var taskStdout string
 			Eventually(func() string {
-				appLogsSession := cf.Cf("logs", "--recent", appName)
+				appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
 				appLogsSession.Wait(Config.DefaultTimeoutDuration())
 
 				taskStdout = string(appLogsSession.Out.Contents())

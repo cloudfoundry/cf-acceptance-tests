@@ -32,6 +32,7 @@ type CatsConfig interface {
 	GetIncludeRoutingIsolationSegments() bool
 	GetIncludeServiceInstanceSharing() bool
 	GetIncludeWindows() bool
+	GetUseLogCache() bool
 	GetShouldKeepUser() bool
 	GetSkipSSLValidation() bool
 	GetUseExistingUser() bool

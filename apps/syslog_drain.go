@@ -10,6 +10,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	logshelper "github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -102,7 +103,7 @@ var _ = AppsDescribe("Logging", func() {
 			randomMessage1 := random_name.CATSRandomName("RANDOM-MESSAGE-A")
 			randomMessage2 := random_name.CATSRandomName("RANDOM-MESSAGE-B")
 
-			logs = cf.Cf("logs", listenerAppName)
+			logs = logshelper.TailFollow(Config.GetUseLogCache(), listenerAppName)
 
 			// Have apps emit logs.
 			go writeLogsUntilInterrupted(interrupt, randomMessage1, logWriterAppName1)
@@ -121,7 +122,8 @@ func getSyslogDrainAddress(appName string) string {
 		re, err := regexp.Compile("ADDRESS: \\|(.*)\\|")
 		Expect(err).NotTo(HaveOccurred())
 
-		logs := cf.Cf("logs", appName, "--recent").Wait(Config.DefaultTimeoutDuration())
+		logs := logshelper.Tail(Config.GetUseLogCache(), appName).
+			Wait(Config.DefaultTimeoutDuration())
 		matched := re.FindSubmatch(logs.Out.Contents())
 		if len(matched) < 2 {
 			return nil

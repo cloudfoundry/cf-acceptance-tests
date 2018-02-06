@@ -13,6 +13,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	logshelper "github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
@@ -77,7 +78,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 			It("a request to the app is routed through the route service", func() {
 				Eventually(func() *Session {
 					helpers.CurlAppRoot(Config, appName)
-					logs := cf.Cf("logs", "--recent", routeServiceName)
+					logs := logshelper.Tail(Config.GetUseLogCache(), routeServiceName)
 					Expect(logs.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 					return logs
 				}, Config.DefaultTimeoutDuration()).Should(Say("Response Body: go, world"))
@@ -163,7 +164,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				bindRouteToServiceWithParams(hostname, serviceInstanceName, "{\"key1\":[\"value1\",\"irynaparam\"],\"key2\":\"value3\"}")
 
 				Eventually(func() *Session {
-					logs := cf.Cf("logs", "--recent", brokerAppName)
+					logs := logshelper.Tail(Config.GetUseLogCache(), brokerAppName)
 					Expect(logs.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 					return logs
 				}, Config.DefaultTimeoutDuration()).Should(Say("irynaparam"))

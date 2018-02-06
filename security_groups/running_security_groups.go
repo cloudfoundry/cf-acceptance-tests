@@ -20,6 +20,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
@@ -149,7 +150,7 @@ func deleteBuildpack(buildpack string) {
 
 func getStagingOutput(appName string) func() *Session {
 	return func() *Session {
-		appLogsSession := cf.Cf("logs", "--recent", appName)
+		appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
 		Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		return appLogsSession
 	}

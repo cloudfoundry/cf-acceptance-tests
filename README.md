@@ -110,6 +110,7 @@ cat > integration_config.json <<EOF
   "admin_password": "admin",
   "skip_ssl_validation": true,
   "use_http": true,
+  "use_log_cache": false,
   "include_apps": true,
   "include_backend_compatibility": false,
   "include_capi_experimental": false,
@@ -191,6 +192,7 @@ include_capi_no_bridge
 * `include_routing_isolation_segments`: Flag to include routing isolation segments. [See below](#routing-isolation-segments)
 * `backend`: App tests push their apps using the backend specified. Incompatible tests will be skipped based on which backend is chosen. If left unspecified the default backend will be used where none is specified; all tests that specify a particular backend will be skipped.
 * `use_http`: Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
+* `use_log_cache`: Set to true if you would like CF Acceptance Tests to use Log Cache for reading application logs. Log Cache must be deployed. (default is false)
 * `use_existing_organization`: Set to true when you need to specify an existing organization to use rather than creating a new organization.
 * `existing_organization`: Name of the existing organization to use.
 * `use_existing_user`: The admin user configured above will normally be used to create a temporary user (with lesser permissions) to perform actions (such as push applications) during tests, and then delete said user after the tests have run; set this to `true` if you want to use an existing user, configured via the following properties.
