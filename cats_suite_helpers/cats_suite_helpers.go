@@ -163,6 +163,17 @@ func SecurityGroupsDescribe(description string, callback func()) bool {
 	})
 }
 
+func ServiceDiscoveryDescribe(description string, callback func()) bool {
+	return Describe("[service discovery]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeServiceDiscovery() {
+				Skip(`Skipping this test because Config.IncludeServiceDiscovery is set to 'false'.`)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
 func ServicesDescribe(description string, callback func()) bool {
 	return Describe("[services]", func() {
 		BeforeEach(func() {

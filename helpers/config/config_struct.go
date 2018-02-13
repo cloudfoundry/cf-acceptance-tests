@@ -83,6 +83,7 @@ type config struct {
 	IncludeRouting                    *bool   `json:"include_routing"`
 	IncludeSSO                        *bool   `json:"include_sso"`
 	IncludeSecurityGroups             *bool   `json:"include_security_groups"`
+	IncludeServiceDiscovery           *bool   `json:"include_service_discovery"`
 	IncludeServices                   *bool   `json:"include_services"`
 	IncludeServiceInstanceSharing     *bool   `json:"include_service_instance_sharing"`
 	IncludeSsh                        *bool   `json:"include_ssh"`
@@ -160,6 +161,7 @@ func getDefaults() config {
 	defaults.IncludeRoutingIsolationSegments = ptrToBool(false)
 	defaults.IncludeSSO = ptrToBool(false)
 	defaults.IncludeSecurityGroups = ptrToBool(false)
+	defaults.IncludeServiceDiscovery = ptrToBool(false)
 	defaults.IncludeServices = ptrToBool(false)
 	defaults.IncludeSsh = ptrToBool(false)
 	defaults.IncludeTasks = ptrToBool(false)
@@ -388,6 +390,9 @@ func validateConfig(config *config) Errors {
 	}
 	if config.IncludeSecurityGroups == nil {
 		errs.Add(fmt.Errorf("* 'include_security_groups' must not be null"))
+	}
+	if config.IncludeServiceDiscovery == nil {
+		errs.Add(fmt.Errorf("* 'include_service_discovery' must not be null"))
 	}
 	if config.IncludeServices == nil {
 		errs.Add(fmt.Errorf("* 'include_services' must not be null"))
@@ -751,6 +756,10 @@ func (c *config) GetAdminPassword() string {
 
 func (c *config) GetApiEndpoint() string {
 	return *c.ApiEndpoint
+}
+
+func (c *config) GetIncludeServiceDiscovery() bool {
+	return *c.IncludeServiceDiscovery
 }
 
 func (c *config) GetIncludeSsh() bool {

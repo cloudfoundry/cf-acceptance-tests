@@ -21,6 +21,7 @@ import (
 	_ "github.com/cloudfoundry/cf-acceptance-tests/routing"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/routing_isolation_segments"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/security_groups"
+	_ "github.com/cloudfoundry/cf-acceptance-tests/service_discovery"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/services"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/ssh"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/tasks"

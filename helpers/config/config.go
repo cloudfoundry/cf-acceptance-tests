@@ -23,6 +23,7 @@ type CatsConfig interface {
 	GetIncludeZipkin() bool
 	GetIncludeSSO() bool
 	GetIncludeSecurityGroups() bool
+	GetIncludeServiceDiscovery() bool
 	GetIncludeServices() bool
 	GetIncludeSsh() bool
 	GetIncludeTasks() bool

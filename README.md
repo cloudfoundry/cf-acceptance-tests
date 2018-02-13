@@ -127,6 +127,7 @@ cat > integration_config.json <<EOF
   "include_routing": true,
   "include_routing_isolation_segments": false,
   "include_security_groups": true,
+  "include_service_discovery": false,
   "include_services": true,
   "include_service_instance_sharing": false,
   "include_ssh": false,
@@ -175,6 +176,7 @@ include_capi_no_bridge
 * `include_route_services`: Flag to include the route services tests. Diego must be deployed for these tests to pass.
 * `include_routing`: Flag to include the routing tests.
 * `include_security_groups`: Flag to include tests for security groups.
+* `include_service_discovery`: Flag to include test for the service discovery.
 * `include_services`: Flag to include test for the services API.
 * `include_service_instance_sharing`: Flag to include tests for service instance sharing between spaces. `include_services` must be set for these tests to run. The `service_instance_sharing` feature flag must also be enabled for these tests to pass.
 * `include_ssh`: Flag to include tests for Diego container ssh feature.

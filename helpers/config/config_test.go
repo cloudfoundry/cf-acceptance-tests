@@ -234,6 +234,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeRouteServices()).To(BeFalse())
 		Expect(config.GetIncludeContainerNetworking()).To(BeFalse())
 		Expect(config.GetIncludeSecurityGroups()).To(BeFalse())
+		Expect(config.GetIncludeServiceDiscovery()).To(BeFalse())
 		Expect(config.GetIncludeServices()).To(BeFalse())
 		Expect(config.GetIncludeSsh()).To(BeFalse())
 		Expect(config.GetIncludeIsolationSegments()).To(BeFalse())
