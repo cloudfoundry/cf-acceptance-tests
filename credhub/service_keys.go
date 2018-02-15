@@ -12,6 +12,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"strings"
 )
 
 var _ = CredhubDescribe("service keys", func() {
@@ -25,7 +26,6 @@ var _ = CredhubDescribe("service keys", func() {
 	BeforeEach(func() {
 		TestSetup.RegularUserContext().TargetSpace()
 		cf.Cf("target", "-o", TestSetup.RegularUserContext().Org)
-		Expect(string(cf.Cf("running-environment-variable-group").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring("CREDHUB_API"), "CredHub API environment not set")
 
 		chBrokerAppName = random_name.CATSRandomName("BRKR-CH")
 
@@ -38,11 +38,30 @@ var _ = CredhubDescribe("service keys", func() {
 			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed pushing credhub-enabled service broker")
 
+		existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait(Config.DefaultTimeoutDuration()).Out.Contents())
+
+		if (!strings.Contains(existingEnvVar, "CREDHUB_API")){
+			Expect(cf.Cf(
+				"set-env", chBrokerAppName,
+				"CREDHUB_API", Config.GetCredHubLocation(),
+			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_API env var on credhub-enabled service broker")
+		}
+
 		chServiceName = random_name.CATSRandomName("SERVICE-NAME")
 		Expect(cf.Cf(
 			"set-env", chBrokerAppName,
 			"SERVICE_NAME", chServiceName,
 		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting SERVICE_NAME env var on credhub-enabled service broker")
+
+		Expect(cf.Cf(
+			"set-env", chBrokerAppName,
+			"CREDHUB_CLIENT", Config.GetCredHubBrokerClientCredential(),
+		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_CLIENT env var on credhub-enabled service broker")
+
+		Expect(cf.Cf(
+			"set-env", chBrokerAppName,
+			"CREDHUB_SECRET", Config.GetCredHubBrokerClientSecret(),
+		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_SECRET env var on credhub-enabled service broker")
 
 		Expect(cf.Cf(
 			"restart", chBrokerAppName,
@@ -75,7 +94,7 @@ var _ = CredhubDescribe("service keys", func() {
 		})
 	})
 
-	Context("when a service key for a service instance is requested from a CredHub-enabled broker", func() {
+	XContext("when a service key for a service instance is requested from a CredHub-enabled broker", func() {
 		It("Cloud Controller retrieves the value from CredHub for the service key", func() {
 			TestSetup.RegularUserContext().TargetSpace()
 

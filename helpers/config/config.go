@@ -42,6 +42,9 @@ type CatsConfig interface {
 	GetBackend() string
 	GetBinaryBuildpackName() string
 	GetConfigurableTestPassword() string
+	GetCredHubBrokerClientCredential() string
+	GetCredHubBrokerClientSecret() string
+	GetCredHubLocation() string
 	GetExistingOrganization() string
 	GetUseExistingOrganization() bool
 	GetExistingSpace() string
