@@ -21,6 +21,7 @@ type Assets struct {
 	Node                     string
 	NodeWithProcfile         string
 	Php                      string
+	Proxy                    string
 	RubySimple               string
 	SecurityGroupBuildpack   string
 	ServiceBroker            string
@@ -54,6 +55,7 @@ func NewAssets() Assets {
 		Node:                   "assets/node",
 		NodeWithProcfile:       "assets/node-with-procfile",
 		Php:                    "assets/php",
+		Proxy:                  "assets/proxy",
 		Python:                 "assets/python",
 		RubySimple:             "assets/ruby_simple",
 		SecurityGroupBuildpack: "assets/security_group_buildpack.zip",
