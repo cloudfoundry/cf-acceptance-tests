@@ -161,7 +161,12 @@ exit 1
 					Name: "bin/detect",
 					Body: fmt.Sprintf(`#!/bin/bash
 
-echo Simple
+if [ -f "${1}/%s" ]; then
+  echo Simple
+else
+  echo no
+  exit 1
+fi
 `, matchingFilename(appName)),
 				},
 				{
@@ -227,7 +232,12 @@ echo Pass compile
 					Name: "bin/detect",
 					Body: fmt.Sprintf(`#!/bin/bash
 
-echo Pass Detect
+if [ -f "${1}/%s" ]; then
+  echo Pass Detect
+else
+  echo no
+  exit 1
+fi
 `, matchingFilename(appName)),
 				},
 				{
