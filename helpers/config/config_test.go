@@ -57,6 +57,13 @@ type testConfig struct {
 	IsolationSegmentName            *string `json:"isolation_segment_name,omitempty"`
 	IsolationSegmentDomain          *string `json:"isolation_segment_domain,omitempty"`
 	UnallocatedIPForSecurityGroup   *string `json:"unallocated_ip_for_security_group"`
+
+	IncludeWindows       *bool   `json:"include_windows,omitempty"`
+	WindowsSecureAddress *string `json:"windows_secure_address,omitempty"`
+	NumWindowsCells      *int    `json:"num_windows_cells,omitempty"`
+	WindowsTestTask      *bool   `json:"windows_test_task,omitempty"`
+	WindowsContextPath   *bool   `json:"windows_context_path,omitempty"`
+	WindowsStack         *string `json:"windows_stack,omitempty"`
 }
 
 type allConfig struct {
@@ -102,6 +109,7 @@ type allConfig struct {
 
 	BinaryBuildpackName     *string `json:"binary_buildpack_name"`
 	GoBuildpackName         *string `json:"go_buildpack_name"`
+	HwcBuildpackName        *string `json:"hwc_buildpack_name"`
 	JavaBuildpackName       *string `json:"java_buildpack_name"`
 	NodejsBuildpackName     *string `json:"nodejs_buildpack_name"`
 	PhpBuildpackName        *string `json:"php_buildpack_name"`
@@ -130,6 +138,7 @@ type allConfig struct {
 	IncludeSsh                        *bool `json:"include_ssh"`
 	IncludeTasks                      *bool `json:"include_tasks"`
 	IncludeV3                         *bool `json:"include_v3"`
+	IncludeWindows                    *bool `json:"include_windows"`
 	IncludeZipkin                     *bool `json:"include_zipkin"`
 	IncludeIsolationSegments          *bool `json:"include_isolation_segments"`
 
@@ -247,6 +256,13 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeCredhubNonAssisted()).To(BeFalse())
 		Expect(config.GetIncludeServiceInstanceSharing()).To(BeFalse())
 
+		Expect(config.GetIncludeWindows()).To(BeFalse())
+		Expect(config.GetWindowsTestTask()).To(BeFalse())
+		Expect(config.GetWindowsContextPath()).To(BeFalse())
+		Expect(config.GetWindowsStack()).To(Equal("windows2012R2"))
+		Expect(config.GetWindowsIncludeCredhubAssisted()).To(BeFalse())
+		Expect(config.GetWindowsIncludeCredhubNonAssisted()).To(BeFalse())
+
 		Expect(config.GetBackend()).To(Equal(""))
 
 		Expect(config.GetUseExistingUser()).To(Equal(false))
@@ -356,6 +372,7 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_v3' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_zipkin' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_isolation_segments' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_windows' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_image' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_username' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_password' must not be null"))
@@ -480,6 +497,65 @@ var _ = Describe("Config", func() {
 				config, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(config).To(BeNil())
 				Expect(err).To(MatchError("* Invalid configuration: 'isolation_segment_name' must be provided if 'include_isolation_segments' is true"))
+			})
+		})
+	})
+
+	Context("when including windows tests", func() {
+		BeforeEach(func() {
+			testCfg.IncludeWindows = ptrToBool(true)
+		})
+
+		Context("when the windows stack is not windows2016 or windows2012R2", func() {
+			BeforeEach(func() {
+				testCfg.WindowsStack = ptrToString("windows98")
+			})
+
+			It("errors", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(config).To(BeNil())
+				Expect(err).To(MatchError("* Invalid configuration: unknown Windows stack windows98"))
+			})
+
+			Context("when the windows stack is not specified", func() {
+				BeforeEach(func() {
+					testCfg.WindowsStack = nil
+					testCfg.NumWindowsCells = ptrToInt(1)
+					testCfg.WindowsSecureAddress = ptrToString("127.0.0.1:80")
+				})
+
+				It("defaults to windows2012R2", func() {
+					config, err := cfg.NewCatsConfig(tmpFilePath)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(config.GetWindowsStack()).To(Equal("windows2012R2"))
+				})
+			})
+		})
+
+		Context("when the # of windows cells is < 1", func() {
+			BeforeEach(func() {
+				testCfg.WindowsStack = ptrToString("windows2016")
+				testCfg.NumWindowsCells = ptrToInt(0)
+			})
+
+			It("errors", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(config).To(BeNil())
+				Expect(err).To(MatchError("* Invalid configuration: must have >= 1 Windows cell"))
+			})
+		})
+
+		Context("when the secure address is malformed", func() {
+			BeforeEach(func() {
+				testCfg.WindowsStack = ptrToString("windows2016")
+				testCfg.NumWindowsCells = ptrToInt(1)
+				testCfg.WindowsSecureAddress = ptrToString("127.0.0.1")
+			})
+
+			It("errors", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(config).To(BeNil())
+				Expect(err).To(MatchError("* Invalid configuration: secure address must be of form host:port"))
 			})
 		})
 	})

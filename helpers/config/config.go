@@ -31,6 +31,7 @@ type CatsConfig interface {
 	GetIncludeIsolationSegments() bool
 	GetIncludeRoutingIsolationSegments() bool
 	GetIncludeServiceInstanceSharing() bool
+	GetIncludeWindows() bool
 	GetShouldKeepUser() bool
 	GetSkipSSLValidation() bool
 	GetUseExistingUser() bool
@@ -53,6 +54,7 @@ type CatsConfig interface {
 	GetExistingUser() string
 	GetExistingUserPassword() string
 	GetGoBuildpackName() string
+	GetHwcBuildpackName() string
 	GetIsolationSegmentName() string
 	GetIsolationSegmentDomain() string
 	GetJavaBuildpackName() string
@@ -68,6 +70,14 @@ type CatsConfig interface {
 	GetRubyBuildpackName() string
 	GetUnallocatedIPForSecurityGroup() string
 	Protocol() string
+
+	GetWindowsSecureAddress() string
+	GetNumWindowsCells() int
+	GetWindowsTestTask() bool
+	GetWindowsContextPath() bool
+	GetWindowsStack() string
+	GetWindowsIncludeCredhubAssisted() bool
+	GetWindowsIncludeCredhubNonAssisted() bool
 
 	AsyncServiceOperationTimeoutDuration() time.Duration
 	BrokerStartTimeoutDuration() time.Duration
