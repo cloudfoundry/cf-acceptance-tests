@@ -12,6 +12,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 )
 
@@ -34,8 +35,8 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 
 		internalDomainName = "apps.internal"
 		internalHostName = random_name.CATSRandomName("HOST")
-		appNameFrontend = random_name.CATSRandomName("APP")
-		appNameBackend = random_name.CATSRandomName("APP")
+		appNameFrontend = random_name.CATSRandomName("APP-FRONT")
+		appNameBackend = random_name.CATSRandomName("APP-BACK")
 
 		// check that the internal domain has been seeded
 		sharedDomainBody := cf.Cf("curl", "/v2/shared_domains?q=name:apps.internal").Wait(Config.CfPushTimeoutDuration()).Out.Contents()
@@ -69,11 +70,11 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 		Expect(cf.Cf(
 			"push", appNameFrontend,
 			"--no-start",
-			"-b", Config.GetBinaryBuildpackName(),
+			"-b", Config.GetGoBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", assets.NewAssets().Catnip,
-			"-c", "./catnip",
+			"-p", assets.NewAssets().Proxy,
 			"-d", Config.GetAppsDomain(),
+			"-f", assets.NewAssets().Proxy+"/manifest.yml",
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		app_helpers.SetBackend(appNameFrontend)
@@ -95,12 +96,11 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 
 	Describe("Adding an internal route on an app", func() {
 		It("successfully creates a policy", func() {
-			// ssh onto frontend app, see that is cannot access the backend app via the internal route
-			cmd := "\"$(curl " + internalHostName + "." + internalDomainName + ":8080" + ")\""
-			envCmd := cf.Cf("ssh", "-v", appNameFrontend, "-c", cmd)
-			envCmd.Wait(Config.DefaultTimeoutDuration())
-			stdErr := string(envCmd.Err.Contents())
-			Expect(string(stdErr)).To(ContainSubstring("Connection refused"))
+			curlArgs := appNameFrontend + "." + Config.GetAppsDomain() + "/proxy/" + internalHostName + "." + internalDomainName + ":8080"
+			Eventually(func() string {
+				curl := helpers.Curl(Config, curlArgs).Wait(Config.DefaultTimeoutDuration())
+				return string(curl.Out.Contents())
+			}, Config.DefaultTimeoutDuration()).ShouldNot(ContainSubstring("Hello, world!"))
 
 			// add a policy
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
@@ -110,11 +110,10 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring(appNameBackend))
 			})
 
-			// ssh onto frontend app, see that it can access the backend app via the internal route
-			envCmd = cf.Cf("ssh", "-v", appNameFrontend, "-c", cmd)
-			envCmd.Wait(Config.DefaultTimeoutDuration())
-			stdErr = string(envCmd.Err.Contents())
-			Expect(string(stdErr)).To(ContainSubstring("Hello, world!"))
+			Eventually(func() string {
+				curl := helpers.Curl(Config, curlArgs).Wait(Config.DefaultTimeoutDuration())
+				return string(curl.Out.Contents())
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello, world!"))
 		})
 	})
 })
