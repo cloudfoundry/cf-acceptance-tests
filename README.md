@@ -165,6 +165,9 @@ include_capi_no_bridge
 * `include_container_networking`: Flag to include tests related to container networking.
   `include_security_groups` must also be set for tests to run.
 * `credhub_mode`: Valid values are `assisted` or `non-assisted`. [See below](#credhub-modes).
+* `credhub_location`: Location of CredHub instance; default is `https://credhub.service.cf.internal:8844`
+* `credhub_client`: UAA client credential for Service Broker write access to CredHub (required for CredHub tests); default is `cc_service_key_client`.
+* `credhub_secret`: UAA client secret for Service Broker write access to CredHub (required for CredHub tests).
 * `include_capi_experimental`: Flag to run experimental tests for the CAPI release. Not stable!
 * `include_capi_no_bridge`: Flag to run tests that require CAPI's (currently optional) bridge consumption features.
 * `include_detect`: Flag to include tests in the detect group.
@@ -361,7 +364,7 @@ Test Group Name| Compatible Backend | Description
 `v3`| Diego| This test group contains tests for the next-generation v3 Cloud Controller API.  As of this writing, the v3 API is not officially supported.
 `isolation_segments` | Diego | This test group requires that Diego be deployed with a minimum of 2 cells. One of those cells must have been deployed with a `placement_tag`. If the deployment has been deployed with a routing isolation segment, `isolation_segment_domain` must also be set.
 `routing_isolation_segments` | Diego | This group tests that requests to isolated apps are only routed through isolated routers, and vice versa. It requires all of the setup for the isolation segments test suite. Additionally, a minimum of two Gorouter instances must be deployed. One instance must be configured with the property `routing_table_sharding_mode: shared-and-segments`. The other instance must have the properties `routing_table_sharding_mode: segments` and `isolation_segments: [YOUR_PLACEMENT_TAG_HERE]`. The `isolation_segment_name` in the CATs properties must match the `placement_tag` and `isolation_segment`.`isolation_segment_domain` must be set and traffic to that domain should go to the isolated router.
-`credhub`|Diego|Tests CredHub-delivered Secure Service credentials in the service binding. [CredHub configuration][credhub-secure-service-credentials] is required to run these tests.
+`credhub`|Diego|Tests CredHub-delivered Secure Service credentials in the service binding. [CredHub configuration][credhub-secure-service-credentials] is required to run these tests. In addition to selecting a `credhub_mode`, `credhub_client` and `credhub_secret` values are required for these tests.
 
 ## Contributing
 

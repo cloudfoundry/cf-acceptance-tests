@@ -72,7 +72,6 @@ type config struct {
 	IncludeCapiExperimental           *bool   `json:"include_capi_experimental"`
 	IncludeCapiNoBridge               *bool   `json:"include_capi_no_bridge"`
 	IncludeContainerNetworking        *bool   `json:"include_container_networking"`
-	CredhubMode                       *string `json:"credhub_mode"`
 	IncludeDetect                     *bool   `json:"include_detect"`
 	IncludeDocker                     *bool   `json:"include_docker"`
 	IncludeInternetDependent          *bool   `json:"include_internet_dependent"`
@@ -92,6 +91,11 @@ type config struct {
 	IncludeZipkin                     *bool   `json:"include_zipkin"`
 	IncludeIsolationSegments          *bool   `json:"include_isolation_segments"`
 	IncludeRoutingIsolationSegments   *bool   `json:"include_routing_isolation_segments"`
+
+	CredhubMode                       *string `json:"credhub_mode"`
+	CredhubLocation                   *string `json:"credhub_location"`
+	CredhubClientName                 *string `json:"credhub_client"`
+	CredhubClientSecret               *string `json:"credhub_secret"`
 
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image"`
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username"`
@@ -152,6 +156,9 @@ func getDefaults() config {
 	defaults.IncludeCapiNoBridge = ptrToBool(true)
 	defaults.IncludeContainerNetworking = ptrToBool(false)
 	defaults.CredhubMode = ptrToString("")
+	defaults.CredhubLocation = ptrToString("https://credhub.service.cf.internal:8844")
+	defaults.CredhubClientName = ptrToString("cc_service_key_client")
+	defaults.CredhubClientSecret = ptrToString("")
 	defaults.IncludeDocker = ptrToBool(false)
 	defaults.IncludeInternetDependent = ptrToBool(false)
 	defaults.IncludeIsolationSegments = ptrToBool(false)
@@ -258,6 +265,12 @@ func validateConfig(config *config) Errors {
 	if err != nil {
 		errs.Add(err)
 	}
+
+	err = validateCredHubSettings(config)
+	if err != nil {
+		errs.Add(err)
+	}
+
 
 	if config.UseHttp == nil {
 		errs.Add(fmt.Errorf("* 'use_http' must not be null"))
@@ -601,6 +614,15 @@ func validateRoutingIsolationSegments(config *config) error {
 	return nil
 }
 
+func validateCredHubSettings (config *config) error {
+	if config.GetIncludeCredhubAssisted() || config.GetIncludeCredhubNonAssisted(){
+		if config.GetCredHubBrokerClientSecret() == "" || config.GetCredHubBrokerClientSecret() == "" {
+			return fmt.Errorf("* 'credhub_client' and 'credhub_secret' must not be null")
+		}
+	}
+	return nil
+}
+
 func load(path string, config *config) Errors {
 	errs := Errors{}
 	err := loadConfigFromPath(path, config)
@@ -856,6 +878,18 @@ func (c *config) GetIncludeCredhubAssisted() bool {
 
 func (c *config) GetIncludeCredhubNonAssisted() bool {
 	return *c.CredhubMode == CredhubNonAssistedMode
+}
+
+func (c *config) GetCredHubBrokerClientCredential() string {
+	return *c.CredhubClientName
+}
+
+func (c *config) GetCredHubBrokerClientSecret() string {
+	return *c.CredhubClientSecret
+}
+
+func (c *config) GetCredHubLocation() string {
+	return *c.CredhubLocation
 }
 
 func (c *config) GetIncludeServiceInstanceSharing() bool {

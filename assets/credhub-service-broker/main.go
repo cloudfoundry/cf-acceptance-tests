@@ -1,18 +1,20 @@
 package main
 
 import (
-	"bytes"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/satori/go.uuid"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
+	"github.com/cloudfoundry-incubator/credhub-cli/credhub"
+	"github.com/cloudfoundry-incubator/credhub-cli/credhub/auth"
+	"github.com/cloudfoundry-incubator/credhub-cli/util"
+	"github.com/cloudfoundry-incubator/credhub-cli/credhub/permissions"
+	"github.com/cloudfoundry-incubator/credhub-cli/credhub/credentials/values"
 )
 
 func main() {
@@ -30,11 +32,6 @@ type bindRequest struct {
 	BindResource struct {
 		CredentialClientId string `json:"credential_client_id"`
 	} `json:"bind_resource"`
-}
-
-type permissions struct {
-	Actor      string   `json:"actor"`
-	Operations []string `json:"operations"`
 }
 
 func (s *Server) Start() {
@@ -103,17 +100,30 @@ func (s *ServiceBroker) RemoveServiceInstance(w http.ResponseWriter, r *http.Req
 }
 
 func (s *ServiceBroker) Bind(w http.ResponseWriter, r *http.Request) {
+	ch, err := credhub.New(
+		util.AddDefaultSchemeIfNecessary(os.Getenv("CREDHUB_API")),
+		credhub.SkipTLSValidation(true),
+		credhub.Auth(auth.UaaClientCredentials(os.Getenv("CREDHUB_CLIENT"), os.Getenv("CREDHUB_SECRET"))),
+	)
+
+	if err != nil {
+		fmt.Println("credhub client configuration failed: " + err.Error())
+	}
+
 	body := bindRequest{}
-	err := json.NewDecoder(r.Body).Decode(&body)
+	err = json.NewDecoder(r.Body).Decode(&body)
 
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	storedJson := map[string]string{
-		"user-name": "pinkyPie",
-		"password":  "rainbowDash",
-	}
+
+	name := strconv.FormatInt(time.Now().UnixNano(), 10)
+	storedJson := values.JSON{}
+	storedJson["user-name"] = "pinkyPie"
+	storedJson["password"] = "rainbowDash"
+
+	cred, err :=ch.SetJSON(name, storedJson, credhub.Overwrite)
 
 	actorId := "mtls-app:" + body.AppGuid
 
@@ -121,36 +131,21 @@ func (s *ServiceBroker) Bind(w http.ResponseWriter, r *http.Request) {
 		actorId = "uaa-client:" + body.BindResource.CredentialClientId
 	}
 
-	permissionJson := permissions{
+	permissionJson := permissions.Permission{
 		Actor:      actorId,
 		Operations: []string{"read"},
 	}
 
-	credentialName := strconv.FormatInt(time.Now().UnixNano(), 10)
 	pathVariables := mux.Vars(r)
+	s.NameMap[pathVariables["service_binding_guid"]] = name
 
-	s.NameMap[pathVariables["service_binding_guid"]] = credentialName
-	putData := map[string]interface{}{
-		"name":                   credentialName,
-		"type":                   "json",
-		"value":                  storedJson,
-		"additional_permissions": []permissions{permissionJson},
-	}
-
-	result, err := makeMtlsRequest(
-		os.Getenv("CREDHUB_API")+"/api/v1/data",
-		putData,
-		"PUT")
+	_, err = ch.AddPermissions(cred.Name, []permissions.Permission{permissionJson})
 
 	handleError(err)
 
-	responseData := make(map[string]string)
-
-	json.Unmarshal([]byte(result), &responseData)
-
 	credentials := `{
   "credentials": {
-    "credhub-ref": "` + responseData["name"] + `"
+    "credhub-ref": "` + cred.Name + `"
   }
 }`
 
@@ -158,73 +153,30 @@ func (s *ServiceBroker) Bind(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *ServiceBroker) UnBind(w http.ResponseWriter, r *http.Request) {
+	ch, err := credhub.New(
+		util.AddDefaultSchemeIfNecessary(os.Getenv("CREDHUB_API")),
+		credhub.SkipTLSValidation(true),
+		credhub.Auth(auth.UaaClientCredentials(os.Getenv("CREDHUB_CLIENT"), os.Getenv("CREDHUB_SECRET"))),
+	)
+
+	if err != nil {
+		fmt.Println("credhub client configuration failed: " + err.Error())
+	}
+
 	pathVariables := mux.Vars(r)
+	name := s.NameMap[pathVariables["service_binding_guid"]]
 
-	credentialName := s.NameMap[pathVariables["service_binding_guid"]]
-
-	_, err := makeMtlsRequest(
-		os.Getenv("CREDHUB_API")+"/api/v1/data?name="+credentialName,
-		map[string]interface{}{},
-		"DELETE")
+	err = ch.Delete(name)
 
 	handleError(err)
 
 	WriteResponse(w, http.StatusOK, "{}")
 }
 
-func makeMtlsRequest(url string, requestData map[string]interface{}, verb string) (string, error) {
-	client, err := createMtlsClient()
-
-	jsonValue, err := json.Marshal(requestData)
-	handleError(err)
-
-	request, err := http.NewRequest(verb, url, bytes.NewBuffer(jsonValue))
-	request.Header.Set("Content-type", "application/json")
-
-	handleError(err)
-
-	resp, err := client.Do(request)
-
-	handleError(err)
-
-	if err != nil {
-		return "", err
-	}
-
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	return string(body), nil
-}
 
 func handleError(err error) {
 	if err != nil {
 		fmt.Println(err)
 		log.Fatal("Fatal", err)
 	}
-}
-
-func createMtlsClient() (*http.Client, error) {
-	clientCertPath := os.Getenv("CF_INSTANCE_CERT")
-	clientKeyPath := os.Getenv("CF_INSTANCE_KEY")
-
-	_, err := os.Stat(clientCertPath)
-	handleError(err)
-	_, err = os.Stat(clientKeyPath)
-	handleError(err)
-
-	clientCertificate, err := tls.LoadX509KeyPair(clientCertPath, clientKeyPath)
-	handleError(err)
-
-	tlsConf := &tls.Config{
-		Certificates: []tls.Certificate{clientCertificate},
-	}
-
-	transport := &http.Transport{TLSClientConfig: tlsConf}
-	client := &http.Client{Transport: transport}
-
-	return client, err
 }

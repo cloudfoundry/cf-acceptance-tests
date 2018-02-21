@@ -15,6 +15,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
+	"strings"
 )
 
 var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
@@ -30,12 +31,31 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 		JustBeforeEach(func() {
 			TestSetup.RegularUserContext().TargetSpace()
 			cf.Cf("target", "-o", TestSetup.RegularUserContext().Org)
-			Expect(string(cf.Cf("running-environment-variable-group").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring("CREDHUB_API"), "CredHub API environment not set")
 
 			chBrokerName = random_name.CATSRandomName("BRKR-CH")
 
 			pushBroker := cf.Cf("push", chBrokerName, "-b", Config.GetGoBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().CredHubServiceBroker, "-f", assets.NewAssets().CredHubServiceBroker+"/manifest.yml", "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
 			Expect(pushBroker).To(Exit(0), "failed pushing credhub-enabled service broker")
+
+			existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait(Config.DefaultTimeoutDuration()).Out.Contents())
+
+			if (!strings.Contains(existingEnvVar, "CREDHUB_API")){
+				Expect(cf.Cf(
+					"set-env", chBrokerName,
+					"CREDHUB_API", Config.GetCredHubLocation(),
+				).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_API env var on credhub-enabled service broker")
+			}
+
+			Expect(cf.Cf(
+				"set-env", chBrokerName,
+				"CREDHUB_CLIENT", Config.GetCredHubBrokerClientCredential(),
+			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_CLIENT env var on credhub-enabled service broker")
+
+			Expect(cf.Cf(
+				"set-env", chBrokerName,
+				"CREDHUB_SECRET", Config.GetCredHubBrokerClientSecret(),
+			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_SECRET env var on credhub-enabled service broker")
+
 
 			chServiceName = random_name.CATSRandomName("SERVICE-NAME")
 			setServiceName := cf.Cf("set-env", chBrokerName, "SERVICE_NAME", chServiceName).Wait(Config.DefaultTimeoutDuration())
