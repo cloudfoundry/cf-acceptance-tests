@@ -211,8 +211,18 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 					Context("when there is an existing key", func() {
 						BeforeEach(func() {
-							createKey := cf.Cf("create-service-key", instanceName, keyName).Wait(Config.DefaultTimeoutDuration())
+							params := "{\"param1\": \"value\"}"
+							createKey := cf.Cf("create-service-key", instanceName, keyName, "-c", params).Wait(Config.DefaultTimeoutDuration())
 							Expect(createKey).To(Exit(0), "failed to create key")
+						})
+
+						It("can retrieve parameters", func() {
+							serviceKeyGUID := getServiceKeyGUID(instanceName, keyName)
+							paramsEndpoint := fmt.Sprintf("/v2/service_keys/%s/parameters", serviceKeyGUID)
+
+							fetchServiceKeyParameters := cf.Cf("curl", paramsEndpoint).Wait(Config.DefaultTimeoutDuration())
+							Expect(fetchServiceKeyParameters).To(Say(`"param1": "value"`))
+							Expect(fetchServiceKeyParameters).To(Exit(0), "failed to curl fetch binding parameters")
 						})
 
 						It("can delete the key", func() {
@@ -508,4 +518,14 @@ func getBindingParamsEndpoint(appGUID string, instanceGUID string) string {
 	json.Unmarshal(bindingCurl.Out.Contents(), &jsonResults)
 
 	return fmt.Sprintf("%s/parameters", jsonResults.Resources[0].Metadata.URL)
+}
+
+func getServiceKeyGUID(instanceName, keyName string) string {
+	getServiceKeyGUID := cf.Cf("service-key", instanceName, keyName, "--guid")
+	Eventually(getServiceKeyGUID, Config.DefaultTimeoutDuration()).Should(Exit(0))
+
+	serviceKeyGUID := strings.TrimSpace(string(getServiceKeyGUID.Out.Contents()))
+	Expect(serviceKeyGUID).NotTo(Equal(""))
+
+	return serviceKeyGUID
 }
