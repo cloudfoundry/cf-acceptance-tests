@@ -130,17 +130,17 @@ func HandleAsyncRequest(path string, method string) {
 	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 	Expect(string(bytes)).To(ContainSubstring("202 Accepted"))
 
-	jobPath := getJobPath(bytes)
-	pollJob(jobPath)
+	jobPath := GetJobPath(bytes)
+	PollJob(jobPath)
 }
 
-func getJobPath(response []byte) string {
+func GetJobPath(response []byte) string {
 	r, err := regexp.Compile(`Location:.*(/v3/jobs/[\w-]*)`)
 	Expect(err).ToNot(HaveOccurred())
 	return r.FindStringSubmatch(string(response))[1]
 }
 
-func pollJob(jobPath string) {
+func PollJob(jobPath string) {
 	Eventually(func() string {
 		jobSession := cf.Cf("curl", jobPath)
 		return string(jobSession.Wait(Config.DefaultTimeoutDuration()).Out.Contents())
