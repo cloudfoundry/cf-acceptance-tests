@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -11,6 +12,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 )
 
@@ -21,12 +23,14 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 		packageGuid string
 		spaceGuid   string
 		spaceName   string
+		orgName     string
 		token       string
 	)
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 		spaceName = TestSetup.RegularUserContext().Space
+		orgName = TestSetup.RegularUserContext().Org
 		spaceGuid = GetSpaceGuidFromName(spaceName)
 		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
 		packageGuid = CreatePackage(appGuid)
@@ -60,13 +64,15 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 			endpoint = fmt.Sprintf("/v3/apps/%s/actions/apply_manifest", appGuid)
 		})
 
-		Context("when scaling the web process", func() {
+		Context("when configuring the web process", func() {
 			BeforeEach(func() {
-				manifest = `
+				manifest = fmt.Sprintf(`
 applications:
-- instances: 2
+- name: "%s"
+  instances: 2
   memory: 300M
-`
+  buildpack: ruby_buildpack
+`, appName)
 			})
 
 			It("successfully completes the job", func() {
@@ -76,6 +82,16 @@ applications:
 				Expect(string(response)).To(ContainSubstring("202 Accepted"))
 
 				PollJob(GetJobPath(response))
+
+				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+					target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+					Expect(target).To(Exit(0), "failed targeting")
+
+					session = cf.Cf("app", appName)
+					Eventually(session).Should(Say("instances:\\s+\\d+/2"))
+					Eventually(session).Should(Say("buildpack:\\s+ruby_buildpack"))
+					Eventually(session).Should(Exit(0))
+				})
 			})
 		})
 	})
