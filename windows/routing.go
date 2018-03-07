@@ -1,4 +1,4 @@
-package wats
+package windows
 
 import (
 	. "github.com/onsi/ginkgo"

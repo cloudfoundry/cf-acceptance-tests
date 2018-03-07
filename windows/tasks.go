@@ -1,35 +1,41 @@
-package wats
+package windows
 
 import (
-	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
+
+	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 )
 
-var _ = WindowsDescribe("A running application", func() {
+var _ = WindowsDescribe("Task Lifecycle", func() {
 	var appName string
 
 	BeforeEach(func() {
+		if !Config.GetWindowsTestTask() {
+			Skip("Skipping tasks tests (requires diego-release v1.20.0 and above)")
+		}
+
 		appName = random_name.CATSRandomName("APP")
 
 		Expect(cf.Cf("push",
 			appName,
 			"--no-start",
 			"-s", Config.GetWindowsStack(),
-			"-b", Config.GetHwcBuildpackName(),
+			"-b", Config.GetBinaryBuildpackName(),
+			"-c", ".\\webapp.exe",
 			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", assets.NewAssets().Nora,
+			"-p", assets.NewAssets().WindowsWebapp,
 			"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
 		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hello i am nora"))
+		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hi i am a standalone webapp"))
 	})
 
 	AfterEach(func() {
@@ -38,11 +44,14 @@ var _ = WindowsDescribe("A running application", func() {
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).Should(Exit(0))
 	})
 
-	It("can show crash events", func() {
-		helpers.CurlApp(Config, appName, "/exit")
+	It("exercises the task lifecycle on windows", func() {
+		session := cf.Cf("run-task", appName, "cmd /c echo 'hello world'")
+		Eventually(session).Should(Exit(0))
 
-		Eventually(func() string {
-			return string(cf.Cf("events", appName).Wait(Config.DefaultTimeoutDuration()).Out.Contents())
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Exited"))
+		Eventually(func() *Session {
+			taskSession := cf.Cf("tasks", appName)
+			Expect(taskSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			return taskSession
+		}, Config.DefaultTimeoutDuration()).Should(Say("SUCCEEDED"))
 	})
 })

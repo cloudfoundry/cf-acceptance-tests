@@ -1,19 +1,19 @@
-package wats
+package windows
 
 import (
+	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
-
-	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 )
 
-var _ = WindowsDescribe("Setting an app's start command", func() {
+var _ = WindowsDescribe("A running application", func() {
 	var appName string
 
 	BeforeEach(func() {
@@ -22,15 +22,14 @@ var _ = WindowsDescribe("Setting an app's start command", func() {
 		Expect(cf.Cf("push",
 			appName,
 			"--no-start",
-			"--no-route",
 			"-s", Config.GetWindowsStack(),
-			"-b", Config.GetBinaryBuildpackName(),
+			"-b", Config.GetHwcBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
-			"-c", "loop.bat Hi there!!!",
-			"-u", "none",
-			"-p", assets.NewAssets().BatchScript).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			"-p", assets.NewAssets().Nora,
+			"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
 		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hello i am nora"))
 	})
 
 	AfterEach(func() {
@@ -39,10 +38,11 @@ var _ = WindowsDescribe("Setting an app's start command", func() {
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).Should(Exit(0))
 	})
 
-	It("uses the given start command", func() {
-		session := cf.Cf("logs", appName, "--recent")
-		Eventually(session).Should(Exit(0))
-		// OUT... to make sure we don't match the Launcher line: Running `loop.bat Hi there!!!'
-		Expect(session.Out).To(Say("OUT Hi there!!!"))
+	It("can show crash events", func() {
+		helpers.CurlApp(Config, appName, "/exit")
+
+		Eventually(func() string {
+			return string(cf.Cf("events", appName).Wait(Config.DefaultTimeoutDuration()).Out.Contents())
+		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Exited"))
 	})
 })

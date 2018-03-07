@@ -1,4 +1,4 @@
-package wats
+package windows
 
 import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -13,23 +13,11 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 )
 
-var _ = WindowsDescribe("An application printing a bunch of output", func() {
+var _ = WindowsDescribe("A standalone webapp", func() {
 	var appName string
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
-
-		Expect(cf.Cf("push",
-			appName,
-			"--no-start",
-			"-s", Config.GetWindowsStack(),
-			"-b", Config.GetHwcBuildpackName(),
-			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", assets.NewAssets().Nora,
-			"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		app_helpers.SetBackend(appName)
-		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hello i am nora"))
 	})
 
 	AfterEach(func() {
@@ -38,14 +26,18 @@ var _ = WindowsDescribe("An application printing a bunch of output", func() {
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).Should(Exit(0))
 	})
 
-	It("doesn't die when printing 32MB", func() {
-		beforeId := helpers.CurlApp(Config, appName, "/id")
-
-		Expect(helpers.CurlAppWithTimeout(Config, appName, "/logspew/32000", Config.LongTimeoutDuration())).
-			To(ContainSubstring("Just wrote 32000 kbytes to the log"))
-
-		Consistently(func() string {
-			return helpers.CurlApp(Config, appName, "/id")
-		}, "10s").Should(Equal(beforeId))
+	It("stages and runs the app", func() {
+		Expect(cf.Cf("push",
+			appName,
+			"--no-start",
+			"-s", Config.GetWindowsStack(),
+			"-b", Config.GetBinaryBuildpackName(),
+			"-c", ".\\webapp.exe",
+			"-m", DEFAULT_MEMORY_LIMIT,
+			"-p", assets.NewAssets().WindowsWebapp,
+			"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		app_helpers.SetBackend(appName)
+		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hi i am a standalone webapp"))
 	})
 })

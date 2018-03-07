@@ -1,4 +1,4 @@
-package wats
+package windows
 
 import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = WindowsDescribe("ASP classic applications", func() {
+var _ = WindowsDescribe("App Limits", func() {
 	var appName string
 
 	BeforeEach(func() {
@@ -23,11 +23,12 @@ var _ = WindowsDescribe("ASP classic applications", func() {
 			"--no-start",
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
-			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", assets.NewAssets().AspClassic,
+			"-m", "256m",
+			"-p", assets.NewAssets().Nora,
 			"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
 		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hello i am nora"))
 	})
 
 	AfterEach(func() {
@@ -36,7 +37,8 @@ var _ = WindowsDescribe("ASP classic applications", func() {
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).Should(Exit(0))
 	})
 
-	It("start up successfully", func() {
-		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("Hello World!"))
+	It("does not allow the app to use more memory than allowed", func() {
+		response := helpers.CurlApp(Config, appName, "/leakmemory/300")
+		Expect(response).To(ContainSubstring("Insufficient memory"))
 	})
 })

@@ -1,4 +1,4 @@
-package wats
+package windows
 
 import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"

@@ -1,8 +1,6 @@
-package wats
+package windows
 
 import (
-	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
@@ -10,9 +8,12 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+
+	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 )
 
-var _ = WindowsDescribe("App Limits", func() {
+var _ = WindowsDescribe("An application printing a bunch of output", func() {
 	var appName string
 
 	BeforeEach(func() {
@@ -23,7 +24,7 @@ var _ = WindowsDescribe("App Limits", func() {
 			"--no-start",
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
-			"-m", "256m",
+			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Nora,
 			"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		app_helpers.SetBackend(appName)
@@ -37,8 +38,14 @@ var _ = WindowsDescribe("App Limits", func() {
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).Should(Exit(0))
 	})
 
-	It("does not allow the app to use more memory than allowed", func() {
-		response := helpers.CurlApp(Config, appName, "/leakmemory/300")
-		Expect(response).To(ContainSubstring("Insufficient memory"))
+	It("doesn't die when printing 32MB", func() {
+		beforeId := helpers.CurlApp(Config, appName, "/id")
+
+		Expect(helpers.CurlAppWithTimeout(Config, appName, "/logspew/32000", Config.LongTimeoutDuration())).
+			To(ContainSubstring("Just wrote 32000 kbytes to the log"))
+
+		Consistently(func() string {
+			return helpers.CurlApp(Config, appName, "/id")
+		}, "10s").Should(Equal(beforeId))
 	})
 })
