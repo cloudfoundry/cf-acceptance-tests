@@ -13,6 +13,8 @@ import (
 
 	"encoding/json"
 
+	"strings"
+
 	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
@@ -20,7 +22,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"strings"
 )
 
 var _ = CredhubDescribe("service bindings", func() {
@@ -48,7 +49,7 @@ var _ = CredhubDescribe("service bindings", func() {
 
 		existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait(Config.DefaultTimeoutDuration()).Out.Contents())
 
-		if (!strings.Contains(existingEnvVar, "CREDHUB_API")){
+		if !strings.Contains(existingEnvVar, "CREDHUB_API") {
 			Expect(cf.Cf(
 				"set-env", chBrokerAppName,
 				"CREDHUB_API", Config.GetCredHubLocation(),
@@ -108,7 +109,7 @@ var _ = CredhubDescribe("service bindings", func() {
 
 		existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait(Config.DefaultTimeoutDuration()).Out.Contents())
 
-		if (!strings.Contains(existingEnvVar, "CREDHUB_API")){
+		if !strings.Contains(existingEnvVar, "CREDHUB_API") {
 			Expect(cf.Cf(
 				"set-env", appName,
 				"CREDHUB_API", Config.GetCredHubLocation(),

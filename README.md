@@ -224,6 +224,14 @@ include_capi_no_bridge
 * `php_buildpack_name` [See below](#buildpack-names).
 * `binary_buildpack_name` [See below](#buildpack-names).
 
+* `include_windows`: Flag to include the tests that run against Windows cells.
+* `windows_secure_address`: An address of the form `<ip:port>` which containers are prohibited from accessing by the default ASGs.
+* `num_windows_cells`: Number of Windows cells. Must be greater than 0.
+* `windows_test_task`: Flag to include the tasks tests on Windows cells.
+* `windows_context_path`: Flag to include the Windows context path routing tests.
+* `windows_stack`: Windows stack to run tests against. Must be either `windows2012R2` or `windows2016`. Defaults to `windows2012R2`.
+* `windows_credhub_mode`: Run the credhub tests on Windows. Valid values are `assisted` or `non-assisted`. [See below](#credhub-modes). The tests will use configuration from `credub_location`, `credhub_client`, and `credhub_secret`
+
 #### Persistent App Test Setup
 The tests in `one_push_many_restarts_test.go` operate on an app that is supposed to persist between runs of the CF Acceptance tests. If these tests are run, they will create an org, space, and quota and push the app to this space. The test config will provide default names for these entities, but to configure them, set values for `persistent_app_host`, `persistent_app_space`, `persistent_app_org`, and `persistent_app_quota_name`.
 
@@ -238,6 +246,7 @@ Many tests specify a buildpack when pushing an app, so that on diego the app sta
 * `python_buildpack_name: python_buildpack`
 * `php_buildpack_name: php_buildpack`
 * `binary_buildpack_name: binary_buildpack`
+* `hwc_buildpack_name: hwc_buildpack`
 
 #### Route Services Test Group Setup
 The `route_services` test group pushes applications which must be able to reach the load balancer of your Cloud Foundry deployment. This requires configuring application security groups to support this. Your deployment manifest should include the following data if you are running the `route_services` group:
