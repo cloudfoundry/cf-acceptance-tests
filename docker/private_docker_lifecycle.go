@@ -129,8 +129,8 @@ var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
 
 		It("fails to start the docker app since the credentials are invalid", func() {
 			session := cf.Cf("start", appName)
+			Eventually(session, Config.CfPushTimeoutDuration()).Should(gbytes.Say("(invalid username/password|[Uu]nauthorized)"))
 			Eventually(session, Config.CfPushTimeoutDuration()).Should(Exit(1))
-			Expect(session).To(gbytes.Say("(invalid username/password|[Uu]nauthorized)"))
 		})
 	})
 })
