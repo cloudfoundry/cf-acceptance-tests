@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nora", "Nora\Nora.csproj", "{29FA7814-C57E-46C9-9A62-DA717985A1BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nora.Tests", "Nora.Tests\Nora.Tests.csproj", "{720E2871-0BBE-4315-AFFB-BAC410356252}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{1FEC808E-2E16-4BC8-8575-5DA15DA00075}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{29FA7814-C57E-46C9-9A62-DA717985A1BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29FA7814-C57E-46C9-9A62-DA717985A1BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29FA7814-C57E-46C9-9A62-DA717985A1BB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{29FA7814-C57E-46C9-9A62-DA717985A1BB}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{29FA7814-C57E-46C9-9A62-DA717985A1BB}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{29FA7814-C57E-46C9-9A62-DA717985A1BB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{29FA7814-C57E-46C9-9A62-DA717985A1BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29FA7814-C57E-46C9-9A62-DA717985A1BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29FA7814-C57E-46C9-9A62-DA717985A1BB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{29FA7814-C57E-46C9-9A62-DA717985A1BB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{29FA7814-C57E-46C9-9A62-DA717985A1BB}.Release|Win32.ActiveCfg = Release|Any CPU
+		{29FA7814-C57E-46C9-9A62-DA717985A1BB}.Release|x64.ActiveCfg = Release|Any CPU
+		{720E2871-0BBE-4315-AFFB-BAC410356252}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{720E2871-0BBE-4315-AFFB-BAC410356252}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{720E2871-0BBE-4315-AFFB-BAC410356252}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{720E2871-0BBE-4315-AFFB-BAC410356252}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{720E2871-0BBE-4315-AFFB-BAC410356252}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{720E2871-0BBE-4315-AFFB-BAC410356252}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{720E2871-0BBE-4315-AFFB-BAC410356252}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{720E2871-0BBE-4315-AFFB-BAC410356252}.Release|Any CPU.Build.0 = Release|Any CPU
+		{720E2871-0BBE-4315-AFFB-BAC410356252}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{720E2871-0BBE-4315-AFFB-BAC410356252}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{720E2871-0BBE-4315-AFFB-BAC410356252}.Release|Win32.ActiveCfg = Release|Any CPU
+		{720E2871-0BBE-4315-AFFB-BAC410356252}.Release|x64.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

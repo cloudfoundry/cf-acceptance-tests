@@ -60,6 +60,7 @@ type config struct {
 
 	BinaryBuildpackName     *string `json:"binary_buildpack_name"`
 	GoBuildpackName         *string `json:"go_buildpack_name"`
+	HwcBuildpackName        *string `json:"hwc_buildpack_name"`
 	JavaBuildpackName       *string `json:"java_buildpack_name"`
 	NodejsBuildpackName     *string `json:"nodejs_buildpack_name"`
 	PhpBuildpackName        *string `json:"php_buildpack_name"`
@@ -67,35 +68,42 @@ type config struct {
 	RubyBuildpackName       *string `json:"ruby_buildpack_name"`
 	StaticFileBuildpackName *string `json:"staticfile_buildpack_name"`
 
-	IncludeApps                       *bool   `json:"include_apps"`
-	IncludeBackendCompatiblity        *bool   `json:"include_backend_compatibility"`
-	IncludeCapiExperimental           *bool   `json:"include_capi_experimental"`
-	IncludeCapiNoBridge               *bool   `json:"include_capi_no_bridge"`
-	IncludeContainerNetworking        *bool   `json:"include_container_networking"`
-	IncludeDetect                     *bool   `json:"include_detect"`
-	IncludeDocker                     *bool   `json:"include_docker"`
-	IncludeInternetDependent          *bool   `json:"include_internet_dependent"`
-	IncludePersistentApp              *bool   `json:"include_persistent_app"`
-	IncludePrivateDockerRegistry      *bool   `json:"include_private_docker_registry"`
-	IncludePrivilegedContainerSupport *bool   `json:"include_privileged_container_support"`
-	IncludeRouteServices              *bool   `json:"include_route_services"`
-	IncludeRouting                    *bool   `json:"include_routing"`
-	IncludeSSO                        *bool   `json:"include_sso"`
-	IncludeSecurityGroups             *bool   `json:"include_security_groups"`
-	IncludeServiceDiscovery           *bool   `json:"include_service_discovery"`
-	IncludeServices                   *bool   `json:"include_services"`
-	IncludeServiceInstanceSharing     *bool   `json:"include_service_instance_sharing"`
-	IncludeSsh                        *bool   `json:"include_ssh"`
-	IncludeTasks                      *bool   `json:"include_tasks"`
-	IncludeV3                         *bool   `json:"include_v3"`
-	IncludeZipkin                     *bool   `json:"include_zipkin"`
-	IncludeIsolationSegments          *bool   `json:"include_isolation_segments"`
-	IncludeRoutingIsolationSegments   *bool   `json:"include_routing_isolation_segments"`
+	IncludeApps                       *bool `json:"include_apps"`
+	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
+	IncludeCapiExperimental           *bool `json:"include_capi_experimental"`
+	IncludeCapiNoBridge               *bool `json:"include_capi_no_bridge"`
+	IncludeContainerNetworking        *bool `json:"include_container_networking"`
+	IncludeDetect                     *bool `json:"include_detect"`
+	IncludeDocker                     *bool `json:"include_docker"`
+	IncludeInternetDependent          *bool `json:"include_internet_dependent"`
+	IncludePersistentApp              *bool `json:"include_persistent_app"`
+	IncludePrivateDockerRegistry      *bool `json:"include_private_docker_registry"`
+	IncludePrivilegedContainerSupport *bool `json:"include_privileged_container_support"`
+	IncludeRouteServices              *bool `json:"include_route_services"`
+	IncludeRouting                    *bool `json:"include_routing"`
+	IncludeSSO                        *bool `json:"include_sso"`
+	IncludeSecurityGroups             *bool `json:"include_security_groups"`
+	IncludeServiceDiscovery           *bool `json:"include_service_discovery"`
+	IncludeServices                   *bool `json:"include_services"`
+	IncludeServiceInstanceSharing     *bool `json:"include_service_instance_sharing"`
+	IncludeSsh                        *bool `json:"include_ssh"`
+	IncludeTasks                      *bool `json:"include_tasks"`
+	IncludeV3                         *bool `json:"include_v3"`
+	IncludeZipkin                     *bool `json:"include_zipkin"`
+	IncludeIsolationSegments          *bool `json:"include_isolation_segments"`
+	IncludeRoutingIsolationSegments   *bool `json:"include_routing_isolation_segments"`
 
-	CredhubMode                       *string `json:"credhub_mode"`
-	CredhubLocation                   *string `json:"credhub_location"`
-	CredhubClientName                 *string `json:"credhub_client"`
-	CredhubClientSecret               *string `json:"credhub_secret"`
+	CredhubMode         *string `json:"credhub_mode"`
+	CredhubLocation     *string `json:"credhub_location"`
+	CredhubClientName   *string `json:"credhub_client"`
+	CredhubClientSecret *string `json:"credhub_secret"`
+
+	IncludeWindows        *bool   `json:"include_windows"`
+	WindowsSecureAddress  *string `json:"windows_secure_address"`
+	NumWindowsCells       *int    `json:"num_windows_cells"`
+	UseWindowsTestTask    *bool   `json:"use_windows_test_task"`
+	UseWindowsContextPath *bool   `json:"windows_context_path"`
+	WindowsStack          *string `json:"windows_stack"`
 
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image"`
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username"`
@@ -138,6 +146,7 @@ func getDefaults() config {
 
 	defaults.BinaryBuildpackName = ptrToString("binary_buildpack")
 	defaults.GoBuildpackName = ptrToString("go_buildpack")
+	defaults.HwcBuildpackName = ptrToString("hwc_buildpack")
 	defaults.JavaBuildpackName = ptrToString("java_buildpack")
 	defaults.NodejsBuildpackName = ptrToString("nodejs_buildpack")
 	defaults.PhpBuildpackName = ptrToString("php_buildpack")
@@ -174,6 +183,13 @@ func getDefaults() config {
 	defaults.IncludeTasks = ptrToBool(false)
 	defaults.IncludeZipkin = ptrToBool(false)
 	defaults.IncludeServiceInstanceSharing = ptrToBool(false)
+
+	defaults.IncludeWindows = ptrToBool(false)
+	defaults.NumWindowsCells = ptrToInt(0)
+	defaults.UseWindowsContextPath = ptrToBool(false)
+	defaults.WindowsSecureAddress = ptrToString("")
+	defaults.WindowsStack = ptrToString("windows2012R2")
+	defaults.UseWindowsTestTask = ptrToBool(false)
 
 	defaults.UseHttp = ptrToBool(false)
 	defaults.UseExistingUser = ptrToBool(false)
@@ -271,7 +287,10 @@ func validateConfig(config *config) Errors {
 		errs.Add(err)
 	}
 
-
+	err = validateWindows(config)
+	if err != nil {
+		errs.Add(err)
+	}
 	if config.UseHttp == nil {
 		errs.Add(fmt.Errorf("* 'use_http' must not be null"))
 	}
@@ -337,6 +356,9 @@ func validateConfig(config *config) Errors {
 	}
 	if config.GoBuildpackName == nil {
 		errs.Add(fmt.Errorf("* 'go_buildpack_name' must not be null"))
+	}
+	if config.HwcBuildpackName == nil {
+		errs.Add(fmt.Errorf("* 'hwc_buildpack_name' must not be null"))
 	}
 	if config.JavaBuildpackName == nil {
 		errs.Add(fmt.Errorf("* 'java_buildpack_name' must not be null"))
@@ -614,11 +636,36 @@ func validateRoutingIsolationSegments(config *config) error {
 	return nil
 }
 
-func validateCredHubSettings (config *config) error {
-	if config.GetIncludeCredhubAssisted() || config.GetIncludeCredhubNonAssisted(){
+func validateCredHubSettings(config *config) error {
+	if config.GetIncludeCredhubAssisted() || config.GetIncludeCredhubNonAssisted() {
 		if config.GetCredHubBrokerClientSecret() == "" || config.GetCredHubBrokerClientSecret() == "" {
 			return fmt.Errorf("* 'credhub_client' and 'credhub_secret' must not be null")
 		}
+	}
+	return nil
+}
+
+func validateWindows(config *config) error {
+	if config.IncludeWindows == nil {
+		return fmt.Errorf("* 'include_windows' must not be null")
+	}
+
+	if !config.GetIncludeWindows() {
+		return nil
+	}
+
+	switch config.GetWindowsStack() {
+	case "windows2012R2", "windows2016":
+	default:
+		return fmt.Errorf("* Invalid configuration: unknown Windows stack %s", config.GetWindowsStack())
+	}
+
+	if config.GetNumWindowsCells() < 1 {
+		return fmt.Errorf("* Invalid configuration: must have >= 1 Windows cell")
+	}
+
+	if _, _, err := net.SplitHostPort(config.GetWindowsSecureAddress()); err != nil {
+		return fmt.Errorf("* Invalid configuration: secure address must be of form host:port")
 	}
 	return nil
 }
@@ -896,12 +943,20 @@ func (c *config) GetIncludeServiceInstanceSharing() bool {
 	return *c.IncludeServiceInstanceSharing
 }
 
+func (c *config) GetIncludeWindows() bool {
+	return *c.IncludeWindows
+}
+
 func (c *config) GetRubyBuildpackName() string {
 	return *c.RubyBuildpackName
 }
 
 func (c *config) GetGoBuildpackName() string {
 	return *c.GoBuildpackName
+}
+
+func (c *config) GetHwcBuildpackName() string {
+	return *c.HwcBuildpackName
 }
 
 func (c *config) GetJavaBuildpackName() string {
@@ -942,4 +997,24 @@ func (c *config) GetPublicDockerAppImage() string {
 
 func (c *config) GetUnallocatedIPForSecurityGroup() string {
 	return *c.UnallocatedIPForSecurityGroup
+}
+
+func (c *config) GetWindowsSecureAddress() string {
+	return *c.WindowsSecureAddress
+}
+
+func (c *config) GetNumWindowsCells() int {
+	return *c.NumWindowsCells
+}
+
+func (c *config) GetUseWindowsTestTask() bool {
+	return *c.UseWindowsTestTask
+}
+
+func (c *config) GetUseWindowsContextPath() bool {
+	return *c.UseWindowsContextPath
+}
+
+func (c *config) GetWindowsStack() string {
+	return *c.WindowsStack
 }

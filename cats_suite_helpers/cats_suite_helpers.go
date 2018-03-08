@@ -296,3 +296,53 @@ func NonAssistedCredhubDescribe(description string, callback func()) bool {
 		Describe(description, callback)
 	})
 }
+
+func WindowsCredhubDescribe(description string, callback func()) bool {
+	return Describe("[windows credhub]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeWindows() {
+				Skip(skip_messages.SkipWindowsMessage)
+			}
+			if Config.GetBackend() != "diego" {
+				Skip(skip_messages.SkipDiegoMessage)
+			}
+			if !(Config.GetIncludeCredhubAssisted() || Config.GetIncludeCredhubNonAssisted()) {
+				Skip(skip_messages.SkipCredhubMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
+func WindowsAssistedCredhubDescribe(description string, callback func()) bool {
+	return Describe("[windows assisted credhub]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeCredhubAssisted() {
+				Skip(skip_messages.SkipAssistedCredhubMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
+func WindowsNonAssistedCredhubDescribe(description string, callback func()) bool {
+	return Describe("[windows non-assisted credhub]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeCredhubNonAssisted() {
+				Skip(skip_messages.SkipNonAssistedCredhubMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
+func WindowsDescribe(description string, callback func()) bool {
+	return Describe("[windows]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeWindows() {
+				Skip(skip_messages.SkipWindowsMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}
