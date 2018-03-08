@@ -306,7 +306,7 @@ func WindowsCredhubDescribe(description string, callback func()) bool {
 			if Config.GetBackend() != "diego" {
 				Skip(skip_messages.SkipDiegoMessage)
 			}
-			if !(Config.GetWindowsIncludeCredhubAssisted() || Config.GetWindowsIncludeCredhubNonAssisted()) {
+			if !(Config.GetIncludeCredhubAssisted() || Config.GetIncludeCredhubNonAssisted()) {
 				Skip(skip_messages.SkipCredhubMessage)
 			}
 		})
@@ -317,7 +317,7 @@ func WindowsCredhubDescribe(description string, callback func()) bool {
 func WindowsAssistedCredhubDescribe(description string, callback func()) bool {
 	return Describe("[windows assisted credhub]", func() {
 		BeforeEach(func() {
-			if !Config.GetWindowsIncludeCredhubAssisted() {
+			if !Config.GetIncludeCredhubAssisted() {
 				Skip(skip_messages.SkipAssistedCredhubMessage)
 			}
 		})
@@ -328,7 +328,7 @@ func WindowsAssistedCredhubDescribe(description string, callback func()) bool {
 func WindowsNonAssistedCredhubDescribe(description string, callback func()) bool {
 	return Describe("[windows non-assisted credhub]", func() {
 		BeforeEach(func() {
-			if !Config.GetWindowsIncludeCredhubNonAssisted() {
+			if !Config.GetIncludeCredhubNonAssisted() {
 				Skip(skip_messages.SkipNonAssistedCredhubMessage)
 			}
 		})

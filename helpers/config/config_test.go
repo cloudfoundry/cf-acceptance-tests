@@ -260,8 +260,6 @@ var _ = Describe("Config", func() {
 		Expect(config.GetWindowsTestTask()).To(BeFalse())
 		Expect(config.GetWindowsContextPath()).To(BeFalse())
 		Expect(config.GetWindowsStack()).To(Equal("windows2012R2"))
-		Expect(config.GetWindowsIncludeCredhubAssisted()).To(BeFalse())
-		Expect(config.GetWindowsIncludeCredhubNonAssisted()).To(BeFalse())
 
 		Expect(config.GetBackend()).To(Equal(""))
 

@@ -104,7 +104,6 @@ type config struct {
 	WindowsTestTask      *bool   `json:"windows_test_task"`
 	WindowsContextPath   *bool   `json:"windows_context_path"`
 	WindowsStack         *string `json:"windows_stack"`
-	WindowsCredhubMode   *string `json:"windows_credhub_mode"`
 
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image"`
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username"`
@@ -191,7 +190,6 @@ func getDefaults() config {
 	defaults.WindowsSecureAddress = ptrToString("")
 	defaults.WindowsStack = ptrToString("windows2012R2")
 	defaults.WindowsTestTask = ptrToBool(false)
-	defaults.WindowsCredhubMode = ptrToString("")
 
 	defaults.UseHttp = ptrToBool(false)
 	defaults.UseExistingUser = ptrToBool(false)
@@ -1019,12 +1017,4 @@ func (c *config) GetWindowsContextPath() bool {
 
 func (c *config) GetWindowsStack() string {
 	return *c.WindowsStack
-}
-
-func (c *config) GetWindowsIncludeCredhubAssisted() bool {
-	return *c.WindowsCredhubMode == CredhubAssistedMode
-}
-
-func (c *config) GetWindowsIncludeCredhubNonAssisted() bool {
-	return *c.WindowsCredhubMode == CredhubNonAssistedMode
 }

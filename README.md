@@ -230,7 +230,6 @@ include_capi_no_bridge
 * `windows_test_task`: Flag to include the tasks tests on Windows cells.
 * `windows_context_path`: Flag to include the Windows context path routing tests.
 * `windows_stack`: Windows stack to run tests against. Must be either `windows2012R2` or `windows2016`. Defaults to `windows2012R2`.
-* `windows_credhub_mode`: Run the credhub tests on Windows. Valid values are `assisted` or `non-assisted`. [See below](#credhub-modes). The tests will use configuration from `credub_location`, `credhub_client`, and `credhub_secret`
 
 #### Persistent App Test Setup
 The tests in `one_push_many_restarts_test.go` operate on an app that is supposed to persist between runs of the CF Acceptance tests. If these tests are run, they will create an org, space, and quota and push the app to this space. The test config will provide default names for these entities, but to configure them, set values for `persistent_app_host`, `persistent_app_space`, `persistent_app_org`, and `persistent_app_quota_name`.

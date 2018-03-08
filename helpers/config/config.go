@@ -76,8 +76,6 @@ type CatsConfig interface {
 	GetWindowsTestTask() bool
 	GetWindowsContextPath() bool
 	GetWindowsStack() string
-	GetWindowsIncludeCredhubAssisted() bool
-	GetWindowsIncludeCredhubNonAssisted() bool
 
 	AsyncServiceOperationTimeoutDuration() time.Duration
 	BrokerStartTimeoutDuration() time.Duration
