@@ -57,7 +57,7 @@ var _ = WindowsDescribe("Getting instance information", func() {
 
 		It("fails with insufficient resources", func() {
 			app := cf.Cf("app", appName)
-			Eventually(app).Should(Exit(0))
+			Eventually(app, Config.DefaultTimeoutDuration()).Should(Exit(0))
 			Expect(app.Out).To(Say("insufficient resources"))
 		})
 	})

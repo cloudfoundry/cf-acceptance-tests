@@ -98,8 +98,8 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 
 		By("scaling it", func() {
 			Expect(cf.Cf("scale", appName, "-i", "2").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-			Eventually(cf.Cf("apps").Wait()).Should(gbytes.Say("2/2"))
-			Expect(cf.Cf("app", appName).Wait()).ToNot(gbytes.Say("insufficient resources"))
+			Eventually(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration())).Should(gbytes.Say("2/2"))
+			Expect(cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())).ToNot(gbytes.Say("insufficient resources"))
 		})
 
 		By("restarting an instance", func() {
