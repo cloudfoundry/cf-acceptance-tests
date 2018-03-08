@@ -58,12 +58,12 @@ type testConfig struct {
 	IsolationSegmentDomain          *string `json:"isolation_segment_domain,omitempty"`
 	UnallocatedIPForSecurityGroup   *string `json:"unallocated_ip_for_security_group"`
 
-	IncludeWindows       *bool   `json:"include_windows,omitempty"`
-	WindowsSecureAddress *string `json:"windows_secure_address,omitempty"`
-	NumWindowsCells      *int    `json:"num_windows_cells,omitempty"`
-	WindowsTestTask      *bool   `json:"windows_test_task,omitempty"`
-	WindowsContextPath   *bool   `json:"windows_context_path,omitempty"`
-	WindowsStack         *string `json:"windows_stack,omitempty"`
+	IncludeWindows        *bool   `json:"include_windows,omitempty"`
+	WindowsSecureAddress  *string `json:"windows_secure_address,omitempty"`
+	NumWindowsCells       *int    `json:"num_windows_cells,omitempty"`
+	UseWindowsTestTask    *bool   `json:"use_windows_test_task,omitempty"`
+	UseWindowsContextPath *bool   `json:"use_windows_context_path,omitempty"`
+	WindowsStack          *string `json:"windows_stack,omitempty"`
 }
 
 type allConfig struct {
@@ -257,8 +257,8 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeServiceInstanceSharing()).To(BeFalse())
 
 		Expect(config.GetIncludeWindows()).To(BeFalse())
-		Expect(config.GetWindowsTestTask()).To(BeFalse())
-		Expect(config.GetWindowsContextPath()).To(BeFalse())
+		Expect(config.GetUseWindowsTestTask()).To(BeFalse())
+		Expect(config.GetUseWindowsContextPath()).To(BeFalse())
 		Expect(config.GetWindowsStack()).To(Equal("windows2012R2"))
 
 		Expect(config.GetBackend()).To(Equal(""))

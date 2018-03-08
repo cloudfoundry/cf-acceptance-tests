@@ -29,7 +29,7 @@ var _ = WindowsDescribe("Context Paths", func() {
 	)
 
 	BeforeEach(func() {
-		if !Config.GetWindowsContextPath() {
+		if !Config.GetUseWindowsContextPath() {
 			Skip(skip_messages.SkipWindowsContextPathsMessage)
 		}
 		domain := Config.GetAppsDomain()

@@ -18,7 +18,7 @@ var _ = WindowsDescribe("Task Lifecycle", func() {
 	var appName string
 
 	BeforeEach(func() {
-		if !Config.GetWindowsTestTask() {
+		if !Config.GetUseWindowsTestTask() {
 			Skip("Skipping tasks tests (requires diego-release v1.20.0 and above)")
 		}
 

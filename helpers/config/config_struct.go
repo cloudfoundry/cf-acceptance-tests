@@ -98,12 +98,12 @@ type config struct {
 	CredhubClientName   *string `json:"credhub_client"`
 	CredhubClientSecret *string `json:"credhub_secret"`
 
-	IncludeWindows       *bool   `json:"include_windows"`
-	WindowsSecureAddress *string `json:"windows_secure_address"`
-	NumWindowsCells      *int    `json:"num_windows_cells"`
-	WindowsTestTask      *bool   `json:"windows_test_task"`
-	WindowsContextPath   *bool   `json:"windows_context_path"`
-	WindowsStack         *string `json:"windows_stack"`
+	IncludeWindows        *bool   `json:"include_windows"`
+	WindowsSecureAddress  *string `json:"windows_secure_address"`
+	NumWindowsCells       *int    `json:"num_windows_cells"`
+	UseWindowsTestTask    *bool   `json:"use_windows_test_task"`
+	UseWindowsContextPath *bool   `json:"windows_context_path"`
+	WindowsStack          *string `json:"windows_stack"`
 
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image"`
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username"`
@@ -186,10 +186,10 @@ func getDefaults() config {
 
 	defaults.IncludeWindows = ptrToBool(false)
 	defaults.NumWindowsCells = ptrToInt(0)
-	defaults.WindowsContextPath = ptrToBool(false)
+	defaults.UseWindowsContextPath = ptrToBool(false)
 	defaults.WindowsSecureAddress = ptrToString("")
 	defaults.WindowsStack = ptrToString("windows2012R2")
-	defaults.WindowsTestTask = ptrToBool(false)
+	defaults.UseWindowsTestTask = ptrToBool(false)
 
 	defaults.UseHttp = ptrToBool(false)
 	defaults.UseExistingUser = ptrToBool(false)
@@ -1007,12 +1007,12 @@ func (c *config) GetNumWindowsCells() int {
 	return *c.NumWindowsCells
 }
 
-func (c *config) GetWindowsTestTask() bool {
-	return *c.WindowsTestTask
+func (c *config) GetUseWindowsTestTask() bool {
+	return *c.UseWindowsTestTask
 }
 
-func (c *config) GetWindowsContextPath() bool {
-	return *c.WindowsContextPath
+func (c *config) GetUseWindowsContextPath() bool {
+	return *c.UseWindowsContextPath
 }
 
 func (c *config) GetWindowsStack() string {

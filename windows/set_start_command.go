@@ -40,7 +40,7 @@ var _ = WindowsDescribe("Setting an app's start command", func() {
 	})
 
 	It("uses the given start command", func() {
-		session := cf.Cf("logs", appName, "--recent")
+		session := cf.Cf("logs", appName, "--recent").Wait(Config.DefaultTimeoutDuration())
 		Eventually(session).Should(Exit(0))
 		// OUT... to make sure we don't match the Launcher line: Running `loop.bat Hi there!!!'
 		Expect(session.Out).To(Say("OUT Hi there!!!"))

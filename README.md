@@ -226,9 +226,9 @@ include_capi_no_bridge
 
 * `include_windows`: Flag to include the tests that run against Windows cells.
 * `windows_secure_address`: An address of the form `<ip:port>` which containers are prohibited from accessing by the default ASGs.
-* `num_windows_cells`: Number of Windows cells. Must be greater than 0.
-* `windows_test_task`: Flag to include the tasks tests on Windows cells.
-* `windows_context_path`: Flag to include the Windows context path routing tests.
+* `num_windows_cells`: Number of Windows cells. Must be greater than 0 if `include_windows` is set to `true`.
+* `use_windows_test_task`: Flag to include the tasks tests on Windows cells. Default is `false`.
+* `use_windows_context_path`: Flag to include the Windows context path routing tests. Default is `false`.
 * `windows_stack`: Windows stack to run tests against. Must be either `windows2012R2` or `windows2016`. Defaults to `windows2012R2`.
 
 #### Persistent App Test Setup

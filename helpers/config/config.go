@@ -73,8 +73,8 @@ type CatsConfig interface {
 
 	GetWindowsSecureAddress() string
 	GetNumWindowsCells() int
-	GetWindowsTestTask() bool
-	GetWindowsContextPath() bool
+	GetUseWindowsTestTask() bool
+	GetUseWindowsContextPath() bool
 	GetWindowsStack() string
 
 	AsyncServiceOperationTimeoutDuration() time.Duration
