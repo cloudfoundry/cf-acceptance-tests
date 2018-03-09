@@ -210,7 +210,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 
 				userBSpaceName := TestSetup.RegularUserContext().TestSpace.SpaceName()
 
-				unshareSpace := cf.Cf("v3-unshare-service", serviceInstanceName, "-s", userBSpaceName, "-f").Wait(Config.DefaultTimeoutDuration())
+				unshareSpace := cf.Cf("unshare-service", serviceInstanceName, "-s", userBSpaceName, "-f").Wait(Config.DefaultTimeoutDuration())
 				Expect(unshareSpace).To(Exit(0))
 				Expect(unshareSpace).ToNot(Say("errors"))
 			})
