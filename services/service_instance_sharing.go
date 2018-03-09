@@ -64,7 +64,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 				By("Sharing the service instance into User B's space")
 				userBSpaceName := TestSetup.RegularUserContext().TestSpace.SpaceName()
 
-				shareSpace := cf.Cf("v3-share-service", serviceInstanceName, "-s", userBSpaceName).Wait(Config.DefaultTimeoutDuration())
+				shareSpace := cf.Cf("share-service", serviceInstanceName, "-s", userBSpaceName).Wait(Config.DefaultTimeoutDuration())
 
 				Expect(shareSpace).To(Exit(0), "failed to share")
 				Expect(shareSpace).To(Say("OK"))
