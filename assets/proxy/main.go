@@ -1,12 +1,13 @@
 package main
 
 import (
-	"proxy/handlers"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/cloudfoundry/cf-acceptance-tests/assets/proxy/handlers"
 )
 
 func launchHandler(port int, downloadHandler, pingHandler, proxyHandler, statsHandler, uploadHandler http.Handler) {

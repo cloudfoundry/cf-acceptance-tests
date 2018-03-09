@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
-	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
@@ -92,7 +91,7 @@ func getAppContainerIpAndPort(appName string) (string, int) {
 
 type Destination struct {
 	IP       string `json:"destination"`
-	Port     int    `json:"ports,string"`
+	Port     int    `json:"ports,string,omitempty"`
 	Protocol string `json:"protocol"`
 }
 
@@ -185,14 +184,18 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 	var serverAppName, privateHost string
 	var privatePort int
 
-	Describe("using the cf-networking commands", func() {
-		var clientAppName, securityGroupName string
+	Describe("Using container-networking and running security-groups", func() {
+		var serverAppName, clientAppName, privateHost, orgName, spaceName, securityGroupName string
+		var privatePort int
 
 		BeforeEach(func() {
 			if !Config.GetIncludeContainerNetworking() {
 				Skip(skip_messages.SkipContainerNetworkingMessage)
 			}
 
+			orgName = TestSetup.RegularUserContext().Org
+			spaceName = TestSetup.RegularUserContext().Space
+
 			serverAppName, privateHost, privatePort = pushServerApp()
 			clientAppName = pushClientApp()
 			assertNetworkingPreconditions(clientAppName, privateHost, privatePort)
@@ -208,86 +211,75 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 			deleteSecurityGroup(securityGroupName)
 		})
 
-		It("allows ip traffic between containers after applying a policy and blocks it when the policy is removed", func() {
-			containerIp, containerPort := getAppContainerIpAndPort(serverAppName)
-			orgName := TestSetup.RegularUserContext().Org
-			spaceName := TestSetup.RegularUserContext().Space
+		It("correctly configures asgs and c2c policy independent of each other", func() {
+			By("creating a wide-open ASG")
+			dest := Destination{
+				IP:       "0.0.0.0/0", // some random IP that isn't covered by an existing Security Group rule
+				Protocol: "all",
+			}
+			securityGroupName = createSecurityGroup(dest)
+			privateAddress := Config.GetUnallocatedIPForSecurityGroup()
 
-			By("Testing that app cannot connect")
+			By("binding new security group")
+			bindSecurityGroup(securityGroupName, orgName, spaceName)
+
+			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+			By("Testing that client app cannot connect to the server app using the overlay")
+			containerIp, containerPort := getAppContainerIpAndPort(serverAppName)
 			catnipCurlResponse := testAppConnectivity(clientAppName, containerIp, containerPort)
-			Expect(catnipCurlResponse.ReturnCode).NotTo(Equal(0))
+			Expect(catnipCurlResponse.ReturnCode).NotTo(Equal(0), "no policy configured but client app can talk to server app using overlay")
+
+			By("Testing that external connectivity to a private ip is not refused (but may be unreachable for other reasons)")
+			catnipCurlResponse = testAppConnectivity(clientAppName, privateAddress, 80)
+			Expect(catnipCurlResponse.Stderr).NotTo(ContainSubstring("refused"), "wide-open ASG configured but app is still refused by private ip")
 
 			By("adding policy")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).ToNot(ContainSubstring(serverAppName))
 				Expect(cf.Cf("add-network-policy", clientAppName, "--destination-app", serverAppName, "--port", fmt.Sprintf("%d", containerPort), "--protocol", "tcp").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring(serverAppName))
 			})
 
-			By("waiting for policy to be added on cell")
-			time.Sleep(10 * time.Second)
+			By("Testing that client app can connect to server app using the overlay")
+			Eventually(func() int {
+				catnipCurlResponse = testAppConnectivity(clientAppName, containerIp, containerPort)
+				return catnipCurlResponse.ReturnCode
+			}, "5s").Should(Equal(0), "policy is configured + wide-open asg but client app cannot talk to server app using overlay")
 
-			By("Testing that app can connect")
-			catnipCurlResponse = testAppConnectivity(clientAppName, containerIp, containerPort)
-			Expect(catnipCurlResponse.ReturnCode).To(Equal(0))
+			By("unbinding the wide-open security group")
+			unbindSecurityGroup(securityGroupName, orgName, spaceName)
+			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-			By("removing policy")
+			By("restarting the app")
+			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+			By("Testing that client app can still connect to server app using the overlay")
+			Eventually(func() int {
+				catnipCurlResponse = testAppConnectivity(clientAppName, containerIp, containerPort)
+				return catnipCurlResponse.ReturnCode
+			}, "5s").Should(Equal(0), "policy is configured, asgs are not but client app cannot talk to server app using overlay")
+
+			By("Testing that external connectivity to a private ip is refused")
+			catnipCurlResponse = testAppConnectivity(clientAppName, privateAddress, 80)
+			Expect(catnipCurlResponse.Stderr).To(ContainSubstring("refused"))
+
+			By("deleting policy")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring(serverAppName))
 				Expect(cf.Cf("remove-network-policy", clientAppName, "--destination-app", serverAppName, "--port", fmt.Sprintf("%d", containerPort), "--protocol", "tcp").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).ToNot(ContainSubstring(serverAppName))
 			})
 
-			By("waiting for policy to be removed on cell")
-			time.Sleep(10 * time.Second)
-
-			By("Testing that app can no longer connect")
-			catnipCurlResponse = testAppConnectivity(clientAppName, containerIp, containerPort)
-			Expect(catnipCurlResponse.ReturnCode).NotTo(Equal(0))
-		})
-	})
-
-	Describe("Using running security-groups", func() {
-		var clientAppName, securityGroupName string
-
-		BeforeEach(func() {
-			serverAppName, privateHost, privatePort = pushServerApp()
-			clientAppName = pushClientApp()
-			assertNetworkingPreconditions(clientAppName, privateHost, privatePort)
+			By("Testing the client app cannot connect to the server app using the overlay")
+			Eventually(func() int {
+				catnipCurlResponse = testAppConnectivity(clientAppName, containerIp, containerPort)
+				return catnipCurlResponse.ReturnCode
+			}, "5s").ShouldNot(Equal(0), "no policy is configured but client app can talk to server app using overlay")
 		})
 
-		AfterEach(func() {
-			app_helpers.AppReport(serverAppName, Config.DefaultTimeoutDuration())
-			Expect(cf.Cf("delete", serverAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-			app_helpers.AppReport(clientAppName, Config.DefaultTimeoutDuration())
-			Expect(cf.Cf("delete", clientAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-			deleteSecurityGroup(securityGroupName)
-		})
-
-		It("allows ip traffic from a container to a private, non-container destination after binding a security group and refuses it after unbinding the security group", func() {
-			dest := Destination{
-				IP:       Config.GetUnallocatedIPForSecurityGroup(), // some random IP that isn't covered by an existing Security Group rule
-				Port:     80,
-				Protocol: "tcp",
-			}
-			securityGroupName = createSecurityGroup(dest)
-			By("binding new security group")
-			bindSecurityGroup(securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space)
-
-			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-			By("Testing that connection is not refused (but may be unreachable for other reasons)")
-			catnipCurlResponse := testAppConnectivity(clientAppName, dest.IP, dest.Port)
-			Expect(catnipCurlResponse.Stderr).NotTo(ContainSubstring("refused"))
-
-			By("unbinding security group")
-			unbindSecurityGroup(securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space)
-			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-			By("Testing the connect is refused")
-			catnipCurlResponse = testAppConnectivity(clientAppName, dest.IP, dest.Port)
-			Expect(catnipCurlResponse.Stderr).To(ContainSubstring("refused"))
-		})
 	})
 
 	Describe("Using staging security groups", func() {
