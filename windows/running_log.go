@@ -53,7 +53,7 @@ var _ = WindowsDescribe("app logs", func() {
 			appLogsSession := cf.Cf("logs", "--recent", appName)
 			Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			return appLogsSession
-		}).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*OUT %s", message)))
+		}, Config.DefaultTimeoutDuration()).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*OUT %s", message)))
 	})
 
 	It("captures stderr logs with the correct tag", func() {
@@ -67,6 +67,6 @@ var _ = WindowsDescribe("app logs", func() {
 			appLogsSession := cf.Cf("logs", "--recent", appName)
 			Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			return appLogsSession
-		}).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*ERR %s", message)))
+		}, Config.DefaultTimeoutDuration()).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*ERR %s", message)))
 	})
 })
