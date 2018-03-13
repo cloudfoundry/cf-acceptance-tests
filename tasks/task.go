@@ -11,6 +11,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -20,6 +21,8 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 )
+
+const policyTimeout = "5s"
 
 type Result struct {
 	FailureReason string `json:"failure_reason"`
@@ -36,6 +39,11 @@ type Task struct {
 
 type Tasks struct {
 	Resources []Task `json:"resources"`
+}
+
+type ProxyResponse struct {
+	ListenAddresses []string ""
+	Port            int
 }
 
 func getTaskDetails(appName string) []string {
@@ -63,6 +71,16 @@ func getGuid(appGuid string, sequenceId string) string {
 	return task.Guid
 }
 
+func getContainerIP(listenAddresses []string) string {
+	for _, listenAddr := range listenAddresses {
+		if !strings.HasPrefix(listenAddr, "127.0.0.1") {
+			return listenAddr
+		}
+	}
+
+	return ""
+}
+
 var _ = TasksDescribe("v3 tasks", func() {
 	var (
 		appName string
@@ -75,29 +93,32 @@ var _ = TasksDescribe("v3 tasks", func() {
 		}
 		appName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Cf("push",
-			appName,
-			"--no-start",
-			"-b", Config.GetBinaryBuildpackName(),
-			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", assets.NewAssets().Catnip,
-			"-c", "./catnip",
-			"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		app_helpers.SetBackend(appName)
-		appGuid = app_helpers.GetAppGuid(appName)
-		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-		Eventually(func() string {
-			return helpers.CurlAppRoot(Config, appName)
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
-	})
-
-	AfterEach(func() {
-		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
-
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
 	Context("tasks lifecycle", func() {
+		BeforeEach(func() {
+			Expect(cf.Cf("push",
+				appName,
+				"--no-start",
+				"-b", Config.GetBinaryBuildpackName(),
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().Catnip,
+				"-c", "./catnip",
+				"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			app_helpers.SetBackend(appName)
+			appGuid = app_helpers.GetAppGuid(appName)
+			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			Eventually(func() string {
+				return helpers.CurlAppRoot(Config, appName)
+			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
+		})
+
+		AfterEach(func() {
+			app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		})
+
 		It("can successfully create and run a task", func() {
 			By("creating the task")
 			taskName := "mreow"
@@ -141,45 +162,108 @@ var _ = TasksDescribe("v3 tasks", func() {
 			stop_event := app_helpers.AppUsageEvent{Entity: app_helpers.Entity{State: "TASK_STOPPED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: taskGuid}}
 			Expect(app_helpers.UsageEventsInclude(usageEvents, stop_event)).To(BeTrue())
 		})
+
+		Context("When cancelling a task", func() {
+			var taskId string
+			var taskName string
+
+			BeforeEach(func() {
+				command := "sleep 100;"
+				taskName = "mreow"
+				createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait(Config.DefaultTimeoutDuration())
+				Expect(createCommand).To(Exit(0))
+
+				taskDetails := getTaskDetails(appName)
+				taskId = taskDetails[0]
+			})
+
+			It("should show task is in FAILED state", func() {
+				terminateCommand := cf.Cf("terminate-task", appName, taskId).Wait(Config.DefaultTimeoutDuration())
+				Expect(terminateCommand).To(Exit(0))
+
+				var outputSequenceId, outputName, outputState string
+				Eventually(func() string {
+					taskDetails := getTaskDetails(appName)
+					outputSequenceId = taskDetails[0]
+					outputName = taskDetails[1]
+					outputState = taskDetails[2]
+					return outputState
+				}, Config.DefaultTimeoutDuration()).Should(Equal("FAILED"))
+				Expect(outputName).To(Equal(taskName))
+				taskGuid := getGuid(appGuid, outputSequenceId)
+
+				readCommand := cf.Cf("curl", fmt.Sprintf("/v3/tasks/%s", taskGuid), "-X", "GET").Wait(Config.DefaultTimeoutDuration())
+				Expect(readCommand).To(Exit(0))
+
+				var readOutput Task
+				err := json.Unmarshal(readCommand.Out.Contents(), &readOutput)
+				Expect(err).NotTo(HaveOccurred())
+				failureReason := readOutput.Result.FailureReason
+				Expect(failureReason).To(Equal("task was cancelled"))
+			})
+		})
 	})
 
-	Context("When cancelling a task", func() {
-		var taskId string
-		var taskName string
-
+	Context("when associating a task with an app", func() {
 		BeforeEach(func() {
-			command := "sleep 100;"
-			taskName = "mreow"
+			Expect(cf.Cf(
+				"push", appName,
+				"--no-start",
+				"-b", Config.GetGoBuildpackName(),
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().Proxy,
+				"-d", Config.GetAppsDomain(),
+				"-f", assets.NewAssets().Proxy+"/manifest.yml",
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			appGuid = app_helpers.GetAppGuid(appName)
+			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				Expect(cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).ToNot(ContainSubstring(appName))
+				Expect(cf.Cf("add-network-policy", appName, "--destination-app", appName, "--port", "8080", "--protocol", "tcp").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring(appName))
+			})
+		})
+
+		AfterEach(func() {
+			app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		})
+
+		It("applies the associated app's policies to the task", func(done Done) {
+			By("getting the overlay ip of app")
+			curlArgs := appName + "." + Config.GetAppsDomain()
+			curl := helpers.Curl(Config, curlArgs).Wait(Config.DefaultTimeoutDuration())
+			contents := curl.Out.Contents()
+
+			var proxyResponse ProxyResponse
+			Expect(json.Unmarshal(contents, &proxyResponse)).To(Succeed())
+			containerIP := getContainerIP(proxyResponse.ListenAddresses)
+
+			By("creating the task")
+			taskName := "woof"
+			command := `while true; do
+if curl --fail "` + containerIP + `:` + strconv.Itoa(proxyResponse.Port) + `" ; then
+	exit 0
+fi
+done;
+exit 1`
 			createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait(Config.DefaultTimeoutDuration())
 			Expect(createCommand).To(Exit(0))
 
-			taskDetails := getTaskDetails(appName)
-			taskId = taskDetails[0]
-		})
-
-		It("should show task is in FAILED state", func() {
-			terminateCommand := cf.Cf("terminate-task", appName, taskId).Wait(Config.DefaultTimeoutDuration())
-			Expect(terminateCommand).To(Exit(0))
-
-			var outputSequenceId, outputName, outputState string
+			By("successfully running")
+			var outputName, outputState string
 			Eventually(func() string {
 				taskDetails := getTaskDetails(appName)
-				outputSequenceId = taskDetails[0]
 				outputName = taskDetails[1]
 				outputState = taskDetails[2]
 				return outputState
-			}, Config.DefaultTimeoutDuration()).Should(Equal("FAILED"))
+			}, policyTimeout).Should(Equal("SUCCEEDED"))
 			Expect(outputName).To(Equal(taskName))
-			taskGuid := getGuid(appGuid, outputSequenceId)
 
-			readCommand := cf.Cf("curl", fmt.Sprintf("/v3/tasks/%s", taskGuid), "-X", "GET").Wait(Config.DefaultTimeoutDuration())
-			Expect(readCommand).To(Exit(0))
+			close(done)
+		}, 30*60 /* <-- overall spec timeout in seconds */)
 
-			var readOutput Task
-			err := json.Unmarshal(readCommand.Out.Contents(), &readOutput)
-			Expect(err).NotTo(HaveOccurred())
-			failureReason := readOutput.Result.FailureReason
-			Expect(failureReason).To(Equal("task was cancelled"))
-		})
 	})
 })
