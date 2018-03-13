@@ -7,12 +7,13 @@ import (
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 
+	"strings"
+
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"strings"
 )
 
 var _ = CredhubDescribe("service keys", func() {
@@ -40,7 +41,7 @@ var _ = CredhubDescribe("service keys", func() {
 
 		existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait(Config.DefaultTimeoutDuration()).Out.Contents())
 
-		if (!strings.Contains(existingEnvVar, "CREDHUB_API")){
+		if !strings.Contains(existingEnvVar, "CREDHUB_API") {
 			Expect(cf.Cf(
 				"set-env", chBrokerAppName,
 				"CREDHUB_API", Config.GetCredHubLocation(),
@@ -67,19 +68,13 @@ var _ = CredhubDescribe("service keys", func() {
 			"restart", chBrokerAppName,
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed restarting credhub-enabled service broker")
 
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-			serviceUrl := "https://" + chBrokerAppName + "." + Config.GetAppsDomain()
-			createServiceBroker := cf.Cf("create-service-broker", chBrokerAppName, Config.GetAdminUser(), Config.GetAdminPassword(), serviceUrl).Wait(Config.DefaultTimeoutDuration())
-			Expect(createServiceBroker).To(Exit(0), "failed creating credhub-enabled service broker")
+		serviceUrl := "https://" + chBrokerAppName + "." + Config.GetAppsDomain()
+		createServiceBroker := cf.Cf("create-service-broker", chBrokerAppName, "a-user", "a-password", serviceUrl, "--space-scoped").Wait(Config.DefaultTimeoutDuration())
+		Expect(createServiceBroker).To(Exit(0), "failed creating credhub-enabled service broker")
 
-			enableAccess := cf.Cf("enable-service-access", chServiceName, "-o", TestSetup.RegularUserContext().Org).Wait(Config.DefaultTimeoutDuration())
-			Expect(enableAccess).To(Exit(0), "failed to enable service access for credhub-enabled broker")
-
-			TestSetup.RegularUserContext().TargetSpace()
-			instanceName = random_name.CATSRandomName("SVIN-CH")
-			createService := cf.Cf("create-service", chServiceName, "credhub-read-plan", instanceName).Wait(Config.DefaultTimeoutDuration())
-			Expect(createService).To(Exit(0), "failed creating credhub enabled service")
-		})
+		instanceName = random_name.CATSRandomName("SVIN-CH")
+		createService := cf.Cf("create-service", chServiceName, "credhub-read-plan", instanceName).Wait(Config.DefaultTimeoutDuration())
+		Expect(createService).To(Exit(0), "failed creating credhub enabled service")
 	})
 
 	AfterEach(func() {
@@ -94,10 +89,8 @@ var _ = CredhubDescribe("service keys", func() {
 		})
 	})
 
-	XContext("when a service key for a service instance is requested from a CredHub-enabled broker", func() {
+	Context("when a service key for a service instance is requested from a CredHub-enabled broker", func() {
 		It("Cloud Controller retrieves the value from CredHub for the service key", func() {
-			TestSetup.RegularUserContext().TargetSpace()
-
 			serviceKeyName = random_name.CATSRandomName("SVKEY-CH")
 			createKey := cf.Cf("create-service-key", instanceName, serviceKeyName).Wait(Config.DefaultTimeoutDuration())
 			Expect(createKey).To(Exit(0), "failed to create key")

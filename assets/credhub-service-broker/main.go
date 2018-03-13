@@ -3,18 +3,19 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/satori/go.uuid"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
+
 	"github.com/cloudfoundry-incubator/credhub-cli/credhub"
 	"github.com/cloudfoundry-incubator/credhub-cli/credhub/auth"
-	"github.com/cloudfoundry-incubator/credhub-cli/util"
-	"github.com/cloudfoundry-incubator/credhub-cli/credhub/permissions"
 	"github.com/cloudfoundry-incubator/credhub-cli/credhub/credentials/values"
+	"github.com/cloudfoundry-incubator/credhub-cli/credhub/permissions"
+	"github.com/cloudfoundry-incubator/credhub-cli/util"
+	"github.com/gorilla/mux"
+	"github.com/satori/go.uuid"
 )
 
 func main() {
@@ -117,31 +118,24 @@ func (s *ServiceBroker) Bind(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 	}
 
-
 	name := strconv.FormatInt(time.Now().UnixNano(), 10)
 	storedJson := values.JSON{}
 	storedJson["user-name"] = "pinkyPie"
 	storedJson["password"] = "rainbowDash"
 
-	cred, err :=ch.SetJSON(name, storedJson, credhub.Overwrite)
-
-	actorId := "mtls-app:" + body.AppGuid
-
-	if body.AppGuid == "" {
-		actorId = "uaa-client:" + body.BindResource.CredentialClientId
-	}
-
-	permissionJson := permissions.Permission{
-		Actor:      actorId,
-		Operations: []string{"read"},
-	}
+	cred, err := ch.SetJSON(name, storedJson, credhub.Overwrite)
+	handleError(err)
 
 	pathVariables := mux.Vars(r)
 	s.NameMap[pathVariables["service_binding_guid"]] = name
 
-	_, err = ch.AddPermissions(cred.Name, []permissions.Permission{permissionJson})
-
-	handleError(err)
+	if body.AppGuid != "" {
+		_, err = ch.AddPermissions(cred.Name, []permissions.Permission{{
+			Actor:      "mtls-app:" + body.AppGuid,
+			Operations: []string{"read"},
+		}})
+		handleError(err)
+	}
 
 	credentials := `{
   "credentials": {
@@ -172,7 +166,6 @@ func (s *ServiceBroker) UnBind(w http.ResponseWriter, r *http.Request) {
 
 	WriteResponse(w, http.StatusOK, "{}")
 }
-
 
 func handleError(err error) {
 	if err != nil {
