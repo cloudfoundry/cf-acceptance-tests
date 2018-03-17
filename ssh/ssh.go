@@ -101,6 +101,15 @@ var _ = SshDescribe("SSH", func() {
 			Eventually(cf.Cf("events", appName), Config.DefaultTimeoutDuration()).Should(Say("audit.app.ssh-authorized"))
 		})
 
+		It("can execute a remote command with arguments in the container", func() {
+			envCmd := cf.Cf("ssh", "-v", appName, "-c", "curl google.com")
+			Expect(envCmd.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+
+			output := string(envCmd.Out.Contents())
+
+			Expect(string(output)).To(ContainSubstring("<TITLE>301 Moved</TITLE>"))
+		})
+
 		It("runs an interactive session when no command is provided", func() {
 			envCmd := exec.Command("cf", "ssh", "-v", appName)
 
