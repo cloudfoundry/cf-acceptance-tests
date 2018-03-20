@@ -103,16 +103,20 @@ exit 1
 			startSession := cf.Cf("start", appName)
 			Eventually(startSession, Config.CfPushTimeoutDuration()).Should(Exit(1))
 
-			stdout := string(startSession.Out.Contents())
-			Expect(stdout).To(MatchRegexp("LANG=en_US\\.UTF-8"))
-			Expect(stdout).To(MatchRegexp("CF_INSTANCE_ADDR=.*"))
-			Expect(stdout).To(MatchRegexp("CF_INSTANCE_INTERNAL_IP=.*"))
-			Expect(stdout).To(MatchRegexp("CF_INSTANCE_IP=.*"))
-			Expect(stdout).To(MatchRegexp("CF_INSTANCE_PORT=.*"))
-			Expect(stdout).To(MatchRegexp("CF_INSTANCE_PORTS=.*"))
-			Expect(stdout).To(MatchRegexp("CF_STACK=.*"))
-			Expect(stdout).To(MatchRegexp("VCAP_APPLICATION=.*"))
-			Expect(stdout).To(MatchRegexp("VCAP_SERVICES=.*"))
+			var appStdout string
+			appLogsSession := cf.Cf("logs", "--recent", appName)
+			appLogsSession.Wait(Config.DefaultTimeoutDuration())
+
+			appStdout = string(appLogsSession.Out.Contents())
+			Expect(appStdout).To(MatchRegexp("LANG=en_US\\.UTF-8"))
+			Expect(appStdout).To(MatchRegexp("CF_INSTANCE_ADDR=.*"))
+			Expect(appStdout).To(MatchRegexp("CF_INSTANCE_INTERNAL_IP=.*"))
+			Expect(appStdout).To(MatchRegexp("CF_INSTANCE_IP=.*"))
+			Expect(appStdout).To(MatchRegexp("CF_INSTANCE_PORT=.*"))
+			Expect(appStdout).To(MatchRegexp("CF_INSTANCE_PORTS=.*"))
+			Expect(appStdout).To(MatchRegexp("CF_STACK=.*"))
+			Expect(appStdout).To(MatchRegexp("VCAP_APPLICATION=.*"))
+			Expect(appStdout).To(MatchRegexp("VCAP_SERVICES=.*"))
 		})
 
 		It("applies default environment variables while running apps and tasks", func() {
