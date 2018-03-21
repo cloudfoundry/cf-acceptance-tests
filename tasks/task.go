@@ -22,7 +22,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-const policyTimeout = "5s"
+const policyTimeout = "10s"
 
 type Result struct {
 	FailureReason string `json:"failure_reason"`
