@@ -2,12 +2,15 @@ package cats_test
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"testing"
 	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/mholt/archiver"
 
 	_ "github.com/cloudfoundry/cf-acceptance-tests/apps"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/backend_compatibility"
@@ -81,6 +84,17 @@ func TestCATS(t *testing.T) {
 		err = buildCmd.Run()
 		Expect(err).NotTo(HaveOccurred())
 
+		doraFiles, err := ioutil.ReadDir(assets.NewAssets().Dora)
+		Expect(err).NotTo(HaveOccurred())
+
+		var doraFileNames []string
+		for _, doraFile := range doraFiles {
+			doraFileNames = append(doraFileNames, assets.NewAssets().Dora+"/"+doraFile.Name())
+		}
+
+		err = archiver.Zip.Make(assets.NewAssets().DoraZip, doraFileNames)
+		Expect(err).NotTo(HaveOccurred())
+
 		return []byte{}
 	}, func([]byte) {
 		TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
@@ -103,6 +117,8 @@ func TestCATS(t *testing.T) {
 		if TestSetup != nil {
 			TestSetup.Teardown()
 		}
+
+		os.Remove(assets.NewAssets().DoraZip)
 	})
 
 	rs := []Reporter{}

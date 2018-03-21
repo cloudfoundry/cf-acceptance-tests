@@ -86,6 +86,23 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/dsnet/compress",
+			"repository": "https://github.com/dsnet/compress",
+			"vcs": "git",
+			"revision": "cc9eb1d7ad760af14e8f918698f745e80377af4f",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/dsnet/golib/unitconv",
+			"repository": "https://github.com/dsnet/golib",
+			"vcs": "git",
+			"revision": "1ea1667757804fdcccc5a1810e09aba618885ac2",
+			"branch": "master",
+			"path": "/unitconv",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/elazarl/goproxy",
 			"repository": "https://github.com/elazarl/goproxy",
 			"vcs": "git",
@@ -155,6 +172,23 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/klauspost/compress/flate",
+			"repository": "https://github.com/klauspost/compress",
+			"vcs": "git",
+			"revision": "2c62357afe99df84d86deb8044ab5b16ac2d1712",
+			"branch": "master",
+			"path": "/flate",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/klauspost/cpuid",
+			"repository": "https://github.com/klauspost/cpuid",
+			"vcs": "git",
+			"revision": "ae832f27941af41db13bd6d8efd2493e3b22415a",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/kr/pty",
 			"repository": "https://github.com/kr/pty",
 			"vcs": "git",
@@ -163,10 +197,26 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/mholt/archiver",
+			"repository": "https://github.com/mholt/archiver",
+			"vcs": "git",
+			"revision": "cdc68dd1f170b8dfc1a0d2231b5bb0967ed67006",
+			"branch": "HEAD",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/nu7hatch/gouuid",
 			"repository": "https://github.com/nu7hatch/gouuid",
 			"vcs": "git",
 			"revision": "179d4d0c4d8d407a32af483c2354df1d2c91e6c3",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/nwaples/rardecode",
+			"repository": "https://github.com/nwaples/rardecode",
+			"vcs": "git",
+			"revision": "e06696f847aeda6f39a8f0b7cdff193b7690aef6",
 			"branch": "master",
 			"notests": true
 		},
@@ -202,6 +252,14 @@
 			"revision": "e9ff06f347d3f5d0013d59ed83754f0e88de10d4",
 			"branch": "master",
 			"path": "/data",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/ulikunitz/xz",
+			"repository": "https://github.com/ulikunitz/xz",
+			"vcs": "git",
+			"revision": "0c6b41e72360850ca4f98dc341fd999726ea007f",
+			"branch": "master",
 			"notests": true
 		},
 		{
