@@ -56,7 +56,7 @@ var _ = WindowsDescribe("Security Groups", func() {
 		BeforeEach(func() {
 			By("Asserting default running security group Configuration for traffic to private ip addresses")
 			var err error
-			secureAddress := Config.GetWindowsSecureAddress()
+			secureAddress := Config.GetSecureAddress()
 			secureHost, securePort, err = net.SplitHostPort(secureAddress)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(noraTCPConnectResponse(appName, secureHost, securePort)).Should(Equal(1))
