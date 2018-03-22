@@ -163,7 +163,7 @@ include_capi_no_bridge
 * `include_apps`: Flag to include the apps test group.
 * `include_backend_compatibility`: Flag to include whether we check DEA/Diego interoperability.
 * `include_container_networking`: Flag to include tests related to container networking.
-  `include_security_groups` must also be set for tests to run.
+  `include_security_groups` must also be set for tests to run. [See below](#container-networking-and-application-security-groups)
 * `credhub_mode`: Valid values are `assisted` or `non-assisted`. [See below](#credhub-modes).
 * `credhub_location`: Location of CredHub instance; default is `https://credhub.service.cf.internal:8844`
 * `credhub_client`: UAA client credential for Service Broker write access to CredHub (required for CredHub tests); default is `cc_service_key_client`.
@@ -178,7 +178,7 @@ include_capi_no_bridge
 * `include_privileged_container_support`: Flag to include privileged container tests. Requires capi.nsync.diego_privileged_containers and capi.stager.diego_privileged_containers to be enabled for tests to pass.
 * `include_route_services`: Flag to include the route services tests. Diego must be deployed for these tests to pass.
 * `include_routing`: Flag to include the routing tests.
-* `include_security_groups`: Flag to include tests for security groups.
+* `include_security_groups`: Flag to include tests for security groups. [See below](#container-networking-and-application-security-groups)
 * `include_service_discovery`: Flag to include test for the service discovery.
 * `include_services`: Flag to include test for the services API.
 * `include_service_instance_sharing`: Flag to include tests for service instance sharing between spaces. `include_services` must be set for these tests to run. The `service_instance_sharing` feature flag must also be enabled for these tests to pass.
@@ -214,6 +214,7 @@ include_capi_no_bridge
 * `private_docker_registry_image`: Name of the private docker image to use when testing private docker registries. [See below](#private-docker)
 * `private_docker_registry_username`: Username to access the private docker repository. [See below](#private-docker)
 * `private_docker_registry_password`: Password to access the private docker repository. [See below](#private-docker)
+* `secure_address`: An address of the form `<ip:port>` which containers are prohibited from accessing by the default ASGs. [See below](#container-networking-and-application-security-groups)
 
 * `staticfile_buildpack_name` [See below](#buildpack-names).
 * `java_buildpack_name` [See below](#buildpack-names).
@@ -225,7 +226,6 @@ include_capi_no_bridge
 * `binary_buildpack_name` [See below](#buildpack-names).
 
 * `include_windows`: Flag to include the tests that run against Windows cells.
-* `windows_secure_address`: An address of the form `<ip:port>` which containers are prohibited from accessing by the default ASGs.
 * `num_windows_cells`: Number of Windows cells. Must be greater than 0 if `include_windows` is set to `true`.
 * `use_windows_test_task`: Flag to include the tasks tests on Windows cells. Default is `false`.
 * `use_windows_context_path`: Flag to include the Windows context path routing tests. Default is `false`.
@@ -263,6 +263,15 @@ properties:
           destination: IP_OF_YOUR_LOAD_BALANCER # (e.g. 10.244.0.34 for a standard deployment of Cloud Foundry on BOSH-Lite)
     default_running_security_groups: ["load_balancer"]
 ```
+
+#### Container Networking and Application Security Groups
+To run tests that exercise container networking and running application security groups, the `include_container_networking` and `include_security_groups` flags must be true, and the following config value must be provided:
+
+* `secure_address`
+
+The `secure_address` is also used for WATs.
+
+To run staging security group tests, only the `inclue_security_groups` flag must be set to true.
 
 #### Private Docker
 To run tests that exercise the use of credentials to access a private docker registry, the `include_private_docker_registry` flag must be true, and the following config values must be provided:
