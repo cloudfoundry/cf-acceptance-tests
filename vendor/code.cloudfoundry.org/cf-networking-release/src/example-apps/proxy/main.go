@@ -1,7 +1,11 @@
 package main
 
 import (
+<<<<<<< HEAD:assets/proxy/main.go
 	"proxy/handlers"
+=======
+	"example-apps/proxy/handlers"
+>>>>>>> b58b2d8... Vendor in proxy test app:vendor/code.cloudfoundry.org/cf-networking-release/src/example-apps/proxy/main.go
 	"fmt"
 	"log"
 	"net/http"

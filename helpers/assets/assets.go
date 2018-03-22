@@ -64,7 +64,7 @@ func NewAssets() Assets {
 		NodeWithProcfile:       "assets/node-with-procfile",
 		Nora:                   "assets/nora/NoraPublished",
 		Php:                    "assets/php",
-		Proxy:                  "assets/proxy",
+		Proxy:                  "vendor/code.cloudfoundry.org/cf-networking-release/src/example-apps/proxy",
 		Python:                 "assets/python",
 		RubySimple:             "assets/ruby_simple",
 		SecurityGroupBuildpack: "assets/security_group_buildpack.zip",
