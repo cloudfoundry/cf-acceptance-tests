@@ -1,10 +1,10 @@
 package handlers_test
 
 import (
+	"example-apps/proxy/handlers"
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/cloudfoundry/cf-acceptance-tests/assets/proxy/handlers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

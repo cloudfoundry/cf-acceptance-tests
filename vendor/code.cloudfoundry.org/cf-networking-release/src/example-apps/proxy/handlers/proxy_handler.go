@@ -18,7 +18,7 @@ var httpClient = &http.Client{
 	Transport: &http.Transport{
 		DisableKeepAlives: true,
 		Dial: (&net.Dialer{
-			Timeout:   4 * time.Second,
+			Timeout:   10 * time.Second,
 			KeepAlive: 0,
 		}).Dial,
 	},
