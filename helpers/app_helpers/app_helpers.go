@@ -6,6 +6,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 )
@@ -42,5 +43,5 @@ func AppReport(appName string, timeout time.Duration) {
 		return
 	}
 	Eventually(cf.Cf("app", appName, "--guid"), timeout).Should(Exit())
-	Eventually(cf.Cf("logs", appName, "--recent"), timeout).Should(Exit())
+	Eventually(logs.Tail(Config.GetUseLogCache(), appName), timeout).Should(Exit())
 }

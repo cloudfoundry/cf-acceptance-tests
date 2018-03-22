@@ -5,10 +5,10 @@ import (
 	"regexp"
 
 	"code.cloudfoundry.org/cf-routing-test-helpers/helpers"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	cf_helpers "github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -45,7 +45,7 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 					return curlOutput
 				}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("parents:"))
 
-				appLogsSession := cf.Cf("logs", "--recent", app1)
+				appLogsSession := logs.Tail(Config.GetUseLogCache(), app1)
 
 				Eventually(appLogsSession, Config.DefaultTimeoutDuration()).Should(gexec.Exit(0))
 
@@ -65,7 +65,7 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 					return curlOutput
 				}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("parents:"))
 
-				appLogsSession = cf.Cf("logs", "--recent", hostname)
+				appLogsSession = logs.Tail(Config.GetUseLogCache(), hostname)
 
 				Eventually(appLogsSession, Config.DefaultTimeoutDuration()).Should(gexec.Exit(0))
 

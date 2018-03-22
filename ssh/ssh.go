@@ -16,6 +16,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
@@ -79,7 +80,9 @@ var _ = SshDescribe("SSH", func() {
 				Expect(string(stdErr)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 				Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=1"))
 
-				Eventually(func() *Buffer { return cf.Cf("logs", appName, "--recent").Wait(Config.DefaultTimeoutDuration()).Out }, Config.DefaultTimeoutDuration()).Should(Say("Successful remote access"))
+				Eventually(func() *Buffer {
+					return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+				}, Config.DefaultTimeoutDuration()).Should(Say("Successful remote access"))
 				Eventually(cf.Cf("events", appName), Config.DefaultTimeoutDuration()).Should(Say("audit.app.ssh-authorized"))
 			})
 		})
@@ -97,7 +100,9 @@ var _ = SshDescribe("SSH", func() {
 			Expect(string(stdErr)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 			Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
-			Eventually(func() *Buffer { return cf.Cf("logs", appName, "--recent").Wait(Config.DefaultTimeoutDuration()).Out }, Config.DefaultTimeoutDuration()).Should(Say("Successful remote access"))
+			Eventually(func() *Buffer {
+				return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+			}, Config.DefaultTimeoutDuration()).Should(Say("Successful remote access"))
 			Eventually(cf.Cf("events", appName), Config.DefaultTimeoutDuration()).Should(Say("audit.app.ssh-authorized"))
 		})
 
@@ -128,7 +133,9 @@ var _ = SshDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
-			Eventually(func() *Buffer { return cf.Cf("logs", appName, "--recent").Wait(Config.DefaultTimeoutDuration()).Out }, Config.DefaultTimeoutDuration()).Should(Say("Successful remote access"))
+			Eventually(func() *Buffer {
+				return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+			}, Config.DefaultTimeoutDuration()).Should(Say("Successful remote access"))
 			Eventually(cf.Cf("events", appName), Config.DefaultTimeoutDuration()).Should(Say("audit.app.ssh-authorized"))
 		})
 
@@ -173,7 +180,9 @@ var _ = SshDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
-			Eventually(func() *Buffer { return cf.Cf("logs", appName, "--recent").Wait(Config.DefaultTimeoutDuration()).Out }, Config.DefaultTimeoutDuration()).Should(Say("Successful remote access"))
+			Eventually(func() *Buffer {
+				return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+			}, Config.DefaultTimeoutDuration()).Should(Say("Successful remote access"))
 			Eventually(cf.Cf("events", appName), Config.DefaultTimeoutDuration()).Should(Say("audit.app.ssh-authorized"))
 		})
 

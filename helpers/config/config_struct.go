@@ -93,6 +93,8 @@ type config struct {
 	IncludeIsolationSegments          *bool `json:"include_isolation_segments"`
 	IncludeRoutingIsolationSegments   *bool `json:"include_routing_isolation_segments"`
 
+	UseLogCache *bool `json:"use_log_cache"`
+
 	CredhubMode         *string `json:"credhub_mode"`
 	CredhubLocation     *string `json:"credhub_location"`
 	CredhubClientName   *string `json:"credhub_client"`
@@ -183,6 +185,8 @@ func getDefaults() config {
 	defaults.IncludeTasks = ptrToBool(false)
 	defaults.IncludeZipkin = ptrToBool(false)
 	defaults.IncludeServiceInstanceSharing = ptrToBool(false)
+
+	defaults.UseLogCache = ptrToBool(false)
 
 	defaults.IncludeWindows = ptrToBool(false)
 	defaults.NumWindowsCells = ptrToInt(0)
@@ -945,6 +949,10 @@ func (c *config) GetIncludeServiceInstanceSharing() bool {
 
 func (c *config) GetIncludeWindows() bool {
 	return *c.IncludeWindows
+}
+
+func (c *config) GetUseLogCache() bool {
+	return *c.UseLogCache
 }
 
 func (c *config) GetRubyBuildpackName() string {

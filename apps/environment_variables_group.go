@@ -15,6 +15,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 
 	. "github.com/onsi/ginkgo"
@@ -134,7 +135,7 @@ exit 1
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 
 			Eventually(func() *Session {
-				appLogsSession := cf.Cf("logs", "--recent", appName)
+				appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
 				Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				return appLogsSession
 			}, Config.DefaultTimeoutDuration()).Should(Say(envVarValue))

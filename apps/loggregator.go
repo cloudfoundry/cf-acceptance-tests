@@ -16,6 +16,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	logshelper "github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/matchers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/noaa"
@@ -58,13 +59,13 @@ var _ = AppsDescribe("loggregator", func() {
 		var logs *Session
 
 		BeforeEach(func() {
-			logs = cf.Cf("logs", appName)
+			logs = logshelper.TailFollow(Config.GetUseLogCache(), appName)
 		})
 
 		AfterEach(func() {
 			// logs might be nil if the BeforeEach panics
 			if logs != nil {
-				logs.Interrupt().Wait(Config.DefaultTimeoutDuration())
+				logs.Interrupt()
 			}
 		})
 
@@ -86,7 +87,7 @@ var _ = AppsDescribe("loggregator", func() {
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Muahaha"))
 
 			Eventually(func() *Session {
-				appLogsSession := cf.Cf("logs", "--recent", appName)
+				appLogsSession := logshelper.Tail(Config.GetUseLogCache(), appName)
 				Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				return appLogsSession
 			}, Config.DefaultTimeoutDuration()).Should(Say("Muahaha"))

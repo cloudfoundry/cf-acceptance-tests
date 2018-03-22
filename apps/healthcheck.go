@@ -4,6 +4,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -55,7 +56,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 
 			By("verifying it's up")
 			Eventually(func() *Session {
-				appLogsSession := cf.Cf("logs", "--recent", appName)
+				appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
 				Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				return appLogsSession
 			}, Config.DefaultTimeoutDuration()).Should(gbytes.Say("I am working at"))
