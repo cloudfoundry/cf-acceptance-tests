@@ -70,7 +70,6 @@ type CatsConfig interface {
 	GetPersistentAppSpace() string
 	GetRubyBuildpackName() string
 	GetSecureAddress() string
-	GetUnallocatedIPForSecurityGroup() string
 	Protocol() string
 
 	GetNumWindowsCells() int

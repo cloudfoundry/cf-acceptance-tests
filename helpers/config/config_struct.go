@@ -111,8 +111,7 @@ type config struct {
 	PrivateDockerRegistryPassword *string `json:"private_docker_registry_password"`
 	PublicDockerAppImage          *string `json:"public_docker_app_image"`
 
-	SecureAddress                 *string `json:"secure_address"`
-	UnallocatedIPForSecurityGroup *string `json:"unallocated_ip_for_security_group"`
+	SecureAddress *string `json:"secure_address"`
 
 	NamePrefix *string `json:"name_prefix"`
 }
@@ -221,7 +220,6 @@ func getDefaults() config {
 	defaults.PublicDockerAppImage = ptrToString("cloudfoundry/diego-docker-app-custom:latest")
 
 	defaults.SecureAddress = ptrToString("")
-	defaults.UnallocatedIPForSecurityGroup = ptrToString("10.0.244.255")
 
 	defaults.NamePrefix = ptrToString("CATS")
 	return defaults
@@ -1001,10 +999,6 @@ func (c *config) GetPrivateDockerRegistryPassword() string {
 
 func (c *config) GetPublicDockerAppImage() string {
 	return *c.PublicDockerAppImage
-}
-
-func (c *config) GetUnallocatedIPForSecurityGroup() string {
-	return *c.UnallocatedIPForSecurityGroup
 }
 
 func (c *config) GetSecureAddress() string {
