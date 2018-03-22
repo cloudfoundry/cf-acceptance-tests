@@ -11,6 +11,16 @@
 			"notests": true
 		},
 		{
+			"importpath": "code.cloudfoundry.org/cf-networking-release/src/example-apps/proxy",
+			"repository": "https://github.com/cloudfoundry/cf-networking-release",
+			"vcs": "git",
+			"revision": "80237748f11244e7184f485038e4916e97c5076f",
+			"branch": "develop",
+			"path": "/src/example-apps/proxy",
+			"notests": true,
+			"allfiles": true
+		},
+		{
 			"importpath": "code.cloudfoundry.org/cf-routing-test-helpers",
 			"repository": "https://github.com/cloudfoundry-incubator/cf-routing-test-helpers",
 			"vcs": "git",
