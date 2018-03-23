@@ -42,3 +42,14 @@ func GetProcessByType(processes []Process, processType string) Process {
 	}
 	return Process{}
 }
+
+func GetProcessByGuid(processGuid string) Process {
+	processURL := fmt.Sprintf("/v3/processes/%s", processGuid)
+	session := cf.Cf("curl", processURL)
+	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+
+	var process Process
+	json.Unmarshal(bytes, &process)
+
+	return process
+}

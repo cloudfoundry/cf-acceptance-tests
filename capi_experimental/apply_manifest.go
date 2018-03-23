@@ -72,6 +72,9 @@ applications:
   instances: 2
   memory: 300M
   buildpack: ruby_buildpack
+  stack: cflinuxfs2
+  env: { foo: qux, snack: walnuts }
+  command: new-command
 `, appName)
 			})
 
@@ -89,8 +92,19 @@ applications:
 
 					session = cf.Cf("app", appName)
 					Eventually(session).Should(Say("instances:\\s+\\d+/2"))
+					Eventually(session).Should(Say("stack:\\s+cflinuxfs2"))
 					Eventually(session).Should(Say("buildpack:\\s+ruby_buildpack"))
 					Eventually(session).Should(Exit(0))
+
+					session = cf.Cf("env", appName)
+					Eventually(session).Should(Say("foo:\\s+qux"))
+					Eventually(session).Should(Say("snack:\\s+walnuts"))
+					Eventually(session).Should(Exit(0))
+
+					processes := GetProcesses(appGuid, appName)
+					webProcessWithCommandRedacted := GetProcessByType(processes, "web")
+					webProcess := GetProcessByGuid(webProcessWithCommandRedacted.Guid)
+					Expect(webProcess.Command).To(Equal("new-command"))
 				})
 			})
 		})
