@@ -3,7 +3,10 @@ package tasks
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math"
+	"net"
+	"os"
 	"strconv"
 	"strings"
 
@@ -46,6 +49,12 @@ type ProxyResponse struct {
 	Port            int
 }
 
+type Destination struct {
+	IP       string `json:"destination"`
+	Port     int    `json:"ports,string,omitempty"`
+	Protocol string `json:"protocol"`
+}
+
 func getTaskDetails(appName string) []string {
 	listCommand := cf.Cf("tasks", appName).Wait(Config.DefaultTimeoutDuration())
 	Expect(listCommand).To(Exit(0))
@@ -79,6 +88,21 @@ func getContainerIP(listenAddresses []string) string {
 	}
 
 	return ""
+}
+
+func createSecurityGroup(allowedDestinations ...Destination) string {
+	file, _ := ioutil.TempFile(os.TempDir(), "CATS-sg-rules")
+	defer os.Remove(file.Name())
+	Expect(json.NewEncoder(file).Encode(allowedDestinations)).To(Succeed())
+
+	rulesPath := file.Name()
+	securityGroupName := random_name.CATSRandomName("SG")
+
+	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+		Expect(cf.Cf("create-security-group", securityGroupName, rulesPath).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+	})
+
+	return securityGroupName
 }
 
 var _ = TasksDescribe("v3 tasks", func() {
@@ -205,6 +229,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 	})
 
 	Context("when associating a task with an app", func() {
+		var securityGroupName string
 		BeforeEach(func() {
 			Expect(cf.Cf(
 				"push", appName,
@@ -217,21 +242,30 @@ var _ = TasksDescribe("v3 tasks", func() {
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			appGuid = app_helpers.GetAppGuid(appName)
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).ToNot(ContainSubstring(appName))
-				Expect(cf.Cf("add-network-policy", appName, "--destination-app", appName, "--port", "8080", "--protocol", "tcp").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring(appName))
-			})
 		})
 
 		AfterEach(func() {
 			app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
 
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				Expect(cf.Cf("unbind-security-group", securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			})
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				Expect(cf.Cf("delete-security-group", securityGroupName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			})
 		})
 
 		It("applies the associated app's policies to the task", func(done Done) {
+			By("creating the network policy")
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				Expect(cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).ToNot(ContainSubstring(appName))
+				Expect(cf.Cf("add-network-policy", appName, "--destination-app", appName, "--port", "8080", "--protocol", "tcp").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring(appName))
+			})
+
 			By("getting the overlay ip of app")
 			curlArgs := appName + "." + Config.GetAppsDomain()
 			curl := helpers.Curl(Config, curlArgs).Wait(Config.DefaultTimeoutDuration())
@@ -265,5 +299,54 @@ exit 1`
 			close(done)
 		}, 30*60 /* <-- overall spec timeout in seconds */)
 
+		It("applies the associated app's ASGs to the task", func(done Done) {
+			By("checking that SecureAddress has been configured")
+			if Config.GetSecureAddress() == "" {
+				Skip("Skipping test that checks ASGs apply to tasks. To run, please set config.SecureAddress property")
+			}
+
+			By("creating the ASG")
+			secureAddress := Config.GetSecureAddress()
+			secureHost, securePortString, err := net.SplitHostPort(secureAddress)
+			Expect(err).NotTo(HaveOccurred())
+			securePort, err := strconv.Atoi(securePortString)
+			destSecurityGroup := Destination{
+				IP:       secureHost,
+				Port:     securePort,
+				Protocol: "tcp",
+			}
+			securityGroupName = createSecurityGroup(destSecurityGroup)
+
+			By("binding the ASG to the space")
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				Expect(cf.Cf("bind-security-group", securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			})
+
+			By("restarting the app to apply the ASG")
+			Expect(cf.Cf("restart", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+			By("creating the task")
+			taskName := "woof"
+			command := `while true; do
+if curl --fail "` + secureAddress + `" ; then
+	exit 0
+fi
+done;
+exit 1`
+			createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait(Config.DefaultTimeoutDuration())
+			Expect(createCommand).To(Exit(0))
+
+			By("successfully running")
+			var outputName, outputState string
+			Eventually(func() string {
+				taskDetails := getTaskDetails(appName)
+				outputName = taskDetails[1]
+				outputState = taskDetails[2]
+				return outputState
+			}, Config.DefaultTimeoutDuration()).Should(Equal("SUCCEEDED"))
+			Expect(outputName).To(Equal(taskName))
+
+			close(done)
+		}, 30*60 /* <-- overall spec timeout in seconds */)
 	})
 })
