@@ -296,7 +296,7 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 			buildpack = createDummyBuildpack()
 			pushApp(testAppName, buildpack)
 
-			privateUri := fmt.Sprintf("%s:%d", privateHost, privatePort)
+			privateUri := fmt.Sprintf("%s:%s", privateHost, privatePort)
 			Expect(cf.Cf("set-env", testAppName, "TESTURI", privateUri).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 			Expect(cf.Cf("start", testAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
