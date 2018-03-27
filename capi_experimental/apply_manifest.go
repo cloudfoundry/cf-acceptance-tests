@@ -19,9 +19,9 @@ import (
 var _ = CapiExperimentalDescribe("apply_manifest", func() {
 	var (
 		appName     string
-		appGuid     string
-		packageGuid string
-		spaceGuid   string
+		appGUID     string
+		packageGUID string
+		spaceGUID   string
 		spaceName   string
 		orgName     string
 		token       string
@@ -31,27 +31,27 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 		appName = random_name.CATSRandomName("APP")
 		spaceName = TestSetup.RegularUserContext().Space
 		orgName = TestSetup.RegularUserContext().Org
-		spaceGuid = GetSpaceGuidFromName(spaceName)
-		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
-		packageGuid = CreatePackage(appGuid)
+		spaceGUID = GetSpaceGuidFromName(spaceName)
+		appGUID = CreateApp(appName, spaceGUID, `{"foo":"bar"}`)
+		packageGUID = CreatePackage(appGUID)
 		token = GetAuthToken()
-		uploadUrl := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.GetApiEndpoint(), packageGuid)
+		uploadURL := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.GetApiEndpoint(), packageGUID)
 
-		UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
-		WaitForPackageToBeReady(packageGuid)
+		UploadPackage(uploadURL, assets.NewAssets().DoraZip, token)
+		WaitForPackageToBeReady(packageGUID)
 
-		buildGuid := StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
-		WaitForBuildToStage(buildGuid)
-		dropletGuid := GetDropletFromBuild(buildGuid)
-		AssignDropletToApp(appGuid, dropletGuid)
+		buildGUID := StageBuildpackPackage(packageGUID, Config.GetRubyBuildpackName())
+		WaitForBuildToStage(buildGUID)
+		dropletGuid := GetDropletFromBuild(buildGUID)
+		AssignDropletToApp(appGUID, dropletGuid)
 
 		CreateRoute(spaceName, Config.GetAppsDomain(), appName)
-		StartApp(appGuid)
+		StartApp(appGUID)
 	})
 
 	AfterEach(func() {
-		FetchRecentLogs(appGuid, token, Config)
-		DeleteApp(appGuid)
+		FetchRecentLogs(appGUID, token, Config)
+		DeleteApp(appGUID)
 	})
 
 	Describe("Applying manifest to existing app", func() {
@@ -61,7 +61,7 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 		)
 
 		BeforeEach(func() {
-			endpoint = fmt.Sprintf("/v3/apps/%s/actions/apply_manifest", appGuid)
+			endpoint = fmt.Sprintf("/v3/apps/%s/actions/apply_manifest", appGUID)
 		})
 
 		Context("when configuring the web process", func() {
@@ -102,7 +102,7 @@ applications:
 					Eventually(session).Should(Say("snack:\\s+walnuts"))
 					Eventually(session).Should(Exit(0))
 
-					processes := GetProcesses(appGuid, appName)
+					processes := GetProcesses(appGUID, appName)
 					webProcessWithCommandRedacted := GetProcessByType(processes, "web")
 					webProcess := GetProcessByGuid(webProcessWithCommandRedacted.Guid)
 					Expect(webProcess.Command).To(Equal("new-command"))
