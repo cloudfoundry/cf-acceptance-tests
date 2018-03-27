@@ -75,6 +75,7 @@ applications:
   stack: cflinuxfs2
   env: { foo: qux, snack: walnuts }
   command: new-command
+  health-check-type: process
 `, appName)
 			})
 
@@ -105,6 +106,10 @@ applications:
 					webProcessWithCommandRedacted := GetProcessByType(processes, "web")
 					webProcess := GetProcessByGuid(webProcessWithCommandRedacted.Guid)
 					Expect(webProcess.Command).To(Equal("new-command"))
+
+					session = cf.Cf("get-health-check", appName)
+					Eventually(session).Should(Say("health check type:\\s+process"))
+					Eventually(session).Should(Exit(0))
 				})
 			})
 		})
