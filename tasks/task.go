@@ -248,13 +248,6 @@ var _ = TasksDescribe("v3 tasks", func() {
 			app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
 
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("unbind-security-group", securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			})
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("delete-security-group", securityGroupName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			})
 		})
 
 		It("applies the associated app's policies to the task", func(done Done) {
@@ -299,54 +292,65 @@ exit 1`
 			close(done)
 		}, 30*60 /* <-- overall spec timeout in seconds */)
 
-		It("applies the associated app's ASGs to the task", func(done Done) {
-			By("checking that SecureAddress has been configured")
-			if Config.GetSecureAddress() == "" {
-				Skip("Skipping test that checks ASGs apply to tasks. To run, please set config.SecureAddress property")
-			}
-
-			By("creating the ASG")
-			secureAddress := Config.GetSecureAddress()
-			secureHost, securePortString, err := net.SplitHostPort(secureAddress)
-			Expect(err).NotTo(HaveOccurred())
-			securePort, err := strconv.Atoi(securePortString)
-			destSecurityGroup := Destination{
-				IP:       secureHost,
-				Port:     securePort,
-				Protocol: "tcp",
-			}
-			securityGroupName = createSecurityGroup(destSecurityGroup)
-
-			By("binding the ASG to the space")
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("bind-security-group", securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Context("when binding a space-specific ASG", func() {
+			AfterEach(func() {
+				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+					Expect(cf.Cf("unbind-security-group", securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				})
+				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+					Expect(cf.Cf("delete-security-group", securityGroupName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				})
 			})
 
-			By("restarting the app to apply the ASG")
-			Expect(cf.Cf("restart", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			It("applies the associated app's ASGs to the task", func(done Done) {
+				By("checking that SecureAddress has been configured")
+				if Config.GetSecureAddress() == "" {
+					Skip("Skipping test that checks ASGs apply to tasks. To run, please set config.SecureAddress property")
+				}
 
-			By("creating the task")
-			taskName := "woof"
-			command := `while true; do
+				By("creating the ASG")
+				secureAddress := Config.GetSecureAddress()
+				secureHost, securePortString, err := net.SplitHostPort(secureAddress)
+				Expect(err).NotTo(HaveOccurred())
+				securePort, err := strconv.Atoi(securePortString)
+				destSecurityGroup := Destination{
+					IP:       secureHost,
+					Port:     securePort,
+					Protocol: "tcp",
+				}
+				securityGroupName = createSecurityGroup(destSecurityGroup)
+
+				By("binding the ASG to the space")
+				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+					Expect(cf.Cf("bind-security-group", securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				})
+
+				By("restarting the app to apply the ASG")
+				Expect(cf.Cf("restart", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+				By("creating the task")
+				taskName := "woof"
+				command := `while true; do
 if curl --fail "` + secureAddress + `" ; then
 	exit 0
 fi
 done;
 exit 1`
-			createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait(Config.DefaultTimeoutDuration())
-			Expect(createCommand).To(Exit(0))
+				createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait(Config.DefaultTimeoutDuration())
+				Expect(createCommand).To(Exit(0))
 
-			By("successfully running")
-			var outputName, outputState string
-			Eventually(func() string {
-				taskDetails := getTaskDetails(appName)
-				outputName = taskDetails[1]
-				outputState = taskDetails[2]
-				return outputState
-			}, Config.DefaultTimeoutDuration()).Should(Equal("SUCCEEDED"))
-			Expect(outputName).To(Equal(taskName))
+				By("successfully running")
+				var outputName, outputState string
+				Eventually(func() string {
+					taskDetails := getTaskDetails(appName)
+					outputName = taskDetails[1]
+					outputState = taskDetails[2]
+					return outputState
+				}, Config.DefaultTimeoutDuration()).Should(Equal("SUCCEEDED"))
+				Expect(outputName).To(Equal(taskName))
 
-			close(done)
-		}, 30*60 /* <-- overall spec timeout in seconds */)
+				close(done)
+			}, 30*60 /* <-- overall spec timeout in seconds */)
+		})
 	})
 })
