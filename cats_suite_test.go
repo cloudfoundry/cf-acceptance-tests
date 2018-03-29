@@ -113,11 +113,11 @@ func TestCATS(t *testing.T) {
 		TestSetup.Setup()
 	})
 
-	AfterSuite(func() {
+	SynchronizedAfterSuite(func() {
 		if TestSetup != nil {
 			TestSetup.Teardown()
 		}
-
+	}, func() {
 		os.Remove(assets.NewAssets().DoraZip)
 	})
 
