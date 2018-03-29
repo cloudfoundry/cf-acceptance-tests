@@ -77,6 +77,7 @@ applications:
   command: new-command
   health-check-type: http
   health-check-http-endpoint: /env
+  timeout: 75
 `, appName)
 			})
 
@@ -92,13 +93,14 @@ applications:
 					target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
 					Expect(target).To(Exit(0), "failed targeting")
 
-					session = cf.Cf("app", appName)
+					session = cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
+					Eventually(session).Should(Say("Showing health"))
 					Eventually(session).Should(Say("instances:\\s+\\d+/2"))
 					Eventually(session).Should(Say("stack:\\s+cflinuxfs2"))
 					Eventually(session).Should(Say("buildpack:\\s+ruby_buildpack"))
 					Eventually(session).Should(Exit(0))
 
-					session = cf.Cf("env", appName)
+					session = cf.Cf("env", appName).Wait(Config.DefaultTimeoutDuration())
 					Eventually(session).Should(Say("foo:\\s+qux"))
 					Eventually(session).Should(Say("snack:\\s+walnuts"))
 					Eventually(session).Should(Exit(0))
@@ -108,7 +110,7 @@ applications:
 					webProcess := GetProcessByGuid(webProcessWithCommandRedacted.Guid)
 					Expect(webProcess.Command).To(Equal("new-command"))
 
-					session = cf.Cf("get-health-check", appName)
+					session = cf.Cf("get-health-check", appName).Wait(Config.DefaultTimeoutDuration())
 					Eventually(session).Should(Say("health check type:\\s+http"))
 					Eventually(session).Should(Say("endpoint \\(for http type\\):\\s+/env"))
 					Eventually(session).Should(Exit(0))
