@@ -39,7 +39,7 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 
 			existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait(Config.DefaultTimeoutDuration()).Out.Contents())
 
-			if (!strings.Contains(existingEnvVar, "CREDHUB_API")){
+			if !strings.Contains(existingEnvVar, "CREDHUB_API") {
 				Expect(cf.Cf(
 					"set-env", chBrokerName,
 					"CREDHUB_API", Config.GetCredHubLocation(),
@@ -55,7 +55,6 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 				"set-env", chBrokerName,
 				"CREDHUB_SECRET", Config.GetCredHubBrokerClientSecret(),
 			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_SECRET env var on credhub-enabled service broker")
-
 
 			chServiceName = random_name.CATSRandomName("SERVICE-NAME")
 			setServiceName := cf.Cf("set-env", chBrokerName, "SERVICE_NAME", chServiceName).Wait(Config.DefaultTimeoutDuration())
