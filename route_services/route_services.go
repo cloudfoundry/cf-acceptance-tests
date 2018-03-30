@@ -15,7 +15,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	logshelper "github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -23,12 +22,6 @@ import (
 )
 
 var _ = RouteServicesDescribe("Route Services", func() {
-	BeforeEach(func() {
-		if Config.GetBackend() != "diego" {
-			Skip(skip_messages.SkipDiegoMessage)
-		}
-	})
-
 	Context("when a route binds to a service", func() {
 		Context("when service broker returns a route service url", func() {
 			var (

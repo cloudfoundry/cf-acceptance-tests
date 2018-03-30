@@ -223,15 +223,12 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 				appName = random_name.CATSRandomName("APP")
 				createApp := cf.Cf("push",
 					appName,
-					"--no-start",
 					"-b", Config.GetBinaryBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", assets.NewAssets().Catnip,
 					"-c", "./catnip",
-					"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())
+					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
 				Expect(createApp).To(Exit(0), "failed creating app")
-				app_helpers.SetBackend(appName)
-				Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 				checkForEvents(appName, []string{"audit.app.create"})
 
@@ -403,15 +400,12 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					appName = random_name.CATSRandomName("APP")
 					createApp := cf.Cf("push",
 						appName,
-						"--no-start",
 						"-b", Config.GetBinaryBuildpackName(),
 						"-m", DEFAULT_MEMORY_LIMIT,
 						"-p", assets.NewAssets().Catnip,
 						"-c", "./catnip",
-						"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())
+						"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
 					Expect(createApp).To(Exit(0), "failed creating app")
-					app_helpers.SetBackend(appName)
-					Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 				})
 
 				AfterEach(func() {

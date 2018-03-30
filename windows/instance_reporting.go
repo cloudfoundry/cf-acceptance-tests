@@ -26,15 +26,12 @@ var _ = WindowsDescribe("Getting instance information", func() {
 
 		Expect(cf.Cf("push",
 			appName,
-			"--no-start",
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().WindowsWebapp,
 			"-c", ".\\webapp.exe",
-			"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		app_helpers.SetBackend(appName)
-		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {

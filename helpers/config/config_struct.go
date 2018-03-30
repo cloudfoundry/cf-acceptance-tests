@@ -43,8 +43,7 @@ type config struct {
 	IsolationSegmentName   *string `json:"isolation_segment_name"`
 	IsolationSegmentDomain *string `json:"isolation_segment_domain"`
 
-	Backend           *string `json:"backend"`
-	SkipSSLValidation *bool   `json:"skip_ssl_validation"`
+	SkipSSLValidation *bool `json:"skip_ssl_validation"`
 
 	ArtifactsDirectory *string `json:"artifacts_directory"`
 
@@ -135,7 +134,6 @@ func ptrToFloat(f float64) *float64 {
 }
 
 func getDefaults() config {
-	defaults.Backend = ptrToString("")
 	defaults.PersistentAppHost = ptrToString("CATS-persistent-app")
 
 	defaults.PersistentAppOrg = ptrToString("CATS-persistent-org")
@@ -255,11 +253,6 @@ func validateConfig(config *config) Errors {
 	}
 
 	err = validateAppsDomain(config)
-	if err != nil {
-		errs.Add(err)
-	}
-
-	err = validateBackend(config)
 	if err != nil {
 		errs.Add(err)
 	}
@@ -466,18 +459,6 @@ func validateConfig(config *config) Errors {
 	}
 
 	return errs
-}
-
-func validateBackend(config *config) error {
-	if config.Backend == nil {
-		return fmt.Errorf("* 'backend' must not be null")
-	}
-
-	if config.GetBackend() != "dea" && config.GetBackend() != "diego" && config.GetBackend() != "" {
-		return fmt.Errorf("* Invalid configuration: 'backend' must be 'diego', 'dea', or empty but was set to '%s'", config.GetBackend())
-	}
-
-	return nil
 }
 
 func validateApiEndpoint(config *config) error {
@@ -979,10 +960,6 @@ func (c *config) GetBinaryBuildpackName() string {
 
 func (c *config) GetPersistentAppHost() string {
 	return *c.PersistentAppHost
-}
-
-func (c *config) GetBackend() string {
-	return *c.Backend
 }
 
 func (c *config) GetPrivateDockerRegistryImage() string {

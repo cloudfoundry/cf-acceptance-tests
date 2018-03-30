@@ -22,7 +22,6 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
 var _ = AppsDescribe("Default Environment Variables", func() {
@@ -64,9 +63,6 @@ exit 1
 		var buildpackName string
 
 		BeforeEach(func() {
-			if Config.GetBackend() != "diego" {
-				Skip(skip_messages.SkipDiegoMessage)
-			}
 			appName = random_name.CATSRandomName("APP")
 		})
 
@@ -90,19 +86,14 @@ exit 1
 				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			})
 
-			Eventually(cf.Cf(
+			push := cf.Cf(
 				"push", appName,
 				"-p", assets.NewAssets().HelloWorld,
-				"--no-start",
 				"-b", buildpackName,
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-d", Config.GetAppsDomain()),
-				Config.DefaultTimeoutDuration(),
-			).Should(Exit(0))
+				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
 
-			app_helpers.SetBackend(appName)
-			startSession := cf.Cf("start", appName)
-			Eventually(startSession, Config.CfPushTimeoutDuration()).Should(Exit(1))
+			Eventually(push, Config.CfPushTimeoutDuration()).Should(Exit(1))
 
 			var appStdout string
 			appLogsSession := cf.Cf("logs", "--recent", appName)
@@ -124,15 +115,11 @@ exit 1
 			Eventually(cf.Cf(
 				"push", appName,
 				"-p", assets.NewAssets().Binary,
-				"--no-start",
 				"-b", "binary_buildpack",
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-d", Config.GetAppsDomain()),
-				Config.DefaultTimeoutDuration(),
+				Config.CfPushTimeoutDuration(),
 			).Should(Exit(0))
-
-			app_helpers.SetBackend(appName)
-			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 
 			envLines := helpers.CurlApp(Config, appName, "/env")
 

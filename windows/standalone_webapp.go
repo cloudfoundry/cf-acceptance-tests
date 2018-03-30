@@ -29,15 +29,12 @@ var _ = WindowsDescribe("A standalone webapp", func() {
 	It("stages and runs the app", func() {
 		Expect(cf.Cf("push",
 			appName,
-			"--no-start",
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetBinaryBuildpackName(),
 			"-c", ".\\webapp.exe",
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().WindowsWebapp,
-			"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		app_helpers.SetBackend(appName)
-		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hi i am a standalone webapp"))
 	})
 })

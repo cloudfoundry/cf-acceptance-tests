@@ -130,9 +130,7 @@ exit 1
 				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			})
 
-			Expect(cf.Cf("push", appName, "--no-start", "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			app_helpers.SetBackend(appName)
-			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
+			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 
 			Eventually(func() *Session {
 				appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
@@ -169,14 +167,11 @@ exit 1
 
 			Expect(cf.Cf("push",
 				appName,
-				"--no-start",
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
-				"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			app_helpers.SetBackend(appName)
-			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			env := helpers.CurlApp(Config, appName, "/env.json")
 

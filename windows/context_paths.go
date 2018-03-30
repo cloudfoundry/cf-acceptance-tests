@@ -8,7 +8,6 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
@@ -37,14 +36,11 @@ var _ = WindowsDescribe("Context Paths", func() {
 		appName1 = random_name.CATSRandomName("APP")
 		Expect(cf.Cf("push",
 			appName1,
-			"--no-start",
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Nora,
-			"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		app_helpers.SetBackend(appName1)
-		Expect(cf.Cf("start", appName1).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		appName2 = random_name.CATSRandomName("APP")
 		Expect(cf.Cf("push",
@@ -55,18 +51,15 @@ var _ = WindowsDescribe("Context Paths", func() {
 			"-b", Config.GetHwcBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Nora).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		app_helpers.SetBackend(appName2)
 
 		appName3 = random_name.CATSRandomName("APP")
 		Expect(cf.Cf("push",
 			appName3,
-			"--no-start",
 			"--no-route",
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Nora).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		app_helpers.SetBackend(appName3)
 
 		hostname = appName1
 

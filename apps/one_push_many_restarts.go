@@ -3,7 +3,7 @@
 // the blobstore changes without being backwards-compatible.
 //
 // If this is not caught before a deploy, all running apps will go down, as
-// during evacuation of the DEAs, the CC will not know to look in their old
+// during evacuation of the Diego cells, the CC will not know to look in their old
 // path format in the blob store.
 //
 // This tests pushes the app once (checking if it already exists), and then
@@ -66,7 +66,6 @@ var _ = PersistentAppDescribe("An application that's already been pushed", func(
 				Expect(cf.Cf("delete", "-f", "-r", appName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				Fail("failed to create app")
 			}
-			app_helpers.SetBackend(appName)
 			startCommand := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
 			if startCommand.ExitCode() != 0 {
 				Expect(cf.Cf("delete", "-f", "-r", appName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))

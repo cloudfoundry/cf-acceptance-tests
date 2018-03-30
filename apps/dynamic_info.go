@@ -12,7 +12,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
 var _ = AppsDescribe("A running application", func() {
@@ -23,38 +22,17 @@ var _ = AppsDescribe("A running application", func() {
 
 		Expect(cf.Cf("push",
 			appName,
-			"--no-start",
 			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Catnip,
 			"-c", "./catnip",
 			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-		app_helpers.SetBackend(appName)
-		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
 
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-	})
-
-	It("can have its files inspected", func() {
-		// Currently cannot work with multiple instances since CF always checks instance 0
-		if Config.GetBackend() != "dea" {
-			Skip(skip_messages.SkipDeaMessage)
-		}
-		files := cf.Cf("files", appName).Wait(Config.DefaultTimeoutDuration())
-		Expect(files).To(Exit(0))
-		Expect(files).To(Say("app/"))
-
-		files = cf.Cf("files", appName, "app/").Wait(Config.DefaultTimeoutDuration())
-		Expect(files).To(Exit(0))
-		Expect(files).To(Say("main.go"))
-
-		files = cf.Cf("files", appName, "app/main.go").Wait(Config.DefaultTimeoutDuration())
-		Expect(files).To(Exit(0))
-		Expect(files).To(Say("package main"))
 	})
 
 	It("shows crash events and recovers from crashes", func() {

@@ -44,7 +44,6 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 
 		Expect(cf.Cf(
 			"push", appNameCatnip,
-			"--no-start",
 			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Catnip,
@@ -52,20 +51,13 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-		app_helpers.SetBackend(appNameCatnip)
-		Expect(cf.Cf("start", appNameCatnip).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
 		Expect(cf.Cf(
 			"push", appNameSimple,
-			"--no-start",
 			"-b", Config.GetRubyBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().HelloWorld,
 			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-		app_helpers.SetBackend(appNameSimple)
-		Expect(cf.Cf("start", appNameSimple).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {

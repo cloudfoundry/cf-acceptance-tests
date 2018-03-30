@@ -29,14 +29,11 @@ var _ = AppsDescribe("Large_payload", func() {
 		appName = random_name.CATSRandomName("APP")
 		Expect(cf.Cf("push",
 			appName,
-			"--no-start",
 			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Catnip,
 			"-c", "./catnip",
-			"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		app_helpers.SetBackend(appName)
-		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		Eventually(func() int {
 			curlResponse := helpers.CurlApp(Config, appName, fmt.Sprintf("/largetext/%d", payloadSize))

@@ -7,7 +7,6 @@ import (
 
 	. "github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
@@ -30,20 +29,14 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 		By("pushing it", func() {
 			Expect(cf.Cf("push",
 				appName,
-				"--no-start",
 				"-s", Config.GetWindowsStack(),
 				"-b", Config.GetHwcBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Nora,
-				"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			app_helpers.SetBackend(appName)
+				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
-		By("staging and running it", func() {
-			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-		})
-
-		By("generates an app usage 'started' event", func() {
+		By("checking the 'started' event", func() {
 			found, _ := lastAppUsageEvent(appName, "STARTED")
 			Expect(found).To(BeTrue())
 		})

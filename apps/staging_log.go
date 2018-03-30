@@ -29,18 +29,16 @@ var _ = AppsDescribe("An application being staged", func() {
 	})
 
 	It("has its staging log streamed during a push", func() {
-		Eventually(cf.Cf("push",
+		push := cf.Cf("push",
 			appName,
-			"--no-start",
 			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Catnip,
 			"-c", "./catnip",
-			"-d", Config.GetAppsDomain()), Config.DefaultTimeoutDuration()).Should(Exit(0))
-		app_helpers.SetBackend(appName)
-		start := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
+		Expect(push).To(Exit(0))
 
-		output := string(start.Buffer().Contents())
+		output := string(push.Out.Contents())
 		expected := []string{"Installing dependencies", "Uploading droplet", "App started"}
 		found := false
 		for _, value := range expected {

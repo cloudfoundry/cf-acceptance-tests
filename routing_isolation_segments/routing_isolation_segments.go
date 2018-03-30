@@ -11,7 +11,6 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
@@ -82,15 +81,11 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 				Eventually(cf.Cf(
 					"push", appName,
 					"-p", assets.NewAssets().Binary,
-					"--no-start",
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-b", "binary_buildpack",
 					"-d", appsDomain,
 					"-c", "./app"),
 					Config.CfPushTimeoutDuration()).Should(Exit(0))
-
-				app_helpers.EnableDiego(appName)
-				Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 			})
 		})
 
@@ -130,15 +125,11 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 				Eventually(cf.Cf(
 					"push", appName,
 					"-p", assets.NewAssets().Binary,
-					"--no-start",
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-b", "binary_buildpack",
 					"-d", isoSegDomain,
 					"-c", "./app"),
 					Config.CfPushTimeoutDuration()).Should(Exit(0))
-
-				app_helpers.EnableDiego(appName)
-				Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 			})
 		})
 

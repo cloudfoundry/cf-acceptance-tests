@@ -20,14 +20,11 @@ var _ = WindowsDescribe("ASP classic applications", func() {
 
 		Expect(cf.Cf("push",
 			appName,
-			"--no-start",
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().AspClassic,
-			"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		app_helpers.SetBackend(appName)
-		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {

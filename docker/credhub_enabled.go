@@ -19,12 +19,6 @@ import (
 )
 
 var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
-	BeforeEach(func() {
-		if Config.GetBackend() != "diego" {
-			Skip(skip_messages.SkipDiegoMessage)
-		}
-	})
-
 	Context("when CredHub is configured", func() {
 		var chBrokerName, chServiceName, instanceName string
 
@@ -105,7 +99,6 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 					"-c", fmt.Sprintf("/myapp/dockerapp -name=%s", appName)),
 					Config.DefaultTimeoutDuration(),
 				).Should(Exit(0))
-				app_helpers.SetBackend(appName)
 
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 					TestSetup.RegularUserContext().TargetSpace()
