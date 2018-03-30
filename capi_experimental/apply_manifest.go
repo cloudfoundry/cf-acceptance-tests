@@ -74,7 +74,7 @@ applications:
   buildpack: ruby_buildpack
   stack: cflinuxfs2
   env: { foo: qux, snack: walnuts }
-  command: bundle exec rackup config.ru -p $PORT --verbose --retry
+  command: new-command
   health-check-type: http
   health-check-http-endpoint: /env
   timeout: 75
@@ -108,7 +108,7 @@ applications:
 					processes := GetProcesses(appGUID, appName)
 					webProcessWithCommandRedacted := GetProcessByType(processes, "web")
 					webProcess := GetProcessByGuid(webProcessWithCommandRedacted.Guid)
-					Expect(webProcess.Command).To(Equal("bundle exec rackup config.ru -p $PORT --verbose --retry"))
+					Expect(webProcess.Command).To(Equal("new-command"))
 
 					session = cf.Cf("get-health-check", appName).Wait(Config.DefaultTimeoutDuration())
 					Eventually(session).Should(Say("health check type:\\s+http"))
