@@ -4,10 +4,12 @@ import (
 	"fmt"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 	. "github.com/onsi/ginkgo"
@@ -18,13 +20,15 @@ import (
 
 var _ = CapiExperimentalDescribe("apply_manifest", func() {
 	var (
-		appName     string
-		appGUID     string
-		packageGUID string
-		spaceGUID   string
-		spaceName   string
-		orgName     string
-		token       string
+		appName         string
+		appGUID         string
+		broker          ServiceBroker
+		packageGUID     string
+		serviceInstance string
+		spaceGUID       string
+		spaceName       string
+		orgName         string
+		token           string
 	)
 
 	BeforeEach(func() {
@@ -45,13 +49,32 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 		dropletGuid := GetDropletFromBuild(buildGUID)
 		AssignDropletToApp(appGUID, dropletGuid)
 
-		CreateRoute(spaceName, Config.GetAppsDomain(), appName)
+		CreateAndMapRoute(appGUID, spaceName, Config.GetAppsDomain(), appName)
 		StartApp(appGUID)
+		Eventually(func() string {
+			return helpers.CurlAppRoot(Config, appName)
+		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+
+		broker = NewServiceBroker(
+			random_name.CATSRandomName("BRKR"),
+			assets.NewAssets().ServiceBroker,
+			TestSetup,
+		)
+		broker.Push(Config)
+		broker.Configure()
+		broker.Create()
+		broker.PublicizePlans()
+
+		serviceInstance = random_name.CATSRandomName("SVIN")
+		createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, serviceInstance).Wait(Config.DefaultTimeoutDuration())
+		Expect(createService).To(Exit(0), "failed creating service")
 	})
 
 	AfterEach(func() {
 		FetchRecentLogs(appGUID, token, Config)
 		DeleteApp(appGUID)
+
+		broker.Destroy()
 	})
 
 	Describe("Applying manifest to existing app", func() {
@@ -73,12 +96,14 @@ applications:
   memory: 300M
   buildpack: ruby_buildpack
   stack: cflinuxfs2
+  services:
+  - %s
   env: { foo: qux, snack: walnuts }
   command: new-command
   health-check-type: http
   health-check-http-endpoint: /env
   timeout: 75
-`, appName)
+`, appName, serviceInstance)
 			})
 
 			It("successfully completes the job", func() {
@@ -95,7 +120,7 @@ applications:
 
 					session = cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
 					Eventually(session).Should(Say("Showing health"))
-					Eventually(session).Should(Say("instances:\\s+\\d+/2"))
+					Eventually(session).Should(Say("instances:\\s+.*?\\d+/2"))
 					Eventually(session).Should(Say("stack:\\s+cflinuxfs2"))
 					Eventually(session).Should(Say("buildpack:\\s+ruby_buildpack"))
 					Eventually(session).Should(Exit(0))
@@ -113,6 +138,10 @@ applications:
 					session = cf.Cf("get-health-check", appName).Wait(Config.DefaultTimeoutDuration())
 					Eventually(session).Should(Say("health check type:\\s+http"))
 					Eventually(session).Should(Say("endpoint \\(for http type\\):\\s+/env"))
+					Eventually(session).Should(Exit(0))
+
+					session = cf.Cf("service", serviceInstance).Wait(Config.DefaultTimeoutDuration())
+					Eventually(session).Should(Say("bound apps:\\s+%s", appName))
 					Eventually(session).Should(Exit(0))
 				})
 			})
