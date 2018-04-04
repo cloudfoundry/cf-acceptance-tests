@@ -69,10 +69,10 @@ type CatsConfig interface {
 	GetPersistentAppQuotaName() string
 	GetPersistentAppSpace() string
 	GetRubyBuildpackName() string
-	GetSecureAddress() string
 	GetUnallocatedIPForSecurityGroup() string
 	Protocol() string
 
+	GetWindowsSecureAddress() string
 	GetNumWindowsCells() int
 	GetUseWindowsTestTask() bool
 	GetUseWindowsContextPath() bool

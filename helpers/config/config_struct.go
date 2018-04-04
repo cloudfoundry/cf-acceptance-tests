@@ -101,6 +101,7 @@ type config struct {
 	CredhubClientSecret *string `json:"credhub_secret"`
 
 	IncludeWindows        *bool   `json:"include_windows"`
+	WindowsSecureAddress  *string `json:"windows_secure_address"`
 	NumWindowsCells       *int    `json:"num_windows_cells"`
 	UseWindowsTestTask    *bool   `json:"use_windows_test_task"`
 	UseWindowsContextPath *bool   `json:"windows_context_path"`
@@ -111,7 +112,6 @@ type config struct {
 	PrivateDockerRegistryPassword *string `json:"private_docker_registry_password"`
 	PublicDockerAppImage          *string `json:"public_docker_app_image"`
 
-	SecureAddress                 *string `json:"secure_address"`
 	UnallocatedIPForSecurityGroup *string `json:"unallocated_ip_for_security_group"`
 
 	NamePrefix *string `json:"name_prefix"`
@@ -191,6 +191,7 @@ func getDefaults() config {
 	defaults.IncludeWindows = ptrToBool(false)
 	defaults.NumWindowsCells = ptrToInt(0)
 	defaults.UseWindowsContextPath = ptrToBool(false)
+	defaults.WindowsSecureAddress = ptrToString("")
 	defaults.WindowsStack = ptrToString("windows2012R2")
 	defaults.UseWindowsTestTask = ptrToBool(false)
 
@@ -220,7 +221,6 @@ func getDefaults() config {
 	defaults.PrivateDockerRegistryPassword = ptrToString("")
 	defaults.PublicDockerAppImage = ptrToString("cloudfoundry/diego-docker-app-custom:latest")
 
-	defaults.SecureAddress = ptrToString("")
 	defaults.UnallocatedIPForSecurityGroup = ptrToString("10.0.244.255")
 
 	defaults.NamePrefix = ptrToString("CATS")
@@ -668,7 +668,7 @@ func validateWindows(config *config) error {
 		return fmt.Errorf("* Invalid configuration: must have >= 1 Windows cell")
 	}
 
-	if _, _, err := net.SplitHostPort(config.GetSecureAddress()); err != nil {
+	if _, _, err := net.SplitHostPort(config.GetWindowsSecureAddress()); err != nil {
 		return fmt.Errorf("* Invalid configuration: secure address must be of form host:port")
 	}
 	return nil
@@ -1007,8 +1007,8 @@ func (c *config) GetUnallocatedIPForSecurityGroup() string {
 	return *c.UnallocatedIPForSecurityGroup
 }
 
-func (c *config) GetSecureAddress() string {
-	return *c.SecureAddress
+func (c *config) GetWindowsSecureAddress() string {
+	return *c.WindowsSecureAddress
 }
 
 func (c *config) GetNumWindowsCells() int {
