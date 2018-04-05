@@ -11,7 +11,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -50,7 +49,7 @@ func pushApp(appName, buildpack string) {
 		appName,
 		"--no-start",
 		"-s", Config.GetWindowsStack(),
-		"-b", Config.GetHwcBuildpackName(),
+		"-b", buildpack,
 		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", assets.NewAssets().Nora,
 		"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
@@ -83,7 +82,12 @@ func getAppContainerIpAndPort(appName string) (string, int) {
 
 	curlResponse = helpers.CurlApp(Config, appName, "/env/VCAP_APPLICATION")
 	var env map[string]interface{}
-	err := json.Unmarshal([]byte(curlResponse), &env)
+
+	var envString string
+	err := json.Unmarshal([]byte(curlResponse), &envString)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = json.Unmarshal([]byte(envString), &env)
 	Expect(err).NotTo(HaveOccurred())
 	containerPort := int(env["port"].(float64))
 
@@ -157,7 +161,7 @@ func getStagingOutput(appName string) func() *Session {
 
 func pushServerApp() (serverAppName string, privateHost string, privatePort int) {
 	serverAppName = random_name.CATSRandomName("APP")
-	pushApp(serverAppName, Config.GetBinaryBuildpackName())
+	pushApp(serverAppName, Config.GetHwcBuildpackName())
 	Expect(cf.Cf("start", serverAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 	privateHost, privatePort = getAppHostIpAndPort(serverAppName)
@@ -166,7 +170,7 @@ func pushServerApp() (serverAppName string, privateHost string, privatePort int)
 
 func pushClientApp() (clientAppName string) {
 	clientAppName = random_name.CATSRandomName("APP")
-	pushApp(clientAppName, Config.GetBinaryBuildpackName())
+	pushApp(clientAppName, Config.GetHwcBuildpackName())
 	Expect(cf.Cf("start", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	return
 }
@@ -182,9 +186,6 @@ func assertNetworkingPreconditions(clientAppName string, privateHost string, pri
 }
 
 var _ = SecurityGroupsDescribe("WINDOWS: App Instance Networking", func() {
-	var serverAppName, privateHost string
-	var privatePort int
-
 	Describe("WINDOWS: Using container-networking and running security-groups", func() {
 		var serverAppName, clientAppName, privateHost, orgName, spaceName, securityGroupName string
 		var privatePort int
@@ -226,28 +227,10 @@ var _ = SecurityGroupsDescribe("WINDOWS: App Instance Networking", func() {
 
 			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-			By("Testing that client app cannot connect to the server app using the overlay")
-			containerIp, containerPort := getAppContainerIpAndPort(serverAppName)
-			noraCurlResponse := testAppConnectivity(clientAppName, containerIp, containerPort)
-			Expect(noraCurlResponse.ReturnCode).NotTo(Equal(0), "no policy configured but client app can talk to server app using overlay")
-
 			By("Testing that external connectivity to a private ip is not refused (but may be unreachable for other reasons)")
-			noraCurlResponse = testAppConnectivity(clientAppName, privateAddress, 80)
+
+			noraCurlResponse := testAppConnectivity(clientAppName, privateAddress, 80)
 			Expect(noraCurlResponse.Stderr).NotTo(ContainSubstring("refused"), "wide-open ASG configured but app is still refused by private ip")
-
-			By("adding policy")
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).ToNot(ContainSubstring(serverAppName))
-				Expect(cf.Cf("add-network-policy", clientAppName, "--destination-app", serverAppName, "--port", fmt.Sprintf("%d", containerPort), "--protocol", "tcp").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring(serverAppName))
-			})
-
-			By("Testing that client app can connect to server app using the overlay")
-			Eventually(func() int {
-				noraCurlResponse = testAppConnectivity(clientAppName, containerIp, containerPort)
-				return noraCurlResponse.ReturnCode
-			}, "5s").Should(Equal(0), "policy is configured + wide-open asg but client app cannot talk to server app using overlay")
 
 			By("unbinding the wide-open security group")
 			unbindSecurityGroup(securityGroupName, orgName, spaceName)
@@ -256,65 +239,11 @@ var _ = SecurityGroupsDescribe("WINDOWS: App Instance Networking", func() {
 			By("restarting the app")
 			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-			By("Testing that client app can still connect to server app using the overlay")
-			Eventually(func() int {
-				noraCurlResponse = testAppConnectivity(clientAppName, containerIp, containerPort)
-				return noraCurlResponse.ReturnCode
-			}, "5s").Should(Equal(0), "policy is configured, asgs are not but client app cannot talk to server app using overlay")
-
 			By("Testing that external connectivity to a private ip is refused")
 			noraCurlResponse = testAppConnectivity(clientAppName, privateAddress, 80)
 			Expect(noraCurlResponse.Stderr).To(ContainSubstring("refused"))
 
-			By("deleting policy")
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring(serverAppName))
-				Expect(cf.Cf("remove-network-policy", clientAppName, "--destination-app", serverAppName, "--port", fmt.Sprintf("%d", containerPort), "--protocol", "tcp").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).ToNot(ContainSubstring(serverAppName))
-			})
-
-			By("Testing the client app cannot connect to the server app using the overlay")
-			Eventually(func() int {
-				noraCurlResponse = testAppConnectivity(clientAppName, containerIp, containerPort)
-				return noraCurlResponse.ReturnCode
-			}, "5s").ShouldNot(Equal(0), "no policy is configured but client app can talk to server app using overlay")
 		})
 
-	})
-
-	Describe("WINDOWS: Using staging security groups", func() {
-		var testAppName, buildpack string
-
-		BeforeEach(func() {
-			serverAppName, privateHost, privatePort = pushServerApp()
-
-			By("Asserting default staging security group configuration")
-			testAppName = random_name.CATSRandomName("APP")
-			buildpack = createDummyBuildpack()
-			pushApp(testAppName, buildpack)
-
-			privateUri := fmt.Sprintf("%s:%d", privateHost, privatePort)
-			Expect(cf.Cf("set-env", testAppName, "TESTURI", privateUri).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-
-			Expect(cf.Cf("start", testAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
-			Eventually(getStagingOutput(testAppName), 5).Should(Say("CURL_EXIT=[^0]"), "Expected staging security groups not to allow internal communication between app containers. Configure your staging security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
-		})
-
-		AfterEach(func() {
-			app_helpers.AppReport(serverAppName, Config.DefaultTimeoutDuration())
-			Expect(cf.Cf("delete", serverAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-			app_helpers.AppReport(testAppName, Config.DefaultTimeoutDuration())
-			Expect(cf.Cf("delete", testAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-			deleteBuildpack(buildpack)
-		})
-
-		It("WINDOWS: allows external and denies internal traffic during staging based on default staging security rules", func() {
-			Expect(cf.Cf("set-env", testAppName, "TESTURI", "www.google.com").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			Expect(cf.Cf("restart", testAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
-			Eventually(getStagingOutput(testAppName), 5).Should(Say("CURL_EXIT=0"))
-		})
 	})
 })
