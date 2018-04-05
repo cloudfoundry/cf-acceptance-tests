@@ -241,7 +241,7 @@ var _ = SecurityGroupsDescribe("WINDOWS: App Instance Networking", func() {
 
 			By("Testing that external connectivity to a private ip is refused")
 			noraCurlResponse = testAppConnectivity(clientAppName, privateAddress, 80)
-			Expect(noraCurlResponse.Stderr).To(ContainSubstring("refused"))
+			Expect(noraCurlResponse.Stderr).To(ContainSubstring("Unable to connect to the remote server"))
 
 		})
 
