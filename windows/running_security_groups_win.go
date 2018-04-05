@@ -20,7 +20,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
 type AppsResponse struct {
@@ -191,8 +190,8 @@ var _ = SecurityGroupsDescribe("WINDOWS: App Instance Networking", func() {
 		var privatePort int
 
 		BeforeEach(func() {
-			if !Config.GetIncludeContainerNetworking() {
-				Skip(skip_messages.SkipContainerNetworkingMessage)
+			if !Config.GetIncludeSecurityGroups() {
+				Skip("Skipping: include_security_groups is set to false")
 			}
 
 			orgName = TestSetup.RegularUserContext().Org

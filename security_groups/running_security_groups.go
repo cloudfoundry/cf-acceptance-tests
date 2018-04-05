@@ -21,7 +21,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
 type AppsResponse struct {
@@ -190,10 +189,6 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 		var privatePort int
 
 		BeforeEach(func() {
-			if !Config.GetIncludeContainerNetworking() {
-				Skip(skip_messages.SkipContainerNetworkingMessage)
-			}
-
 			orgName = TestSetup.RegularUserContext().Org
 			spaceName = TestSetup.RegularUserContext().Space
 
