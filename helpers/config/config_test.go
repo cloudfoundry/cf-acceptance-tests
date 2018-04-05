@@ -543,19 +543,6 @@ var _ = Describe("Config", func() {
 			})
 		})
 
-		Context("when the secure address is malformed", func() {
-			BeforeEach(func() {
-				testCfg.WindowsStack = ptrToString("windows2016")
-				testCfg.NumWindowsCells = ptrToInt(1)
-				testCfg.WindowsSecureAddress = ptrToString("127.0.0.1")
-			})
-
-			It("errors", func() {
-				config, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(config).To(BeNil())
-				Expect(err).To(MatchError("* Invalid configuration: secure address must be of form host:port"))
-			})
-		})
 	})
 
 	Context("when including routing isolation segment tests", func() {

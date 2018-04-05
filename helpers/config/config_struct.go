@@ -668,9 +668,6 @@ func validateWindows(config *config) error {
 		return fmt.Errorf("* Invalid configuration: must have >= 1 Windows cell")
 	}
 
-	if _, _, err := net.SplitHostPort(config.GetWindowsSecureAddress()); err != nil {
-		return fmt.Errorf("* Invalid configuration: secure address must be of form host:port")
-	}
 	return nil
 }
 
