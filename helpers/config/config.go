@@ -72,7 +72,6 @@ type CatsConfig interface {
 	GetUnallocatedIPForSecurityGroup() string
 	Protocol() string
 
-	GetWindowsSecureAddress() string
 	GetNumWindowsCells() int
 	GetUseWindowsTestTask() bool
 	GetUseWindowsContextPath() bool

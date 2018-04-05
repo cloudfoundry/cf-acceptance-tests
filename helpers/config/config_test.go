@@ -59,7 +59,6 @@ type testConfig struct {
 	UnallocatedIPForSecurityGroup   *string `json:"unallocated_ip_for_security_group"`
 
 	IncludeWindows        *bool   `json:"include_windows,omitempty"`
-	WindowsSecureAddress  *string `json:"windows_secure_address,omitempty"`
 	NumWindowsCells       *int    `json:"num_windows_cells,omitempty"`
 	UseWindowsTestTask    *bool   `json:"use_windows_test_task,omitempty"`
 	UseWindowsContextPath *bool   `json:"use_windows_context_path,omitempty"`
@@ -519,7 +518,6 @@ var _ = Describe("Config", func() {
 				BeforeEach(func() {
 					testCfg.WindowsStack = nil
 					testCfg.NumWindowsCells = ptrToInt(1)
-					testCfg.WindowsSecureAddress = ptrToString("127.0.0.1:80")
 				})
 
 				It("defaults to windows2012R2", func() {

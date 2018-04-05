@@ -101,7 +101,6 @@ type config struct {
 	CredhubClientSecret *string `json:"credhub_secret"`
 
 	IncludeWindows        *bool   `json:"include_windows"`
-	WindowsSecureAddress  *string `json:"windows_secure_address"`
 	NumWindowsCells       *int    `json:"num_windows_cells"`
 	UseWindowsTestTask    *bool   `json:"use_windows_test_task"`
 	UseWindowsContextPath *bool   `json:"windows_context_path"`
@@ -191,7 +190,6 @@ func getDefaults() config {
 	defaults.IncludeWindows = ptrToBool(false)
 	defaults.NumWindowsCells = ptrToInt(0)
 	defaults.UseWindowsContextPath = ptrToBool(false)
-	defaults.WindowsSecureAddress = ptrToString("")
 	defaults.WindowsStack = ptrToString("windows2012R2")
 	defaults.UseWindowsTestTask = ptrToBool(false)
 
@@ -1002,10 +1000,6 @@ func (c *config) GetPublicDockerAppImage() string {
 
 func (c *config) GetUnallocatedIPForSecurityGroup() string {
 	return *c.UnallocatedIPForSecurityGroup
-}
-
-func (c *config) GetWindowsSecureAddress() string {
-	return *c.WindowsSecureAddress
 }
 
 func (c *config) GetNumWindowsCells() int {

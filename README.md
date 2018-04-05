@@ -216,7 +216,6 @@ include_capi_no_bridge
 * `private_docker_registry_image`: Name of the private docker image to use when testing private docker registries. [See below](#private-docker)
 * `private_docker_registry_username`: Username to access the private docker repository. [See below](#private-docker)
 * `private_docker_registry_password`: Password to access the private docker repository. [See below](#private-docker)
-* `secure_address`: An address of the form `<ip:port>` which containers are prohibited from accessing by the default ASGs. [See below](#container-networking-and-application-security-groups)
 
 * `staticfile_buildpack_name` [See below](#buildpack-names).
 * `java_buildpack_name` [See below](#buildpack-names).
