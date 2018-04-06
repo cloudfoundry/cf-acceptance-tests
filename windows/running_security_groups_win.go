@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
-
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	. "github.com/onsi/ginkgo"
@@ -18,7 +16,6 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
@@ -75,24 +72,6 @@ func testAppConnectivity(clientAppName string, privateHost string, privatePort i
 	return noraCurlResponse
 }
 
-func getAppContainerIpAndPort(appName string) (string, int) {
-	curlResponse := helpers.CurlApp(Config, appName, "/myip")
-	containerIp := strings.TrimSpace(curlResponse)
-
-	curlResponse = helpers.CurlApp(Config, appName, "/env/VCAP_APPLICATION")
-	var env map[string]interface{}
-
-	var envString string
-	err := json.Unmarshal([]byte(curlResponse), &envString)
-	Expect(err).NotTo(HaveOccurred())
-
-	err = json.Unmarshal([]byte(envString), &env)
-	Expect(err).NotTo(HaveOccurred())
-	containerPort := int(env["port"].(float64))
-
-	return containerIp, containerPort
-}
-
 type Destination struct {
 	IP       string `json:"destination"`
 	Port     int    `json:"ports,string,omitempty"`
@@ -134,30 +113,6 @@ func deleteSecurityGroup(securityGroupName string) {
 	})
 }
 
-func createDummyBuildpack() string {
-	buildpack := random_name.CATSRandomName("BPK")
-	buildpackZip := assets.NewAssets().SecurityGroupBuildpack
-
-	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("create-buildpack", buildpack, buildpackZip, "999").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-	})
-	return buildpack
-}
-
-func deleteBuildpack(buildpack string) {
-	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("delete-buildpack", buildpack, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-	})
-}
-
-func getStagingOutput(appName string) func() *Session {
-	return func() *Session {
-		appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
-		Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		return appLogsSession
-	}
-}
-
 func pushServerApp() (serverAppName string, privateHost string, privatePort int) {
 	serverAppName = random_name.CATSRandomName("APP")
 	pushApp(serverAppName, Config.GetHwcBuildpackName())
@@ -190,16 +145,14 @@ var _ = WindowsDescribe("WINDOWS: App Instance Networking", func() {
 		var privatePort int
 
 		BeforeEach(func() {
-			if !Config.GetIncludeSecurityGroups() {
-				Skip("Skipping: include_security_groups is set to false")
-			}
-
 			orgName = TestSetup.RegularUserContext().Org
 			spaceName = TestSetup.RegularUserContext().Space
-
 			serverAppName, privateHost, privatePort = pushServerApp()
 			clientAppName = pushClientApp()
-			assertNetworkingPreconditions(clientAppName, privateHost, privatePort)
+
+			if Config.GetWindowsStack() == "windows2016" {
+				assertNetworkingPreconditions(clientAppName, privateHost, privatePort)
+			}
 		})
 
 		AfterEach(func() {
@@ -229,7 +182,7 @@ var _ = WindowsDescribe("WINDOWS: App Instance Networking", func() {
 			By("Testing that external connectivity to a private ip is not refused (but may be unreachable for other reasons)")
 
 			noraCurlResponse := testAppConnectivity(clientAppName, privateAddress, 80)
-			Expect(noraCurlResponse.Stderr).NotTo(ContainSubstring("refused"), "wide-open ASG configured but app is still refused by private ip")
+			Expect(noraCurlResponse.Stderr).To(ContainSubstring("The operation has timed out"), "wide-open ASG configured but app is still refused by private ip")
 
 			By("unbinding the wide-open security group")
 			unbindSecurityGroup(securityGroupName, orgName, spaceName)
@@ -241,8 +194,6 @@ var _ = WindowsDescribe("WINDOWS: App Instance Networking", func() {
 			By("Testing that external connectivity to a private ip is refused")
 			noraCurlResponse = testAppConnectivity(clientAppName, privateAddress, 80)
 			Expect(noraCurlResponse.Stderr).To(ContainSubstring("Unable to connect to the remote server"))
-
 		})
-
 	})
 })

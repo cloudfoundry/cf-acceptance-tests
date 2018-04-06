@@ -228,7 +228,7 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 
 			By("Testing that external connectivity to a private ip is not refused (but may be unreachable for other reasons)")
 			catnipCurlResponse = testAppConnectivity(clientAppName, privateAddress, 80)
-			Expect(catnipCurlResponse.Stderr).NotTo(ContainSubstring("refused"), "wide-open ASG configured but app is still refused by private ip")
+			Expect(catnipCurlResponse.Stderr).To(ContainSubstring("Connection timed out after"), "wide-open ASG configured but app is still refused by private ip")
 
 			By("adding policy")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
