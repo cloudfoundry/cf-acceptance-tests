@@ -184,7 +184,7 @@ func assertNetworkingPreconditions(clientAppName string, privateHost string, pri
 	Expect(noraCurlResponse.ReturnCode).To(Equal(0), "Expected default running security groups to allow external traffic from app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
 }
 
-var _ = SecurityGroupsDescribe("WINDOWS: App Instance Networking", func() {
+var _ = WindowsDescribe("WINDOWS: App Instance Networking", func() {
 	Describe("WINDOWS: Using container-networking and running security-groups", func() {
 		var serverAppName, clientAppName, privateHost, orgName, spaceName, securityGroupName string
 		var privatePort int
@@ -212,7 +212,7 @@ var _ = SecurityGroupsDescribe("WINDOWS: App Instance Networking", func() {
 			deleteSecurityGroup(securityGroupName)
 		})
 
-		It("WINDOWS: correctly configures asgs and c2c policy independent of each other", func() {
+		It("WINDOWS: correctly configures asgs", func() {
 			By("creating a wide-open ASG")
 			dest := Destination{
 				IP:       "0.0.0.0/0", // some random IP that isn't covered by an existing Security Group rule
