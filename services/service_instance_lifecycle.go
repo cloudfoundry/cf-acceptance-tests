@@ -29,20 +29,17 @@ type Service struct {
 	LastOperation LastOperation `json:"last_operation"`
 }
 
+type ServiceMetadata struct {
+	URL string `json:"url"`
+}
+
 type Resource struct {
-	Entity Service `json:"entity"`
+	Entity   Service         `json:"entity"`
+	Metadata ServiceMetadata `json:"metadata"`
 }
 
 type Response struct {
 	Resources []Resource `json:"resources"`
-}
-
-type Binding struct {
-	Resources []struct {
-		Metadata struct {
-			URL string
-		}
-	}
 }
 
 var _ = ServicesDescribe("Service Instance Lifecycle", func() {
@@ -512,10 +509,12 @@ func getServiceInstanceGuid(instanceName string) string {
 }
 
 func getBindingParamsEndpoint(appGUID string, instanceGUID string) string {
-	jsonResults := Binding{}
+	jsonResults := Response{}
 	bindingCurl := cf.Cf("curl", fmt.Sprintf("/v2/apps/%s/service_bindings?q=service_instance_guid:%s", appGUID, instanceGUID)).Wait(Config.DefaultTimeoutDuration())
 	Expect(bindingCurl).To(Exit(0))
 	json.Unmarshal(bindingCurl.Out.Contents(), &jsonResults)
+
+	Expect(len(jsonResults.Resources)).To(BeNumerically(">", 0), "Expected to find at least one service resource.")
 
 	return fmt.Sprintf("%s/parameters", jsonResults.Resources[0].Metadata.URL)
 }
