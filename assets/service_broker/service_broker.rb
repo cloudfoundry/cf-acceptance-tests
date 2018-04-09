@@ -279,6 +279,16 @@ class ServiceBroker < Sinatra::Base
     end
   end
 
+  get '/v2/service_instances/:instance_id' do |instance_id|
+    status 200
+    log_response(status, JSON.pretty_generate($datasource.data['service_instances'][instance_id].provision_data))
+  end
+
+  get '/v2/service_instances/:instance_id/service_bindings/:id' do |instance_id, binding_id|
+    status 200
+    log_response(status, JSON.pretty_generate($datasource.data['service_instances'][binding_id]['binding_data']))
+  end
+
   get '/config/all/?' do
     log_response(status, JSON.pretty_generate($datasource.data))
   end
