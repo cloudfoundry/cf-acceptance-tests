@@ -55,7 +55,7 @@ func BackendCompatibilityDescribe(description string, callback func()) bool {
 		BeforeEach(func() {
 			if !Config.GetIncludeBackendCompatiblity() {
 				Skip(`Skipping this test because Config.IncludeBackendCompatibility is set to 'false'.
-			NOTE: Ensure that your deployment has deployed both DEA and Diego before running this test.`)
+NOTE: Ensure that your deployment has deployed both DEA and Diego before running this test.`)
 			}
 		})
 		Describe(description, callback)
@@ -78,7 +78,7 @@ func DockerDescribe(description string, callback func()) bool {
 		BeforeEach(func() {
 			if !Config.GetIncludeDocker() {
 				Skip(`Skipping this test because Config.IncludeDocker is set to 'false'.
-				NOTE: Ensure Docker containers are enabled on your platform before enabling this test.`)
+NOTE: Ensure Docker containers are enabled on your platform before enabling this test.`)
 			}
 		})
 		Describe(description, callback)
@@ -107,7 +107,7 @@ func RouteServicesDescribe(description string, callback func()) bool {
 		BeforeEach(func() {
 			if !Config.GetIncludeRouteServices() {
 				Skip(`Skipping this test because Config.IncludeRouteServices is set to 'false'.
-			NOTE: Ensure that route services are enabled in your deployment before running this test.`)
+NOTE: Ensure that route services are enabled in your deployment before running this test.`)
 			}
 		})
 		Describe(description, callback)
@@ -201,7 +201,7 @@ func SshDescribe(description string, callback func()) bool {
 		BeforeEach(func() {
 			if !Config.GetIncludeSsh() {
 				Skip(`Skipping this test because Config.IncludeSsh is set to 'false'.
-			NOTE: Ensure that your platform is deployed with a Diego SSH proxy in order to run this test.`)
+NOTE: Ensure that your platform is deployed with a Diego SSH proxy in order to run this test.`)
 			}
 		})
 		Describe(description, callback)
