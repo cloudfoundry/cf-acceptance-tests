@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math"
-	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -23,6 +22,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 )
 
 const policyTimeout = "10s"
@@ -303,19 +303,10 @@ exit 1`
 			})
 
 			It("applies the associated app's ASGs to the task", func(done Done) {
-				By("checking that SecureAddress has been configured")
-				if Config.GetSecureAddress() == "" {
-					Skip("Skipping test that checks ASGs apply to tasks. To run, please set config.SecureAddress property")
-				}
-
 				By("creating the ASG")
-				secureAddress := Config.GetSecureAddress()
-				secureHost, securePortString, err := net.SplitHostPort(secureAddress)
-				Expect(err).NotTo(HaveOccurred())
-				securePort, err := strconv.Atoi(securePortString)
 				destSecurityGroup := Destination{
-					IP:       secureHost,
-					Port:     securePort,
+					IP:       Config.GetUnallocatedIPForSecurityGroup(),
+					Port:     80,
 					Protocol: "tcp",
 				}
 				securityGroupName = createSecurityGroup(destSecurityGroup)
@@ -330,24 +321,22 @@ exit 1`
 
 				By("creating the task")
 				taskName := "woof"
-				command := `while true; do
-if curl --fail "` + secureAddress + `" ; then
-	exit 0
-fi
-done;
-exit 1`
+				command := `curl --fail --connect-timeout 20 ` + Config.GetUnallocatedIPForSecurityGroup() + `:80`
 				createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait(Config.DefaultTimeoutDuration())
 				Expect(createCommand).To(Exit(0))
 
-				By("successfully running")
+				By("testing that external connectivity to a private ip is not refused (but may be unreachable for other reasons)")
 				var outputName, outputState string
 				Eventually(func() string {
 					taskDetails := getTaskDetails(appName)
 					outputName = taskDetails[1]
 					outputState = taskDetails[2]
 					return outputState
-				}, Config.DefaultTimeoutDuration()).Should(Equal("SUCCEEDED"))
+				}, Config.DefaultTimeoutDuration()).Should(Equal("FAILED"))
 				Expect(outputName).To(Equal(taskName))
+				appLogs := logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration())
+				Expect(appLogs).To(Exit(0))
+				Expect(string(appLogs.Out.Contents())).To(ContainSubstring("Connection timed out"), "ASG configured to allow connection to the private IP but the app is still refused by private ip")
 
 				close(done)
 			}, 30*60 /* <-- overall spec timeout in seconds */)
