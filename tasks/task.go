@@ -230,6 +230,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 
 	Context("when associating a task with an app", func() {
 		var securityGroupName string
+
 		BeforeEach(func() {
 			Expect(cf.Cf(
 				"push", appName,
@@ -250,55 +251,63 @@ var _ = TasksDescribe("v3 tasks", func() {
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		})
 
-		It("applies the associated app's policies to the task", func(done Done) {
-			By("checking that include_container_networking is set to true", func() {
+		Context("and applying a network policy", func() {
+			BeforeEach(func() {
 				if !Config.GetIncludeContainerNetworking() {
 					Skip(skip_messages.SkipContainerNetworkingMessage)
 				}
 			})
 
-			By("creating the network policy")
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).ToNot(ContainSubstring(appName))
-				Expect(cf.Cf("add-network-policy", appName, "--destination-app", appName, "--port", "8080", "--protocol", "tcp").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring(appName))
-			})
+			It("applies the associated app's policies to the task", func(done Done) {
+				By("creating the network policy")
+				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+					Expect(cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).ToNot(ContainSubstring(appName))
+					Expect(cf.Cf("add-network-policy", appName, "--destination-app", appName, "--port", "8080", "--protocol", "tcp").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring(appName))
+				})
 
-			By("getting the overlay ip of app")
-			curlArgs := appName + "." + Config.GetAppsDomain()
-			curl := helpers.Curl(Config, curlArgs).Wait(Config.DefaultTimeoutDuration())
-			contents := curl.Out.Contents()
+				By("getting the overlay ip of app")
+				curlArgs := appName + "." + Config.GetAppsDomain()
+				curl := helpers.Curl(Config, curlArgs).Wait(Config.DefaultTimeoutDuration())
+				contents := curl.Out.Contents()
 
-			var proxyResponse ProxyResponse
-			Expect(json.Unmarshal(contents, &proxyResponse)).To(Succeed())
-			containerIP := getContainerIP(proxyResponse.ListenAddresses)
+				var proxyResponse ProxyResponse
+				Expect(json.Unmarshal(contents, &proxyResponse)).To(Succeed())
+				containerIP := getContainerIP(proxyResponse.ListenAddresses)
 
-			By("creating the task")
-			taskName := "woof"
-			command := `while true; do
+				By("creating the task")
+				taskName := "woof"
+				command := `while true; do
 if curl --fail "` + containerIP + `:` + strconv.Itoa(proxyResponse.Port) + `" ; then
 	exit 0
 fi
 done;
 exit 1`
-			createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait(Config.DefaultTimeoutDuration())
-			Expect(createCommand).To(Exit(0))
+				createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait(Config.DefaultTimeoutDuration())
+				Expect(createCommand).To(Exit(0))
 
-			By("successfully running")
-			var outputName, outputState string
-			Eventually(func() string {
-				taskDetails := getTaskDetails(appName)
-				outputName = taskDetails[1]
-				outputState = taskDetails[2]
-				return outputState
-			}, policyTimeout).Should(Equal("SUCCEEDED"))
-			Expect(outputName).To(Equal(taskName))
+				By("successfully running")
+				var outputName, outputState string
+				Eventually(func() string {
+					taskDetails := getTaskDetails(appName)
+					outputName = taskDetails[1]
+					outputState = taskDetails[2]
+					return outputState
+				}, policyTimeout).Should(Equal("SUCCEEDED"))
+				Expect(outputName).To(Equal(taskName))
 
-			close(done)
-		}, 30*60 /* <-- overall spec timeout in seconds */)
+				close(done)
+			}, 30*60 /* <-- overall spec timeout in seconds */)
+		})
 
-		Context("when binding a space-specific ASG", func() {
+		Context("and binding a space-specific ASG", func() {
+			BeforeEach(func() {
+				if !Config.GetIncludeSecurityGroups() {
+					Skip(skip_messages.SkipSecurityGroupsMessage)
+				}
+			})
+
 			AfterEach(func() {
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 					Expect(cf.Cf("unbind-security-group", securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
