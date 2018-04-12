@@ -251,6 +251,12 @@ var _ = TasksDescribe("v3 tasks", func() {
 		})
 
 		It("applies the associated app's policies to the task", func(done Done) {
+			By("checking that include_container_networking is set to true", func() {
+				if !Config.GetIncludeContainerNetworking() {
+					Skip(skip_messages.SkipContainerNetworkingMessage)
+				}
+			})
+
 			By("creating the network policy")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				Expect(cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
