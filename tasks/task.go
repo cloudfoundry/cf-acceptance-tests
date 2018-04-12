@@ -206,6 +206,9 @@ var _ = TasksDescribe("v3 tasks", func() {
 
 	Context("when associating a task with an app", func() {
 		BeforeEach(func() {
+			if !Config.GetIncludeContainerNetworking() {
+				Skip(skip_messages.SkipContainerNetworkingMessage)
+			}
 			Expect(cf.Cf(
 				"push", appName,
 				"--no-start",
