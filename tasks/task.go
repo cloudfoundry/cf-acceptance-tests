@@ -347,7 +347,7 @@ exit 1`
 					outputName = taskDetails[1]
 					outputState = taskDetails[2]
 					return outputState
-				}, Config.DefaultTimeoutDuration()).Should(Equal("FAILED"))
+				}, Config.CfPushTimeoutDuration()).Should(Equal("FAILED"))
 				Expect(outputName).To(Equal(taskName))
 				appLogs := logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration())
 				Expect(appLogs).To(Exit(0))
