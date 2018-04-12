@@ -336,7 +336,7 @@ exit 1`
 
 				By("creating the task")
 				taskName := "woof"
-				command := `curl --fail --connect-timeout 20 ` + Config.GetUnallocatedIPForSecurityGroup() + `:80`
+				command := `curl --fail --connect-timeout 10 ` + Config.GetUnallocatedIPForSecurityGroup() + `:80`
 				createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait(Config.DefaultTimeoutDuration())
 				Expect(createCommand).To(Exit(0))
 
