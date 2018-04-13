@@ -349,9 +349,12 @@ exit 1`
 					return outputState
 				}, Config.CfPushTimeoutDuration()).Should(Equal("FAILED"))
 				Expect(outputName).To(Equal(taskName))
-				appLogs := logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration())
-				Expect(appLogs).To(Exit(0))
-				Expect(string(appLogs.Out.Contents())).To(ContainSubstring("Connection timed out"), "ASG configured to allow connection to the private IP but the app is still refused by private ip")
+
+				Eventually(func() string{
+					appLogs := logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration())
+					Expect(appLogs).To(Exit(0))
+					return string(appLogs.Out.Contents())
+				}, Config.CfPushTimeoutDuration()).Should(ContainSubstring("Connection timed out"), "ASG configured to allow connection to the private IP but the app is still refused by private ip")
 
 				close(done)
 			}, 30*60 /* <-- overall spec timeout in seconds */)
