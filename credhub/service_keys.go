@@ -59,8 +59,8 @@ var _ = CredhubDescribe("service keys", func() {
 			"CREDHUB_CLIENT", Config.GetCredHubBrokerClientCredential(),
 		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_CLIENT env var on credhub-enabled service broker")
 
-		Expect(cf.Cf(
-			"set-env", chBrokerAppName,
+		Expect(cf.CfRedact(
+			Config.GetCredHubBrokerClientSecret(), "set-env", chBrokerAppName,
 			"CREDHUB_SECRET", Config.GetCredHubBrokerClientSecret(),
 		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_SECRET env var on credhub-enabled service broker")
 
