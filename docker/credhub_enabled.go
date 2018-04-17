@@ -8,6 +8,8 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 
+	"strings"
+
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
@@ -15,7 +17,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
-	"strings"
 )
 
 var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
@@ -51,8 +52,8 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 				"CREDHUB_CLIENT", Config.GetCredHubBrokerClientCredential(),
 			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_CLIENT env var on credhub-enabled service broker")
 
-			Expect(cf.Cf(
-				"set-env", chBrokerName,
+			Expect(cf.CfRedact(
+				Config.GetCredHubBrokerClientSecret(), "set-env", chBrokerName,
 				"CREDHUB_SECRET", Config.GetCredHubBrokerClientSecret(),
 			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_SECRET env var on credhub-enabled service broker")
 
