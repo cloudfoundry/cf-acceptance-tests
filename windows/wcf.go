@@ -49,7 +49,7 @@ var _ = WindowsDescribe("WCF", func() {
 	It("can have multiple routable instances on the same cell", func() {
 		Eventually(allInstancesRunning(appName, Config.GetNumWindowsCells()+1), Config.CfPushTimeoutDuration()).Should(Succeed())
 
-		Eventually(wcfRequest(appName).Msg).Should(Equal("WATS!!!"))
+		Expect(wcfRequest(appName).Msg).To(Equal("WATS!!!"))
 
 		Eventually(isServiceRunningOnTheSameCell(appName), Config.CfPushTimeoutDuration()).Should(BeTrue())
 	})
