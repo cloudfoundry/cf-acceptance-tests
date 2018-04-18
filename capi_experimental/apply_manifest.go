@@ -25,6 +25,7 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 		broker          ServiceBroker
 		packageGUID     string
 		serviceInstance string
+		route			      string
 		spaceGUID       string
 		spaceName       string
 		orgName         string
@@ -66,6 +67,7 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 		broker.PublicizePlans()
 
 		serviceInstance = random_name.CATSRandomName("SVIN")
+		route = fmt.Sprintf("bar.%s", Config.GetAppsDomain())
 		createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, serviceInstance).Wait(Config.DefaultTimeoutDuration())
 		Expect(createService).To(Exit(0), "failed creating service")
 	})
@@ -98,12 +100,14 @@ applications:
   stack: cflinuxfs2
   services:
   - %s
+  routes:
+  - route: %s
   env: { foo: qux, snack: walnuts }
   command: new-command
   health-check-type: http
   health-check-http-endpoint: /env
   timeout: 75
-`, appName, serviceInstance)
+`, appName, serviceInstance, route)
 			})
 
 			It("successfully completes the job", func() {
@@ -123,6 +127,7 @@ applications:
 					Eventually(session).Should(Say("instances:\\s+.*?\\d+/2"))
 					Eventually(session).Should(Say("stack:\\s+cflinuxfs2"))
 					Eventually(session).Should(Say("buildpack:\\s+ruby_buildpack"))
+					Eventually(session).Should(Say("routes:\\s+%s", route))
 					Eventually(session).Should(Exit(0))
 
 					session = cf.Cf("env", appName).Wait(Config.DefaultTimeoutDuration())
