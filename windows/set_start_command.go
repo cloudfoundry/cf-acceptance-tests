@@ -39,12 +39,9 @@ var _ = WindowsDescribe("Setting an app's start command", func() {
 	})
 
 	It("uses the given start command", func() {
-		getRecentLogs := func() *Buffer {
-			session := logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration())
-			return session.Out
-		}
-
 		// OUT... to make sure we don't match the Launcher line: Running `loop.bat Hi there!!!'
-		Eventually(getRecentLogs, Config.DefaultTimeoutDuration()).Should(Say("OUT Hi there!!!"))
+		Eventually(func() *Buffer {
+			return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+		}, Config.DefaultTimeoutDuration()).Should(Say("OUT Hi there!!!"))
 	})
 })

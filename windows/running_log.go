@@ -50,10 +50,8 @@ var _ = WindowsDescribe("app logs", func() {
 		message = "message-from-stdout"
 		helpers.CurlApp(Config, appName, fmt.Sprintf("/print/%s", url.QueryEscape(message)))
 
-		Eventually(func() *Session {
-			appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
-			Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			return appLogsSession
+		Eventually(func() *Buffer {
+			return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
 		}, Config.DefaultTimeoutDuration()).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*OUT %s", message)))
 	})
 
@@ -64,10 +62,8 @@ var _ = WindowsDescribe("app logs", func() {
 		message = "message-from-stderr"
 		helpers.CurlApp(Config, appName, fmt.Sprintf("/print_err/%s", url.QueryEscape(message)))
 
-		Eventually(func() *Session {
-			appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
-			Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			return appLogsSession
+		Eventually(func() *Buffer {
+			return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
 		}, Config.DefaultTimeoutDuration()).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*ERR %s", message)))
 	})
 })

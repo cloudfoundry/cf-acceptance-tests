@@ -18,6 +18,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 )
 
@@ -73,11 +74,9 @@ var _ = WindowsDescribe("SSH", func() {
 				Expect(string(stdErr)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 				Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=1"))
 
-				Eventually(func() string {
-					appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
-					Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-					return string(appLogsSession.Out.Contents())
-				}).Should(ContainSubstring("Successful remote access"))
+				Eventually(func() *gbytes.Buffer {
+					return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+				}, Config.DefaultTimeoutDuration()).Should(gbytes.Say("Successful remote access"))
 
 				eventsCmd := cf.Cf("events", appName).Wait(Config.CfPushTimeoutDuration())
 				Expect(eventsCmd.Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -99,11 +98,9 @@ var _ = WindowsDescribe("SSH", func() {
 			Expect(string(stdErr)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 			Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
-			Eventually(func() string {
-				appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
-				Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				return string(appLogsSession.Out.Contents())
-			}).Should(ContainSubstring("Successful remote access"))
+			Eventually(func() *gbytes.Buffer {
+				return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+			}, Config.DefaultTimeoutDuration()).Should(gbytes.Say("Successful remote access"))
 
 			eventsCmd := cf.Cf("events", appName).Wait(Config.CfPushTimeoutDuration())
 			Expect(eventsCmd.Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -138,11 +135,9 @@ var _ = WindowsDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
-			Eventually(func() string {
-				appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
-				Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				return string(appLogsSession.Out.Contents())
-			}).Should(ContainSubstring("Successful remote access"))
+			Eventually(func() *gbytes.Buffer {
+				return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+			}, Config.DefaultTimeoutDuration()).Should(gbytes.Say("Successful remote access"))
 
 			eventsCmd := cf.Cf("events", appName).Wait(Config.CfPushTimeoutDuration())
 			Expect(eventsCmd.Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -191,11 +186,9 @@ var _ = WindowsDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
-			Eventually(func() string {
-				appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
-				Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				return string(appLogsSession.Out.Contents())
-			}).Should(ContainSubstring("Successful remote access"))
+			Eventually(func() *gbytes.Buffer {
+				return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+			}, Config.DefaultTimeoutDuration()).Should(gbytes.Say("Successful remote access"))
 
 			eventsCmd := cf.Cf("events", appName).Wait(Config.CfPushTimeoutDuration())
 			Expect(eventsCmd.Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
