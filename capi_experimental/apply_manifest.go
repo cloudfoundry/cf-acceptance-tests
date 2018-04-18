@@ -151,5 +151,34 @@ applications:
 				})
 			})
 		})
+
+		Context("when specifying no-route", func() {
+			BeforeEach(func() {
+				manifest = fmt.Sprintf(`
+applications:
+- name: "%s"
+  no-route: true
+`, appName)
+			})
+
+			It("removes existing routes from the app", func() {
+				session := cf.Cf("curl", endpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifest, "-i")
+				Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				response := session.Out.Contents()
+				Expect(string(response)).To(ContainSubstring("202 Accepted"))
+
+				PollJob(GetJobPath(response))
+
+				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+					target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+					Expect(target).To(Exit(0), "failed targeting")
+
+					session = cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
+					Eventually(session).Should(Say("Showing health"))
+					Eventually(session).Should(Say("routes:\\s*\\n"))
+					Eventually(session).Should(Exit(0))
+				})
+			})
+		})
 	})
 })
