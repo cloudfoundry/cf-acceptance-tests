@@ -25,7 +25,7 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 		broker          ServiceBroker
 		packageGUID     string
 		serviceInstance string
-		route			string
+		route           string
 		spaceGUID       string
 		spaceName       string
 		orgName         string
@@ -79,7 +79,7 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 		broker.Destroy()
 	})
 
-	Describe("Applying manifest to existing app", func() {
+	FDescribe("Applying manifest to existing app", func() {
 		var (
 			manifest string
 			endpoint string
@@ -90,8 +90,9 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 		})
 
 		Context("when configuring the web process", func() {
-			BeforeEach(func() {
-				manifest = fmt.Sprintf(`
+			Context("when routes are specified", func() {
+				BeforeEach(func() {
+					manifest = fmt.Sprintf(`
 applications:
 - name: "%s"
   instances: 2
@@ -108,75 +109,105 @@ applications:
   health-check-http-endpoint: /env
   timeout: 75
 `, appName, serviceInstance, route)
-			})
+				})
 
-			It("successfully completes the job", func() {
-				session := cf.Cf("curl", endpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifest, "-i")
-				Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				response := session.Out.Contents()
-				Expect(string(response)).To(ContainSubstring("202 Accepted"))
+				It("successfully completes the job", func() {
+					session := cf.Cf("curl", endpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifest, "-i")
+					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					response := session.Out.Contents()
+					Expect(string(response)).To(ContainSubstring("202 Accepted"))
 
-				PollJob(GetJobPath(response))
+					PollJob(GetJobPath(response))
 
-				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-					target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
-					Expect(target).To(Exit(0), "failed targeting")
+					workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+						Expect(target).To(Exit(0), "failed targeting")
 
-					session = cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
-					Eventually(session).Should(Say("Showing health"))
-					Eventually(session).Should(Say("instances:\\s+.*?\\d+/2"))
-					Eventually(session).Should(Say("routes:\\s+(?:%s.%s,\\s+)?%s", appName, Config.GetAppsDomain(), route))
-					Eventually(session).Should(Say("stack:\\s+cflinuxfs2"))
-					Eventually(session).Should(Say("buildpack:\\s+ruby_buildpack"))
-					Eventually(session).Should(Exit(0))
+						session = cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
+						Eventually(session).Should(Say("Showing health"))
+						Eventually(session).Should(Say("instances:\\s+.*?\\d+/2"))
+						Eventually(session).Should(Say("routes:\\s+(?:%s.%s,\\s+)?%s", appName, Config.GetAppsDomain(), route))
+						Eventually(session).Should(Say("stack:\\s+cflinuxfs2"))
+						Eventually(session).Should(Say("buildpack:\\s+ruby_buildpack"))
+						Eventually(session).Should(Exit(0))
 
-					session = cf.Cf("env", appName).Wait(Config.DefaultTimeoutDuration())
-					Eventually(session).Should(Say("foo:\\s+qux"))
-					Eventually(session).Should(Say("snack:\\s+walnuts"))
-					Eventually(session).Should(Exit(0))
+						session = cf.Cf("env", appName).Wait(Config.DefaultTimeoutDuration())
+						Eventually(session).Should(Say("foo:\\s+qux"))
+						Eventually(session).Should(Say("snack:\\s+walnuts"))
+						Eventually(session).Should(Exit(0))
 
-					processes := GetProcesses(appGUID, appName)
-					webProcessWithCommandRedacted := GetProcessByType(processes, "web")
-					webProcess := GetProcessByGuid(webProcessWithCommandRedacted.Guid)
-					Expect(webProcess.Command).To(Equal("new-command"))
+						processes := GetProcesses(appGUID, appName)
+						webProcessWithCommandRedacted := GetProcessByType(processes, "web")
+						webProcess := GetProcessByGuid(webProcessWithCommandRedacted.Guid)
+						Expect(webProcess.Command).To(Equal("new-command"))
 
-					session = cf.Cf("get-health-check", appName).Wait(Config.DefaultTimeoutDuration())
-					Eventually(session).Should(Say("health check type:\\s+http"))
-					Eventually(session).Should(Say("endpoint \\(for http type\\):\\s+/env"))
-					Eventually(session).Should(Exit(0))
+						session = cf.Cf("get-health-check", appName).Wait(Config.DefaultTimeoutDuration())
+						Eventually(session).Should(Say("health check type:\\s+http"))
+						Eventually(session).Should(Say("endpoint \\(for http type\\):\\s+/env"))
+						Eventually(session).Should(Exit(0))
 
-					session = cf.Cf("service", serviceInstance).Wait(Config.DefaultTimeoutDuration())
-					Eventually(session).Should(Say("bound apps:\\s+(?:name\\s+binding name\\s+)?%s", appName))
-					Eventually(session).Should(Exit(0))
+						session = cf.Cf("service", serviceInstance).Wait(Config.DefaultTimeoutDuration())
+						Eventually(session).Should(Say("bound apps:\\s+(?:name\\s+binding name\\s+)?%s", appName))
+						Eventually(session).Should(Exit(0))
+					})
 				})
 			})
-		})
 
-		Context("when specifying no-route", func() {
-			BeforeEach(func() {
-				manifest = fmt.Sprintf(`
+			Context("when specifying no-route", func() {
+				BeforeEach(func() {
+					manifest = fmt.Sprintf(`
 applications:
 - name: "%s"
   no-route: true
 `, appName)
+				})
+
+				It("removes existing routes from the app", func() {
+					session := cf.Cf("curl", endpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifest, "-i")
+					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					response := session.Out.Contents()
+					Expect(string(response)).To(ContainSubstring("202 Accepted"))
+
+					PollJob(GetJobPath(response))
+
+					workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+						Expect(target).To(Exit(0), "failed targeting")
+
+						session = cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
+						Eventually(session).Should(Say("Showing health"))
+						Eventually(session).Should(Say("routes:\\s*\\n"))
+						Eventually(session).Should(Exit(0))
+					})
+				})
 			})
 
-			It("removes existing routes from the app", func() {
-				session := cf.Cf("curl", endpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifest, "-i")
-				Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				response := session.Out.Contents()
-				Expect(string(response)).To(ContainSubstring("202 Accepted"))
+			Context("when random-route is specified", func() {
+				BeforeEach(func() {
+					UnmapAllRoutes(appGUID)
 
-				PollJob(GetJobPath(response))
+					manifest = fmt.Sprintf(`
+applications:
+- name: "%s"
+  random-route: true
+`, appName)
+				})
 
-				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-					target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
-					Expect(target).To(Exit(0), "failed targeting")
+				It("successfully adds a random-route", func() {
+					session := cf.Cf("curl", endpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifest, "-i")
+					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					response := session.Out.Contents()
+					Expect(string(response)).To(ContainSubstring("202 Accepted"))
 
-					session = cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
-					Eventually(session).Should(Say("Showing health"))
-					Eventually(session).Should(Say("routes:\\s*\\n"))
-					Eventually(session).Should(Exit(0))
+					PollJob(GetJobPath(response))
+
+					workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+						Expect(target).To(Exit(0), "failed targeting")
+
+						session = cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
+						Eventually(session).Should(Say("routes:\\s+%s-\\w+-\\w+.%s", appName, Config.GetAppsDomain()))
+					})
 				})
 			})
 		})
