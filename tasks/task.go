@@ -19,10 +19,10 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 )
 
 const policyTimeout = "10s"
@@ -268,8 +268,8 @@ var _ = TasksDescribe("v3 tasks", func() {
 				})
 
 				By("getting the overlay ip of app")
-				curlArgs := appName + "." + Config.GetAppsDomain()
-				curl := helpers.Curl(Config, curlArgs).Wait(Config.DefaultTimeoutDuration())
+				appHostname := appName + "." + Config.GetAppsDomain()
+				curl := helpers.Curl(Config, appHostname, "-L").Wait(Config.DefaultTimeoutDuration())
 				contents := curl.Out.Contents()
 
 				var proxyResponse ProxyResponse
@@ -350,7 +350,7 @@ exit 1`
 				}, Config.CfPushTimeoutDuration()).Should(Equal("FAILED"))
 				Expect(outputName).To(Equal(taskName))
 
-				Eventually(func() string{
+				Eventually(func() string {
 					appLogs := logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration())
 					Expect(appLogs).To(Exit(0))
 					return string(appLogs.Out.Contents())
