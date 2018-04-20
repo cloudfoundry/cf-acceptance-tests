@@ -79,7 +79,7 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 		broker.Destroy()
 	})
 
-	FDescribe("Applying manifest to existing app", func() {
+	Describe("Applying manifest to existing app", func() {
 		var (
 			manifest string
 			endpoint string
