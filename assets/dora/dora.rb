@@ -51,7 +51,7 @@ class Dora < Sinatra::Base
   end
 
   get '/sigterm' do
-    "Available sigterms #{`man -k signal | grep list`}"
+    "Available sigterms #{Signal.list.keys}"
   end
 
   get '/dpkg/:package' do
