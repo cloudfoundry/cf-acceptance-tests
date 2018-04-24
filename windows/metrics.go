@@ -25,6 +25,7 @@ import (
 
 var _ = WindowsDescribe("Metrics", func() {
 	var appName string
+	const hundredthOfOneSecond = 10000 // this app uses millionth of seconds
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
@@ -57,7 +58,10 @@ var _ = WindowsDescribe("Metrics", func() {
 		go noaaConnection.Firehose(random_name.CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
 		defer close(stopchan)
 
-		helpers.CurlApp(Config, appName, "/print/Muahaha")
+		Eventually(func() string {
+			return helpers.CurlApp(Config, appName, "/print/Muahaha")
+		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Muahaha"))
+
 		Eventually(msgChan, Config.DefaultTimeoutDuration()).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
 	})
 
