@@ -67,6 +67,7 @@ type config struct {
 	IncludeNimbusNoCache              *bool `json:"include_nimbus_no_cache"`
 	IncludeNimbusServicePostgres      *bool `json:"include_nimbus_service_postgres"`
 	IncludeNimbusServiceRabbit        *bool `json:"include_nimbus_service_rabbit"`
+	IncludeNimbusServiceRabbitmq      *bool `json:"include_nimbus_service_rabbitmq"`
 	IncludeNimbusServiceRedis         *bool `json:"include_nimbus_service_redis"`
 	IncludeNimbusServiceSCMSMongo     *bool `json:"include_nimbus_service_scms_mongo"`
 	IncludeNimbusServiceCassandra     *bool `json:"include_nimbus_service_cassandra"`
@@ -80,7 +81,9 @@ type config struct {
 	NimbusServiceNameInternalProxy *string `json:"nimbus_service_name_internal_proxy"`
 	NimbusServiceNamePostgres      *string `json:"nimbus_service_name_postgres"`
 	NimbusServiceNameRabbit        *string `json:"nimbus_service_name_rabbit"`
+	NimbusServiceNameRabbitmq      *string `json:"nimbus_service_name_rabbitmq"`
 	NimbusServicePlanRabbit        *string `json:"nimbus_service_plan_rabbit"`
+	NimbusServicePlanRabbitmq      *string `json:"nimbus_service_plan_rabbitmq"`
 	NimbusServiceNameRedis         *string `json:"nimbus_service_name_redis"`
 	NimbusServiceNameSCMSMongo     *string `json:"nimbus_service_name_scms_mongo"`
 	NimbusServiceNameCassandra     *string `json:"nimbus_service_name_cassandra"`
@@ -212,6 +215,7 @@ func getDefaults() config {
 	defaults.IncludeNimbusNoCache = ptrToBool(false)
 	defaults.IncludeNimbusServicePostgres = ptrToBool(false)
 	defaults.IncludeNimbusServiceRabbit = ptrToBool(false)
+	defaults.IncludeNimbusServiceRabbitmq = ptrToBool(false)
 	defaults.IncludeNimbusServiceRedis = ptrToBool(false)
 	defaults.IncludeNimbusServiceSCMSMongo = ptrToBool(false)
 	defaults.IncludeNimbusServiceCassandra = ptrToBool(false)
@@ -225,7 +229,9 @@ func getDefaults() config {
 	defaults.NimbusServiceNameInternalProxy = ptrToString("internal-proxy")
 	defaults.NimbusServiceNamePostgres = ptrToString("postgresql94")
 	defaults.NimbusServiceNameRabbit = ptrToString("l2-rabbitmq")
+	defaults.NimbusServiceNameRabbitmq = ptrToString("rabbitmq")
 	defaults.NimbusServicePlanRabbit = ptrToString("default")
+	defaults.NimbusServicePlanRabbitmq = ptrToString("standard")
 	defaults.NimbusServiceNameRedis = ptrToString("redis")
 	defaults.NimbusServiceNameSCMSMongo = ptrToString("scms-mongo3")
 	defaults.NimbusServiceNameCassandra = ptrToString("cassandra")
@@ -822,8 +828,12 @@ func (c *config) GetNimbusServiceNameRabbit() string {
 	return *c.NimbusServiceNameRabbit
 }
 
-func (c *config) GetNimbusServicePlanRabbit() string {
-	return *c.NimbusServicePlanRabbit
+func (c *config) GetNimbusServiceNameRabbitmq() string {
+	return *c.NimbusServiceNameRabbitmq
+}
+
+func (c *config) GetNimbusServicePlanRabbitmq() string {
+	return *c.NimbusServicePlanRabbitmq
 }
 
 func (c *config) GetIncludeNimbusServiceRedis() bool {
