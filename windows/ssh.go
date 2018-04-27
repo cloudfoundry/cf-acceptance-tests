@@ -14,6 +14,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -73,7 +74,7 @@ var _ = WindowsDescribe("SSH", func() {
 				Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=1"))
 
 				Eventually(func() string {
-					appLogsSession := cf.Cf("logs", "--recent", appName)
+					appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
 					Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 					return string(appLogsSession.Out.Contents())
 				}).Should(ContainSubstring("Successful remote access"))
@@ -99,7 +100,7 @@ var _ = WindowsDescribe("SSH", func() {
 			Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
 			Eventually(func() string {
-				appLogsSession := cf.Cf("logs", "--recent", appName)
+				appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
 				Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				return string(appLogsSession.Out.Contents())
 			}).Should(ContainSubstring("Successful remote access"))
@@ -138,7 +139,7 @@ var _ = WindowsDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
 			Eventually(func() string {
-				appLogsSession := cf.Cf("logs", "--recent", appName)
+				appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
 				Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				return string(appLogsSession.Out.Contents())
 			}).Should(ContainSubstring("Successful remote access"))
@@ -191,7 +192,7 @@ var _ = WindowsDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
 			Eventually(func() string {
-				appLogsSession := cf.Cf("logs", "--recent", appName)
+				appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
 				Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				return string(appLogsSession.Out.Contents())
 			}).Should(ContainSubstring("Successful remote access"))
