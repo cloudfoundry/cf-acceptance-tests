@@ -1,3 +1,14 @@
+CATs will build catnip in its SynchronizedBeforeSuite, 
+so if you're run CATs you should have the binary 
+at `./assets/catnip/bin/catnip`
+
+To build and push `catnip` locally
+```
+GOOS=linux GOARCH=amd64 go build -o bin/catnip
+cd bin/catnip
+cf push catnip -b binary_buildpack -c "./catnip"
+```
+
 ## Sticky Sessions
 
 To set up a sticky session manually:
