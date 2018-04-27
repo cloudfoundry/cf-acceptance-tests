@@ -9,6 +9,14 @@ cd bin/catnip
 cf push catnip -b binary_buildpack -c "./catnip"
 ```
 
+If you get a build error
+you probably have CATs checked out to somewhere
+that isn't on your gopath.
+
+Try `go get github.com/cloudfoundry/cf-acceptance-tests`
+and then `cd $GOPATH/src/github.com/cloudfoundry/cf-acceptance-tests`
+or `cd $HOME/go/src/github.com/cloudfoundry/cf-acceptance-tests`
+
 ## Sticky Sessions
 
 To set up a sticky session manually:
