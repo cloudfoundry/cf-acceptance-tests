@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -55,8 +54,7 @@ func DisableDiegoAndCheckResponse(appName, expectedSubstring string, timeout tim
 
 func AppReport(appName string, timeout time.Duration) {
 	Eventually(cf.Cf("app", appName, "--guid"), timeout).Should(Exit())
-	Eventually(logs.Tail(Config.GetUseLogCahce(), appName), timeout).Should(Exit())
-
+	Eventually(cf.Cf("logs", appName, "--recent"), timeout).Should(Exit())
 }
 
 func RestartApp(app string, timeout time.Duration) {
