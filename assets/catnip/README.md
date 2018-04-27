@@ -1,5 +1,5 @@
 CATs will build catnip in its SynchronizedBeforeSuite, 
-so if you're run CATs you should have the binary 
+so if you've run CATs you should have the binary 
 at `./assets/catnip/bin/catnip`
 
 To build and push `catnip` locally
