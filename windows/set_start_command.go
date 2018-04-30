@@ -4,6 +4,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -38,12 +39,9 @@ var _ = WindowsDescribe("Setting an app's start command", func() {
 	})
 
 	It("uses the given start command", func() {
-		getRecentLogs := func() *Buffer {
-			session := cf.Cf("logs", appName, "--recent").Wait(Config.DefaultTimeoutDuration())
-			return session.Out
-		}
-
 		// OUT... to make sure we don't match the Launcher line: Running `loop.bat Hi there!!!'
-		Eventually(getRecentLogs, Config.DefaultTimeoutDuration()).Should(Say("OUT Hi there!!!"))
+		Eventually(func() *Buffer {
+			return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+		}, Config.DefaultTimeoutDuration()).Should(Say("OUT Hi there!!!"))
 	})
 })

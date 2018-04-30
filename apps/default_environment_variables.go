@@ -96,7 +96,7 @@ exit 1
 			Eventually(push, Config.CfPushTimeoutDuration()).Should(Exit(1))
 
 			var appStdout string
-			appLogsSession := cf.Cf("logs", "--recent", appName)
+			appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
 			appLogsSession.Wait(Config.DefaultTimeoutDuration())
 
 			appStdout = string(appLogsSession.Out.Contents())

@@ -55,7 +55,7 @@ type testConfig struct {
 	IncludeRoutingIsolationSegments *bool   `json:"include_routing_isolation_segments,omitempty"`
 	IsolationSegmentName            *string `json:"isolation_segment_name,omitempty"`
 	IsolationSegmentDomain          *string `json:"isolation_segment_domain,omitempty"`
-	SecureAddress                   *string `json:"secure_address,omitempty"`
+	UnallocatedIPForSecurityGroup   *string `json:"unallocated_ip_for_security_group"`
 
 	IncludeWindows        *bool   `json:"include_windows,omitempty"`
 	NumWindowsCells       *int    `json:"num_windows_cells,omitempty"`
@@ -288,6 +288,7 @@ var _ = Describe("Config", func() {
 		Expect(config.SleepTimeoutDuration()).To(Equal(60 * time.Second))
 
 		Expect(config.GetPublicDockerAppImage()).To(Equal("cloudfoundry/diego-docker-app-custom:latest"))
+		Expect(config.GetUnallocatedIPForSecurityGroup()).To(Equal("10.0.244.255"))
 	})
 
 	Context("when all values are null", func() {
@@ -381,6 +382,7 @@ var _ = Describe("Config", func() {
 			testCfg.DetectTimeout = ptrToInt(100)
 			testCfg.SleepTimeout = ptrToInt(101)
 			testCfg.TimeoutScale = ptrToFloat(1.0)
+			testCfg.UnallocatedIPForSecurityGroup = ptrToString("192.168.0.1")
 		})
 
 		It("respects the overriden values", func() {
@@ -395,6 +397,7 @@ var _ = Describe("Config", func() {
 			Expect(config.DetectTimeoutDuration()).To(Equal(100 * time.Second))
 			Expect(config.SleepTimeoutDuration()).To(Equal(101 * time.Second))
 			Expect(config.SleepTimeoutDuration()).To(Equal(101 * time.Second))
+			Expect(config.GetUnallocatedIPForSecurityGroup()).To(Equal("192.168.0.1"))
 		})
 	})
 
@@ -509,7 +512,6 @@ var _ = Describe("Config", func() {
 				BeforeEach(func() {
 					testCfg.WindowsStack = nil
 					testCfg.NumWindowsCells = ptrToInt(1)
-					testCfg.SecureAddress = ptrToString("127.0.0.1:80")
 				})
 
 				It("defaults to windows2012R2", func() {
@@ -533,19 +535,6 @@ var _ = Describe("Config", func() {
 			})
 		})
 
-		Context("when the secure address is malformed", func() {
-			BeforeEach(func() {
-				testCfg.WindowsStack = ptrToString("windows2016")
-				testCfg.NumWindowsCells = ptrToInt(1)
-				testCfg.SecureAddress = ptrToString("127.0.0.1")
-			})
-
-			It("errors", func() {
-				config, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(config).To(BeNil())
-				Expect(err).To(MatchError("* Invalid configuration: secure address must be of form host:port"))
-			})
-		})
 	})
 
 	Context("when including routing isolation segment tests", func() {

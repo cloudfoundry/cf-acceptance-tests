@@ -215,7 +215,6 @@ include_capi_no_bridge
 * `private_docker_registry_image`: Name of the private docker image to use when testing private docker registries. [See below](#private-docker)
 * `private_docker_registry_username`: Username to access the private docker repository. [See below](#private-docker)
 * `private_docker_registry_password`: Password to access the private docker repository. [See below](#private-docker)
-* `secure_address`: An address of the form `<ip:port>` which containers are prohibited from accessing by the default ASGs. [See below](#container-networking-and-application-security-groups)
 
 * `staticfile_buildpack_name` [See below](#buildpack-names).
 * `java_buildpack_name` [See below](#buildpack-names).
@@ -266,13 +265,7 @@ properties:
 ```
 
 #### Container Networking and Application Security Groups
-To run tests that exercise container networking and running application security groups, the `include_container_networking` and `include_security_groups` flags must be true, and the following config value must be provided:
-
-* `secure_address`
-
-The `secure_address` is also used for WATs.
-
-To run staging security group tests, only the `inclue_security_groups` flag must be set to true.
+To run tests that exercise container networking and running application security groups, the `include_security_groups` flags must be true.
 
 #### Private Docker
 To run tests that exercise the use of credentials to access a private docker registry, the `include_private_docker_registry` flag must be true, and the following config values must be provided:

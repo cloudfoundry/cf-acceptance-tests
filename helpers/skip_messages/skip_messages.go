@@ -1,9 +1,8 @@
 package skip_messages
 
 const SkipAppsMessage string = `Skipping this test because config.IncludeApps is set to 'false'.`
-const SkipBackendCompatibilityMessage string = `Skipping this test because config.IncludeBackendCompatibility is set to 'false'.
-NOTE: Ensure that your platform is running both DEA and Diego before running this test.`
-const SkipContainerNetworkingMessage string = `Skipping this test because Config.IncludeContainerNetworking is set to 'false' or config.SecureAddress is not set.`
+const SkipBackendCompatibilityMessage string = `Skipping this test because config.IncludeBackendCompatibility is set to 'false'.`
+const SkipContainerNetworkingMessage string = `Skipping this test because Config.IncludeContainerNetworking is set to 'false'.`
 const SkipDetectMessage string = `Skipping this test because config.IncludeDetect is set to 'false'.`
 const SkipDockerMessage string = `Skipping this test because config.IncludeDocker is set to 'false'.
 NOTE: Ensure Docker containers are enabled on your platform before enabling this test.`

@@ -1,87 +1,132 @@
 package windows
 
 import (
-	"bytes"
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/noaa"
 	"github.com/cloudfoundry/noaa/events"
 
-	. "github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/matchers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gexec"
+	"github.com/onsi/gomega/gexec"
 )
 
 var _ = WindowsDescribe("Metrics", func() {
-	It("garden-windows emits metrics to the firehose", func() {
-		duration, _ := time.ParseDuration("5s")
-		AsUser(TestSetup.AdminUserContext(), duration, func() {
-			authToken := getOauthToken()
-			msgChan, errorChan, stopChan := createNoaaClient(dopplerUrl(), authToken)
-			defer close(stopChan)
+	var appName string
 
-			Consistently(errorChan).ShouldNot(Receive())
+	BeforeEach(func() {
+		appName = random_name.CATSRandomName("APP")
 
-			sipTheStream := func() string {
-				if envelope, ok := <-msgChan; ok {
-					return *envelope.Origin
+		Expect(cf.Cf("push",
+			appName,
+			"-s", Config.GetWindowsStack(),
+			"-b", Config.GetHwcBuildpackName(),
+			"-m", DEFAULT_MEMORY_LIMIT,
+			"-p", assets.NewAssets().Nora,
+			"-i", "2",
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
+	})
+
+	AfterEach(func() {
+		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(gexec.Exit(0))
+	})
+
+	It("shows logs and metrics", func() {
+		noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.GetSkipSSLValidation()}, nil)
+		msgChan := make(chan *events.Envelope, 100000)
+		errorChan := make(chan error)
+		stopchan := make(chan struct{})
+
+		go noaaConnection.Firehose(random_name.CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
+		defer close(stopchan)
+
+		helpers.CurlApp(Config, appName, "/print/Muahaha")
+		Eventually(msgChan, Config.CfPushTimeoutDuration()).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
+	})
+
+	It("shows container metrics", func() {
+		appGuid := strings.TrimSpace(string(cf.Cf("app", appName, "--guid").Wait(Config.DefaultTimeoutDuration()).Out.Contents()))
+
+		noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.GetSkipSSLValidation()}, nil)
+		msgChan := make(chan *events.Envelope, 100000)
+		errorChan := make(chan error)
+		stopchan := make(chan struct{})
+		go noaaConnection.Firehose(random_name.CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
+		defer close(stopchan)
+
+		containerMetrics := make([]*events.ContainerMetric, 2)
+		Eventually(func() bool {
+			for {
+				select {
+				case msg := <-msgChan:
+					if cm := msg.GetContainerMetric(); cm != nil {
+						if cm.GetApplicationId() == appGuid {
+							containerMetrics[cm.GetInstanceIndex()] = cm
+
+							if containerMetrics[0] != nil && containerMetrics[1] != nil {
+								return true
+							}
+						}
+					}
+				case e := <-errorChan:
+					Expect(e).ToNot(HaveOccurred())
+				default:
+					return false
 				}
-				return ""
 			}
-			Eventually(sipTheStream, "1m", "5ms").Should(Equal("garden-windows"))
-		})
+		}, 2*Config.DefaultTimeoutDuration()).Should(BeTrue())
+
+		for _, cm := range containerMetrics {
+			Expect(cm.GetMemoryBytes()).ToNot(BeZero())
+			Expect(cm.GetDiskBytes()).ToNot(BeZero())
+		}
 	})
 })
 
-func dopplerUrl() string {
-	doppler := os.Getenv("DOPPLER_URL")
-	if doppler == "" {
-		curl := cf.Cf("curl", "/v2/info")
-		Expect(curl.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-
-		var cfInfo struct {
-			DopplerLoggingEndpoint string `json:"doppler_logging_endpoint"`
-		}
-
-		err := json.NewDecoder(bytes.NewReader(curl.Out.Contents())).Decode(&cfInfo)
-		Expect(err).NotTo(HaveOccurred())
-
-		doppler = cfInfo.DopplerLoggingEndpoint
-	}
-	return doppler
+type cfHomeConfig struct {
+	AccessToken     string
+	DopplerEndPoint string
 }
 
-func getOauthToken() string {
-	session := cf.Cf("oauth-token")
-	session.Wait()
-	out := string(session.Out.Contents())
-	authToken := strings.Split(out, "\n")[0]
-	Expect(authToken).To(HavePrefix("bearer"))
-	return authToken
+func getCfHomeConfig() *cfHomeConfig {
+	myCfHomeConfig := &cfHomeConfig{}
+
+	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+		path := filepath.Join(os.Getenv("CF_HOME"), ".cf", "config.json")
+
+		configFile, err := os.Open(path)
+		if err != nil {
+			panic(err)
+		}
+
+		decoder := json.NewDecoder(configFile)
+		err = decoder.Decode(myCfHomeConfig)
+		if err != nil {
+			panic(err)
+		}
+	})
+
+	return myCfHomeConfig
 }
 
-func createNoaaClient(dopplerUrl, authToken string) (<-chan *events.Envelope, <-chan error, chan struct{}) {
-	connection := noaa.NewConsumer(dopplerUrl, &tls.Config{InsecureSkipVerify: true}, nil)
+func getAdminUserAccessToken() string {
+	return getCfHomeConfig().AccessToken
+}
 
-	msgChan := make(chan *events.Envelope, 100000)
-	errorChan := make(chan error)
-	stopChan := make(chan struct{})
-
-	go connection.Firehose("firehose-a", authToken, msgChan, errorChan, stopChan)
-
-	go func() {
-		for err := range errorChan {
-			fmt.Fprintf(os.Stderr, "%v\n", err.Error())
-		}
-	}()
-
-	return msgChan, errorChan, stopChan
+func getDopplerEndpoint() string {
+	return getCfHomeConfig().DopplerEndPoint
 }

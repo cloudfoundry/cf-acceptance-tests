@@ -58,6 +58,24 @@ func CreateAndMapRoute(appGuid, space, domain, host string) {
 	Expect(cf.Cf("curl", fmt.Sprintf("/v2/routes/%s/apps/%s", routeGuid, appGuid), "-X", "PUT").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 }
 
+func UnmapAllRoutes(appGuid string) {
+	getRoutespath := fmt.Sprintf("/v2/apps/%s/routes", appGuid)
+	routesBody := cf.Cf("curl", getRoutespath).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+	routesJSON := struct {
+		Resources []struct {
+			Metadata struct {
+				Guid string `json:"guid"`
+			} `json:"metadata"`
+		} `json:"resources"`
+	}{}
+	json.Unmarshal([]byte(routesBody), &routesJSON)
+
+	for _, routeResource := range routesJSON.Resources {
+		routeGuid := routeResource.Metadata.Guid
+		Expect(cf.Cf("curl", fmt.Sprintf("/v2/routes/%s/apps/%s", routeGuid, appGuid), "-X", "DELETE").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+	}
+}
+
 func CreateApp(appName, spaceGuid, environmentVariables string) string {
 	session := cf.Cf("curl", "/v3/apps", "-X", "POST", "-d", fmt.Sprintf(`{"name":"%s", "relationships": {"space": {"data": {"guid": "%s"}}}, "environment_variables":%s}`, appName, spaceGuid, environmentVariables))
 	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()

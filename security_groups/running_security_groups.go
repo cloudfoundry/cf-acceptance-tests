@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"os"
-	"strconv"
 	"strings"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -23,7 +21,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
 type AppsResponse struct {
@@ -58,7 +55,7 @@ func pushApp(appName, buildpack string) {
 		"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 }
 
-func getAppHostIpAndPort(appName string) (string, string) {
+func getAppHostIpAndPort(appName string) (string, int) {
 	var appsResponse AppsResponse
 	cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/apps?q=name:%s", appName)).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 	json.Unmarshal(cfResponse, &appsResponse)
@@ -68,17 +65,17 @@ func getAppHostIpAndPort(appName string) (string, string) {
 	cfResponse = cf.Cf("curl", fmt.Sprintf("%s/stats", serverAppUrl)).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 	json.Unmarshal(cfResponse, &statsResponse)
 
-	return statsResponse["0"].Stats.Host, strconv.Itoa(statsResponse["0"].Stats.Port)
+	return statsResponse["0"].Stats.Host, statsResponse["0"].Stats.Port
 }
 
-func testAppConnectivity(clientAppName, privateHost, privatePort string) CatnipCurlResponse {
+func testAppConnectivity(clientAppName string, privateHost string, privatePort int) CatnipCurlResponse {
 	var catnipCurlResponse CatnipCurlResponse
-	curlResponse := helpers.CurlApp(Config, clientAppName, fmt.Sprintf("/curl/%s/%s", privateHost, privatePort))
+	curlResponse := helpers.CurlApp(Config, clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort))
 	json.Unmarshal([]byte(curlResponse), &catnipCurlResponse)
 	return catnipCurlResponse
 }
 
-func getAppContainerIpAndPort(appName string) (string, string) {
+func getAppContainerIpAndPort(appName string) (string, int) {
 	curlResponse := helpers.CurlApp(Config, appName, "/myip")
 	containerIp := strings.TrimSpace(curlResponse)
 
@@ -86,7 +83,7 @@ func getAppContainerIpAndPort(appName string) (string, string) {
 	var env map[string]interface{}
 	err := json.Unmarshal([]byte(curlResponse), &env)
 	Expect(err).NotTo(HaveOccurred())
-	containerPort := strconv.Itoa(int(env["port"].(float64)))
+	containerPort := int(env["port"].(float64))
 
 	return containerIp, containerPort
 }
@@ -156,7 +153,7 @@ func getStagingOutput(appName string) func() *Session {
 	}
 }
 
-func pushServerApp() (serverAppName, privateHost, privatePort string) {
+func pushServerApp() (serverAppName string, privateHost string, privatePort int) {
 	serverAppName = random_name.CATSRandomName("APP")
 	pushApp(serverAppName, Config.GetBinaryBuildpackName())
 	Expect(cf.Cf("start", serverAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -172,36 +169,30 @@ func pushClientApp() (clientAppName string) {
 	return
 }
 
-func assertNetworkingPreconditions(clientAppName, privateHost, privatePort string) {
+func assertNetworkingPreconditions(clientAppName string, privateHost string, privatePort int) {
 	By("Asserting default running security group configuration for traffic between containers")
 	catnipCurlResponse := testAppConnectivity(clientAppName, privateHost, privatePort)
 	Expect(catnipCurlResponse.ReturnCode).NotTo(Equal(0), "Expected default running security groups not to allow internal communication between app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
 
 	By("Asserting default running security group configuration from a running container to an external destination")
-	catnipCurlResponse = testAppConnectivity(clientAppName, "www.google.com", "80")
+	catnipCurlResponse = testAppConnectivity(clientAppName, "www.google.com", 80)
 	Expect(catnipCurlResponse.ReturnCode).To(Equal(0), "Expected default running security groups to allow external traffic from app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
 }
 
 var _ = SecurityGroupsDescribe("App Instance Networking", func() {
+	var serverAppName, privateHost string
+	var privatePort int
+
 	Describe("Using container-networking and running security-groups", func() {
-		var serverAppName, clientAppName, privateHost, privatePort, orgName, spaceName, securityGroupName, secureHost, securePort string
+		var serverAppName, clientAppName, privateHost, orgName, spaceName, securityGroupName string
+		var privatePort int
 
 		BeforeEach(func() {
-			if !Config.GetIncludeContainerNetworking() || Config.GetSecureAddress() == "" {
-				Skip(skip_messages.SkipContainerNetworkingMessage)
-			}
-
 			orgName = TestSetup.RegularUserContext().Org
 			spaceName = TestSetup.RegularUserContext().Space
 
 			serverAppName, privateHost, privatePort = pushServerApp()
 			clientAppName = pushClientApp()
-
-			var err error
-			secureAddress := Config.GetSecureAddress()
-			secureHost, securePort, err = net.SplitHostPort(secureAddress)
-			Expect(err).NotTo(HaveOccurred())
-
 			assertNetworkingPreconditions(clientAppName, privateHost, privatePort)
 		})
 
@@ -222,6 +213,7 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 				Protocol: "all",
 			}
 			securityGroupName = createSecurityGroup(dest)
+			privateAddress := Config.GetUnallocatedIPForSecurityGroup()
 
 			By("binding new security group")
 			bindSecurityGroup(securityGroupName, orgName, spaceName)
@@ -233,15 +225,15 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 			catnipCurlResponse := testAppConnectivity(clientAppName, containerIp, containerPort)
 			Expect(catnipCurlResponse.ReturnCode).NotTo(Equal(0), "no policy configured but client app can talk to server app using overlay")
 
-			By("Testing that external connectivity to a private ip is allowed")
-			catnipCurlResponse = testAppConnectivity(clientAppName, secureHost, securePort)
-			Expect(catnipCurlResponse.ReturnCode).To(Equal(0), "wide-open ASG configured but app is still refused by private ip")
+			By("Testing that external connectivity to a private ip is not refused (but may be unreachable for other reasons)")
+			catnipCurlResponse = testAppConnectivity(clientAppName, privateAddress, 80)
+			Expect(catnipCurlResponse.Stderr).To(ContainSubstring("Connection timed out after"), "wide-open ASG configured but app is still refused by private ip")
 
 			By("adding policy")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).ToNot(ContainSubstring(serverAppName))
-				Expect(cf.Cf("add-network-policy", clientAppName, "--destination-app", serverAppName, "--port", containerPort, "--protocol", "tcp").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("add-network-policy", clientAppName, "--destination-app", serverAppName, "--port", fmt.Sprintf("%d", containerPort), "--protocol", "tcp").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring(serverAppName))
 			})
 
@@ -265,14 +257,14 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 			}, "5s").Should(Equal(0), "policy is configured, asgs are not but client app cannot talk to server app using overlay")
 
 			By("Testing that external connectivity to a private ip is refused")
-			catnipCurlResponse = testAppConnectivity(clientAppName, secureHost, securePort)
-			Expect(catnipCurlResponse.ReturnCode).NotTo(Equal(0))
+			catnipCurlResponse = testAppConnectivity(clientAppName, privateAddress, 80)
+			Expect(catnipCurlResponse.Stderr).To(ContainSubstring("refused"))
 
 			By("deleting policy")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring(serverAppName))
-				Expect(cf.Cf("remove-network-policy", clientAppName, "--destination-app", serverAppName, "--port", containerPort, "--protocol", "tcp").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("remove-network-policy", clientAppName, "--destination-app", serverAppName, "--port", fmt.Sprintf("%d", containerPort), "--protocol", "tcp").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).ToNot(ContainSubstring(serverAppName))
 			})
 
@@ -286,7 +278,8 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 	})
 
 	Describe("Using staging security groups", func() {
-		var serverAppName, privateHost, privatePort, testAppName, buildpack string
+		var testAppName, buildpack string
+
 		BeforeEach(func() {
 			serverAppName, privateHost, privatePort = pushServerApp()
 
@@ -295,7 +288,7 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 			buildpack = createDummyBuildpack()
 			pushApp(testAppName, buildpack)
 
-			privateUri := fmt.Sprintf("%s:%s", privateHost, privatePort)
+			privateUri := fmt.Sprintf("%s:%d", privateHost, privatePort)
 			Expect(cf.Cf("set-env", testAppName, "TESTURI", privateUri).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 			Expect(cf.Cf("start", testAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))

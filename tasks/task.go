@@ -3,7 +3,9 @@ package tasks
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math"
+	"os"
 	"strconv"
 	"strings"
 
@@ -20,6 +22,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 )
 
 const policyTimeout = "10s"
@@ -44,6 +47,12 @@ type Tasks struct {
 type ProxyResponse struct {
 	ListenAddresses []string ""
 	Port            int
+}
+
+type Destination struct {
+	IP       string `json:"destination"`
+	Port     int    `json:"ports,string,omitempty"`
+	Protocol string `json:"protocol"`
 }
 
 func getTaskDetails(appName string) []string {
@@ -79,6 +88,21 @@ func getContainerIP(listenAddresses []string) string {
 	}
 
 	return ""
+}
+
+func createSecurityGroup(allowedDestinations ...Destination) string {
+	file, _ := ioutil.TempFile(os.TempDir(), "CATS-sg-rules")
+	defer os.Remove(file.Name())
+	Expect(json.NewEncoder(file).Encode(allowedDestinations)).To(Succeed())
+
+	rulesPath := file.Name()
+	securityGroupName := random_name.CATSRandomName("SG")
+
+	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+		Expect(cf.Cf("create-security-group", securityGroupName, rulesPath).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+	})
+
+	return securityGroupName
 }
 
 var _ = TasksDescribe("v3 tasks", func() {
@@ -202,6 +226,8 @@ var _ = TasksDescribe("v3 tasks", func() {
 	})
 
 	Context("when associating a task with an app", func() {
+		var securityGroupName string
+
 		BeforeEach(func() {
 			Expect(cf.Cf(
 				"push", appName,
@@ -214,12 +240,6 @@ var _ = TasksDescribe("v3 tasks", func() {
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			appGuid = app_helpers.GetAppGuid(appName)
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).ToNot(ContainSubstring(appName))
-				Expect(cf.Cf("add-network-policy", appName, "--destination-app", appName, "--port", "8080", "--protocol", "tcp").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring(appName))
-			})
 		})
 
 		AfterEach(func() {
@@ -228,39 +248,113 @@ var _ = TasksDescribe("v3 tasks", func() {
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		})
 
-		It("applies the associated app's policies to the task", func(done Done) {
-			By("getting the overlay ip of app")
-			curlArgs := appName + "." + Config.GetAppsDomain()
-			curl := helpers.Curl(Config, curlArgs).Wait(Config.DefaultTimeoutDuration())
-			contents := curl.Out.Contents()
+		Context("and applying a network policy", func() {
+			BeforeEach(func() {
+				if !Config.GetIncludeContainerNetworking() {
+					Skip(skip_messages.SkipContainerNetworkingMessage)
+				}
+			})
 
-			var proxyResponse ProxyResponse
-			Expect(json.Unmarshal(contents, &proxyResponse)).To(Succeed())
-			containerIP := getContainerIP(proxyResponse.ListenAddresses)
+			It("applies the associated app's policies to the task", func(done Done) {
+				By("creating the network policy")
+				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+					Expect(cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).ToNot(ContainSubstring(appName))
+					Expect(cf.Cf("add-network-policy", appName, "--destination-app", appName, "--port", "8080", "--protocol", "tcp").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring(appName))
+				})
 
-			By("creating the task")
-			taskName := "woof"
-			command := `while true; do
+				By("getting the overlay ip of app")
+				curlArgs := appName + "." + Config.GetAppsDomain()
+				curl := helpers.Curl(Config, curlArgs).Wait(Config.DefaultTimeoutDuration())
+				contents := curl.Out.Contents()
+
+				var proxyResponse ProxyResponse
+				Expect(json.Unmarshal(contents, &proxyResponse)).To(Succeed())
+				containerIP := getContainerIP(proxyResponse.ListenAddresses)
+
+				By("creating the task")
+				taskName := "woof"
+				command := `while true; do
 if curl --fail "` + containerIP + `:` + strconv.Itoa(proxyResponse.Port) + `" ; then
 	exit 0
 fi
 done;
 exit 1`
-			createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait(Config.DefaultTimeoutDuration())
-			Expect(createCommand).To(Exit(0))
+				createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait(Config.DefaultTimeoutDuration())
+				Expect(createCommand).To(Exit(0))
 
-			By("successfully running")
-			var outputName, outputState string
-			Eventually(func() string {
-				taskDetails := getTaskDetails(appName)
-				outputName = taskDetails[1]
-				outputState = taskDetails[2]
-				return outputState
-			}, policyTimeout).Should(Equal("SUCCEEDED"))
-			Expect(outputName).To(Equal(taskName))
+				By("successfully running")
+				var outputName, outputState string
+				Eventually(func() string {
+					taskDetails := getTaskDetails(appName)
+					outputName = taskDetails[1]
+					outputState = taskDetails[2]
+					return outputState
+				}, policyTimeout).Should(Equal("SUCCEEDED"))
+				Expect(outputName).To(Equal(taskName))
 
-			close(done)
-		}, 30*60 /* <-- overall spec timeout in seconds */)
+				close(done)
+			}, 30*60 /* <-- overall spec timeout in seconds */)
+		})
 
+		Context("and binding a space-specific ASG", func() {
+			BeforeEach(func() {
+				if !Config.GetIncludeSecurityGroups() {
+					Skip(skip_messages.SkipSecurityGroupsMessage)
+				}
+			})
+
+			AfterEach(func() {
+				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+					Expect(cf.Cf("unbind-security-group", securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				})
+				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+					Expect(cf.Cf("delete-security-group", securityGroupName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				})
+			})
+
+			It("applies the associated app's ASGs to the task", func(done Done) {
+				By("creating the ASG")
+				destSecurityGroup := Destination{
+					IP:       Config.GetUnallocatedIPForSecurityGroup(),
+					Port:     80,
+					Protocol: "tcp",
+				}
+				securityGroupName = createSecurityGroup(destSecurityGroup)
+
+				By("binding the ASG to the space")
+				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+					Expect(cf.Cf("bind-security-group", securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				})
+
+				By("restarting the app to apply the ASG")
+				Expect(cf.Cf("restart", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+				By("creating the task")
+				taskName := "woof"
+				command := `curl --fail --connect-timeout 10 ` + Config.GetUnallocatedIPForSecurityGroup() + `:80`
+				createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait(Config.DefaultTimeoutDuration())
+				Expect(createCommand).To(Exit(0))
+
+				By("testing that external connectivity to a private ip is not refused (but may be unreachable for other reasons)")
+				var outputName, outputState string
+				Eventually(func() string {
+					taskDetails := getTaskDetails(appName)
+					outputName = taskDetails[1]
+					outputState = taskDetails[2]
+					return outputState
+				}, Config.CfPushTimeoutDuration()).Should(Equal("FAILED"))
+				Expect(outputName).To(Equal(taskName))
+
+				Eventually(func() string{
+					appLogs := logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration())
+					Expect(appLogs).To(Exit(0))
+					return string(appLogs.Out.Contents())
+				}, Config.CfPushTimeoutDuration()).Should(ContainSubstring("Connection timed out"), "ASG configured to allow connection to the private IP but the app is still refused by private ip")
+
+				close(done)
+			}, 30*60 /* <-- overall spec timeout in seconds */)
+		})
 	})
 })
