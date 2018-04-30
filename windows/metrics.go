@@ -58,7 +58,7 @@ var _ = WindowsDescribe("Metrics", func() {
 		defer close(stopchan)
 
 		helpers.CurlApp(Config, appName, "/print/Muahaha")
-		Eventually(msgChan, Config.DefaultTimeoutDuration()).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
+		Eventually(msgChan, Config.CfPushTimeoutDuration()).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
 	})
 
 	It("shows container metrics", func() {
