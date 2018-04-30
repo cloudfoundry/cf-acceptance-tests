@@ -12,8 +12,6 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
@@ -21,15 +19,8 @@ import (
 
 var _ = DockerDescribe("Docker Application Lifecycle", func() {
 	var appName string
-	BeforeEach(func() {
-		if Config.GetBackend() != "diego" {
-			Skip(skip_messages.SkipDiegoMessage)
-		}
-	})
 
 	JustBeforeEach(func() {
-		app_helpers.SetBackend(appName)
-
 		By("downloading from dockerhub (starting the app)")
 		Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 		Eventually(func() string {

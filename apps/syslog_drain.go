@@ -37,24 +37,22 @@ var _ = AppsDescribe("Logging", func() {
 			Eventually(cf.Cf(
 				"push",
 				listenerAppName,
-				"--no-start",
 				"--health-check-type", "port",
 				"-b", Config.GetGoBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().SyslogDrainListener,
 				"-d", Config.GetAppsDomain(),
 				"-f", assets.NewAssets().SyslogDrainListener+"/manifest.yml",
-			), Config.DefaultTimeoutDuration()).Should(Exit(0), "Failed to push app")
+			), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to push app")
 
 			Eventually(cf.Cf(
 				"push",
 				logWriterAppName1,
-				"--no-start",
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().RubySimple,
 				"-d", Config.GetAppsDomain(),
-			), Config.DefaultTimeoutDuration()).Should(Exit(0), "Failed to push app")
+			), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to push app")
 
 			Eventually(cf.Cf(
 				"push",
@@ -64,15 +62,7 @@ var _ = AppsDescribe("Logging", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().RubySimple,
 				"-d", Config.GetAppsDomain(),
-			), Config.DefaultTimeoutDuration()).Should(Exit(0), "Failed to push app")
-
-			app_helpers.SetBackend(listenerAppName)
-			app_helpers.SetBackend(logWriterAppName1)
-			app_helpers.SetBackend(logWriterAppName2)
-
-			Expect(cf.Cf("start", listenerAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-			Expect(cf.Cf("start", logWriterAppName1).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-			Expect(cf.Cf("start", logWriterAppName2).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to push app")
 		})
 
 		AfterEach(func() {

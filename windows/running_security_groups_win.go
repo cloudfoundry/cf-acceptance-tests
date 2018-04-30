@@ -49,7 +49,6 @@ func pushApp(appName, buildpack string) {
 		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", assets.NewAssets().Nora,
 		"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-	app_helpers.SetBackend(appName)
 }
 
 func getAppHostIpAndPort(appName string) (string, int) {

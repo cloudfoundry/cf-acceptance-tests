@@ -124,16 +124,11 @@ EOF
 
 	It("uses the buildpack cache after first staging", func() {
 		Expect(cf.Cf("push", appName,
-			"--no-start",
 			"-b", BuildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", appPath,
 			"-d", Config.GetAppsDomain(),
-		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		app_helpers.SetBackend(appName)
-
-		start := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
-		Expect(start).To(Exit(0))
+		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, appName)

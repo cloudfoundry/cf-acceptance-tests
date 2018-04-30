@@ -45,7 +45,6 @@ var _ = AppsDescribe("Copy app bits", func() {
 	})
 
 	It("Copies over the package from the source app to the destination app", func() {
-		app_helpers.SetBackend(golangAppName)
 		Expect(cf.Cf("copy-source", helloWorldAppName, golangAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		Eventually(func() string {

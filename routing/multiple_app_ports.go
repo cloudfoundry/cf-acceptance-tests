@@ -11,7 +11,6 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -24,9 +23,6 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 	)
 
 	BeforeEach(func() {
-		if Config.GetBackend() != "diego" {
-			Skip(skip_messages.SkipDiegoMessage)
-		}
 		app = random_name.CATSRandomName("APP")
 		cmd := fmt.Sprintf("go-online --ports=7777,8888,8080")
 

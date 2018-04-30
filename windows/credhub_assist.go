@@ -100,8 +100,6 @@ var _ = WindowsCredhubDescribe("CredHub Integration", func() {
 	})
 
 	bindServiceAndStartApp := func(appName string) {
-		app_helpers.SetBackend(appName)
-
 		Expect(chServiceName).ToNot(Equal(""))
 		setServiceName := cf.Cf("set-env", appName, "SERVICE_NAME", chServiceName).Wait(Config.DefaultTimeoutDuration())
 		Expect(setServiceName).To(Exit(0), "failed setting SERVICE_NAME env var on app")
@@ -254,7 +252,6 @@ echo   web: webapp.exe
 						"-m", DEFAULT_MEMORY_LIMIT,
 						"-p", assets.NewAssets().Nora,
 						"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-					app_helpers.SetBackend(appName)
 					bindServiceAndStartApp(appName)
 				})
 

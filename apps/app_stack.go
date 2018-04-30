@@ -123,20 +123,16 @@ EOF
 		stackName := "cflinuxfs2"
 		expected_lsb_release := "DISTRIB_CODENAME=trusty"
 
-		Expect(cf.Cf("push", appName,
-			"--no-start",
+		push := cf.Cf("push", appName,
 			"-b", BuildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", appPath,
 			"-s", stackName,
 			"-d", Config.GetAppsDomain(),
-		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		app_helpers.SetBackend(appName)
-
-		start := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
-		Expect(start).To(Exit(0))
-		Expect(start).To(Say(expected_lsb_release))
-		Expect(start).To(Say(""))
+		).Wait(Config.CfPushTimeoutDuration())
+		Expect(push).To(Exit(0))
+		Expect(push).To(Say(expected_lsb_release))
+		Expect(push).To(Say(""))
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, appName)

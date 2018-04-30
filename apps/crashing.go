@@ -12,7 +12,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
 var _ = AppsDescribe("Crashing", func() {
@@ -28,26 +27,16 @@ var _ = AppsDescribe("Crashing", func() {
 	})
 
 	Describe("a continuously crashing app", func() {
-		BeforeEach(func() {
-			if Config.GetBackend() != "diego" {
-				Skip(skip_messages.SkipDiegoMessage)
-			}
-		})
-
 		It("emits crash events and reports as 'crashed' after enough crashes", func() {
 			Expect(cf.Cf(
 				"push",
 				appName,
 				"-c", "/bin/false",
-				"--no-start",
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-d", Config.GetAppsDomain(),
-			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-			app_helpers.SetBackend(appName)
-			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 
 			Eventually(func() string {
 				return string(cf.Cf("events", appName).Wait(Config.DefaultTimeoutDuration()).Out.Contents())
@@ -62,16 +51,12 @@ var _ = AppsDescribe("Crashing", func() {
 			Expect(cf.Cf(
 				"push",
 				appName,
-				"--no-start",
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
 				"-d", Config.GetAppsDomain(),
-			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-
-			app_helpers.SetBackend(appName)
-			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		It("shows crash events", func() {

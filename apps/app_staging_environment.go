@@ -120,17 +120,13 @@ EOF
 	})
 
 	It("uses a ruby binary for staging", func() {
-		Expect(cf.Cf("push", appName,
-			"--no-start",
+		push := cf.Cf("push", appName,
 			"-b", BuildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", appPath,
 			"-d", Config.GetAppsDomain(),
-		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		app_helpers.SetBackend(appName)
-
-		start := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
-		Expect(start).To(Exit(0))
-		Expect(start).To(Say("RUBY_LOCATION=/usr/bin/ruby"))
+		).Wait(Config.DefaultTimeoutDuration())
+		Expect(push).To(Exit(0))
+		Expect(push).To(Say("RUBY_LOCATION=/usr/bin/ruby"))
 	})
 })

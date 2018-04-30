@@ -53,7 +53,6 @@ func pushApp(appName, buildpack string) {
 		"-p", assets.NewAssets().Catnip,
 		"-c", "./catnip",
 		"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-	app_helpers.SetBackend(appName)
 }
 
 func getAppHostIpAndPort(appName string) (string, int) {

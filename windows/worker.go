@@ -31,14 +31,13 @@ var _ = WindowsDescribe("apps without a port", func() {
 		appName = random_name.CATSRandomName("APP")
 
 		Expect(cf.Cf("push", appName,
-			"--no-start",
 			"--no-route",
+			"--no-start",
 			"-p", filepath.Dir(workerPath),
 			"-c", fmt.Sprintf(".\\%s", filepath.Base(workerPath)),
 			"-u", "none",
 			"-b", Config.GetBinaryBuildpackName(),
 			"-s", Config.GetWindowsStack()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-		app_helpers.SetBackend(appName)
 		logs = logshelper.TailFollow(Config.GetUseLogCache(), appName)
 		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})

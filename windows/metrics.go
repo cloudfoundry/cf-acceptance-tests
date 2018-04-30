@@ -31,15 +31,12 @@ var _ = WindowsDescribe("Metrics", func() {
 
 		Expect(cf.Cf("push",
 			appName,
-			"--no-start",
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Nora,
 			"-i", "2",
-			"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(gexec.Exit(0))
-		app_helpers.SetBackend(appName)
-		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
 	})
 
 	AfterEach(func() {

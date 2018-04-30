@@ -190,7 +190,6 @@ include_capi_no_bridge
 * `include_zipkin`: Flag to include tests for Zipkin tracing. `include_routing` must also be set for tests to run. CF must be deployed with `router.tracing.enable_zipkin` set for tests to pass.
 * `include_isolation_segments`: Flag to include isolation segment tests.
 * `include_routing_isolation_segments`: Flag to include routing isolation segments. [See below](#routing-isolation-segments)
-* `backend`: App tests push their apps using the backend specified. Incompatible tests will be skipped based on which backend is chosen. If left unspecified the default backend will be used where none is specified; all tests that specify a particular backend will be skipped.
 * `use_http`: Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
 * `use_log_cache`: Set to true if you would like CF Acceptance Tests to use Log Cache for reading application logs. Log Cache must be deployed. (default is false)
 * `use_existing_organization`: Set to true when you need to specify an existing organization to use rather than creating a new organization.
@@ -361,22 +360,22 @@ You can of course combine the `-v` flag with the `-nodes=N` flag.
 
 ## Explanation of Test Groups
 
-Test Group Name| Compatible Backend | Description
---- | --- | ---
-`apps`| DEA or Diego | Tests the core functionalities of Cloud Foundry: staging, running, logging, routing, buildpacks, etc.  This test group should always pass against a sound Cloud Foundry deployment.
-`backend_compatibility` | Diego | Tests interoperability of droplets staged on the DEAs running on Diego
-`detect` | DEA or Diego | Tests the ability of the platform to detect the correct buildpack for compiling an application if no buildpack is explicitly specified.
-`docker`| Diego |Test our ability to run docker containers on diego and that we handle docker metadata correctly.
-`internet_dependent`| DEA or Diego | This test group tests the feature of being able to specify a buildpack via a Github URL.  As such, this depends on your Cloud Foundry application containers having access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
-`routing`| DEA or Diego |This package contains routing specific acceptance tests (Context path, wildcard, SSL termination, sticky sessions, zipkin tracing).
-`route_services` | Diego |This package contains route services acceptance tests.
-`security_groups`| DEA or Diego |This test group tests the security groups feature of Cloud Foundry that lets you apply rules-based controls to network traffic in and out of your containers.  These should pass for most recent Cloud Foundry installations.  `cf-release` versions `v200` and up should have support for most security group specs to pass.
-`services`| DEA or Diego | This test group tests various features related to services, e.g. registering a service broker via the service broker API.  Some of these tests exercise special integrations, such as Single Sign-On authentication; you may wish to run some tests in this package but selectively skip others if you haven't configured the required integrations.
-`ssh`| Diego |This test group tests our ability to communicate with Diego apps via ssh, scp, and sftp.
-`v3`| Diego| This test group contains tests for the next-generation v3 Cloud Controller API.  As of this writing, the v3 API is not officially supported.
-`isolation_segments` | Diego | This test group requires that Diego be deployed with a minimum of 2 cells. One of those cells must have been deployed with a `placement_tag`. If the deployment has been deployed with a routing isolation segment, `isolation_segment_domain` must also be set.
-`routing_isolation_segments` | Diego | This group tests that requests to isolated apps are only routed through isolated routers, and vice versa. It requires all of the setup for the isolation segments test suite. Additionally, a minimum of two Gorouter instances must be deployed. One instance must be configured with the property `routing_table_sharding_mode: shared-and-segments`. The other instance must have the properties `routing_table_sharding_mode: segments` and `isolation_segments: [YOUR_PLACEMENT_TAG_HERE]`. The `isolation_segment_name` in the CATs properties must match the `placement_tag` and `isolation_segment`.`isolation_segment_domain` must be set and traffic to that domain should go to the isolated router.
-`credhub`|Diego|Tests CredHub-delivered Secure Service credentials in the service binding. [CredHub configuration][credhub-secure-service-credentials] is required to run these tests. In addition to selecting a `credhub_mode`, `credhub_client` and `credhub_secret` values are required for these tests.
+Test Group Name| Description
+--- | ---
+`apps`| Tests the core functionalities of Cloud Foundry: staging, running, logging, routing, buildpacks, etc.  This test group should always pass against a sound Cloud Foundry deployment.
+`backend_compatibility` | Tests interoperability of droplets staged on the DEAs running on Diego
+`detect` | Tests the ability of the platform to detect the correct buildpack for compiling an application if no buildpack is explicitly specified.
+`docker`| Test our ability to run docker containers on diego and that we handle docker metadata correctly.
+`internet_dependent`| This test group tests the feature of being able to specify a buildpack via a Github URL.  As such, this depends on your Cloud Foundry application containers having access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
+`routing`| This package contains routing specific acceptance tests (Context path, wildcard, SSL termination, sticky sessions, zipkin tracing).
+`route_services` | This package contains route services acceptance tests.
+`security_groups`| This test group tests the security groups feature of Cloud Foundry that lets you apply rules-based controls to network traffic in and out of your containers.  These should pass for most recent Cloud Foundry installations.  `cf-release` versions `v200` and up should have support for most security group specs to pass.
+`services`| This test group tests various features related to services, e.g. registering a service broker via the service broker API.  Some of these tests exercise special integrations, such as Single Sign-On authentication; you may wish to run some tests in this package but selectively skip others if you haven't configured the required integrations.
+`ssh`| This test group tests our ability to communicate with Diego apps via ssh, scp, and sftp.
+`v3`| This test group contains tests for the next-generation v3 Cloud Controller API.  As of this writing, the v3 API is not officially supported.
+`isolation_segments` | This test group requires that Diego be deployed with a minimum of 2 cells. One of those cells must have been deployed with a `placement_tag`. If the deployment has been deployed with a routing isolation segment, `isolation_segment_domain` must also be set.
+`routing_isolation_segments` | This group tests that requests to isolated apps are only routed through isolated routers, and vice versa. It requires all of the setup for the isolation segments test suite. Additionally, a minimum of two Gorouter instances must be deployed. One instance must be configured with the property `routing_table_sharding_mode: shared-and-segments`. The other instance must have the properties `routing_table_sharding_mode: segments` and `isolation_segments: [YOUR_PLACEMENT_TAG_HERE]`. The `isolation_segment_name` in the CATs properties must match the `placement_tag` and `isolation_segment`.`isolation_segment_domain` must be set and traffic to that domain should go to the isolated router.
+`credhub`| Tests CredHub-delivered Secure Service credentials in the service binding. [CredHub configuration][credhub-secure-service-credentials] is required to run these tests. In addition to selecting a `credhub_mode`, `credhub_client` and `credhub_secret` values are required for these tests.
 
 ## Contributing
 
@@ -394,7 +393,6 @@ There are a number of conventions we recommend developers of CF acceptance tests
 adopt:
 
 1. When pushing an app:
-  * set the **backend**,
   * set the **memory** requirement, and use the suite's `DEFAULT_MEMORY_LIMIT` unless the test specifically needs to test a different value,
   * set the **buildpack** unless the test specifically needs to test the case where a buildpack is unspecified, and use one of `config.RubyBuildpack`, `config.JavaBuildpack`, etc.
 unless the test specifically needs to use a buildpack name or URL specific to the test,
@@ -404,16 +402,10 @@ unless the test specifically needs to use a buildpack name or URL specific to th
 
   ```go
   Expect(cf.Cf("push", appName,
-      "--no-start"                          // don't start before setting backend
       "-b", buildpackName,                  // specify buildpack
       "-m", DEFAULT_MEMORY_LIMIT,           // specify memory limit
       "-d", Config.AppsDomain,              // specify app domain
-  ).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-
-  //use the config-file specified backend when starting this app
-  app_helpers.SetBackend(appName)
-
-  Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+  ).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
   ```
 1. Delete all resources that are created, e.g. apps, routes, quotas, etc.  This is in order to leave the system in the same state it was found in.  For example, to delete apps and their associated routes:
     ```
@@ -428,9 +420,7 @@ unless the test specifically needs to use a buildpack name or URL specific to th
     ```
 1. Document the purpose of your test groups in this repo's README.md.  This is especially important when changing the explicit behavior of existing test groups or adding new test groups.
 1. Document all changes to the config object in this repo's README.md.
-1. Document the compatible backends in this repo's README.md.
 1. If you add a test that requires a new minimum `cf` CLI version, update the `minCliVersion` in `cats_suite_test.go`.
-1. If you add a test that is unsupported on a particular backend, add a ginkgo Skip() in an if Config.Backend != "your_backend" {} clause, [see Ginkgo's skip](https://onsi.github.io/ginkgo/#the-spec-runner).
 
 [networking-releases]: https://github.com/cloudfoundry-incubator/cf-networking-release/releases
 [credhub-secure-service-credentials]: https://github.com/pivotal-cf/credhub-release/blob/master/docs/secure-service-credentials.md

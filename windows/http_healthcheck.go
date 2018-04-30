@@ -32,7 +32,6 @@ var _ = WindowsDescribe("Http Healthcheck", func() {
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Nora,
 			"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		app_helpers.SetBackend(appName)
 		logs = logshelper.TailFollow(Config.GetUseLogCache(), appName)
 	})
 

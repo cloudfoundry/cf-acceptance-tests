@@ -2,7 +2,6 @@ package cats_suite_helpers
 
 import (
 	"strings"
-	"testing"
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -83,11 +82,6 @@ func DockerDescribe(description string, callback func()) bool {
 		})
 		Describe(description, callback)
 	})
-}
-
-func TestCliVersionCheck(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "CliVersionCheck Suite")
 }
 
 func InternetDependentDescribe(description string, callback func()) bool {
@@ -264,9 +258,6 @@ func GuidForAppName(appName string) string {
 func CredhubDescribe(description string, callback func()) bool {
 	return Describe("[credhub]", func() {
 		BeforeEach(func() {
-			if Config.GetBackend() != "diego" {
-				Skip(skip_messages.SkipDiegoMessage)
-			}
 			if !(Config.GetIncludeCredhubAssisted() || Config.GetIncludeCredhubNonAssisted()) {
 				Skip(skip_messages.SkipCredhubMessage)
 			}
@@ -302,9 +293,6 @@ func WindowsCredhubDescribe(description string, callback func()) bool {
 		BeforeEach(func() {
 			if !Config.GetIncludeWindows() {
 				Skip(skip_messages.SkipWindowsMessage)
-			}
-			if Config.GetBackend() != "diego" {
-				Skip(skip_messages.SkipDiegoMessage)
 			}
 			if !(Config.GetIncludeCredhubAssisted() || Config.GetIncludeCredhubNonAssisted()) {
 				Skip(skip_messages.SkipCredhubMessage)

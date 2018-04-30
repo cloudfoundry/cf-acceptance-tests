@@ -27,15 +27,11 @@ var _ = AppsDescribe("Getting instance information", func() {
 			Eventually(cf.Cf(
 				"push", appName,
 				"-p", assets.NewAssets().Binary,
-				"--no-start",
 				"-b", "binary_buildpack",
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-d", Config.GetAppsDomain(),
 				"-c", "./app"),
 				Config.CfPushTimeoutDuration()).Should(Exit(0))
-
-			app_helpers.SetBackend(appName)
-			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 		})
 
 		AfterEach(func() {

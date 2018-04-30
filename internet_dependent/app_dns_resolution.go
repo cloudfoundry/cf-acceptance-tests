@@ -27,13 +27,11 @@ type CatnipCurlResponse struct {
 func pushApp(appName, buildpack string) {
 	Expect(cf.Cf("push",
 		appName,
-		"--no-start",
 		"-b", buildpack,
 		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", assets.NewAssets().Catnip,
 		"-c", "./catnip",
-		"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-	app_helpers.SetBackend(appName)
+		"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 }
 
 func testAppConnectivity(clientAppName string, privateHost string, privatePort int) CatnipCurlResponse {
@@ -63,7 +61,6 @@ var _ = InternetDependentDescribe("App container DNS behavior", func() {
 	It("allows app containers to resolve public DNS", func() {
 		clientAppName = random_name.CATSRandomName("APP")
 		pushApp(clientAppName, Config.GetBinaryBuildpackName())
-		Expect(cf.Cf("start", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		By("Connecting from running container to an external destination")
 		catnipCurlResponse = testAppConnectivity(clientAppName, "www.google.com", 80)

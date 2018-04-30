@@ -41,10 +41,6 @@ var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
 	}
 
 	BeforeEach(func() {
-		if Config.GetBackend() != "diego" {
-			Skip(skip_messages.SkipDiegoMessage)
-		}
-
 		if !Config.GetIncludePrivateDockerRegistry() {
 			Skip(skip_messages.SkipPrivateDockerRegistryMessage)
 		}

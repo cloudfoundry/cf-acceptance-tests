@@ -53,15 +53,11 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 		// push backend app
 		Expect(cf.Cf(
 			"push", appNameBackend,
-			"--no-start",
 			"-b", Config.GetRubyBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().HelloWorld,
 			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-		app_helpers.SetBackend(appNameBackend)
-		Expect(cf.Cf("start", appNameBackend).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		// map internal route to backend app
 		Expect(cf.Cf("map-route", appNameBackend, internalDomainName, "--hostname", internalHostName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -69,16 +65,12 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 		// push frontend app
 		Expect(cf.Cf(
 			"push", appNameFrontend,
-			"--no-start",
 			"-b", Config.GetGoBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Proxy,
 			"-d", Config.GetAppsDomain(),
 			"-f", assets.NewAssets().Proxy+"/manifest.yml",
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-		app_helpers.SetBackend(appNameFrontend)
-		Expect(cf.Cf("start", appNameFrontend).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {

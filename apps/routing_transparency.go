@@ -21,14 +21,11 @@ var _ = AppsDescribe("Routing Transparency", func() {
 		appName = random_name.CATSRandomName("APP")
 		Expect(cf.Cf("push",
 			appName,
-			"--no-start",
 			"-b", Config.GetGoBuildpackName(),
 			"-p", assets.NewAssets().Golang,
 			"-f", filepath.Join(assets.NewAssets().Golang, "manifest.yml"),
 			"-m", DEFAULT_MEMORY_LIMIT,
-			"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		app_helpers.SetBackend(appName)
-		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {

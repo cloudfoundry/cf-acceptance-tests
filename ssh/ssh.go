@@ -18,7 +18,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	ginkgoconfig "github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
@@ -30,9 +29,6 @@ var _ = SshDescribe("SSH", func() {
 	var appName string
 
 	BeforeEach(func() {
-		if Config.GetBackend() != "diego" {
-			Skip(skip_messages.SkipDiegoMessage)
-		}
 		appName = random_name.CATSRandomName("APP")
 		Eventually(cf.Cf(
 			"push", appName,
@@ -45,8 +41,6 @@ var _ = SshDescribe("SSH", func() {
 			"-i", "1"),
 			Config.DefaultTimeoutDuration(),
 		).Should(Exit(0))
-
-		app_helpers.SetBackend(appName)
 
 		enableSSH(appName)
 

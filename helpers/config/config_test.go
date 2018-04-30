@@ -45,7 +45,6 @@ type testConfig struct {
 	TimeoutScale *float64 `json:"timeout_scale,omitempty"`
 
 	// optional
-	Backend                       *string `json:"backend,omitempty"`
 	IncludePrivateDockerRegistry  *bool   `json:"include_private_docker_registry,omitempty"`
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image,omitempty"`
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username,omitempty"`
@@ -91,8 +90,7 @@ type allConfig struct {
 	IsolationSegmentName   *string `json:"isolation_segment_name"`
 	IsolationSegmentDomain *string `json:"isolation_segment_domain"`
 
-	Backend           *string `json:"backend"`
-	SkipSSLValidation *bool   `json:"skip_ssl_validation"`
+	SkipSSLValidation *bool `json:"skip_ssl_validation"`
 
 	ArtifactsDirectory *string `json:"artifacts_directory"`
 
@@ -260,8 +258,6 @@ var _ = Describe("Config", func() {
 		Expect(config.GetUseWindowsContextPath()).To(BeFalse())
 		Expect(config.GetWindowsStack()).To(Equal("windows2012R2"))
 
-		Expect(config.GetBackend()).To(Equal(""))
-
 		Expect(config.GetUseExistingUser()).To(Equal(false))
 		Expect(config.GetConfigurableTestPassword()).To(Equal(""))
 		Expect(config.GetShouldKeepUser()).To(Equal(false))
@@ -322,7 +318,6 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'isolation_segment_name' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'isolation_segment_domain' must not be null"))
 
-			Expect(err.Error()).To(ContainSubstring("'backend' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'skip_ssl_validation' must not be null"))
 
 			Expect(err.Error()).To(ContainSubstring("'artifacts_directory' must not be null"))
@@ -348,7 +343,6 @@ var _ = Describe("Config", func() {
 
 			Expect(err.Error()).To(ContainSubstring("'include_apps' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_backend_compatibility' must not be null"))
-			Expect(err.Error()).To(ContainSubstring("'backend' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_capi_experimental' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_capi_no_bridge' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_detect' must not be null"))
@@ -588,56 +582,6 @@ var _ = Describe("Config", func() {
 
 			Expect(err.Error()).To(ContainSubstring("* 'admin_password' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("* Invalid configuration for 'api' <invalid-url.asdf>"))
-		})
-	})
-
-	Describe(`GetBackend`, func() {
-		Context("when the backend is set to `dea`", func() {
-			BeforeEach(func() {
-				testCfg.Backend = ptrToString("dea")
-			})
-
-			It("returns `dea`", func() {
-				cfg, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(cfg.GetBackend()).To(Equal("dea"))
-			})
-		})
-
-		Context("when the backend is set to `diego`", func() {
-			BeforeEach(func() {
-				testCfg.Backend = ptrToString("diego")
-			})
-
-			It("returns `diego`", func() {
-				cfg, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(cfg.GetBackend()).To(Equal("diego"))
-			})
-		})
-
-		Context("when the backend is empty", func() {
-			BeforeEach(func() {
-				testCfg.Backend = ptrToString("")
-			})
-
-			It("returns an empty string", func() {
-				cfg, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(cfg.GetBackend()).To(Equal(""))
-			})
-		})
-
-		Context("when the backend is set to any other value", func() {
-			BeforeEach(func() {
-				testCfg.Backend = ptrToString("asdfasdf")
-			})
-
-			It("returns an error", func() {
-				_, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(err).To(HaveOccurred())
-				Expect(err).To(MatchError("* Invalid configuration: 'backend' must be 'diego', 'dea', or empty but was set to 'asdfasdf'"))
-			})
 		})
 	})
 

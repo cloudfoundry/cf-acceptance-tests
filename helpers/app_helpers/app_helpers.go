@@ -20,24 +20,6 @@ func GetAppGuid(appName string) string {
 	return appGuid
 }
 
-func SetBackend(appName string) {
-	if Config.GetBackend() == "diego" {
-		EnableDiego(appName)
-	} else if Config.GetBackend() == "dea" {
-		DisableDiego(appName)
-	}
-}
-
-func EnableDiego(appName string) {
-	guid := GetAppGuid(appName)
-	Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": true}`), Config.DefaultTimeoutDuration()).Should(Exit(0))
-}
-
-func DisableDiego(appName string) {
-	guid := GetAppGuid(appName)
-	Eventually(cf.Cf("curl", "/v2/apps/"+guid, "-X", "PUT", "-d", `{"diego": false}`), Config.DefaultTimeoutDuration()).Should(Exit(0))
-}
-
 func AppReport(appName string, timeout time.Duration) {
 	if appName == "" {
 		return
