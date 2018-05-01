@@ -171,7 +171,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 					"-b", "binary_buildpack",
 					"-d", isoSegDomain,
 					"-c", "./app"),
-					Config.CfPushTimeoutDuration()).Should(Exit(0))
+					Config.CfPushTimeoutDuration()).Should(Exit(1))
 			})
 		})
 	})

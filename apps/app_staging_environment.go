@@ -125,7 +125,7 @@ EOF
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", appPath,
 			"-d", Config.GetAppsDomain(),
-		).Wait(Config.DefaultTimeoutDuration())
+		).Wait(Config.CfPushTimeoutDuration())
 		Expect(push).To(Exit(0))
 		Expect(push).To(Say("RUBY_LOCATION=/usr/bin/ruby"))
 	})
