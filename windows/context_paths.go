@@ -42,6 +42,7 @@ var _ = WindowsDescribe("Context Paths", func() {
 			"-p", assets.NewAssets().Nora,
 			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
+		// .NET Apps must be pushed with --no-start --no-route before running cf map-route
 		appName2 = random_name.CATSRandomName("APP")
 		Expect(cf.Cf("push",
 			appName2,
@@ -52,9 +53,11 @@ var _ = WindowsDescribe("Context Paths", func() {
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Nora).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
+		// .NET Apps must be pushed with --no-start --no-route before running cf map-route
 		appName3 = random_name.CATSRandomName("APP")
 		Expect(cf.Cf("push",
 			appName3,
+			"--no-start",
 			"--no-route",
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
