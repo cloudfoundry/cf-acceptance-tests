@@ -102,7 +102,7 @@ type config struct {
 	IncludeWindows        *bool   `json:"include_windows"`
 	NumWindowsCells       *int    `json:"num_windows_cells"`
 	UseWindowsTestTask    *bool   `json:"use_windows_test_task"`
-	UseWindowsContextPath *bool   `json:"windows_context_path"`
+	UseWindowsContextPath *bool   `json:"use_windows_context_path"`
 	WindowsStack          *string `json:"windows_stack"`
 
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image"`

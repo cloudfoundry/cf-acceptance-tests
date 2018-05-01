@@ -522,6 +522,19 @@ var _ = Describe("Config", func() {
 			})
 		})
 
+		Context("when use_windows_context_path is set", func() {
+			BeforeEach(func() {
+				testCfg.UseWindowsContextPath = ptrToBool(true)
+				testCfg.NumWindowsCells = ptrToInt(1)
+			})
+
+			It("is loaded into the config", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(config.GetUseWindowsContextPath()).To(BeTrue())
+			})
+		})
+
 		Context("when the # of windows cells is < 1", func() {
 			BeforeEach(func() {
 				testCfg.WindowsStack = ptrToString("windows2016")
