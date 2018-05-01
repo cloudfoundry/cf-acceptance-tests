@@ -37,25 +37,33 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 		spaceName = TestSetup.RegularUserContext().Space
 		orgName = TestSetup.RegularUserContext().Org
 		spaceGUID = GetSpaceGuidFromName(spaceName)
+		By("Creating an App")
 		appGUID = CreateApp(appName, spaceGUID, `{"foo":"bar"}`)
+		By("Creating a Package")
 		packageGUID = CreatePackage(appGUID)
 		token = GetAuthToken()
 		uploadURL := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.GetApiEndpoint(), packageGUID)
 
+		By("Uploading a Package")
 		UploadPackage(uploadURL, assets.NewAssets().DoraZip, token)
 		WaitForPackageToBeReady(packageGUID)
 
+		By("Creating a Build")
 		buildGUID := StageBuildpackPackage(packageGUID, Config.GetRubyBuildpackName())
 		WaitForBuildToStage(buildGUID)
 		dropletGuid := GetDropletFromBuild(buildGUID)
 		AssignDropletToApp(appGUID, dropletGuid)
 
+		By("Creating a Route")
 		CreateAndMapRoute(appGUID, spaceName, Config.GetAppsDomain(), appName)
+		By("Starting an App")
 		StartApp(appGUID)
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, appName)
 		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+		route = fmt.Sprintf("bar.%s", Config.GetAppsDomain())
 
+		By("Registering a Service Broker")
 		broker = NewServiceBroker(
 			random_name.CATSRandomName("BRKR"),
 			assets.NewAssets().ServiceBroker,
@@ -66,8 +74,8 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 		broker.Create()
 		broker.PublicizePlans()
 
+		By("Creating a Service Instance")
 		serviceInstance = random_name.CATSRandomName("SVIN")
-		route = fmt.Sprintf("bar.%s", Config.GetAppsDomain())
 		createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, serviceInstance).Wait(Config.DefaultTimeoutDuration())
 		Expect(createService).To(Exit(0), "failed creating service")
 	})
@@ -89,7 +97,7 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 			endpoint = fmt.Sprintf("/v3/apps/%s/actions/apply_manifest", appGUID)
 		})
 
-		Context("when configuring the web process", func() {
+		Describe("routing", func() {
 			Context("when routes are specified", func() {
 				BeforeEach(func() {
 					manifest = fmt.Sprintf(`
@@ -208,6 +216,52 @@ applications:
 						session = cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
 						Eventually(session).Should(Say("routes:\\s+%s-\\w+-\\w+.%s", appName, Config.GetAppsDomain()))
 					})
+				})
+			})
+		})
+
+		Describe("processes", func() {
+			BeforeEach(func() {
+				manifest = fmt.Sprintf(`
+applications:
+- name: "%s"
+  processes:
+  - type: web
+    instances: 2
+    memory: 300M
+    command: new-command
+    health-check-type: http
+    health-check-http-endpoint: /env
+    timeout: 75
+`, appName)
+			})
+
+			It("successfully completes the job", func() {
+				session := cf.Cf("curl", endpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifest, "-i")
+				Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				response := session.Out.Contents()
+				Expect(string(response)).To(ContainSubstring("202 Accepted"))
+
+				PollJob(GetJobPath(response))
+
+				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+					target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+					Expect(target).To(Exit(0), "failed targeting")
+
+					session = cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
+					Eventually(session).Should(Say("Showing health"))
+					Eventually(session).Should(Say("instances:\\s+.*?\\d+/2"))
+					Eventually(session).Should(Exit(0))
+
+					processes := GetProcesses(appGUID, appName)
+					webProcessWithCommandRedacted := GetProcessByType(processes, "web")
+					webProcess := GetProcessByGuid(webProcessWithCommandRedacted.Guid)
+					Expect(webProcess.Command).To(Equal("new-command"))
+
+					session = cf.Cf("get-health-check", appName).Wait(Config.DefaultTimeoutDuration())
+					Eventually(session).Should(Say("health check type:\\s+http"))
+					Eventually(session).Should(Say("endpoint \\(for http type\\):\\s+/env"))
+					Eventually(session).Should(Exit(0))
 				})
 			})
 		})
