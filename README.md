@@ -186,7 +186,7 @@ include_capi_no_bridge
 * `include_ssh`: Flag to include tests for Diego container ssh feature.
 * `include_sso`: Flag to include the services tests that integrate with Single Sign On. `include_services` must also be set for tests to run.
 * `include_tasks`: Flag to include the v3 task tests. `include_v3` must also be set for tests to run. The CC API task_creation feature flag must be enabled for these tests to pass.
-* `include_v3`: Flag to include tests for the the v3 API.
+* `include_v3`: Flag to include tests for the v3 API.
 * `include_zipkin`: Flag to include tests for Zipkin tracing. `include_routing` must also be set for tests to run. CF must be deployed with `router.tracing.enable_zipkin` set for tests to pass.
 * `include_isolation_segments`: Flag to include isolation segment tests.
 * `include_routing_isolation_segments`: Flag to include routing isolation segments. [See below](#routing-isolation-segments)
@@ -215,6 +215,7 @@ include_capi_no_bridge
 * `private_docker_registry_image`: Name of the private docker image to use when testing private docker registries. [See below](#private-docker)
 * `private_docker_registry_username`: Username to access the private docker repository. [See below](#private-docker)
 * `private_docker_registry_password`: Password to access the private docker repository. [See below](#private-docker)
+* `unallocated_ip_for_security_group`: An unused IP address in the private network used by CF. Defaults to 10.0.244.255. [See below](#container-networking-and-application-security-groups)
 
 * `staticfile_buildpack_name` [See below](#buildpack-names).
 * `java_buildpack_name` [See below](#buildpack-names).
@@ -266,6 +267,13 @@ properties:
 
 #### Container Networking and Application Security Groups
 To run tests that exercise container networking and running application security groups, the `include_security_groups` flags must be true.
+
+The Windows ASG tests require an unallocated IP
+on the private network used by the CF deployment,
+set with the `unallocated_ip_for_security_group` config value.
+Environments created by bbl on public clouds
+can use the default value of 10.0.244.255.
+vSphere and Openstack environments may require a custom IP.
 
 #### Private Docker
 To run tests that exercise the use of credentials to access a private docker registry, the `include_private_docker_registry` flag must be true, and the following config values must be provided:
