@@ -45,6 +45,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/cloudfoundry/custom-cats-reporters",
+			"repository": "https://github.com/cloudfoundry/custom-cats-reporters",
+			"vcs": "git",
+			"revision": "ac5e4bc08dde583c020bdf34306139638c67e1d1",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/cloudfoundry/dropsonde",
 			"repository": "https://github.com/cloudfoundry/dropsonde",
 			"vcs": "git",
@@ -121,6 +129,30 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/facebookgo/clock",
+			"repository": "https://github.com/facebookgo/clock",
+			"vcs": "git",
+			"revision": "600d898af40aa09a7a93ecb9265d87b0504b6f03",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/facebookgo/limitgroup",
+			"repository": "https://github.com/facebookgo/limitgroup",
+			"vcs": "git",
+			"revision": "6abd8d71ec01451d7f1929eacaa263bbe2935d05",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/facebookgo/muster",
+			"repository": "https://github.com/facebookgo/muster",
+			"vcs": "git",
+			"revision": "fd3d7953fd52354a74b9f6b3d70d0c9650c4ec2a",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/gogo/protobuf/gogoproto",
 			"repository": "https://github.com/gogo/protobuf",
 			"vcs": "git",
@@ -170,6 +202,14 @@
 			"repository": "https://github.com/gorilla/websocket",
 			"vcs": "git",
 			"revision": "1f512fc3f05332ba7117626cdfb4e07474e58e60",
+			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/honeycombio/libhoney-go",
+			"repository": "https://github.com/honeycombio/libhoney-go",
+			"vcs": "git",
+			"revision": "26d0d7dd8b07dae0d94a2b2b7abafd2401686ffa",
 			"branch": "master",
 			"notests": true
 		},
@@ -288,6 +328,14 @@
 			"revision": "b76c864ef1dca1d8f271f917c290cddcce3d9e0d",
 			"branch": "master",
 			"path": "/ssh",
+			"notests": true
+		},
+		{
+			"importpath": "gopkg.in/alexcesaro/statsd.v2",
+			"repository": "https://gopkg.in/alexcesaro/statsd.v2",
+			"vcs": "git",
+			"revision": "7fea3f0d2fab1ad973e641e51dba45443a311a90",
+			"branch": "master",
 			"notests": true
 		},
 		{

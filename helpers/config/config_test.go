@@ -62,6 +62,8 @@ type testConfig struct {
 	UseWindowsTestTask    *bool   `json:"use_windows_test_task,omitempty"`
 	UseWindowsContextPath *bool   `json:"use_windows_context_path,omitempty"`
 	WindowsStack          *string `json:"windows_stack,omitempty"`
+
+	ReporterConfig *testReporterConfig `json:"reporter_config"`
 }
 
 type allConfig struct {
@@ -114,6 +116,8 @@ type allConfig struct {
 	RubyBuildpackName       *string `json:"ruby_buildpack_name"`
 	StaticFileBuildpackName *string `json:"staticfile_buildpack_name"`
 
+	ReporterConfig *testReporterConfig `json:"reporter_config"`
+
 	IncludeApps                       *bool `json:"include_apps"`
 	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
 	IncludeCapiExperimental           *bool `json:"include_capi_experimental"`
@@ -145,6 +149,11 @@ type allConfig struct {
 	PublicDockerAppImage          *string `json:"public_docker_app_image"`
 
 	NamePrefix *string `json:"name_prefix"`
+}
+
+type testReporterConfig struct {
+	HoneyCombWriteKey string `json:"honeycomb_write_key"`
+	HoneyCombDataset string `json:"honeycomb_dataset"`
 }
 
 var tmpFilePath string
@@ -257,6 +266,10 @@ var _ = Describe("Config", func() {
 		Expect(config.GetUseWindowsTestTask()).To(BeFalse())
 		Expect(config.GetUseWindowsContextPath()).To(BeFalse())
 		Expect(config.GetWindowsStack()).To(Equal("windows2012R2"))
+
+		testReporterConfig := config.GetReporterConfig()
+		Expect(testReporterConfig.HoneyCombDataset).To(Equal(""))
+		Expect(testReporterConfig.HoneyCombWriteKey).To(Equal(""))
 
 		Expect(config.GetUseExistingUser()).To(Equal(false))
 		Expect(config.GetConfigurableTestPassword()).To(Equal(""))
@@ -579,6 +592,27 @@ var _ = Describe("Config", func() {
 				Expect(config).To(BeNil())
 				Expect(err).To(MatchError("* Invalid configuration: 'isolation_segment_domain' must be provided if 'include_routing_isolation_segments' is true"))
 			})
+		})
+	})
+
+
+	Context("when including a reporter config", func(){
+
+		BeforeEach(func(){
+			reporterConfig := &testReporterConfig{
+				HoneyCombWriteKey: "some-write-key",
+				HoneyCombDataset: "some-dataset",
+			}
+			testCfg.ReporterConfig = reporterConfig
+			})
+
+		It("is loaded into the config", func(){
+			config, err := cfg.NewCatsConfig(tmpFilePath)
+			Expect(err).ToNot(HaveOccurred())
+
+			testReporterConfig := config.GetReporterConfig()
+			Expect(testReporterConfig.HoneyCombWriteKey).To(Equal("some-write-key"))
+			Expect(testReporterConfig.HoneyCombDataset).To(Equal("some-dataset"))
 		})
 	})
 

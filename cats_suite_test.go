@@ -38,6 +38,9 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/cloudfoundry/custom-cats-reporters/honeycomb"
+	"github.com/cloudfoundry/custom-cats-reporters/honeycomb/client"
+	"github.com/honeycombio/libhoney-go"
 )
 
 const minCliVersion = "6.33.1"
@@ -46,6 +49,7 @@ func TestCATS(t *testing.T) {
 	RegisterFailHandler(Fail)
 
 	var validationError error
+
 	Config, validationError = config.NewCatsConfig(os.Getenv("CONFIG"))
 
 	var _ = SynchronizedBeforeSuite(func() []byte {
@@ -128,6 +132,24 @@ func TestCATS(t *testing.T) {
 			helpers.EnableCFTrace(Config, "CATS")
 			rs = append(rs, helpers.NewJUnitReporter(Config, "CATS"))
 		}
+	}
+
+	reporterConfig := Config.GetReporterConfig()
+
+	if reporterConfig.HoneyCombDataset != "" && reporterConfig.HoneyCombWriteKey != "" {
+		honeyCombClient := client.New(libhoney.Config{
+			WriteKey: reporterConfig.HoneyCombWriteKey,
+			Dataset:  reporterConfig.HoneyCombDataset,
+		})
+
+		globalTags := map[string]interface{}{
+			"guid": os.Getenv("RUN_GUID"),
+		}
+
+		honeyCombReporter := honeycomb.New(honeyCombClient)
+		honeyCombReporter.SetGlobalTags(globalTags)
+
+		rs = append(rs, honeyCombReporter)
 	}
 
 	RunSpecsWithDefaultAndCustomReporters(t, "CATS", rs)

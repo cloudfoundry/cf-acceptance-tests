@@ -113,6 +113,13 @@ type config struct {
 	UnallocatedIPForSecurityGroup *string `json:"unallocated_ip_for_security_group"`
 
 	NamePrefix *string `json:"name_prefix"`
+
+	ReporterConfig *reporterConfig `json:"reporter_config"`
+}
+
+type reporterConfig struct {
+	HoneyCombWriteKey string `json:"honeycomb_write_key"`
+	HoneyCombDataset string `json:"honeycomb_dataset"`
 }
 
 var defaults = config{}
@@ -190,6 +197,8 @@ func getDefaults() config {
 	defaults.UseWindowsContextPath = ptrToBool(false)
 	defaults.WindowsStack = ptrToString("windows2012R2")
 	defaults.UseWindowsTestTask = ptrToBool(false)
+
+	defaults.ReporterConfig = &reporterConfig{}
 
 	defaults.UseHttp = ptrToBool(false)
 	defaults.UseExistingUser = ptrToBool(false)
@@ -993,4 +1002,14 @@ func (c *config) GetUseWindowsContextPath() bool {
 
 func (c *config) GetWindowsStack() string {
 	return *c.WindowsStack
+}
+
+func (c *config) GetReporterConfig() reporterConfig {
+	reporterConfigFromConfig := c.ReporterConfig
+
+	if reporterConfigFromConfig != nil {
+		return *reporterConfigFromConfig
+	}
+
+	return reporterConfig{}
 }

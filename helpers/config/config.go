@@ -76,6 +76,8 @@ type CatsConfig interface {
 	GetUseWindowsContextPath() bool
 	GetWindowsStack() string
 
+	GetReporterConfig() reporterConfig
+
 	AsyncServiceOperationTimeoutDuration() time.Duration
 	BrokerStartTimeoutDuration() time.Duration
 	CfPushTimeoutDuration() time.Duration
