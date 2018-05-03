@@ -264,6 +264,49 @@ applications:
 					Eventually(session).Should(Exit(0))
 				})
 			})
+
+			Context("when the process doesn't exist already", func() {
+				BeforeEach(func() {
+					manifest = fmt.Sprintf(`
+applications:
+- name: "%s"
+  processes:
+  - type: potato
+    instances: 2
+    memory: 300M
+    command: new-command
+    health-check-type: http
+    health-check-http-endpoint: /env
+    timeout: 75
+`, appName)
+				})
+				It("creates the process and completes the job", func() {
+					session := cf.Cf("curl", endpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifest, "-i")
+					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					response := session.Out.Contents()
+					Expect(string(response)).To(ContainSubstring("202 Accepted"))
+
+					PollJob(GetJobPath(response))
+
+					workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+						Expect(target).To(Exit(0), "failed targeting")
+
+						session = cf.Cf("v3-app", appName).Wait(Config.DefaultTimeoutDuration())
+						Eventually(session).Should(Say("potato:0/2"))
+						Eventually(session).Should(Exit(0))
+
+						processes := GetProcesses(appGUID, appName)
+						potatoProcessWithCommandRedacted := GetProcessByType(processes, "potato")
+						potatoProcess := GetProcessByGuid(potatoProcessWithCommandRedacted.Guid)
+						Expect(potatoProcess.Command).To(Equal("new-command"))
+
+						session = cf.Cf("v3-get-health-check", appName).Wait(Config.DefaultTimeoutDuration())
+						Eventually(session).Should(Say("potato\\s+http\\s+/env"))
+						Eventually(session).Should(Exit(0))
+					})
+				})
+			})
 		})
 	})
 })
