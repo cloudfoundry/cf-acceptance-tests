@@ -8,10 +8,10 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/internal"
 	"github.com/onsi/ginkgo"
-	ginkgoconfig "github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 )
 
 type TestUser struct {
@@ -44,7 +44,7 @@ func NewTestUser(config userConfig, cmdStarter internal.Starter) *TestUser {
 		regUser = config.GetExistingUser()
 		regUserPass = config.GetExistingUserPassword()
 	} else {
-		regUser = generateUserName(config.GetNamePrefix())
+		regUser = generator.PrefixedRandomName(config.GetNamePrefix(), "USER")
 		regUserPass = generatePassword()
 	}
 
@@ -103,12 +103,6 @@ func combineOutputAndRedact(session *Session, redactor internal.Redactor) *Buffe
 	stderr := redactor.Redact(string(session.Err.Contents()))
 
 	return BufferWithBytes(append([]byte(stdout), []byte(stderr)...))
-}
-
-func generateUserName(prefix string) string {
-	node := ginkgoconfig.GinkgoConfig.ParallelNode
-	timeTag := time.Now().Format("2006_01_02-15h04m05.999s")
-	return fmt.Sprintf("%s-USER-%d-%s", prefix, node, timeTag)
 }
 
 // The key thing that makes a password secure is the _entropy_ that comes from a
