@@ -32,7 +32,6 @@ var _ = WindowsCredhubDescribe("CredHub Integration", func() {
 	BeforeEach(func() {
 		TestSetup.RegularUserContext().TargetSpace()
 		cf.Cf("target", "-o", TestSetup.RegularUserContext().Org)
-		Expect(string(cf.Cf("running-environment-variable-group").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring("CREDHUB_API"), "CredHub API environment not set")
 
 		chBrokerAppName = random_name.CATSRandomName("BRKR-CH")
 
