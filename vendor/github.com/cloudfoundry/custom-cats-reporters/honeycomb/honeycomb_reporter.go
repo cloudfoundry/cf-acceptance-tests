@@ -32,12 +32,15 @@ func (hr honeyCombReporter) SpecDidComplete(specSummary *types.SpecSummary) {
 	hr.client.SendEvent(specEvent, hr.globalTags, hr.customTags)
 }
 
+func (hr honeyCombReporter) SpecSuiteDidEnd(summary *types.SuiteSummary) {
+	hr.client.SendEvent(*summary, hr.globalTags, hr.customTags)
+}
+
 func (hr honeyCombReporter) SpecSuiteWillBegin(config config.GinkgoConfigType, summary *types.SuiteSummary) {
 }
 func (hr honeyCombReporter) BeforeSuiteDidRun(setupSummary *types.SetupSummary) {}
 func (hr honeyCombReporter) SpecWillRun(specSummary *types.SpecSummary)         {}
 func (hr honeyCombReporter) AfterSuiteDidRun(setupSummary *types.SetupSummary)  {}
-func (hr honeyCombReporter) SpecSuiteDidEnd(summary *types.SuiteSummary)        {}
 
 func (hr *honeyCombReporter) SetGlobalTags(globalTags map[string]interface{}) {
 	hr.globalTags = globalTags
