@@ -152,8 +152,9 @@ type allConfig struct {
 }
 
 type testReporterConfig struct {
-	HoneyCombWriteKey string `json:"honeycomb_write_key"`
-	HoneyCombDataset string `json:"honeycomb_dataset"`
+	HoneyCombWriteKey string                 `json:"honeycomb_write_key"`
+	HoneyCombDataset  string                 `json:"honeycomb_dataset"`
+	CustomTags        map[string]interface{} `json:"custom_tags"`
 }
 
 var tmpFilePath string
@@ -595,24 +596,39 @@ var _ = Describe("Config", func() {
 		})
 	})
 
-
-	Context("when including a reporter config", func(){
-
-		BeforeEach(func(){
+	Context("when including a reporter config", func() {
+		BeforeEach(func() {
 			reporterConfig := &testReporterConfig{
 				HoneyCombWriteKey: "some-write-key",
-				HoneyCombDataset: "some-dataset",
+				HoneyCombDataset:  "some-dataset",
 			}
 			testCfg.ReporterConfig = reporterConfig
-			})
+		})
 
-		It("is loaded into the config", func(){
+		It("is loaded into the config", func() {
 			config, err := cfg.NewCatsConfig(tmpFilePath)
 			Expect(err).ToNot(HaveOccurred())
 
 			testReporterConfig := config.GetReporterConfig()
 			Expect(testReporterConfig.HoneyCombWriteKey).To(Equal("some-write-key"))
 			Expect(testReporterConfig.HoneyCombDataset).To(Equal("some-dataset"))
+		})
+		Context("when the reporter config includes custom tags", func() {
+			BeforeEach(func() {
+				customTags := map[string]interface{}{
+					"some-tag": "some-tag-value",
+				}
+				testCfg.ReporterConfig.CustomTags = customTags
+			})
+			It("is loaded into the config", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).ToNot(HaveOccurred())
+
+				testReporterConfig := config.GetReporterConfig()
+				Expect(testReporterConfig.CustomTags).To(Equal(map[string]interface{}{
+					"some-tag": "some-tag-value",
+				}))
+			})
 		})
 	})
 

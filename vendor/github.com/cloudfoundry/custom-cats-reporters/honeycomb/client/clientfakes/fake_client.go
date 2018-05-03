@@ -8,11 +8,12 @@ import (
 )
 
 type FakeClient struct {
-	SendEventStub        func(data interface{}, globalTags interface{}) error
+	SendEventStub        func(data interface{}, globalTags interface{}, customTags interface{}) error
 	sendEventMutex       sync.RWMutex
 	sendEventArgsForCall []struct {
 		data       interface{}
 		globalTags interface{}
+		customTags interface{}
 	}
 	sendEventReturns struct {
 		result1 error
@@ -24,17 +25,18 @@ type FakeClient struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeClient) SendEvent(data interface{}, globalTags interface{}) error {
+func (fake *FakeClient) SendEvent(data interface{}, globalTags interface{}, customTags interface{}) error {
 	fake.sendEventMutex.Lock()
 	ret, specificReturn := fake.sendEventReturnsOnCall[len(fake.sendEventArgsForCall)]
 	fake.sendEventArgsForCall = append(fake.sendEventArgsForCall, struct {
 		data       interface{}
 		globalTags interface{}
-	}{data, globalTags})
-	fake.recordInvocation("SendEvent", []interface{}{data, globalTags})
+		customTags interface{}
+	}{data, globalTags, customTags})
+	fake.recordInvocation("SendEvent", []interface{}{data, globalTags, customTags})
 	fake.sendEventMutex.Unlock()
 	if fake.SendEventStub != nil {
-		return fake.SendEventStub(data, globalTags)
+		return fake.SendEventStub(data, globalTags, customTags)
 	}
 	if specificReturn {
 		return ret.result1
@@ -48,10 +50,10 @@ func (fake *FakeClient) SendEventCallCount() int {
 	return len(fake.sendEventArgsForCall)
 }
 
-func (fake *FakeClient) SendEventArgsForCall(i int) (interface{}, interface{}) {
+func (fake *FakeClient) SendEventArgsForCall(i int) (interface{}, interface{}, interface{}) {
 	fake.sendEventMutex.RLock()
 	defer fake.sendEventMutex.RUnlock()
-	return fake.sendEventArgsForCall[i].data, fake.sendEventArgsForCall[i].globalTags
+	return fake.sendEventArgsForCall[i].data, fake.sendEventArgsForCall[i].globalTags, fake.sendEventArgsForCall[i].customTags
 }
 
 func (fake *FakeClient) SendEventReturns(result1 error) {

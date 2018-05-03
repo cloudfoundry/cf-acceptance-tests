@@ -118,8 +118,9 @@ type config struct {
 }
 
 type reporterConfig struct {
-	HoneyCombWriteKey string `json:"honeycomb_write_key"`
-	HoneyCombDataset string `json:"honeycomb_dataset"`
+	HoneyCombWriteKey string                 `json:"honeycomb_write_key"`
+	HoneyCombDataset  string                 `json:"honeycomb_dataset"`
+	CustomTags        map[string]interface{} `json:"custom_tags"`
 }
 
 var defaults = config{}

@@ -149,6 +149,7 @@ func TestCATS(t *testing.T) {
 
 		honeyCombReporter := honeycomb.New(honeyCombClient)
 		honeyCombReporter.SetGlobalTags(globalTags)
+		honeyCombReporter.SetCustomTags(reporterConfig.CustomTags)
 
 		rs = append(rs, honeyCombReporter)
 	}
