@@ -36,11 +36,11 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/buildpacks"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/cli_version_check"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"github.com/cloudfoundry/custom-cats-reporters/honeycomb"
 	"github.com/cloudfoundry/custom-cats-reporters/honeycomb/client"
 	"github.com/honeycombio/libhoney-go"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 const minCliVersion = "6.33.1"
@@ -143,7 +143,8 @@ func TestCATS(t *testing.T) {
 		})
 
 		globalTags := map[string]interface{}{
-			"guid": os.Getenv("RUN_GUID"),
+			"guid":    os.Getenv("RUN_GUID"),
+			"env_api": Config.GetApiEndpoint(),
 		}
 
 		honeyCombReporter := honeycomb.New(honeyCombClient)
