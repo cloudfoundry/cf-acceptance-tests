@@ -143,7 +143,7 @@ func TestCATS(t *testing.T) {
 		})
 
 		globalTags := map[string]interface{}{
-			"guid":    os.Getenv("RUN_GUID"),
+			"run_id":  os.Getenv("RUN_ID"),
 			"env_api": Config.GetApiEndpoint(),
 		}
 

@@ -20,7 +20,7 @@ popd > /dev/null
 export GOPATH="${project_gopath}"
 export PATH="${project_gopath}/bin":$PATH
 
-export RUN_GUID=$(uuidgen)
+export RUN_ID=$(openssl rand -hex 16)
 
 go install -v github.com/cloudfoundry/cf-acceptance-tests/vendor/github.com/onsi/ginkgo/ginkgo
 
