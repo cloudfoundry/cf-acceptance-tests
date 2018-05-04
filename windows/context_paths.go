@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	. "code.cloudfoundry.org/cf-routing-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -14,6 +13,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 )
 
 var _ = WindowsDescribe("Context Paths", func() {
@@ -66,21 +66,21 @@ var _ = WindowsDescribe("Context Paths", func() {
 
 		hostname = appName1
 
-		MapRouteToApp(appName2, domain, hostname, app2Path, Config.DefaultTimeoutDuration())
-		MapRouteToApp(appName3, domain, hostname, app3Path, Config.DefaultTimeoutDuration())
+		Expect(cf.Cf("map-route", appName2, domain, "--hostname", hostname, "--path", app2Path).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("map-route", appName3, domain, "--hostname", hostname, "--path", app3Path).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
 		Expect(cf.Cf("start", appName2).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Expect(cf.Cf("start", appName3).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {
-		AppReport(appName1, Config.DefaultTimeoutDuration())
-		AppReport(appName2, Config.DefaultTimeoutDuration())
-		AppReport(appName3, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(appName1, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(appName2, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(appName3, Config.DefaultTimeoutDuration())
 
-		DeleteApp(appName1, Config.DefaultTimeoutDuration())
-		DeleteApp(appName2, Config.DefaultTimeoutDuration())
-		DeleteApp(appName3, Config.DefaultTimeoutDuration())
+		Expect(cf.Cf("delete", appName1, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete", appName2, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete", appName3, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
 	Context("when another app has a route with a context path", func() {
