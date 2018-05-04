@@ -7,12 +7,16 @@ import (
 
 	"path/filepath"
 
-	. "code.cloudfoundry.org/cf-routing-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gexec"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
+	"encoding/json"
+	"regexp"
 )
 
 var _ = RoutingDescribe("Multiple App Ports", func() {
@@ -26,14 +30,19 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 		app = random_name.CATSRandomName("APP")
 		cmd := fmt.Sprintf("go-online --ports=7777,8888,8080")
 
-		PushAppNoStart(app, multiPortAppAsset, Config.GetGoBuildpackName(), Config.GetAppsDomain(), Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT, "-c", cmd, "-f", filepath.Join(multiPortAppAsset, "manifest.yml"))
-		EnableDiego(app, Config.DefaultTimeoutDuration())
-		StartApp(app, APP_START_TIMEOUT)
+		Expect(cf.Cf("push",
+			app,
+			"-b", Config.GetGoBuildpackName(),
+			"-c", cmd,
+			"-f", filepath.Join(multiPortAppAsset, "manifest.yml"),
+			"-m", DEFAULT_MEMORY_LIMIT,
+			"-p", multiPortAppAsset,
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {
-		AppReport(app, Config.DefaultTimeoutDuration())
-		DeleteApp(app, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(app, Config.DefaultTimeoutDuration())
+		Expect(cf.Cf("delete", app, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
 	Context("when app only has single route", func() {
@@ -48,14 +57,21 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 
 	Context("when app has multiple ports mapped", func() {
 		BeforeEach(func() {
-			UpdatePorts(app, []uint16{7777, 8888, 8080}, Config.DefaultTimeoutDuration())
+			appGuid := app_helpers.GetAppGuid(app)
+			Expect(cf.Cf(
+				"curl",
+				fmt.Sprintf("/v2/apps/%s", appGuid),
+				"-X", "PUT", "-d", `{"ports": [7777,8888,8080]}`,
+			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+
 			// create 2nd route
 			spacename := TestSetup.RegularUserContext().Space
 			secondRoute = fmt.Sprintf("%s-two", app)
-			CreateRoute(secondRoute, "", spacename, Config.GetAppsDomain(), Config.DefaultTimeoutDuration())
-
+			Expect(cf.Cf("create-route", spacename, Config.GetAppsDomain(),
+				"--hostname", secondRoute,
+			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			// map app route to other port
-			CreateRouteMapping(app, secondRoute, 0, 7777, Config.DefaultTimeoutDuration())
+			createRouteMapping(app, secondRoute, 7777)
 		})
 
 		It("should listen on multiple ports", func() {
@@ -69,3 +85,28 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 		})
 	})
 })
+
+func getRouteGuid(hostname string) string {
+	routeQuery := fmt.Sprintf("/v2/routes?q=host:%s", hostname)
+	getRoutesCurl := cf.Cf("curl", routeQuery)
+	Expect(getRoutesCurl.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+
+	routeGuidRegex := regexp.MustCompile(`\s+"guid": "(.+)"`)
+	return routeGuidRegex.FindStringSubmatch(string(getRoutesCurl.Out.Contents()))[1]
+}
+
+func createRouteMapping(appName string, hostname string, appPort uint16) {
+	appGuid := app_helpers.GetAppGuid(appName)
+	routeGuid := getRouteGuid(hostname)
+
+	bodyMap := map[string]interface{}{
+		"app_guid":   appGuid,
+		"route_guid": routeGuid,
+		"app_port":   appPort,
+	}
+
+	data, err := json.Marshal(bodyMap)
+	Expect(err).ToNot(HaveOccurred())
+
+	Expect(cf.Cf("curl", fmt.Sprintf("/v2/route_mappings"), "-X", "POST", "-d", string(data)).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+}
