@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"regexp"
 
-	"code.cloudfoundry.org/cf-routing-test-helpers/helpers"
 	cf_helpers "github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
@@ -12,8 +11,11 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gexec"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/gexec"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 )
 
 var _ = ZipkinDescribe("Zipkin Tracing", func() {
@@ -25,14 +27,19 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 
 	BeforeEach(func() {
 		app1 = random_name.CATSRandomName("APP")
-		helpers.PushApp(app1, helloRoutingAsset, Config.GetJavaBuildpackName(), Config.GetAppsDomain(), CF_JAVA_TIMEOUT, "1024M")
+		Expect(cf.Cf("push",
+			app1,
+			"-b", Config.GetJavaBuildpackName(),
+			"-m", "1024M",
+			"-p", helloRoutingAsset,
+			"-d", Config.GetAppsDomain()).Wait(CF_JAVA_TIMEOUT)).To(Exit(0))
 
 		hostname = app1
 	})
 
 	AfterEach(func() {
-		helpers.AppReport(app1, Config.DefaultTimeoutDuration())
-		helpers.DeleteApp(app1, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(app1, Config.DefaultTimeoutDuration())
+		Expect(cf.Cf("delete", app1, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
 	Context("when zipkin tracing is enabled", func() {
