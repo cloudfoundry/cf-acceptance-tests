@@ -1,13 +1,15 @@
 package routing
 
 import (
-	. "code.cloudfoundry.org/cf-routing-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega/gexec"
 	. "github.com/onsi/gomega"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 )
 
 var _ = RoutingDescribe("Context Paths", func() {
@@ -26,26 +28,40 @@ var _ = RoutingDescribe("Context Paths", func() {
 		domain := Config.GetAppsDomain()
 
 		app1 = random_name.CATSRandomName("APP")
-		PushApp(app1, helloRoutingAsset, Config.GetRubyBuildpackName(), Config.GetAppsDomain(), Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
+		Expect(cf.Cf("push",
+			app1,
+			"-b", Config.GetRubyBuildpackName(),
+			"-m", DEFAULT_MEMORY_LIMIT,
+			"-p", helloRoutingAsset,
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		app2 = random_name.CATSRandomName("APP")
-		PushApp(app2, helloRoutingAsset, Config.GetRubyBuildpackName(), Config.GetAppsDomain(), Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
+		Expect(cf.Cf("push",
+			app2,
+			"-b", Config.GetRubyBuildpackName(),
+			"-m", DEFAULT_MEMORY_LIMIT,
+			"-p", helloRoutingAsset,
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		app3 = random_name.CATSRandomName("APP")
-		PushApp(app3, helloRoutingAsset, Config.GetRubyBuildpackName(), Config.GetAppsDomain(), Config.CfPushTimeoutDuration(), DEFAULT_MEMORY_LIMIT)
+		Expect(cf.Cf("push",
+			app3,
+			"-b", Config.GetRubyBuildpackName(),
+			"-m", DEFAULT_MEMORY_LIMIT,
+			"-p", helloRoutingAsset,
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		hostname = app1
 
-		MapRouteToApp(app2, domain, hostname, app2Path, Config.DefaultTimeoutDuration())
-		MapRouteToApp(app3, domain, hostname, app3Path, Config.DefaultTimeoutDuration())
+		Expect(cf.Cf("map-route", app2, domain, "--hostname", hostname, "--path", app2Path).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("map-route", app3, domain, "--hostname", hostname, "--path", app3Path).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {
-		AppReport(app1, Config.DefaultTimeoutDuration())
-		AppReport(app2, Config.DefaultTimeoutDuration())
-		AppReport(app3, Config.DefaultTimeoutDuration())
-
-		DeleteApp(app1, Config.DefaultTimeoutDuration())
-		DeleteApp(app2, Config.DefaultTimeoutDuration())
-		DeleteApp(app3, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(app1, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(app2, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(app3, Config.DefaultTimeoutDuration())
+		Expect(cf.Cf("delete", app1, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete", app2, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete", app3, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
 	Context("when another app has a route with a context path", func() {
