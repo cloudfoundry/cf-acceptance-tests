@@ -3,9 +3,9 @@ package windows
 import (
 	"encoding/json"
 	"fmt"
+	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"io/ioutil"
 	"os"
-	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

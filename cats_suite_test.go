@@ -67,7 +67,6 @@ func TestCATS(t *testing.T) {
 
 		Expect(ParseRawCliVersionString(installedVersion).AtLeast(ParseRawCliVersionString(minCliVersion))).To(BeTrue(), "CLI version "+minCliVersion+" is required")
 
-
 		if Config.GetIncludeSsh() {
 			ScpPath, err = exec.LookPath("scp")
 			Expect(err).NotTo(HaveOccurred())

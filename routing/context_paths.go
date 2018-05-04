@@ -1,15 +1,15 @@
 package routing
 
 import (
+	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega/gexec"
 	. "github.com/onsi/gomega"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
+	. "github.com/onsi/gomega/gexec"
 )
 
 var _ = RoutingDescribe("Context Paths", func() {
