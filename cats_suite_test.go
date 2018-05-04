@@ -51,6 +51,13 @@ func TestCATS(t *testing.T) {
 	var validationError error
 
 	Config, validationError = config.NewCatsConfig(os.Getenv("CONFIG"))
+	if validationError != nil {
+		defer GinkgoRecover()
+		fmt.Println("Invalid configuration.  ")
+		fmt.Println(validationError)
+		fmt.Println("Please fix the contents of $CONFIG:\n  " + os.Getenv("CONFIG") + "\nbefore proceeding.")
+		t.Fail()
+	}
 
 	var _ = SynchronizedBeforeSuite(func() []byte {
 		installedVersion, err := GetInstalledCliVersionString()
@@ -60,11 +67,6 @@ func TestCATS(t *testing.T) {
 
 		Expect(ParseRawCliVersionString(installedVersion).AtLeast(ParseRawCliVersionString(minCliVersion))).To(BeTrue(), "CLI version "+minCliVersion+" is required")
 
-		if validationError != nil {
-			fmt.Println("Invalid configuration.  ")
-			fmt.Println(validationError)
-			Fail("Please fix the contents of $CONFIG:\n  " + os.Getenv("CONFIG") + "\nbefore proceeding.")
-		}
 
 		if Config.GetIncludeSsh() {
 			ScpPath, err = exec.LookPath("scp")
