@@ -15,7 +15,6 @@ import (
 )
 
 const (
-	APP_START_TIMEOUT    = 2 * time.Minute
 	CF_JAVA_TIMEOUT      = 10 * time.Minute
 	DEFAULT_MEMORY_LIMIT = "256M"
 )
