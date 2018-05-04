@@ -30,6 +30,7 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 		spaceName       string
 		orgName         string
 		token           string
+		dropletGuid     string
 	)
 
 	BeforeEach(func() {
@@ -51,7 +52,7 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 		By("Creating a Build")
 		buildGUID := StageBuildpackPackage(packageGUID, Config.GetRubyBuildpackName())
 		WaitForBuildToStage(buildGUID)
-		dropletGuid := GetDropletFromBuild(buildGUID)
+		dropletGuid = GetDropletFromBuild(buildGUID)
 		AssignDropletToApp(appGUID, dropletGuid)
 
 		By("Creating a Route")
@@ -236,32 +237,34 @@ applications:
 `, appName)
 			})
 
-			It("successfully completes the job", func() {
-				session := cf.Cf("curl", endpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifest, "-i")
-				Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				response := session.Out.Contents()
-				Expect(string(response)).To(ContainSubstring("202 Accepted"))
+			Context("when the process exists already", func() {
+				It("successfully completes the job", func() {
+					session := cf.Cf("curl", endpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifest, "-i")
+					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					response := session.Out.Contents()
+					Expect(string(response)).To(ContainSubstring("202 Accepted"))
 
-				PollJob(GetJobPath(response))
+					PollJob(GetJobPath(response))
 
-				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-					target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
-					Expect(target).To(Exit(0), "failed targeting")
+					workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+						Expect(target).To(Exit(0), "failed targeting")
 
-					session = cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
-					Eventually(session).Should(Say("Showing health"))
-					Eventually(session).Should(Say("instances:\\s+.*?\\d+/2"))
-					Eventually(session).Should(Exit(0))
+						session = cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
+						Eventually(session).Should(Say("Showing health"))
+						Eventually(session).Should(Say("instances:\\s+.*?\\d+/2"))
+						Eventually(session).Should(Exit(0))
 
-					processes := GetProcesses(appGUID, appName)
-					webProcessWithCommandRedacted := GetProcessByType(processes, "web")
-					webProcess := GetProcessByGuid(webProcessWithCommandRedacted.Guid)
-					Expect(webProcess.Command).To(Equal("new-command"))
+						processes := GetProcesses(appGUID, appName)
+						webProcessWithCommandRedacted := GetProcessByType(processes, "web")
+						webProcess := GetProcessByGuid(webProcessWithCommandRedacted.Guid)
+						Expect(webProcess.Command).To(Equal("new-command"))
 
-					session = cf.Cf("get-health-check", appName).Wait(Config.DefaultTimeoutDuration())
-					Eventually(session).Should(Say("health check type:\\s+http"))
-					Eventually(session).Should(Say("endpoint \\(for http type\\):\\s+/env"))
-					Eventually(session).Should(Exit(0))
+						session = cf.Cf("get-health-check", appName).Wait(Config.DefaultTimeoutDuration())
+						Eventually(session).Should(Say("health check type:\\s+http"))
+						Eventually(session).Should(Say("endpoint \\(for http type\\):\\s+/env"))
+						Eventually(session).Should(Exit(0))
+					})
 				})
 			})
 
@@ -280,6 +283,7 @@ applications:
     timeout: 75
 `, appName)
 				})
+
 				It("creates the process and completes the job", func() {
 					session := cf.Cf("curl", endpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifest, "-i")
 					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
@@ -304,6 +308,47 @@ applications:
 						session = cf.Cf("v3-get-health-check", appName).Wait(Config.DefaultTimeoutDuration())
 						Eventually(session).Should(Say("potato\\s+http\\s+/env"))
 						Eventually(session).Should(Exit(0))
+					})
+				})
+			})
+
+			Context("when setting a new droplet", func() {
+				BeforeEach(func() {
+					manifest = fmt.Sprintf(`
+applications:
+- name: "%s"
+  processes:
+  - type: bean
+    instances: 2
+    memory: 300M
+    command: new-command
+    health-check-type: http
+    health-check-http-endpoint: /env
+    timeout: 75
+`, appName)
+				})
+
+				It("does not remove existing processes", func() {
+					session := cf.Cf("curl", endpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifest, "-i")
+					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					response := session.Out.Contents()
+					Expect(string(response)).To(ContainSubstring("202 Accepted"))
+
+					PollJob(GetJobPath(response))
+
+					workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+						Expect(target).To(Exit(0), "failed targeting")
+
+						session = cf.Cf("v3-app", appName).Wait(Config.DefaultTimeoutDuration())
+						Eventually(session).Should(Say("bean:0/2"))
+						Eventually(session).Should(Exit(0))
+						AssignDropletToApp(appGUID, dropletGuid)
+
+						processes := GetProcesses(appGUID, appName)
+						beanProcessWithCommandRedacted := GetProcessByType(processes, "bean")
+						beanProcess := GetProcessByGuid(beanProcessWithCommandRedacted.Guid)
+						Expect(beanProcess.Command).To(Equal("new-command"))
 					})
 				})
 			})
