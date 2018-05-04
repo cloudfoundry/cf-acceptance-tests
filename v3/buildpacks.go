@@ -1,7 +1,6 @@
 package v3
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"path"
@@ -32,13 +31,6 @@ var _ = V3Describe("buildpack", func() {
 		spaceGuid     string
 		token         string
 	)
-
-	type buildpack struct {
-		Name          string `json:"name"`
-		DetectOutput  string `json:"detect_output"`
-		BuildpackName string `json:"buildpack_name"`
-		Version       string `json:"version"`
-	}
 
 	Context("With a single buildpack app", func() {
 		BeforeEach(func() {
@@ -137,28 +129,6 @@ var _ = V3Describe("buildpack", func() {
 			WaitForBuildToStage(buildGUID)
 
 			dropletGUID := GetDropletFromBuild(buildGUID)
-			var droplet struct {
-				Buildpacks []buildpack `json:"buildpacks"`
-			}
-			dropletPath := fmt.Sprintf("/v3/droplets/%s", dropletGUID)
-			session := cf.Cf("curl", dropletPath)
-			bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
-			json.Unmarshal(bytes, &droplet)
-			Expect(len(droplet.Buildpacks)).To(Equal(2))
-			i := 0
-			j := 1
-			if droplet.Buildpacks[0].Name == "go_buildpack" {
-				i, j = j, i
-			}
-			Expect(droplet.Buildpacks[i].Name).To(Equal("ruby_buildpack"))
-			Expect(droplet.Buildpacks[i].DetectOutput).To(Equal(""))
-			Expect(droplet.Buildpacks[i].BuildpackName).To(Equal("ruby"))
-			Expect(droplet.Buildpacks[i].Version).ToNot(BeEmpty())
-			Expect(droplet.Buildpacks[j].Name).To(Equal("go_buildpack"))
-			Expect(droplet.Buildpacks[j].DetectOutput).To(Equal("go"))
-			Expect(droplet.Buildpacks[j].BuildpackName).To(Equal("go"))
-			Expect(droplet.Buildpacks[j].Version).ToNot(BeEmpty())
-
 			AssignDropletToApp(appGuid, dropletGUID)
 
 			processes := GetProcesses(appGuid, appName)
