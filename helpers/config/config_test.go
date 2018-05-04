@@ -123,7 +123,6 @@ type allConfig struct {
 	IncludeCapiExperimental           *bool `json:"include_capi_experimental"`
 	IncludeCapiNoBridge               *bool `json:"include_capi_no_bridge"`
 	IncludeContainerNetworking        *bool `json:"include_container_networking"`
-	IncludeCredHub                    *bool `json:"include_credhub"`
 	IncludeDetect                     *bool `json:"include_detect"`
 	IncludeDocker                     *bool `json:"include_docker"`
 	IncludeInternetDependent          *bool `json:"include_internet_dependent"`
@@ -142,6 +141,11 @@ type allConfig struct {
 	IncludeWindows                    *bool `json:"include_windows"`
 	IncludeZipkin                     *bool `json:"include_zipkin"`
 	IncludeIsolationSegments          *bool `json:"include_isolation_segments"`
+
+	CredhubMode         *string `json:"credhub_mode"`
+	CredhubLocation     *string `json:"credhub_location"`
+	CredhubClientName   *string `json:"credhub_client"`
+	CredhubClientSecret *string `json:"credhub_secret"`
 
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image"`
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username"`
