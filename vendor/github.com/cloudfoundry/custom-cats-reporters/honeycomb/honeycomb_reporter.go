@@ -9,8 +9,10 @@ import (
 )
 
 type SpecEvent struct {
-	Description string
-	State       string
+	Description     string
+	State           string
+	FailureMessage  string
+	FailureLocation string
 }
 
 type honeyCombReporter struct {
@@ -29,10 +31,19 @@ func (hr honeyCombReporter) SpecDidComplete(specSummary *types.SpecSummary) {
 		Description: createTestDescription(specSummary.ComponentTexts),
 	}
 
+	if specSummary.State == types.SpecStateFailed {
+		specEvent.FailureMessage = specSummary.Failure.Message
+		specEvent.FailureLocation = specSummary.Failure.ComponentCodeLocation.String()
+	}
+
+	// intentionally drop all errors to satisfy reporter interface
+	// and avoid unnecessary noise when an event cannot be sent to honeycomb
 	hr.client.SendEvent(specEvent, hr.globalTags, hr.customTags)
 }
 
 func (hr honeyCombReporter) SpecSuiteDidEnd(summary *types.SuiteSummary) {
+	// intentionally drop all errors to satisfy reporter interface
+	// and avoid unnecessary noise when an event cannot be sent to honeycomb
 	hr.client.SendEvent(*summary, hr.globalTags, hr.customTags)
 }
 
