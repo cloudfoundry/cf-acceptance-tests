@@ -40,7 +40,7 @@ var _ = WindowsDescribe("Adding and removing routes", func() {
 		secondHost := generator.PrefixedRandomName(Config.GetNamePrefix(), "ROUTE")
 
 		By("changing the environment")
-		Eventually(cf.Cf("set-env", appName, "WHY", "force-app-update")).Should(Exit(0))
+		Eventually(cf.Cf("set-env", appName, "WHY", "force-app-update"), Config.DefaultTimeoutDuration()).Should(Exit(0))
 
 		By("adding a route")
 		Eventually(cf.Cf("map-route", appName, Config.GetAppsDomain(), "-n", secondHost), Config.DefaultTimeoutDuration()).Should(Exit(0))
