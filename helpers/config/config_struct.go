@@ -688,6 +688,7 @@ func loadConfigFromPath(path string, config interface{}) error {
 	defer configFile.Close()
 
 	decoder := json.NewDecoder(configFile)
+	decoder.DisallowUnknownFields()
 	return decoder.Decode(config)
 }
 
