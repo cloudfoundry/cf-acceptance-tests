@@ -1,8 +1,6 @@
 package apps
 
 import (
-	"time"
-
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	. "github.com/onsi/ginkgo"
@@ -43,12 +41,8 @@ var _ = AppsDescribe("An application printing a bunch of output", func() {
 		Expect(helpers.CurlAppWithTimeout(Config, appName, "/logspew/32000", Config.LongCurlTimeoutDuration())).
 			To(ContainSubstring("Just wrote 32000 kbytes to the log"))
 
-		// Give time for components (i.e. Warden) to react to the output
-		// and potentially make bad decisions (like killing the app)
-		time.Sleep(10 * time.Second)
-
-		afterId := helpers.CurlApp(Config, appName, "/id")
-
-		Expect(beforeId).To(Equal(afterId))
+		Consistently(func() string {
+			return helpers.CurlApp(Config, appName, "/id")
+		}, "10s", "1s").Should(Equal(beforeId))
 	})
 })

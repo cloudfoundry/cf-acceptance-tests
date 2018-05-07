@@ -38,11 +38,11 @@ var _ = WindowsDescribe("An application printing a bunch of output", func() {
 	It("doesn't die when printing 32MB", func() {
 		beforeId := helpers.CurlApp(Config, appName, "/id")
 
-		Expect(helpers.CurlAppWithTimeout(Config, appName, "/logspew/32000", Config.LongTimeoutDuration())).
+		Expect(helpers.CurlAppWithTimeout(Config, appName, "/logspew/32000", Config.LongCurlTimeoutDuration())).
 			To(ContainSubstring("Just wrote 32000 kbytes to the log"))
 
 		Consistently(func() string {
 			return helpers.CurlApp(Config, appName, "/id")
-		}, "10s").Should(Equal(beforeId))
+		}, "10s", "1s").Should(Equal(beforeId))
 	})
 })

@@ -704,10 +704,6 @@ func (c *config) DefaultTimeoutDuration() time.Duration {
 	return c.GetScaledTimeout(time.Duration(*c.DefaultTimeout) * time.Second)
 }
 
-func (c *config) LongTimeoutDuration() time.Duration {
-	return c.GetScaledTimeout(time.Duration(*c.DefaultTimeout) * time.Second)
-}
-
 func (c *config) LongCurlTimeoutDuration() time.Duration {
 	return c.GetScaledTimeout(time.Duration(*c.LongCurlTimeout) * time.Second)
 }

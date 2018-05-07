@@ -85,7 +85,6 @@ type CatsConfig interface {
 	DetectTimeoutDuration() time.Duration
 	GetScaledTimeout(time.Duration) time.Duration
 	LongCurlTimeoutDuration() time.Duration
-	LongTimeoutDuration() time.Duration
 	SleepTimeoutDuration() time.Duration
 
 	GetPublicDockerAppImage() string
