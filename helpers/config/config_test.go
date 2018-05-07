@@ -155,11 +155,6 @@ type allConfig struct {
 	NamePrefix *string `json:"name_prefix"`
 }
 
-type configWithUnknownFields struct {
-	testConfig
-	UnknownField *string `json:"unknown_field"`
-}
-
 type testReporterConfig struct {
 	HoneyCombWriteKey string                 `json:"honeycomb_write_key"`
 	HoneyCombDataset  string                 `json:"honeycomb_dataset"`
@@ -656,23 +651,6 @@ var _ = Describe("Config", func() {
 
 			Expect(err.Error()).To(ContainSubstring("* 'admin_password' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("* Invalid configuration for 'api' <invalid-url.asdf>"))
-		})
-	})
-
-	Describe("when config has unknown fields", func() {
-		It("errors", func() {
-			configWithUnknownFields := configWithUnknownFields{UnknownField: ptrToString("foo")}
-			configWithUnknownFields.ApiEndpoint = ptrToString("api.bosh-lite.com")
-			configWithUnknownFields.AdminUser = ptrToString("admin")
-			configWithUnknownFields.AdminPassword = ptrToString("admin")
-			configWithUnknownFields.SkipSSLValidation = ptrToBool(true)
-			configWithUnknownFields.AppsDomain = ptrToString("cf-app.bosh-lite.com")
-			tmpFilePath = writeConfigFile(&configWithUnknownFields)
-
-			config, err := cfg.NewCatsConfig(tmpFilePath)
-			Expect(config).To(BeNil())
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring(`Failed to unmarshal: json: unknown field "unknown_field"`))
 		})
 	})
 
