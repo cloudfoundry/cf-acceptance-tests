@@ -630,11 +630,16 @@ func validateRoutingIsolationSegments(config *config) error {
 }
 
 func validateCredHubSettings(config *config) error {
-	if config.CredhubMode != nil && (config.GetIncludeCredhubAssisted() || config.GetIncludeCredhubNonAssisted()) {
+	if config.CredhubMode == nil {
+		return fmt.Errorf("* 'credhub_mode' must not be null")
+	}
+
+	if config.GetIncludeCredhubAssisted() || config.GetIncludeCredhubNonAssisted() {
 		if config.GetCredHubBrokerClientSecret() == "" || config.GetCredHubBrokerClientSecret() == "" {
 			return fmt.Errorf("* 'credhub_client' and 'credhub_secret' must not be null")
 		}
 	}
+
 	return nil
 }
 

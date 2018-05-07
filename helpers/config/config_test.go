@@ -355,6 +355,8 @@ var _ = Describe("Config", func() {
 
 			Expect(err.Error()).To(ContainSubstring("'timeout_scale' must not be null"))
 
+			Expect(err.Error()).To(ContainSubstring("'credhub_mode' must not be null"))
+
 			Expect(err.Error()).To(ContainSubstring("'binary_buildpack_name' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'go_buildpack_name' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'java_buildpack_name' must not be null"))
