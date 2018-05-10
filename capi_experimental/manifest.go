@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
@@ -56,12 +55,8 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 		AssignDropletToApp(appGUID, dropletGuid)
 
 		By("Creating a Route")
-		CreateAndMapRoute(appGUID, spaceName, Config.GetAppsDomain(), appName)
 		By("Starting an App")
 		StartApp(appGUID)
-		Eventually(func() string {
-			return helpers.CurlAppRoot(Config, appName)
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 		route = fmt.Sprintf("bar.%s", Config.GetAppsDomain())
 
 		By("Registering a Service Broker")
@@ -90,23 +85,28 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 
 	Describe("Applying manifest to existing app", func() {
 		var (
-			manifest string
-			endpoint string
+			manifestToApply  string
+			expectedManifest string
+
+			applyEndpoint       string
+			getManifestEndpoint string
 		)
 
 		BeforeEach(func() {
-			endpoint = fmt.Sprintf("/v3/apps/%s/actions/apply_manifest", appGUID)
+			applyEndpoint = fmt.Sprintf("/v3/apps/%s/actions/apply_manifest", appGUID)
+			getManifestEndpoint = fmt.Sprintf("/v3/apps/%s/manifest", appGUID)
 		})
 
 		Describe("routing", func() {
 			Context("when routes are specified", func() {
 				BeforeEach(func() {
-					manifest = fmt.Sprintf(`
+					manifestToApply = fmt.Sprintf(`
 applications:
 - name: "%s"
   instances: 2
   memory: 300M
   buildpack: ruby_buildpack
+  disk_quota: 1024M
   stack: cflinuxfs2
   services:
   - %s
@@ -118,10 +118,51 @@ applications:
   health-check-http-endpoint: /env
   timeout: 75
 `, appName, serviceInstance, route)
+					expectedManifest = fmt.Sprintf(`
+applications:
+- name: %s
+  stack: cflinuxfs2
+  buildpacks:
+  - ruby_buildpack
+  env:
+    foo: qux
+    snack: walnuts
+  routes:
+  - route: %s
+  services:
+  - %s
+  processes:
+  - command: bundle exec irb
+    disk_quota: 1024M
+    health-check-type: process
+    instances: 0
+    memory: 256M
+    type: console
+  - command: bundle exec rake
+    disk_quota: 1024M
+    health-check-type: process
+    instances: 0
+    memory: 256M
+    type: rake
+  - command: new-command
+    disk_quota: 1024M
+    health-check-http-endpoint: /env
+    health-check-type: http
+    instances: 2
+    memory: 300M
+    timeout: 75
+    type: web
+  - command: bundle exec rackup config.ru -p $PORT
+    disk_quota: 1024M
+    health-check-type: process
+    instances: 0
+    memory: 256M
+    type: worker
+`, appName, route, serviceInstance)
 				})
 
 				It("successfully completes the job", func() {
-					session := cf.Cf("curl", endpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifest, "-i")
+					session := cf.Cf("curl", applyEndpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifestToApply, "-i")
 					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 					response := session.Out.Contents()
 					Expect(string(response)).To(ContainSubstring("202 Accepted"))
@@ -139,6 +180,7 @@ applications:
 						Eventually(session).Should(Say("stack:\\s+cflinuxfs2"))
 						Eventually(session).Should(Say("buildpack:\\s+ruby_buildpack"))
 						Eventually(session).Should(Exit(0))
+						session = cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
 
 						session = cf.Cf("env", appName).Wait(Config.DefaultTimeoutDuration())
 						Eventually(session).Should(Say("foo:\\s+qux"))
@@ -158,13 +200,22 @@ applications:
 						session = cf.Cf("service", serviceInstance).Wait(Config.DefaultTimeoutDuration())
 						Eventually(session).Should(Say("bound apps:\\s+(?:name\\s+binding name\\s+)?%s", appName))
 						Eventually(session).Should(Exit(0))
+
+						session = cf.Cf("curl", "-i", getManifestEndpoint)
+						Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+						Expect(session).To(Say("200 OK"))
+
+						session = cf.Cf("curl", getManifestEndpoint)
+						Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+						response = session.Out.Contents()
+						Expect(string(response)).To(MatchYAML(expectedManifest))
 					})
 				})
 			})
 
 			Context("when specifying no-route", func() {
 				BeforeEach(func() {
-					manifest = fmt.Sprintf(`
+					manifestToApply = fmt.Sprintf(`
 applications:
 - name: "%s"
   no-route: true
@@ -172,7 +223,7 @@ applications:
 				})
 
 				It("removes existing routes from the app", func() {
-					session := cf.Cf("curl", endpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifest, "-i")
+					session := cf.Cf("curl", applyEndpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifestToApply, "-i")
 					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 					response := session.Out.Contents()
 					Expect(string(response)).To(ContainSubstring("202 Accepted"))
@@ -195,7 +246,7 @@ applications:
 				BeforeEach(func() {
 					UnmapAllRoutes(appGUID)
 
-					manifest = fmt.Sprintf(`
+					manifestToApply = fmt.Sprintf(`
 applications:
 - name: "%s"
   random-route: true
@@ -203,7 +254,7 @@ applications:
 				})
 
 				It("successfully adds a random-route", func() {
-					session := cf.Cf("curl", endpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifest, "-i")
+					session := cf.Cf("curl", applyEndpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifestToApply, "-i")
 					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 					response := session.Out.Contents()
 					Expect(string(response)).To(ContainSubstring("202 Accepted"))
@@ -223,7 +274,7 @@ applications:
 
 		Describe("processes", func() {
 			BeforeEach(func() {
-				manifest = fmt.Sprintf(`
+				manifestToApply = fmt.Sprintf(`
 applications:
 - name: "%s"
   processes:
@@ -239,7 +290,7 @@ applications:
 
 			Context("when the process exists already", func() {
 				It("successfully completes the job", func() {
-					session := cf.Cf("curl", endpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifest, "-i")
+					session := cf.Cf("curl", applyEndpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifestToApply, "-i")
 					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 					response := session.Out.Contents()
 					Expect(string(response)).To(ContainSubstring("202 Accepted"))
@@ -270,7 +321,7 @@ applications:
 
 			Context("when the process doesn't exist already", func() {
 				BeforeEach(func() {
-					manifest = fmt.Sprintf(`
+					manifestToApply = fmt.Sprintf(`
 applications:
 - name: "%s"
   processes:
@@ -285,7 +336,7 @@ applications:
 				})
 
 				It("creates the process and completes the job", func() {
-					session := cf.Cf("curl", endpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifest, "-i")
+					session := cf.Cf("curl", applyEndpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifestToApply, "-i")
 					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 					response := session.Out.Contents()
 					Expect(string(response)).To(ContainSubstring("202 Accepted"))
@@ -314,7 +365,7 @@ applications:
 
 			Context("when setting a new droplet", func() {
 				BeforeEach(func() {
-					manifest = fmt.Sprintf(`
+					manifestToApply = fmt.Sprintf(`
 applications:
 - name: "%s"
   processes:
@@ -329,7 +380,7 @@ applications:
 				})
 
 				It("does not remove existing processes", func() {
-					session := cf.Cf("curl", endpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifest, "-i")
+					session := cf.Cf("curl", applyEndpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifestToApply, "-i")
 					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 					response := session.Out.Contents()
 					Expect(string(response)).To(ContainSubstring("202 Accepted"))
