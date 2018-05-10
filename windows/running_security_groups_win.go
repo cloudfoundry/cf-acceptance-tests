@@ -194,7 +194,7 @@ var _ = WindowsDescribe("WINDOWS: App Instance Networking", func() {
 
 			By("Testing that external connectivity to a private ip is refused")
 			Eventually(func() string {
-				return testAppConnectivity(clientAppName, privateHost, privatePort).Stderr
+				return testAppConnectivity(clientAppName, privateAddress, 80).Stderr
 			}, Config.DefaultTimeoutDuration(), 10 * time.Second).Should(ContainSubstring("Unable to connect to the remote server"))
 		})
 	})
