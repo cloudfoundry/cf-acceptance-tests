@@ -17,6 +17,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"time"
 )
 
 type AppsResponse struct {
@@ -66,8 +67,9 @@ func getAppHostIpAndPort(appName string) (string, int) {
 
 func testAppConnectivity(clientAppName string, privateHost string, privatePort int) NoraCurlResponse {
 	var noraCurlResponse NoraCurlResponse
-	curlResponse := helpers.CurlApp(Config, clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort))
-	json.Unmarshal([]byte(curlResponse), &noraCurlResponse)
+	uri := helpers.AppUri(clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort), Config)
+	curlResponse := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), uri).Wait(Config.DefaultTimeoutDuration())
+	json.Unmarshal([]byte(curlResponse.Out.Contents()), &noraCurlResponse)
 	return noraCurlResponse
 }
 
@@ -191,8 +193,9 @@ var _ = WindowsDescribe("WINDOWS: App Instance Networking", func() {
 			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			By("Testing that external connectivity to a private ip is refused")
-			noraCurlResponse = testAppConnectivity(clientAppName, privateAddress, 80)
-			Expect(noraCurlResponse.Stderr).To(ContainSubstring("Unable to connect to the remote server"))
+			Eventually(func() string {
+				return testAppConnectivity(clientAppName, privateHost, privatePort).Stderr
+			}, Config.DefaultTimeoutDuration(), 10 * time.Second).Should(ContainSubstring("Unable to connect to the remote server"))
 		})
 	})
 })
