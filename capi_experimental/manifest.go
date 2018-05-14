@@ -15,6 +15,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
+	"encoding/json"
 )
 
 var _ = CapiExperimentalDescribe("apply_manifest", func() {
@@ -401,6 +402,86 @@ applications:
 						beanProcessWithCommandRedacted := GetProcessByType(processes, "bean")
 						beanProcess := GetProcessByGuid(beanProcessWithCommandRedacted.Guid)
 						Expect(beanProcess.Command).To(Equal("new-command"))
+					})
+				})
+			})
+		})
+
+		Describe("buildpacks", func() {
+			Context("when multiple buildpacks are specified", func() {
+				type Data struct {
+					Buildpacks []string `json:"buildpacks"`
+				}
+				type Lifecycle struct {
+					Data Data `json:"data"`
+				}
+				var app struct {
+					Lifecycle Lifecycle `json:"lifecycle"`
+				}
+
+				BeforeEach(func() {
+					manifestToApply = fmt.Sprintf(`
+applications:
+- name: "%s" 
+  buildpacks:
+  - staticfile_buildpack
+  - ruby_buildpack
+`, appName)
+				})
+
+				It("successfully adds the buildpacks", func() {
+					session := cf.Cf("curl", applyEndpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifestToApply, "-i")
+					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					response := session.Out.Contents()
+					Expect(string(response)).To(ContainSubstring("202 Accepted"))
+
+					PollJob(GetJobPath(response))
+
+					workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+						Expect(target).To(Exit(0), "failed targeting")
+
+						session = cf.Cf("curl", fmt.Sprintf("v3/apps/%s", appGUID)).Wait(Config.DefaultTimeoutDuration())
+						err := json.Unmarshal(session.Out.Contents(), &app)
+						Expect(err).ToNot(HaveOccurred())
+						Eventually(app.Lifecycle.Data.Buildpacks).Should(Equal([]string{"staticfile_buildpack", "ruby_buildpack"}))
+						Eventually(session).Should(Exit(0))
+					})
+				})
+
+				Context("when buildpack autodetection is specified", func() {
+					var currentDrop struct {
+						Buildpacks []map[string]string `json:"buildpacks"`
+					}
+
+					BeforeEach(func() {
+						manifestToApply = fmt.Sprintf(`
+applications:
+- name: "%s"
+  buildpacks: []
+`, appName)
+					})
+
+					It("successfully updates the buildpacks to autodetect", func() {
+						session := cf.Cf("curl", applyEndpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifestToApply, "-i")
+						Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+						response := session.Out.Contents()
+						Expect(string(response)).To(ContainSubstring("202 Accepted"))
+
+						PollJob(GetJobPath(response))
+
+						workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+							target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+							Expect(target).To(Exit(0), "failed targeting")
+
+							session = cf.Cf("curl", fmt.Sprintf("v3/apps/%s/droplets/current", appGUID)).Wait(Config.DefaultTimeoutDuration())
+							Eventually(session).Should(Exit(0))
+							err := json.Unmarshal(session.Out.Contents(), &currentDrop)
+							Expect(err).ToNot(HaveOccurred())
+							Expect(currentDrop.Buildpacks).To(HaveLen(1))
+							Expect(currentDrop.Buildpacks[0]["name"]).To(Equal("ruby_buildpack"))
+							Expect(currentDrop.Buildpacks[0]["detect_output"]).To(Equal("ruby"))
+						})
 					})
 				})
 			})
