@@ -59,6 +59,9 @@ func TestCATS(t *testing.T) {
 		t.Fail()
 	}
 
+	SetDefaultEventuallyTimeout(30 * time.Second)
+	SetDefaultEventuallyPollingInterval(1 * time.Second)
+
 	var _ = SynchronizedBeforeSuite(func() []byte {
 		installedVersion, err := GetInstalledCliVersionString()
 
