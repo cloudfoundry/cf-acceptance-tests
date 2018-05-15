@@ -57,7 +57,8 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 		By("Creating a Route")
 		By("Starting an App")
 		StartApp(appGUID)
-		route = fmt.Sprintf("bar.%s", Config.GetAppsDomain())
+		random_route_prefix := random_name.CATSRandomName("ROUTE")
+		route = fmt.Sprintf("%s.%s", random_route_prefix, Config.GetAppsDomain())
 
 		By("Registering a Service Broker")
 		broker = NewServiceBroker(
