@@ -100,7 +100,6 @@ type config struct {
 	CredhubClientSecret *string `json:"credhub_secret"`
 
 	IncludeWindows        *bool   `json:"include_windows"`
-	NumWindowsCells       *int    `json:"num_windows_cells"`
 	UseWindowsTestTask    *bool   `json:"use_windows_test_task"`
 	UseWindowsContextPath *bool   `json:"use_windows_context_path"`
 	WindowsStack          *string `json:"windows_stack"`
@@ -194,7 +193,6 @@ func getDefaults() config {
 	defaults.UseLogCache = ptrToBool(false)
 
 	defaults.IncludeWindows = ptrToBool(false)
-	defaults.NumWindowsCells = ptrToInt(0)
 	defaults.UseWindowsContextPath = ptrToBool(false)
 	defaults.WindowsStack = ptrToString("windows2012R2")
 	defaults.UseWindowsTestTask = ptrToBool(false)
@@ -658,10 +656,6 @@ func validateWindows(config *config) error {
 		return fmt.Errorf("* Invalid configuration: unknown Windows stack %s", config.GetWindowsStack())
 	}
 
-	if config.GetNumWindowsCells() < 1 {
-		return fmt.Errorf("* Invalid configuration: must have >= 1 Windows cell")
-	}
-
 	return nil
 }
 
@@ -988,10 +982,6 @@ func (c *config) GetPublicDockerAppImage() string {
 
 func (c *config) GetUnallocatedIPForSecurityGroup() string {
 	return *c.UnallocatedIPForSecurityGroup
-}
-
-func (c *config) GetNumWindowsCells() int {
-	return *c.NumWindowsCells
 }
 
 func (c *config) GetUseWindowsTestTask() bool {

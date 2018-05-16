@@ -58,7 +58,6 @@ type testConfig struct {
 	UnallocatedIPForSecurityGroup   *string `json:"unallocated_ip_for_security_group"`
 
 	IncludeWindows        *bool   `json:"include_windows,omitempty"`
-	NumWindowsCells       *int    `json:"num_windows_cells,omitempty"`
 	UseWindowsTestTask    *bool   `json:"use_windows_test_task,omitempty"`
 	UseWindowsContextPath *bool   `json:"use_windows_context_path,omitempty"`
 	WindowsStack          *string `json:"windows_stack,omitempty"`
@@ -531,7 +530,6 @@ var _ = Describe("Config", func() {
 			Context("when the windows stack is not specified", func() {
 				BeforeEach(func() {
 					testCfg.WindowsStack = nil
-					testCfg.NumWindowsCells = ptrToInt(1)
 				})
 
 				It("defaults to windows2012R2", func() {
@@ -545,7 +543,6 @@ var _ = Describe("Config", func() {
 		Context("when use_windows_context_path is set", func() {
 			BeforeEach(func() {
 				testCfg.UseWindowsContextPath = ptrToBool(true)
-				testCfg.NumWindowsCells = ptrToInt(1)
 			})
 
 			It("is loaded into the config", func() {
@@ -554,20 +551,6 @@ var _ = Describe("Config", func() {
 				Expect(config.GetUseWindowsContextPath()).To(BeTrue())
 			})
 		})
-
-		Context("when the # of windows cells is < 1", func() {
-			BeforeEach(func() {
-				testCfg.WindowsStack = ptrToString("windows2016")
-				testCfg.NumWindowsCells = ptrToInt(0)
-			})
-
-			It("errors", func() {
-				config, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(config).To(BeNil())
-				Expect(err).To(MatchError("* Invalid configuration: must have >= 1 Windows cell"))
-			})
-		})
-
 	})
 
 	Context("when including routing isolation segment tests", func() {
