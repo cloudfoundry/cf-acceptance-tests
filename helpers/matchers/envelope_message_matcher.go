@@ -33,9 +33,17 @@ func (matcher *EnvelopeContainingMessageLikeMatcher) Match(actual interface{}) (
 }
 
 func (matcher *EnvelopeContainingMessageLikeMatcher) FailureMessage(actual interface{}) (message string) {
-	return fmt.Sprintf("Expected\n\t%#v\nto have log message containing\n\t%#v", actual, matcher.expected)
+	envelope, ok := actual.(*events.Envelope)
+	if !ok {
+		return "EnvelopeContainingMessageLikeMatcher matcher: actual value must be an events.Envelope"
+	}
+	return fmt.Sprintf("Expected\n\t%#v\nto have log message containing\n\t%#v", envelope.GetLogMessage().GetMessage(), matcher.expected)
 }
 
 func (matcher *EnvelopeContainingMessageLikeMatcher) NegatedFailureMessage(actual interface{}) (message string) {
-	return fmt.Sprintf("Expected\n\t%#v\nnot to have log message containing\n\t%#v", actual, matcher.expected)
+	envelope, ok := actual.(*events.Envelope)
+	if !ok {
+		return "EnvelopeContainingMessageLikeMatcher matcher: actual value must be an events.Envelope"
+	}
+	return fmt.Sprintf("Expected\n\t%#v\nnot to have log message containing\n\t%#v", envelope.GetLogMessage().GetMessage(), matcher.expected)
 }
