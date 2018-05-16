@@ -60,6 +60,9 @@ func TestCATS(t *testing.T) {
 	}
 
 	var _ = SynchronizedBeforeSuite(func() []byte {
+		SetDefaultEventuallyTimeout(Config.DefaultTimeoutDuration())
+		SetDefaultEventuallyPollingInterval(1 * time.Second)
+
 		installedVersion, err := GetInstalledCliVersionString()
 
 		Expect(err).ToNot(HaveOccurred(), "Error trying to determine CF CLI version")
