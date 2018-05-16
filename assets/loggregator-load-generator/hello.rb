@@ -45,5 +45,5 @@ end
 get '/log/stop' do
   $run = false
   time = Time.now
-  STDOUT.puts("Sopped logs #{time}")
+  STDOUT.puts("Stopped logs #{time}")
 end

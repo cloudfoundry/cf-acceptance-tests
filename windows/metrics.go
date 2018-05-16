@@ -3,6 +3,7 @@ package windows
 import (
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -25,6 +26,7 @@ import (
 
 var _ = WindowsDescribe("Metrics", func() {
 	var appName string
+	const hundredthOfOneSecond = 10000 // this app uses millionth of seconds
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
@@ -32,9 +34,10 @@ var _ = WindowsDescribe("Metrics", func() {
 		Expect(cf.Cf("push",
 			appName,
 			"-s", Config.GetWindowsStack(),
-			"-b", Config.GetHwcBuildpackName(),
+			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", assets.NewAssets().Nora,
+			"-p", assets.NewAssets().LoggregatorLoadGeneratorGo,
+			"-c", ".\\loggregator-load-generator.exe",
 			"-i", "2",
 			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
 	})
@@ -54,8 +57,11 @@ var _ = WindowsDescribe("Metrics", func() {
 		go noaaConnection.Firehose(random_name.CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
 		defer close(stopchan)
 
-		helpers.CurlApp(Config, appName, "/print/Muahaha")
-		Eventually(msgChan, Config.CfPushTimeoutDuration()).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
+		Eventually(func() string {
+			return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
+		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Muahaha"))
+
+		Eventually(msgChan, Config.DefaultTimeoutDuration()).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
 	})
 
 	It("shows container metrics", func() {
