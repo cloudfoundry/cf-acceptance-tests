@@ -9,10 +9,13 @@ import (
 )
 
 type SpecEvent struct {
-	Description     string
-	State           string
-	FailureMessage  string
-	FailureLocation string
+	Description           string
+	State                 string
+	FailureMessage        string
+	FailureLocation       string
+	FailureOutput         string
+	ComponentCodeLocation string
+	ComponentType         string
 }
 
 type honeyCombReporter struct {
@@ -33,7 +36,9 @@ func (hr honeyCombReporter) SpecDidComplete(specSummary *types.SpecSummary) {
 
 	if specSummary.State == types.SpecStateFailed {
 		specEvent.FailureMessage = specSummary.Failure.Message
-		specEvent.FailureLocation = specSummary.Failure.ComponentCodeLocation.String()
+		specEvent.ComponentCodeLocation = specSummary.Failure.ComponentCodeLocation.String()
+		specEvent.FailureLocation = specSummary.Failure.Location.String()
+		specEvent.FailureOutput = specSummary.CapturedOutput
 	}
 
 	// intentionally drop all errors to satisfy reporter interface
@@ -47,11 +52,27 @@ func (hr honeyCombReporter) SpecSuiteDidEnd(summary *types.SuiteSummary) {
 	hr.client.SendEvent(*summary, hr.globalTags, hr.customTags)
 }
 
+func (hr honeyCombReporter) BeforeSuiteDidRun(setupSummary *types.SetupSummary) {
+	specEvent := SpecEvent{
+		State:         getTestState(setupSummary.State),
+		ComponentType: getComponentType(setupSummary.ComponentType),
+	}
+
+	if setupSummary.State == types.SpecStateFailed {
+		specEvent.FailureMessage = setupSummary.Failure.Message
+		specEvent.ComponentCodeLocation = setupSummary.Failure.ComponentCodeLocation.String()
+		specEvent.FailureLocation = setupSummary.Failure.Location.String()
+		specEvent.FailureOutput = setupSummary.CapturedOutput
+	}
+
+	hr.client.SendEvent(specEvent, hr.globalTags, hr.customTags)
+}
+
 func (hr honeyCombReporter) SpecSuiteWillBegin(config config.GinkgoConfigType, summary *types.SuiteSummary) {
 }
-func (hr honeyCombReporter) BeforeSuiteDidRun(setupSummary *types.SetupSummary) {}
-func (hr honeyCombReporter) SpecWillRun(specSummary *types.SpecSummary)         {}
-func (hr honeyCombReporter) AfterSuiteDidRun(setupSummary *types.SetupSummary)  {}
+
+func (hr honeyCombReporter) SpecWillRun(specSummary *types.SpecSummary)        {}
+func (hr honeyCombReporter) AfterSuiteDidRun(setupSummary *types.SetupSummary) {}
 
 func (hr *honeyCombReporter) SetGlobalTags(globalTags map[string]interface{}) {
 	hr.globalTags = globalTags
@@ -79,6 +100,31 @@ func getTestState(state types.SpecState) string {
 		return "invalid"
 	default:
 		panic("unknown spec state")
+	}
+}
+
+func getComponentType(thingie types.SpecComponentType) string {
+	switch thingie {
+	case types.SpecComponentTypeInvalid:
+		return "invalid"
+	case types.SpecComponentTypeContainer:
+		return "container"
+	case types.SpecComponentTypeBeforeSuite:
+		return "beforeSuite"
+	case types.SpecComponentTypeAfterSuite:
+		return "afterSuite"
+	case types.SpecComponentTypeBeforeEach:
+		return "beforeEach"
+	case types.SpecComponentTypeJustBeforeEach:
+		return "justBeforeEach"
+	case types.SpecComponentTypeAfterEach:
+		return "afterEach"
+	case types.SpecComponentTypeIt:
+		return "it"
+	case types.SpecComponentTypeMeasure:
+		return "measure"
+	default:
+		panic("unknown spec component")
 	}
 }
 
