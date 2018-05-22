@@ -40,7 +40,7 @@
 			"importpath": "github.com/cloudfoundry/custom-cats-reporters",
 			"repository": "https://github.com/cloudfoundry/custom-cats-reporters",
 			"vcs": "git",
-			"revision": "1693f179fb1513c47a879f14beb643b7ed272e56",
+			"revision": "a4e6676f2c7685377836bb0568f0194ae29451b1",
 			"branch": "master",
 			"notests": true
 		},

@@ -39,6 +39,7 @@ func (hr honeyCombReporter) SpecDidComplete(specSummary *types.SpecSummary) {
 		specEvent.ComponentCodeLocation = specSummary.Failure.ComponentCodeLocation.String()
 		specEvent.FailureLocation = specSummary.Failure.Location.String()
 		specEvent.FailureOutput = specSummary.CapturedOutput
+		specEvent.ComponentType = getComponentType(specSummary.Failure.ComponentType)
 	}
 
 	// intentionally drop all errors to satisfy reporter interface
