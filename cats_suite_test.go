@@ -33,7 +33,6 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
-	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/buildpacks"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/cli_version_check"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
 	"github.com/cloudfoundry/custom-cats-reporters/honeycomb"
@@ -41,6 +40,8 @@ import (
 	"github.com/honeycombio/libhoney-go"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gexec"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 )
 
 const minCliVersion = "6.33.1"
@@ -108,8 +109,9 @@ func TestCATS(t *testing.T) {
 		TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.GetScaledTimeout(1*time.Minute), func() {
-			buildpacks, err := GetBuildpacks()
-			Expect(err).ToNot(HaveOccurred(), "Error getting buildpacks")
+			buildpacksSession := cf.Cf("buildpacks").Wait(Config.DefaultTimeoutDuration())
+			Expect(buildpacksSession).To(Exit(0))
+			buildpacks := string(buildpacksSession.Out.Contents())
 
 			Expect(buildpacks).To(ContainSubstring(Config.GetBinaryBuildpackName()), "Missing the binary buildpack specified in the integration_config.json. There may be other missing buildpacks as well; please double-check your configuration against the buildpacks listed below.")
 			Expect(buildpacks).To(ContainSubstring(Config.GetGoBuildpackName()), "Missing the go buildpack specified in the integration_config.json. There may be other missing buildpacks as well; please double-check your configuration against the buildpacks listed below.")
