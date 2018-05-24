@@ -87,6 +87,7 @@ type config struct {
 	IncludeServiceInstanceSharing     *bool `json:"include_service_instance_sharing"`
 	IncludeSsh                        *bool `json:"include_ssh"`
 	IncludeTasks                      *bool `json:"include_tasks"`
+	IncludeTCPRouting                 *bool `json:"include_tcp_routing"`
 	IncludeV3                         *bool `json:"include_v3"`
 	IncludeZipkin                     *bool `json:"include_zipkin"`
 	IncludeIsolationSegments          *bool `json:"include_isolation_segments"`
@@ -189,6 +190,7 @@ func getDefaults() config {
 	defaults.IncludeTasks = ptrToBool(false)
 	defaults.IncludeZipkin = ptrToBool(false)
 	defaults.IncludeServiceInstanceSharing = ptrToBool(false)
+	defaults.IncludeTCPRouting = ptrToBool(false)
 
 	defaults.UseLogCache = ptrToBool(false)
 
@@ -443,6 +445,9 @@ func validateConfig(config *config) Errors {
 	}
 	if config.IncludeTasks == nil {
 		errs.Add(fmt.Errorf("* 'include_tasks' must not be null"))
+	}
+	if config.IncludeTCPRouting == nil {
+		errs.Add(fmt.Errorf("* 'include_tcp_routing' must not be null"))
 	}
 	if config.IncludeV3 == nil {
 		errs.Add(fmt.Errorf("* 'include_v3' must not be null"))
@@ -882,6 +887,10 @@ func (c *config) GetIncludeServices() bool {
 
 func (c *config) GetIncludeSSO() bool {
 	return *c.IncludeSSO
+}
+
+func (c *config) GetIncludeTCPRouting() bool {
+	return *c.IncludeTCPRouting
 }
 
 func (c *config) GetIncludeV3() bool {

@@ -1,0 +1,8 @@
+{
+	"ImportPath": "code.cloudfoundry.org/routing-acceptance-tests/assets/tcp-droplet-receiver",
+	"GoVersion": "go1.8",
+	"Packages": [
+		"./..."
+	],
+	"Deps": []
+}
