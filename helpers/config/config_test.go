@@ -55,12 +55,15 @@ type testConfig struct {
 	IncludeRoutingIsolationSegments *bool   `json:"include_routing_isolation_segments,omitempty"`
 	IsolationSegmentName            *string `json:"isolation_segment_name,omitempty"`
 	IsolationSegmentDomain          *string `json:"isolation_segment_domain,omitempty"`
-	UnallocatedIPForSecurityGroup   *string `json:"unallocated_ip_for_security_group"`
+
+	UnallocatedIPForSecurityGroup *string `json:"unallocated_ip_for_security_group"`
 
 	IncludeWindows        *bool   `json:"include_windows,omitempty"`
 	UseWindowsTestTask    *bool   `json:"use_windows_test_task,omitempty"`
 	UseWindowsContextPath *bool   `json:"use_windows_context_path,omitempty"`
 	WindowsStack          *string `json:"windows_stack,omitempty"`
+
+	IncludeTCPRouting *bool `json:"include_tcp_routing,omitempty"`
 
 	ReporterConfig *testReporterConfig `json:"reporter_config"`
 }
@@ -140,6 +143,7 @@ type allConfig struct {
 	IncludeWindows                    *bool `json:"include_windows"`
 	IncludeZipkin                     *bool `json:"include_zipkin"`
 	IncludeIsolationSegments          *bool `json:"include_isolation_segments"`
+	IncludeTCPRouting                 *bool `json:"include_tcp_routing"`
 
 	CredhubMode         *string `json:"credhub_mode"`
 	CredhubLocation     *string `json:"credhub_location"`
@@ -265,6 +269,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeCredhubAssisted()).To(BeFalse())
 		Expect(config.GetIncludeCredhubNonAssisted()).To(BeFalse())
 		Expect(config.GetIncludeServiceInstanceSharing()).To(BeFalse())
+		Expect(config.GetIncludeTCPRouting()).To(BeFalse())
 
 		Expect(config.GetIncludeWindows()).To(BeFalse())
 		Expect(config.GetUseWindowsTestTask()).To(BeFalse())
@@ -379,6 +384,7 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_service_instance_sharing' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_ssh' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_tasks' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_tcp_routing' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_v3' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_zipkin' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_isolation_segments' must not be null"))

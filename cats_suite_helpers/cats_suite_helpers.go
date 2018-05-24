@@ -117,6 +117,17 @@ func RoutingDescribe(description string, callback func()) bool {
 	})
 }
 
+func TCPRoutingDescribe(description string, callback func()) bool {
+	return Describe("[tcp routing]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeTCPRouting() {
+				Skip(`Skipping this test because Config.IncludeTCPRouting is set to 'false'.`)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
 func RoutingIsolationSegmentsDescribe(description string, callback func()) bool {
 	return Describe("[routing_isolation_segments]", func() {
 		BeforeEach(func() {
