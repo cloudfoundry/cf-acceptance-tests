@@ -20,9 +20,10 @@ import (
 const DefaultRouterGroupName = "default-tcp"
 
 var _ = TCPRoutingDescribe("TCP Routing", func() {
-	var domainName = fmt.Sprintf("tcp.%s", Config.GetAppsDomain())
+	var domainName string
 
 	BeforeEach(func() {
+		domainName = fmt.Sprintf("tcp.%s", Config.GetAppsDomain())
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 			routerGroupOutput := string(cf.Cf("router-groups").Wait(Config.DefaultTimeoutDuration()).Out.Contents())
 			Expect(routerGroupOutput).To(
