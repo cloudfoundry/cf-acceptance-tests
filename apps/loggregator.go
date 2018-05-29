@@ -67,10 +67,8 @@ var _ = AppsDescribe("loggregator", func() {
 		})
 
 		It("exercises basic loggregator behavior", func() {
-			if Config.GetUseLogCache() {
+			if !Config.GetUseLogCache() {
 				// log cache cli will not emit header unless being run in terminal
-				Consistently(logs, (Config.DefaultTimeoutDuration() + time.Minute)).ShouldNot(Say("(Connected, tailing|Retrieving) logs for app"))
-			} else {
 				Eventually(logs, (Config.DefaultTimeoutDuration() + time.Minute)).Should(Say("(Connected, tailing|Retrieving) logs for app"))
 			}
 
