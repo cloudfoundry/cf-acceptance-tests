@@ -44,6 +44,7 @@ type CatsConfig interface {
 	GetAppsDomain() string
 	GetArtifactsDirectory() string
 	GetBinaryBuildpackName() string
+	GetStaticFileBuildpackName() string
 	GetConfigurableTestPassword() string
 	GetCredHubBrokerClientCredential() string
 	GetCredHubBrokerClientSecret() string

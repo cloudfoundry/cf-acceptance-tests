@@ -22,6 +22,60 @@ const (
 	V3_DEFAULT_MEMORY_LIMIT = "256"
 	V3_JAVA_MEMORY_LIMIT    = "1024"
 )
+func CreateDeployment(appGuid string) string {
+	deploymentPath := fmt.Sprintf("/v3/deployments")
+	deploymentRequestBody := fmt.Sprintf(`{"relationships": {"app": {"data": {"guid": "%s"}}}}`, appGuid)
+	session := cf.Cf("curl", deploymentPath, "-X", "POST", "-d", deploymentRequestBody).Wait(Config.DefaultTimeoutDuration())
+	Expect(session).To(Exit(0))
+	var deployment struct {
+		Guid string `json:"guid"`
+	}
+
+	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+	json.Unmarshal(bytes, &deployment)
+	return deployment.Guid
+}
+
+func ScaleApp(appGuid string, instances int) {
+	scalePath := fmt.Sprintf("/v3/apps/%s/processes/web/actions/scale", appGuid)
+	scaleBody := fmt.Sprintf(`{"instances": "%d"}`, instances)
+	Expect(cf.Cf("curl", scalePath, "-X", "POST", "-d", scaleBody).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+}
+
+func GetRunningInstancesStats(processGuid string) int {
+	processPath := fmt.Sprintf("/v3/processes/%s/stats", processGuid)
+	session := cf.Cf("curl", processPath).Wait(Config.DefaultTimeoutDuration())
+	instancesJson := struct {
+		Resources []struct {
+			Type string `json:"type"`
+			State string `json:"state"`
+		} `json:"resources"`
+	}{}
+
+	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+	json.Unmarshal(bytes, &instancesJson)
+	numRunning := 0
+
+	for _, instance := range instancesJson.Resources {
+		if instance.State == "RUNNING" {
+			numRunning += 1
+		}
+	}
+	return numRunning
+}
+
+func GetProcessGuidForType(appGuid string, processType string) string {
+	processesPath := fmt.Sprintf("/v3/apps/%s/processes?types=%s", appGuid, processType)
+	session := cf.Cf("curl", processesPath).Wait(Config.DefaultTimeoutDuration())
+	processesJSON := struct {
+		Resources []struct {
+			Guid string `json:"guid"`
+		} `json:"resources"`
+	}{}
+	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+	json.Unmarshal(bytes, &processesJSON)
+	return processesJSON.Resources[0].Guid
+}
 
 func AssignDropletToApp(appGuid, dropletGuid string) {
 	appUpdatePath := fmt.Sprintf("/v3/apps/%s/relationships/current_droplet", appGuid)

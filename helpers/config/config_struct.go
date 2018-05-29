@@ -969,6 +969,10 @@ func (c *config) GetBinaryBuildpackName() string {
 	return *c.BinaryBuildpackName
 }
 
+func (c *config) GetStaticFileBuildpackName() string {
+	return *c.StaticFileBuildpackName
+}
+
 func (c *config) GetPersistentAppHost() string {
 	return *c.PersistentAppHost
 }
