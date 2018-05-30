@@ -215,6 +215,86 @@ applications:
 				})
 			})
 
+			Context("when providing 'env'", func() {
+				var (
+					envRedactedMessage  string
+				)
+
+				BeforeEach(func() {
+					manifestToApply = fmt.Sprintf(`
+applications:
+- name: "%s"
+  env:
+    VAR1: value1
+    VAR2: value2
+`, appName)
+					envRedactedMessage = "PRIVATE DATA HIDDEN"
+				})
+
+				FIt("creates an audit.app.apply_manifest event for the applied manifest and redacts the 'env' data", func() {
+					session := cf.Cf("curl", applyEndpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifestToApply, "-i")
+					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					response := session.Out.Contents()
+					Expect(string(response)).To(ContainSubstring("202 Accepted"))
+
+					PollJob(GetJobPath(response))
+
+					workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+						Expect(target).To(Exit(0), "failed targeting")
+
+						eventsQuery := fmt.Sprintf("v2/events?q=type:audit.app.apply_manifest&q=actee:%s", appGUID)
+						session = cf.Cf("curl", eventsQuery, "-X", "GET")
+						bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+
+						type applications struct {
+							env string `json:"env"`
+						}
+
+						type request struct {
+							manifestYAML applications `yaml:"applications"`
+						}
+
+						type metadata struct {
+							Request        request `json:"request"`
+						}
+
+						type entity struct {
+							Type      string   `json:"type"`
+							Actee     string   `json:"actee"`
+							ActeeName string   `json:"actee_name"`
+							Metadata  metadata `json:"metadata"`
+						}
+
+						type event struct {
+							Entity entity `json:"entity"`
+						}
+
+						var resources struct {
+							Events []event `json:"resources"`
+						}
+
+						json.Unmarshal(bytes, &resources)
+
+						Expect(len(resources.Events) > 0).Should(BeTrue())
+						Expect(resources.Events).Should(ContainElement(event{
+							entity{
+								Type:      "audit.app.apply_manifest",
+								Actee:     appGUID,
+								ActeeName: appName,
+								Metadata: metadata{
+									Request: request{
+										manifestYAML: applications{
+											env: envRedactedMessage,
+										},
+									},
+								},
+							},
+						}))
+					})
+				})
+			})
+
 			Context("when specifying no-route", func() {
 				BeforeEach(func() {
 					manifestToApply = fmt.Sprintf(`
