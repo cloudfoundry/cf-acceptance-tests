@@ -563,6 +563,34 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 				Expect(restartApp).To(Exit(0), "failed restarting app")
 
 				Expect(helpers.CurlApp(Config, appName, "/env/VCAP_SERVICES")).Should(ContainSubstring("fake-service://fake-user:fake-password@fake-host:3306/fake-dbname"))
+
+				By("deleting the binding asynchronously")
+				unbindService := cf.Cf(
+					"curl", "-X", "DELETE",
+					fmt.Sprintf("/v2/service_bindings/%s?accepts_incomplete=true", bindingMetadata.GUID)).
+					Wait(Config.DefaultTimeoutDuration())
+				Expect(unbindService).To(Exit(0), "failed to asynchronously unbind service")
+
+				By("waiting for binding to be deleted")
+				Eventually(func() string {
+					bindingDetails := cf.Cf("curl", bindingMetadata.URL).Wait(Config.DefaultTimeoutDuration())
+					Expect(bindingDetails).To(Exit(0), "failed getting service binding details")
+
+					var errorResponse ErrorResponse
+					err := json.Unmarshal(bindingDetails.Out.Contents(), &errorResponse)
+					Expect(err).NotTo(HaveOccurred())
+
+					return errorResponse.ErrorCode
+				}, Config.AsyncServiceOperationTimeoutDuration(), ASYNC_OPERATION_POLL_INTERVAL).Should(Equal("CF-ServiceBindingNotFound"))
+
+				appEnv = cf.Cf("env", appName).Wait(Config.DefaultTimeoutDuration())
+				Expect(appEnv).To(Exit(0), "failed get env for app")
+				Expect(appEnv).ToNot(Say(fmt.Sprintf("credentials")))
+
+				restartApp = cf.Cf("restart", appName).Wait(Config.CfPushTimeoutDuration())
+				Expect(restartApp).To(Exit(0), "failed restarting app")
+
+				Expect(helpers.CurlApp(Config, appName, "/env/VCAP_SERVICES")).ShouldNot(ContainSubstring("fake-service://fake-user:fake-password@fake-host:3306/fake-dbname"))
 			})
 		})
 	})
