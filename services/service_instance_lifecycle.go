@@ -557,7 +557,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 				appEnv := cf.Cf("env", appName).Wait()
 				Expect(appEnv).To(Exit(0), "failed get env for app")
-				Expect(appEnv).To(Say(fmt.Sprintf("credentials")))
+				Expect(appEnv).To(Say("credentials"))
 
 				restartApp := cf.Cf("restart", appName).Wait(Config.CfPushTimeoutDuration())
 				Expect(restartApp).To(Exit(0), "failed restarting app")
@@ -570,6 +570,8 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					fmt.Sprintf("/v2/service_bindings/%s?accepts_incomplete=true", bindingMetadata.GUID)).
 					Wait(Config.DefaultTimeoutDuration())
 				Expect(unbindService).To(Exit(0), "failed to asynchronously unbind service")
+				Expect(unbindService).To(Say("delete"))
+				Expect(unbindService).To(Say("in progress"))
 
 				By("waiting for binding to be deleted")
 				Eventually(func() string {
@@ -585,7 +587,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 				appEnv = cf.Cf("env", appName).Wait(Config.DefaultTimeoutDuration())
 				Expect(appEnv).To(Exit(0), "failed get env for app")
-				Expect(appEnv).ToNot(Say(fmt.Sprintf("credentials")))
+				Expect(appEnv).ToNot(Say("credentials"))
 
 				restartApp = cf.Cf("restart", appName).Wait(Config.CfPushTimeoutDuration())
 				Expect(restartApp).To(Exit(0), "failed restarting app")
