@@ -174,11 +174,13 @@ include_capi_no_bridge
 * `include_detect`: Flag to include tests in the detect group.
 * `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
 * `include_internet_dependent`: Flag to include tests that require the deployment to have internet access.
+* `include_isolation_segments`: Flag to include isolation segment tests.
 * `include_private_docker_registry`: Flag to run tests that rely on a private docker image. [See below](#private-docker).
 * `include_persistent_app`: Flag to run tests in `one_push_many_restarts_test.go`.
 * `include_privileged_container_support`: Flag to include privileged container tests. Requires capi.nsync.diego_privileged_containers and capi.stager.diego_privileged_containers to be enabled for tests to pass.
 * `include_route_services`: Flag to include the route services tests. Diego must be deployed for these tests to pass.
 * `include_routing`: Flag to include the routing tests.
+* `include_routing_isolation_segments`: Flag to include routing isolation segments. [See below](#routing-isolation-segments)
 * `include_security_groups`: Flag to include tests for security groups. [See below](#container-networking-and-application-security-groups)
 * `include_service_discovery`: Flag to include test for the service discovery.
 * `include_services`: Flag to include test for the services API.
@@ -186,10 +188,9 @@ include_capi_no_bridge
 * `include_ssh`: Flag to include tests for Diego container ssh feature.
 * `include_sso`: Flag to include the services tests that integrate with Single Sign On. `include_services` must also be set for tests to run.
 * `include_tasks`: Flag to include the v3 task tests. `include_v3` must also be set for tests to run. The CC API task_creation feature flag must be enabled for these tests to pass.
+* `include_tcp_routing`: Flag to include the TCP Routing tests. These tests are equivalent to the [TCP Routing tests](https://github.com/cloudfoundry/routing-acceptance-tests/blob/master/tcp_routing/tcp_routing_test.go) from the Routing Acceptance Tests.
 * `include_v3`: Flag to include tests for the v3 API.
 * `include_zipkin`: Flag to include tests for Zipkin tracing. `include_routing` must also be set for tests to run. CF must be deployed with `router.tracing.enable_zipkin` set for tests to pass.
-* `include_isolation_segments`: Flag to include isolation segment tests.
-* `include_routing_isolation_segments`: Flag to include routing isolation segments. [See below](#routing-isolation-segments)
 * `use_http`: Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
 * `use_log_cache`: Set to true if you would like CF Acceptance Tests to use Log Cache for reading application logs. Log Cache must be deployed. (default is false)
 * `use_existing_organization`: Set to true when you need to specify an existing organization to use rather than creating a new organization.
@@ -371,18 +372,22 @@ Test Group Name| Description
 --- | ---
 `apps`| Tests the core functionalities of Cloud Foundry: staging, running, logging, routing, buildpacks, etc.  This test group should always pass against a sound Cloud Foundry deployment.
 `backend_compatibility` | Tests interoperability of droplets staged on the DEAs running on Diego
-`detect` | Tests the ability of the platform to detect the correct buildpack for compiling an application if no buildpack is explicitly specified.
-`docker`| Test our ability to run docker containers on diego and that we handle docker metadata correctly.
-`internet_dependent`| This test group tests the feature of being able to specify a buildpack via a Github URL.  As such, this depends on your Cloud Foundry application containers having access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
-`routing`| This package contains routing specific acceptance tests (Context path, wildcard, SSL termination, sticky sessions, zipkin tracing).
-`route_services` | This package contains route services acceptance tests.
-`security_groups`| This test group tests the security groups feature of Cloud Foundry that lets you apply rules-based controls to network traffic in and out of your containers.  These should pass for most recent Cloud Foundry installations.  `cf-release` versions `v200` and up should have support for most security group specs to pass.
-`services`| This test group tests various features related to services, e.g. registering a service broker via the service broker API.  Some of these tests exercise special integrations, such as Single Sign-On authentication; you may wish to run some tests in this package but selectively skip others if you haven't configured the required integrations.
-`ssh`| This test group tests our ability to communicate with Diego apps via ssh, scp, and sftp.
-`v3`| This test group contains tests for the next-generation v3 Cloud Controller API.  As of this writing, the v3 API is not officially supported.
-`isolation_segments` | This test group requires that Diego be deployed with a minimum of 2 cells. One of those cells must have been deployed with a `placement_tag`. If the deployment has been deployed with a routing isolation segment, `isolation_segment_domain` must also be set.
-`routing_isolation_segments` | This group tests that requests to isolated apps are only routed through isolated routers, and vice versa. It requires all of the setup for the isolation segments test suite. Additionally, a minimum of two Gorouter instances must be deployed. One instance must be configured with the property `routing_table_sharding_mode: shared-and-segments`. The other instance must have the properties `routing_table_sharding_mode: segments` and `isolation_segments: [YOUR_PLACEMENT_TAG_HERE]`. The `isolation_segment_name` in the CATs properties must match the `placement_tag` and `isolation_segment`.`isolation_segment_domain` must be set and traffic to that domain should go to the isolated router.
+`capi_experimental` | Tests features of Cloud Foundry that are currently under development. If you don't know what these tests are, you probably don't need to run them.
 `credhub`| Tests CredHub-delivered Secure Service credentials in the service binding. [CredHub configuration][credhub-secure-service-credentials] is required to run these tests. In addition to selecting a `credhub_mode`, `credhub_client` and `credhub_secret` values are required for these tests.
+`detect` | Tests the ability of the platform to detect the correct buildpack for compiling an application if no buildpack is explicitly specified.
+`docker`| Tests our ability to run docker containers on Diego and that we handle docker metadata correctly.
+`internet_dependent`| Tests the feature of being able to specify a buildpack via a Github URL.  As such, this depends on your Cloud Foundry application containers having access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
+`isolation_segments` | This test group requires that Diego be deployed with a minimum of 2 cells. One of those cells must have been deployed with a `placement_tag`. If the deployment has been deployed with a routing isolation segment, `isolation_segment_domain` must also be set. For more information, please refer to the [Isolation Segments documentation](https://docs.cloudfoundry.org/adminguide/isolation-segments.html).
+`route_services` | Tests [Route Services](https://docs.cloudfoundry.org/services/route-services.html) feature of Cloud Foundry.
+`routing`| This package contains routing specific acceptance tests (context paths, wildcards, SSL termination, sticky sessions, and zipkin tracing).
+`routing_isolation_segments` | Tests that requests to isolated apps are only routed through isolated routers, and vice versa. It requires all of the setup for the isolation segments test suite. Additionally, a minimum of two Gorouter instances must be deployed. One instance must be configured with the property `routing_table_sharding_mode: shared-and-segments`. The other instance must have the properties `routing_table_sharding_mode: segments` and `isolation_segments: [YOUR_PLACEMENT_TAG_HERE]`. The `isolation_segment_name` in the CATs properties must match the `placement_tag` and `isolation_segment`.`isolation_segment_domain` must be set and traffic to that domain should go to the isolated router.
+`security_groups`| Tests the [Security Groups](https://docs.cloudfoundry.org/concepts/asg.html) feature of Cloud Foundry.
+`service_discovery`| Tests Service Discovery feature for applications running on Cloud Foundry.
+`services`| Tests various features related to services, e.g. registering a service broker via the service broker API.  Some of these tests exercise special integrations, such as Single Sign-On authentication; you may wish to run some tests in this package but selectively skip others if you haven't configured the required integrations (by setting `include_sso` parameter to `false`in your configuration).
+`ssh`| Tests communication with Diego apps via ssh, scp, and sftp.
+`tasks`| Tests Cloud Foundry's [Tasks](https://docs.cloudfoundry.org/devguide/using-tasks.html) feature.
+`tcp_routing`| Tests TCP Routing Feature of Cloud Foundry. You need to make sure you've set up a TCP domain `tcp.<SYSTEM_DOMAIN>` as described [here](https://docs.cloudfoundry.org/adminguide/enabling-tcp-routing.html). If you are using `bbl` (BOSH Bootloader), TCP domain is set up for you automatically.
+`v3`| This test group contains tests for the next-generation v3 Cloud Controller API.
 
 ## Contributing
 
