@@ -1,5 +1,5 @@
 # CF Acceptance Tests (CATs)
-This suite exercises a [Cloud Foundry](https://github.com/cloudfoundry/cf-release)
+This suite exercises a [Cloud Foundry](https://github.com/cloudfoundry/cf-deployment)
 deployment using the `cf` CLI and `curl`.
 It is scoped to testing user-facing,
 end-to-end features.
