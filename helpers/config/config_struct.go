@@ -67,31 +67,30 @@ type config struct {
 	RubyBuildpackName       *string `json:"ruby_buildpack_name"`
 	StaticFileBuildpackName *string `json:"staticfile_buildpack_name"`
 
-	IncludeApps                       *bool `json:"include_apps"`
-	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
-	IncludeCapiExperimental           *bool `json:"include_capi_experimental"`
-	IncludeCapiNoBridge               *bool `json:"include_capi_no_bridge"`
-	IncludeContainerNetworking        *bool `json:"include_container_networking"`
-	IncludeDetect                     *bool `json:"include_detect"`
-	IncludeDocker                     *bool `json:"include_docker"`
-	IncludeInternetDependent          *bool `json:"include_internet_dependent"`
-	IncludePersistentApp              *bool `json:"include_persistent_app"`
-	IncludePrivateDockerRegistry      *bool `json:"include_private_docker_registry"`
-	IncludePrivilegedContainerSupport *bool `json:"include_privileged_container_support"`
-	IncludeRouteServices              *bool `json:"include_route_services"`
-	IncludeRouting                    *bool `json:"include_routing"`
-	IncludeSSO                        *bool `json:"include_sso"`
-	IncludeSecurityGroups             *bool `json:"include_security_groups"`
-	IncludeServiceDiscovery           *bool `json:"include_service_discovery"`
-	IncludeServices                   *bool `json:"include_services"`
-	IncludeServiceInstanceSharing     *bool `json:"include_service_instance_sharing"`
-	IncludeSsh                        *bool `json:"include_ssh"`
-	IncludeTasks                      *bool `json:"include_tasks"`
-	IncludeTCPRouting                 *bool `json:"include_tcp_routing"`
-	IncludeV3                         *bool `json:"include_v3"`
-	IncludeZipkin                     *bool `json:"include_zipkin"`
-	IncludeIsolationSegments          *bool `json:"include_isolation_segments"`
-	IncludeRoutingIsolationSegments   *bool `json:"include_routing_isolation_segments"`
+	IncludeApps                     *bool `json:"include_apps"`
+	IncludeBackendCompatiblity      *bool `json:"include_backend_compatibility"`
+	IncludeCapiExperimental         *bool `json:"include_capi_experimental"`
+	IncludeCapiNoBridge             *bool `json:"include_capi_no_bridge"`
+	IncludeContainerNetworking      *bool `json:"include_container_networking"`
+	IncludeDetect                   *bool `json:"include_detect"`
+	IncludeDocker                   *bool `json:"include_docker"`
+	IncludeInternetDependent        *bool `json:"include_internet_dependent"`
+	IncludePersistentApp            *bool `json:"include_persistent_app"`
+	IncludePrivateDockerRegistry    *bool `json:"include_private_docker_registry"`
+	IncludeRouteServices            *bool `json:"include_route_services"`
+	IncludeRouting                  *bool `json:"include_routing"`
+	IncludeSSO                      *bool `json:"include_sso"`
+	IncludeSecurityGroups           *bool `json:"include_security_groups"`
+	IncludeServiceDiscovery         *bool `json:"include_service_discovery"`
+	IncludeServices                 *bool `json:"include_services"`
+	IncludeServiceInstanceSharing   *bool `json:"include_service_instance_sharing"`
+	IncludeSsh                      *bool `json:"include_ssh"`
+	IncludeTasks                    *bool `json:"include_tasks"`
+	IncludeTCPRouting               *bool `json:"include_tcp_routing"`
+	IncludeV3                       *bool `json:"include_v3"`
+	IncludeZipkin                   *bool `json:"include_zipkin"`
+	IncludeIsolationSegments        *bool `json:"include_isolation_segments"`
+	IncludeRoutingIsolationSegments *bool `json:"include_routing_isolation_segments"`
 
 	UseLogCache *bool `json:"use_log_cache"`
 
@@ -178,7 +177,6 @@ func getDefaults() config {
 	defaults.IncludeDocker = ptrToBool(false)
 	defaults.IncludeInternetDependent = ptrToBool(false)
 	defaults.IncludeIsolationSegments = ptrToBool(false)
-	defaults.IncludePrivilegedContainerSupport = ptrToBool(false)
 	defaults.IncludePrivateDockerRegistry = ptrToBool(false)
 	defaults.IncludeRouteServices = ptrToBool(false)
 	defaults.IncludeRoutingIsolationSegments = ptrToBool(false)
@@ -415,9 +413,6 @@ func validateConfig(config *config) Errors {
 	}
 	if config.IncludePersistentApp == nil {
 		errs.Add(fmt.Errorf("* 'include_persistent_app' must not be null"))
-	}
-	if config.IncludePrivilegedContainerSupport == nil {
-		errs.Add(fmt.Errorf("* 'include_privileged_container_support' must not be null"))
 	}
 	if config.IncludeRouteServices == nil {
 		errs.Add(fmt.Errorf("* 'include_route_services' must not be null"))
@@ -871,10 +866,6 @@ func (c *config) GetIncludeTasks() bool {
 
 func (c *config) GetIncludePrivateDockerRegistry() bool {
 	return *c.IncludePrivateDockerRegistry
-}
-
-func (c *config) GetIncludePrivilegedContainerSupport() bool {
-	return *c.IncludePrivilegedContainerSupport
 }
 
 func (c *config) GetIncludeSecurityGroups() bool {

@@ -123,7 +123,6 @@ cat > integration_config.json <<EOF
   "include_isolation_segments": false,
   "include_persistent_app": false,
   "include_private_docker_registry": false,
-  "include_privileged_container_support": false,
   "include_route_services": false,
   "include_routing": true,
   "include_routing_isolation_segments": false,
@@ -177,7 +176,6 @@ include_capi_no_bridge
 * `include_isolation_segments`: Flag to include isolation segment tests.
 * `include_private_docker_registry`: Flag to run tests that rely on a private docker image. [See below](#private-docker).
 * `include_persistent_app`: Flag to run tests in `one_push_many_restarts_test.go`.
-* `include_privileged_container_support`: Flag to include privileged container tests. Requires capi.nsync.diego_privileged_containers and capi.stager.diego_privileged_containers to be enabled for tests to pass.
 * `include_route_services`: Flag to include the route services tests. Diego must be deployed for these tests to pass.
 * `include_routing`: Flag to include the routing tests.
 * `include_routing_isolation_segments`: Flag to include routing isolation segments. [See below](#routing-isolation-segments)

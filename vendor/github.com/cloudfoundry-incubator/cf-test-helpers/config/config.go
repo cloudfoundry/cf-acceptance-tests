@@ -68,20 +68,19 @@ type Config struct {
 	PhpBuildpackName        string `json:"php_buildpack_name"`
 	BinaryBuildpackName     string `json:"binary_buildpack_name"`
 
-	IncludeApps                       bool `json:"include_apps"`
-	IncludeBackendCompatiblity        bool `json:"include_backend_compatibility"`
-	IncludeDetect                     bool `json:"include_detect"`
-	IncludeDocker                     bool `json:"include_docker"`
-	IncludeInternetDependent          bool `json:"include_internet_dependent"`
-	IncludeRouteServices              bool `json:"include_route_services"`
-	IncludeRouting                    bool `json:"include_routing"`
-	IncludeSecurityGroups             bool `json:"include_security_groups"`
-	IncludeServices                   bool `json:"include_services"`
-	IncludeSsh                        bool `json:"include_ssh"`
-	IncludeV3                         bool `json:"include_v3"`
-	IncludeTasks                      bool `json:"include_tasks"`
-	IncludePrivilegedContainerSupport bool `json:"include_privileged_container_support"`
-	IncludeSSO                        bool `json:"include_sso"`
+	IncludeApps                bool `json:"include_apps"`
+	IncludeBackendCompatiblity bool `json:"include_backend_compatibility"`
+	IncludeDetect              bool `json:"include_detect"`
+	IncludeDocker              bool `json:"include_docker"`
+	IncludeInternetDependent   bool `json:"include_internet_dependent"`
+	IncludeRouteServices       bool `json:"include_route_services"`
+	IncludeRouting             bool `json:"include_routing"`
+	IncludeSecurityGroups      bool `json:"include_security_groups"`
+	IncludeServices            bool `json:"include_services"`
+	IncludeSsh                 bool `json:"include_ssh"`
+	IncludeV3                  bool `json:"include_v3"`
+	IncludeTasks               bool `json:"include_tasks"`
+	IncludeSSO                 bool `json:"include_sso"`
 
 	NamePrefix string `json:"name_prefix"`
 }

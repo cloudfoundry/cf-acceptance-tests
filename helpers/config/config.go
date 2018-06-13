@@ -17,7 +17,6 @@ type CatsConfig interface {
 	GetIncludeInternetDependent() bool
 	GetIncludePrivateDockerRegistry() bool
 	GetIncludePersistentApp() bool
-	GetIncludePrivilegedContainerSupport() bool
 	GetIncludeRouteServices() bool
 	GetIncludeRouting() bool
 	GetIncludeZipkin() bool

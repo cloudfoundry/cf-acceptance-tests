@@ -120,30 +120,29 @@ type allConfig struct {
 
 	ReporterConfig *testReporterConfig `json:"reporter_config"`
 
-	IncludeApps                       *bool `json:"include_apps"`
-	IncludeBackendCompatiblity        *bool `json:"include_backend_compatibility"`
-	IncludeCapiExperimental           *bool `json:"include_capi_experimental"`
-	IncludeCapiNoBridge               *bool `json:"include_capi_no_bridge"`
-	IncludeContainerNetworking        *bool `json:"include_container_networking"`
-	IncludeDetect                     *bool `json:"include_detect"`
-	IncludeDocker                     *bool `json:"include_docker"`
-	IncludeInternetDependent          *bool `json:"include_internet_dependent"`
-	IncludePrivateDockerRegistry      *bool `json:"include_private_docker_registry"`
-	IncludePersistentApp              *bool `json:"include_persistent_app"`
-	IncludePrivilegedContainerSupport *bool `json:"include_privileged_container_support"`
-	IncludeRouteServices              *bool `json:"include_route_services"`
-	IncludeRouting                    *bool `json:"include_routing"`
-	IncludeSSO                        *bool `json:"include_sso"`
-	IncludeSecurityGroups             *bool `json:"include_security_groups"`
-	IncludeServices                   *bool `json:"include_services"`
-	IncludeServiceInstanceSharing     *bool `json:"include_service_instance_sharing"`
-	IncludeSsh                        *bool `json:"include_ssh"`
-	IncludeTasks                      *bool `json:"include_tasks"`
-	IncludeV3                         *bool `json:"include_v3"`
-	IncludeWindows                    *bool `json:"include_windows"`
-	IncludeZipkin                     *bool `json:"include_zipkin"`
-	IncludeIsolationSegments          *bool `json:"include_isolation_segments"`
-	IncludeTCPRouting                 *bool `json:"include_tcp_routing"`
+	IncludeApps                   *bool `json:"include_apps"`
+	IncludeBackendCompatiblity    *bool `json:"include_backend_compatibility"`
+	IncludeCapiExperimental       *bool `json:"include_capi_experimental"`
+	IncludeCapiNoBridge           *bool `json:"include_capi_no_bridge"`
+	IncludeContainerNetworking    *bool `json:"include_container_networking"`
+	IncludeDetect                 *bool `json:"include_detect"`
+	IncludeDocker                 *bool `json:"include_docker"`
+	IncludeInternetDependent      *bool `json:"include_internet_dependent"`
+	IncludePrivateDockerRegistry  *bool `json:"include_private_docker_registry"`
+	IncludePersistentApp          *bool `json:"include_persistent_app"`
+	IncludeRouteServices          *bool `json:"include_route_services"`
+	IncludeRouting                *bool `json:"include_routing"`
+	IncludeSSO                    *bool `json:"include_sso"`
+	IncludeSecurityGroups         *bool `json:"include_security_groups"`
+	IncludeServices               *bool `json:"include_services"`
+	IncludeServiceInstanceSharing *bool `json:"include_service_instance_sharing"`
+	IncludeSsh                    *bool `json:"include_ssh"`
+	IncludeTasks                  *bool `json:"include_tasks"`
+	IncludeV3                     *bool `json:"include_v3"`
+	IncludeWindows                *bool `json:"include_windows"`
+	IncludeZipkin                 *bool `json:"include_zipkin"`
+	IncludeIsolationSegments      *bool `json:"include_isolation_segments"`
+	IncludeTCPRouting             *bool `json:"include_tcp_routing"`
 
 	CredhubMode         *string `json:"credhub_mode"`
 	CredhubLocation     *string `json:"credhub_location"`
@@ -262,7 +261,6 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeSsh()).To(BeFalse())
 		Expect(config.GetIncludeIsolationSegments()).To(BeFalse())
 		Expect(config.GetIncludePrivateDockerRegistry()).To(BeFalse())
-		Expect(config.GetIncludePrivilegedContainerSupport()).To(BeFalse())
 		Expect(config.GetIncludeZipkin()).To(BeFalse())
 		Expect(config.GetIncludeSSO()).To(BeFalse())
 		Expect(config.GetIncludeTasks()).To(BeFalse())
@@ -374,7 +372,6 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_internet_dependent' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_persistent_app' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_private_docker_registry' must not be null"))
-			Expect(err.Error()).To(ContainSubstring("'include_privileged_container_support' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_route_services' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_routing' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_container_networking' must not be null"))
