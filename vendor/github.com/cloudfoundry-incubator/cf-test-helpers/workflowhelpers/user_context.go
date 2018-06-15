@@ -9,11 +9,11 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/commandstarter"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/internal"
 	workflowhelpersinternal "github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers/internal"
-	"github.com/onsi/ginkgo"
 	ginkgoconfig "github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
+	"github.com/onsi/ginkgo"
 )
 
 type userValues interface {
@@ -69,15 +69,12 @@ func (uc UserContext) Login() {
 		args = append(args, "--skip-ssl-validation")
 	}
 	session := internal.Cf(uc.CommandStarter, args...)
-	EventuallyWithOffset(1, session, uc.Timeout).Should(gbytes.Say("api endpoint"))
 	EventuallyWithOffset(1, session, uc.Timeout).Should(Exit(0))
 
 	redactor := internal.NewRedactor(uc.TestUser.Password())
 	redactingReporter := internal.NewRedactingReporter(ginkgo.GinkgoWriter, redactor)
 
 	session = workflowhelpersinternal.CfAuth(uc.CommandStarter, redactingReporter, uc.TestUser.Username(), uc.TestUser.Password())
-	EventuallyWithOffset(1, session, uc.Timeout).Should(gbytes.Say("Authenticating..."))
-	EventuallyWithOffset(1, session, uc.Timeout).Should(gbytes.Say("OK"))
 	EventuallyWithOffset(1, session, uc.Timeout).Should(Exit(0))
 }
 
