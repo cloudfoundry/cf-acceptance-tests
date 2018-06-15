@@ -37,6 +37,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/cloudfoundry-incubator/uaago",
+			"repository": "https://github.com/cloudfoundry-incubator/uaago",
+			"vcs": "git",
+			"revision": "be6a0cef0130f933079e4c958abac60fadea0c85",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "github.com/cloudfoundry/custom-cats-reporters",
 			"repository": "https://github.com/cloudfoundry/custom-cats-reporters",
 			"vcs": "git",
@@ -82,8 +90,8 @@
 			"importpath": "github.com/cloudfoundry/noaa",
 			"repository": "https://github.com/cloudfoundry/noaa",
 			"vcs": "git",
-			"revision": "f8b6ee8f26675363c07e7c6c4bdb85f079277ecf",
-			"branch": "HEAD",
+			"revision": "5beab4261046115d89e363902e75155f7370849c",
+			"branch": "master",
 			"notests": true
 		},
 		{

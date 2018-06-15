@@ -11,8 +11,8 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
-	"github.com/cloudfoundry/noaa"
-	"github.com/cloudfoundry/noaa/events"
+	"github.com/cloudfoundry/noaa/consumer"
+	"github.com/cloudfoundry/sonde-go/events"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
@@ -49,30 +49,25 @@ var _ = WindowsDescribe("Metrics", func() {
 	})
 
 	It("shows logs and metrics", func() {
-		noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.GetSkipSSLValidation()}, nil)
-		msgChan := make(chan *events.Envelope, 100000)
-		errorChan := make(chan error)
-		stopchan := make(chan struct{})
+		noaaConnection := consumer.New(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.GetSkipSSLValidation()}, nil)
 
-		go noaaConnection.Firehose(random_name.CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
-		defer close(stopchan)
+		msgChan, errorChan := noaaConnection.Firehose(random_name.CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken())
+		defer noaaConnection.Close()
 
 		Eventually(func() string {
 			return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
 		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Muahaha"))
 
 		Eventually(msgChan, Config.DefaultTimeoutDuration()).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
+		Expect(errorChan).NotTo(Receive())
 	})
 
 	It("shows container metrics", func() {
 		appGuid := strings.TrimSpace(string(cf.Cf("app", appName, "--guid").Wait(Config.DefaultTimeoutDuration()).Out.Contents()))
 
-		noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.GetSkipSSLValidation()}, nil)
-		msgChan := make(chan *events.Envelope, 100000)
-		errorChan := make(chan error)
-		stopchan := make(chan struct{})
-		go noaaConnection.Firehose(random_name.CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
-		defer close(stopchan)
+		noaaConnection := consumer.New(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.GetSkipSSLValidation()}, nil)
+		msgChan, errorChan := noaaConnection.Firehose(random_name.CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken())
+		defer noaaConnection.Close()
 
 		containerMetrics := make([]*events.ContainerMetric, 2)
 		Eventually(func() bool {
