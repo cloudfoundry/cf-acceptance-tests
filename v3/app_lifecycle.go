@@ -145,9 +145,11 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 			lastUsageEventGuid := LastAppUsageEventGuid(TestSetup)
 			StartApp(appGuid)
 
+			// Because v3 start returns immediately, the curl returning "ok" is the signal that Push has finished
+			// So we're using the Push timeout here
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, webProcess.Name)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("ok"))
+			}, Config.CfPushTimeoutDuration()).Should(ContainSubstring("ok"))
 
 			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 
