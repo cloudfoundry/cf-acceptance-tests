@@ -29,11 +29,6 @@ type Config struct {
 	UseExistingSpace bool   `json:"use_existing_space"`
 	ExistingSpace    string `json:"existing_space"`
 
-	PersistentAppHost      string `json:"persistent_app_host"`
-	PersistentAppSpace     string `json:"persistent_app_space"`
-	PersistentAppOrg       string `json:"persistent_app_org"`
-	PersistentAppQuotaName string `json:"persistent_app_quota_name"`
-
 	SkipSSLValidation bool   `json:"skip_ssl_validation"`
 	Backend           string `json:"backend"`
 
@@ -86,11 +81,6 @@ type Config struct {
 }
 
 var defaults = Config{
-	PersistentAppHost:      "CATS-persistent-app",
-	PersistentAppSpace:     "CATS-persistent-space",
-	PersistentAppOrg:       "CATS-persistent-org",
-	PersistentAppQuotaName: "CATS-persistent-quota",
-
 	StaticFileBuildpackName: "staticfile_buildpack",
 	JavaBuildpackName:       "java_buildpack",
 	RubyBuildpackName:       "ruby_buildpack",
@@ -234,16 +224,6 @@ func (c *Config) GetSkipSSLValidation() bool {
 
 func (c *Config) GetArtifactsDirectory() string {
 	return c.ArtifactsDirectory
-}
-
-func (c *Config) GetPersistentAppSpace() string {
-	return c.PersistentAppSpace
-}
-func (c *Config) GetPersistentAppOrg() string {
-	return c.PersistentAppOrg
-}
-func (c *Config) GetPersistentAppQuotaName() string {
-	return c.PersistentAppQuotaName
 }
 
 func (c *Config) GetNamePrefix() string {

@@ -244,17 +244,6 @@ func TasksDescribe(description string, callback func()) bool {
 	})
 }
 
-func PersistentAppDescribe(description string, callback func()) bool {
-	return Describe("[persistent_app]", func() {
-		BeforeEach(func() {
-			if !Config.GetIncludePersistentApp() {
-				Skip(`Skipping this test because Config.IncludePersistentApp is set to 'false'.`)
-			}
-		})
-		Describe(description, callback)
-	})
-}
-
 func GuidForAppName(appName string) string {
 	cfApp := cf.Cf("app", appName, "--guid")
 	Expect(cfApp.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))

@@ -35,11 +35,6 @@ type config struct {
 
 	ConfigurableTestPassword *string `json:"test_password"`
 
-	PersistentAppHost      *string `json:"persistent_app_host"`
-	PersistentAppOrg       *string `json:"persistent_app_org"`
-	PersistentAppQuotaName *string `json:"persistent_app_quota_name"`
-	PersistentAppSpace     *string `json:"persistent_app_space"`
-
 	IsolationSegmentName   *string `json:"isolation_segment_name"`
 	IsolationSegmentDomain *string `json:"isolation_segment_domain"`
 
@@ -75,7 +70,6 @@ type config struct {
 	IncludeDetect                   *bool `json:"include_detect"`
 	IncludeDocker                   *bool `json:"include_docker"`
 	IncludeInternetDependent        *bool `json:"include_internet_dependent"`
-	IncludePersistentApp            *bool `json:"include_persistent_app"`
 	IncludePrivateDockerRegistry    *bool `json:"include_private_docker_registry"`
 	IncludeRouteServices            *bool `json:"include_route_services"`
 	IncludeRouting                  *bool `json:"include_routing"`
@@ -141,12 +135,6 @@ func ptrToFloat(f float64) *float64 {
 }
 
 func getDefaults() config {
-	defaults.PersistentAppHost = ptrToString("CATS-persistent-app")
-
-	defaults.PersistentAppOrg = ptrToString("CATS-persistent-org")
-	defaults.PersistentAppQuotaName = ptrToString("CATS-persistent-quota")
-	defaults.PersistentAppSpace = ptrToString("CATS-persistent-space")
-
 	defaults.IsolationSegmentName = ptrToString("")
 	defaults.IsolationSegmentDomain = ptrToString("")
 
@@ -162,7 +150,6 @@ func getDefaults() config {
 
 	defaults.IncludeApps = ptrToBool(true)
 	defaults.IncludeDetect = ptrToBool(true)
-	defaults.IncludePersistentApp = ptrToBool(true)
 	defaults.IncludeRouting = ptrToBool(true)
 	defaults.IncludeV3 = ptrToBool(true)
 
@@ -306,18 +293,6 @@ func validateConfig(config *config) Errors {
 	if config.ConfigurableTestPassword == nil {
 		errs.Add(fmt.Errorf("* 'test_password' must not be null"))
 	}
-	if config.PersistentAppHost == nil {
-		errs.Add(fmt.Errorf("* 'persistent_app_host' must not be null"))
-	}
-	if config.PersistentAppOrg == nil {
-		errs.Add(fmt.Errorf("* 'persistent_app_org' must not be null"))
-	}
-	if config.PersistentAppQuotaName == nil {
-		errs.Add(fmt.Errorf("* 'persistent_app_quota_name' must not be null"))
-	}
-	if config.PersistentAppSpace == nil {
-		errs.Add(fmt.Errorf("* 'persistent_app_space' must not be null"))
-	}
 	if config.IsolationSegmentName == nil {
 		errs.Add(fmt.Errorf("* 'isolation_segment_name' must not be null"))
 	}
@@ -410,9 +385,6 @@ func validateConfig(config *config) Errors {
 	}
 	if config.IncludePrivateDockerRegistry == nil {
 		errs.Add(fmt.Errorf("* 'include_private_docker_registry' must not be null"))
-	}
-	if config.IncludePersistentApp == nil {
-		errs.Add(fmt.Errorf("* 'include_persistent_app' must not be null"))
 	}
 	if config.IncludeRouteServices == nil {
 		errs.Add(fmt.Errorf("* 'include_route_services' must not be null"))
@@ -742,16 +714,6 @@ func (c *config) GetArtifactsDirectory() string {
 	return *c.ArtifactsDirectory
 }
 
-func (c *config) GetPersistentAppSpace() string {
-	return *c.PersistentAppSpace
-}
-func (c *config) GetPersistentAppOrg() string {
-	return *c.PersistentAppOrg
-}
-func (c *config) GetPersistentAppQuotaName() string {
-	return *c.PersistentAppQuotaName
-}
-
 func (c *config) GetIsolationSegmentName() string {
 	return *c.IsolationSegmentName
 }
@@ -822,10 +784,6 @@ func (c *config) GetIncludeSsh() bool {
 
 func (c *config) GetIncludeApps() bool {
 	return *c.IncludeApps
-}
-
-func (c *config) GetIncludePersistentApp() bool {
-	return *c.IncludePersistentApp
 }
 
 func (c *config) GetIncludeBackendCompatiblity() bool {
@@ -962,10 +920,6 @@ func (c *config) GetBinaryBuildpackName() string {
 
 func (c *config) GetStaticFileBuildpackName() string {
 	return *c.StaticFileBuildpackName
-}
-
-func (c *config) GetPersistentAppHost() string {
-	return *c.PersistentAppHost
 }
 
 func (c *config) GetPrivateDockerRegistryImage() string {

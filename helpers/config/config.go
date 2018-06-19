@@ -16,7 +16,6 @@ type CatsConfig interface {
 	GetIncludeDocker() bool
 	GetIncludeInternetDependent() bool
 	GetIncludePrivateDockerRegistry() bool
-	GetIncludePersistentApp() bool
 	GetIncludeRouteServices() bool
 	GetIncludeRouting() bool
 	GetIncludeZipkin() bool
@@ -64,10 +63,6 @@ type CatsConfig interface {
 	GetPrivateDockerRegistryImage() string
 	GetPrivateDockerRegistryUsername() string
 	GetPrivateDockerRegistryPassword() string
-	GetPersistentAppHost() string
-	GetPersistentAppOrg() string
-	GetPersistentAppQuotaName() string
-	GetPersistentAppSpace() string
 	GetRubyBuildpackName() string
 	GetUnallocatedIPForSecurityGroup() string
 	Protocol() string

@@ -121,7 +121,6 @@ cat > integration_config.json <<EOF
   "include_docker": false,
   "include_internet_dependent": false,
   "include_isolation_segments": false,
-  "include_persistent_app": false,
   "include_private_docker_registry": false,
   "include_route_services": false,
   "include_routing": true,
@@ -144,7 +143,6 @@ Only the following test groups are run by default:
 ```
 include_apps
 include_detect
-include_persistent_app
 include_routing
 include_v3
 include_capi_no_bridge
@@ -175,7 +173,6 @@ include_capi_no_bridge
 * `include_internet_dependent`: Flag to include tests that require the deployment to have internet access.
 * `include_isolation_segments`: Flag to include isolation segment tests.
 * `include_private_docker_registry`: Flag to run tests that rely on a private docker image. [See below](#private-docker).
-* `include_persistent_app`: Flag to run tests in `one_push_many_restarts_test.go`.
 * `include_route_services`: Flag to include the route services tests. Diego must be deployed for these tests to pass.
 * `include_routing`: Flag to include the routing tests.
 * `include_routing_isolation_segments`: Flag to include routing isolation segments. [See below](#routing-isolation-segments)
@@ -197,10 +194,6 @@ include_capi_no_bridge
 * `keep_user_at_suite_end`: If using an existing user (see above), set this to `true` unless you are okay having your existing user being deleted at the end. You can also set this to `true` when not using an existing user if you want to leave the temporary user around for debugging purposes after the test teardown.
 * `existing_user`: Name of the existing user to use.
 * `existing_user_password`: Password for the existing user to use.
-* `persistent_app_host`: [See below](#persistent-app-test-setup).
-* `persistent_app_space`: [See below](#persistent-app-test-setup).
-* `persistent_app_org`: [See below](#persistent-app-test-setup).
-* `persistent_app_quota_name`: [See below](#persistent-app-test-setup).
 * `artifacts_directory`: If set, `cf` CLI trace output from test runs will be captured in files and placed in this directory. [See below](#capturing-test-output) for more.
 * `default_timeout`: Default time (in seconds) to wait for polling assertions that wait for asynchronous results.
 * `cf_push_timeout`: Default time (in seconds) to wait for `cf push` commands to succeed.
@@ -229,9 +222,6 @@ include_capi_no_bridge
 * `use_windows_test_task`: Flag to include the tasks tests on Windows cells. Default is `false`.
 * `use_windows_context_path`: Flag to include the Windows context path routing tests. Default is `false`.
 * `windows_stack`: Windows stack to run tests against. Must be either `windows2012R2` or `windows2016`. Defaults to `windows2012R2`.
-
-#### Persistent App Test Setup
-The tests in `one_push_many_restarts_test.go` operate on an app that is supposed to persist between runs of the CF Acceptance tests. If these tests are run, they will create an org, space, and quota and push the app to this space. The test config will provide default names for these entities, but to configure them, set values for `persistent_app_host`, `persistent_app_space`, `persistent_app_org`, and `persistent_app_quota_name`.
 
 #### Buildpack Names
 Many tests specify a buildpack when pushing an app, so that on diego the app staging process completes in less time. The default names for the buildpacks are as follows; if you have buildpacks with different names, you can override them by setting different names:

@@ -86,11 +86,6 @@ type allConfig struct {
 
 	ConfigurableTestPassword *string `json:"test_password"`
 
-	PersistentAppHost      *string `json:"persistent_app_host"`
-	PersistentAppOrg       *string `json:"persistent_app_org"`
-	PersistentAppQuotaName *string `json:"persistent_app_quota_name"`
-	PersistentAppSpace     *string `json:"persistent_app_space"`
-
 	IsolationSegmentName   *string `json:"isolation_segment_name"`
 	IsolationSegmentDomain *string `json:"isolation_segment_domain"`
 
@@ -129,7 +124,6 @@ type allConfig struct {
 	IncludeDocker                 *bool `json:"include_docker"`
 	IncludeInternetDependent      *bool `json:"include_internet_dependent"`
 	IncludePrivateDockerRegistry  *bool `json:"include_private_docker_registry"`
-	IncludePersistentApp          *bool `json:"include_persistent_app"`
 	IncludeRouteServices          *bool `json:"include_route_services"`
 	IncludeRouting                *bool `json:"include_routing"`
 	IncludeSSO                    *bool `json:"include_sso"`
@@ -233,12 +227,6 @@ var _ = Describe("Config", func() {
 		config, err := cfg.NewCatsConfig(requiredCfgFilePath)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(config.GetIncludeApps()).To(BeTrue())
-		Expect(config.GetIncludePersistentApp()).To(BeTrue())
-		Expect(config.GetPersistentAppHost()).To(Equal("CATS-persistent-app"))
-
-		Expect(config.GetPersistentAppOrg()).To(Equal("CATS-persistent-org"))
-		Expect(config.GetPersistentAppQuotaName()).To(Equal("CATS-persistent-quota"))
-		Expect(config.GetPersistentAppSpace()).To(Equal("CATS-persistent-space"))
 
 		Expect(config.GetIsolationSegmentName()).To(Equal(""))
 		Expect(config.GetIsolationSegmentDomain()).To(Equal(""))
@@ -330,11 +318,6 @@ var _ = Describe("Config", func() {
 
 			Expect(err.Error()).To(ContainSubstring("'test_password' must not be null"))
 
-			Expect(err.Error()).To(ContainSubstring("'persistent_app_host' must not be null"))
-			Expect(err.Error()).To(ContainSubstring("'persistent_app_org' must not be null"))
-			Expect(err.Error()).To(ContainSubstring("'persistent_app_quota_name' must not be null"))
-			Expect(err.Error()).To(ContainSubstring("'persistent_app_space' must not be null"))
-
 			Expect(err.Error()).To(ContainSubstring("'isolation_segment_name' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'isolation_segment_domain' must not be null"))
 
@@ -370,7 +353,6 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_detect' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_docker' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_internet_dependent' must not be null"))
-			Expect(err.Error()).To(ContainSubstring("'include_persistent_app' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_private_docker_registry' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_route_services' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_routing' must not be null"))
