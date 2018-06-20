@@ -1,6 +1,6 @@
 // +build !noInternet,!noDocker
 
-package docker
+package capi_experimental
 
 import (
 	"encoding/json"
@@ -10,17 +10,17 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/commandreporter"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
+var _ = CapiExperimentalDescribe("Private Docker Registry Application Lifecycle", func() {
 	var (
 		appName  string
 		username string
@@ -81,38 +81,16 @@ var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
 		Eventually(cf.Cf("delete", appName, "-f"), Config.DefaultTimeoutDuration()).Should(Exit(0))
 	})
 
-	Context("when the correct username and password are given", func() {
+	Context("when an incorrect username and password are given", func() {
 		BeforeEach(func() {
-			username = Config.GetPrivateDockerRegistryUsername()
-			password = Config.GetPrivateDockerRegistryPassword()
+			username = Config.GetPrivateDockerRegistryUsername() + "wrong"
+			password = Config.GetPrivateDockerRegistryPassword() + "wrong"
 		})
 
-		It("starts the docker app successfully", func() {
-			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
-			Eventually(cf.Cf("map-route", appName, Config.GetAppsDomain(), "--hostname", appName), Config.DefaultTimeoutDuration()).Should(Exit(0))
-			Eventually(func() string {
-				return helpers.CurlApp(Config, appName, "/env/INSTANCE_INDEX")
-			}, Config.DefaultTimeoutDuration()).Should(Equal("0"))
-		})
-
-		It("can run a task", func() {
-			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
-			taskName := appName + "-task"
-			createCommand := cf.Cf("run-task", appName, "exit 0", "--name", taskName).Wait(Config.DefaultTimeoutDuration())
-			Expect(createCommand).To(Exit(0))
-			Eventually(func() string {
-				listCommand := cf.Cf("tasks", appName).Wait(Config.DefaultTimeoutDuration())
-				Expect(listCommand).To(Exit(0))
-				listOutput := string(listCommand.Out.Contents())
-				lines := strings.Split(listOutput, "\n")
-				if len(lines) != 6 {
-					return ""
-				}
-
-				fields := strings.Fields(lines[4])
-				Expect(fields[1]).To(Equal(taskName))
-				return fields[2]
-			}, Config.DefaultTimeoutDuration(), 2*time.Second).Should(Equal("SUCCEEDED"))
+		It("fails to start the docker app since the credentials are invalid", func() {
+			session := cf.Cf("start", appName)
+			Eventually(session, Config.CfPushTimeoutDuration()).Should(gbytes.Say("(invalid username/password|[Uu]nauthorized)"))
+			Eventually(session, Config.CfPushTimeoutDuration()).Should(Exit(1))
 		})
 	})
 })
