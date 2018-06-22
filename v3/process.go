@@ -12,6 +12,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"time"
 )
 
 type ProcessStats struct {
@@ -124,14 +125,14 @@ var _ = V3Describe("process", func() {
 					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
 					return statsJSON.Instance[0].State
-				}).ShouldNot(Equal("RUNNING"))
+				}, Config.CfPushTimeoutDuration(), 1*time.Second).ShouldNot(Equal("RUNNING"))
 
 				By("ensuring the instance is running again")
 				Eventually(func() string {
 					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
 					return statsJSON.Instance[0].State
-				}).Should(Equal("RUNNING"))
+				}, Config.CfPushTimeoutDuration(), 1*time.Second).Should(Equal("RUNNING"))
 			})
 		})
 	})
