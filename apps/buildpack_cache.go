@@ -132,7 +132,7 @@ EOF
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, appName)
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("custom buildpack contents - cache not found"))
+		}).Should(ContainSubstring("custom buildpack contents - cache not found"))
 
 		time.Sleep(Config.SleepTimeoutDuration())
 
@@ -141,6 +141,6 @@ EOF
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, appName)
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("custom buildpack contents - here's a cache"))
+		}).Should(ContainSubstring("custom buildpack contents - here's a cache"))
 	})
 })

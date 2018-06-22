@@ -40,9 +40,9 @@ var _ = AppsDescribe("Crashing", func() {
 
 			Eventually(func() string {
 				return string(cf.Cf("events", appName).Wait(Config.DefaultTimeoutDuration()).Out.Contents())
-			}, Config.DefaultTimeoutDuration()).Should(MatchRegexp("[eE]xited"))
+			}).Should(MatchRegexp("[eE]xited"))
 
-			Eventually(cf.Cf("app", appName), Config.DefaultTimeoutDuration()).Should(Say("crashed"))
+			Eventually(cf.Cf("app", appName)).Should(Say("crashed"))
 		})
 	})
 
@@ -64,7 +64,7 @@ var _ = AppsDescribe("Crashing", func() {
 
 			Eventually(func() string {
 				return string(cf.Cf("events", appName).Wait(Config.DefaultTimeoutDuration()).Out.Contents())
-			}, Config.DefaultTimeoutDuration()).Should(MatchRegexp("[eE]xited"))
+			}).Should(MatchRegexp("[eE]xited"))
 		})
 
 		It("recovers", func() {
@@ -73,7 +73,7 @@ var _ = AppsDescribe("Crashing", func() {
 
 			Eventually(func() string {
 				return helpers.CurlApp(Config, appName, "/id")
-			}, Config.DefaultTimeoutDuration()).Should(Not(Equal(id)))
+			}).Should(Not(Equal(id)))
 		})
 	})
 })

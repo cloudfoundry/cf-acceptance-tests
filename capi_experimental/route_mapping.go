@@ -91,7 +91,7 @@ var _ = CapiExperimentalDescribe("route_mapping", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+			}).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 	})
 })

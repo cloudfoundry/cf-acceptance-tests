@@ -136,6 +136,6 @@ EOF
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, appName)
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(expected_lsb_release))
+		}).Should(ContainSubstring(expected_lsb_release))
 	})
 })

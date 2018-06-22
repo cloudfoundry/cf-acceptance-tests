@@ -98,7 +98,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 					"-c", "./app"),
 					Config.CfPushTimeoutDuration()).Should(Exit(0))
 
-				Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(binaryHi))
+				Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring(binaryHi))
 			})
 		})
 	})

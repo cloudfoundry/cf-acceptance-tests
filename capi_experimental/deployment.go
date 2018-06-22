@@ -71,30 +71,30 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 		It("deploys an app with no downtime", func() {
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+			}).Should(ContainSubstring("Hi, I'm Dora!"))
 
 			deploymentGuid := CreateDeployment(appGuid)
 			webishProcessType := fmt.Sprintf("web-deployment-%s", deploymentGuid)
 
 			Eventually(func() int {
 				return GetRunningInstancesStats(GetProcessGuidForType(appGuid, "web"))
-			}, Config.DefaultTimeoutDuration()).Should(Equal(1))
+			}).Should(Equal(1))
 
 			Eventually(func() int {
 				return GetRunningInstancesStats(GetProcessGuidForType(appGuid, webishProcessType))
-			}, Config.DefaultTimeoutDuration()).Should(BeNumerically(">", 0))
+			}).Should(BeNumerically(">", 0))
 
 			Eventually(func() int {
 				return GetRunningInstancesStats(GetProcessGuidForType(appGuid, "web"))
-			}, Config.DefaultTimeoutDuration()).Should(Equal(0))
+			}).Should(Equal(0))
 
 			Eventually(func() int {
 				return GetRunningInstancesStats(GetProcessGuidForType(appGuid, webishProcessType))
-			}, Config.DefaultTimeoutDuration()).Should(Equal(2))
+			}).Should(Equal(2))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello from a staticfile"))
+			}).Should(ContainSubstring("Hello from a staticfile"))
 		})
 	})
 })

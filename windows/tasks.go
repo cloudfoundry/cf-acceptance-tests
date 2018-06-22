@@ -49,6 +49,6 @@ var _ = WindowsDescribe("Task Lifecycle", func() {
 			taskSession := cf.Cf("tasks", appName)
 			Expect(taskSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			return taskSession
-		}, Config.DefaultTimeoutDuration()).Should(Say("SUCCEEDED"))
+		}).Should(Say("SUCCEEDED"))
 	})
 })

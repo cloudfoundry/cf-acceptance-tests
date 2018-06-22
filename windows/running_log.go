@@ -49,7 +49,7 @@ var _ = WindowsDescribe("app logs", func() {
 
 		Eventually(func() *Buffer {
 			return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
-		}, Config.DefaultTimeoutDuration()).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*OUT %s", message)))
+		}).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*OUT %s", message)))
 	})
 
 	It("captures stderr logs with the correct tag", func() {
@@ -61,6 +61,6 @@ var _ = WindowsDescribe("app logs", func() {
 
 		Eventually(func() *Buffer {
 			return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
-		}, Config.DefaultTimeoutDuration()).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*ERR %s", message)))
+		}).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*ERR %s", message)))
 	})
 })

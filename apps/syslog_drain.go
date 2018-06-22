@@ -73,11 +73,11 @@ var _ = AppsDescribe("Logging", func() {
 			app_helpers.AppReport(logWriterAppName2, Config.DefaultTimeoutDuration())
 			app_helpers.AppReport(listenerAppName, Config.DefaultTimeoutDuration())
 
-			Eventually(cf.Cf("delete", logWriterAppName1, "-f", "-r"), Config.DefaultTimeoutDuration()).Should(Exit(0), "Failed to delete app")
-			Eventually(cf.Cf("delete", logWriterAppName2, "-f", "-r"), Config.DefaultTimeoutDuration()).Should(Exit(0), "Failed to delete app")
-			Eventually(cf.Cf("delete", listenerAppName, "-f", "-r"), Config.DefaultTimeoutDuration()).Should(Exit(0), "Failed to delete app")
+			Eventually(cf.Cf("delete", logWriterAppName1, "-f", "-r")).Should(Exit(0), "Failed to delete app")
+			Eventually(cf.Cf("delete", logWriterAppName2, "-f", "-r")).Should(Exit(0), "Failed to delete app")
+			Eventually(cf.Cf("delete", listenerAppName, "-f", "-r")).Should(Exit(0), "Failed to delete app")
 			if serviceName != "" {
-				Eventually(cf.Cf("delete-service", serviceName, "-f"), Config.DefaultTimeoutDuration()).Should(Exit(0), "Failed to delete service")
+				Eventually(cf.Cf("delete-service", serviceName, "-f")).Should(Exit(0), "Failed to delete service")
 			}
 
 			Eventually(cf.Cf("delete-orphaned-routes", "-f"), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to delete orphaned routes")
@@ -86,8 +86,8 @@ var _ = AppsDescribe("Logging", func() {
 		It("forwards app messages to registered syslog drains", func() {
 			syslogDrainURL := "syslog://" + getSyslogDrainAddress(listenerAppName)
 
-			Eventually(cf.Cf("cups", serviceName, "-l", syslogDrainURL), Config.DefaultTimeoutDuration()).Should(Exit(0), "Failed to create syslog drain service")
-			Eventually(cf.Cf("bind-service", logWriterAppName1, serviceName), Config.DefaultTimeoutDuration()).Should(Exit(0), "Failed to bind service")
+			Eventually(cf.Cf("cups", serviceName, "-l", syslogDrainURL)).Should(Exit(0), "Failed to create syslog drain service")
+			Eventually(cf.Cf("bind-service", logWriterAppName1, serviceName)).Should(Exit(0), "Failed to bind service")
 			// We don't need to restage, because syslog service bindings don't change the app's environment variables
 
 			randomMessage1 := random_name.CATSRandomName("RANDOM-MESSAGE-A")
@@ -99,6 +99,7 @@ var _ = AppsDescribe("Logging", func() {
 			go writeLogsUntilInterrupted(interrupt, randomMessage1, logWriterAppName1)
 			go writeLogsUntilInterrupted(interrupt, randomMessage2, logWriterAppName2)
 
+			// todo: why such weird timeout and no polling interval
 			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(randomMessage1))
 			Consistently(logs, 10).ShouldNot(Say(randomMessage2))
 		})
@@ -112,15 +113,14 @@ func getSyslogDrainAddress(appName string) string {
 		re, err := regexp.Compile("ADDRESS: \\|(.*)\\|")
 		Expect(err).NotTo(HaveOccurred())
 
-		logs := logshelper.Tail(Config.GetUseLogCache(), appName).
-			Wait(Config.DefaultTimeoutDuration())
+		logs := logshelper.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration())
 		matched := re.FindSubmatch(logs.Out.Contents())
 		if len(matched) < 2 {
 			return nil
 		}
 		address = matched[1]
 		return address
-	}, Config.DefaultTimeoutDuration()).Should(Not(BeNil()))
+	}).Should(Not(BeNil()))
 
 	return string(address)
 }

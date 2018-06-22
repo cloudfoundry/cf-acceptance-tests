@@ -36,7 +36,7 @@ var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
-		Eventually(cf.Cf("delete", appName, "-f"), Config.DefaultTimeoutDuration()).Should(Exit(0))
+		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
 	})
 
 	Describe("An app staged on the DEA", func() {
@@ -64,14 +64,14 @@ var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
 
 			Eventually(func() *Session {
 				return cf.Cf("curl", pollingUrl).Wait(Config.DefaultTimeoutDuration())
-			}, Config.DefaultTimeoutDuration()).Should(gbytes.Say("finished"))
+			}).Should(gbytes.Say("finished"))
 		})
 
 		It("runs on Diego", func() {
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+			}).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 	})
 })

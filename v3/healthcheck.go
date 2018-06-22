@@ -2,8 +2,6 @@ package v3
 
 import (
 	"fmt"
-	"time"
-
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -62,7 +60,7 @@ var _ = V3Describe("Healthcheck", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration(), 2*time.Second).Should(ContainSubstring("Hi, I'm Dora!"))
+			}).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 	})
 
@@ -79,7 +77,7 @@ var _ = V3Describe("Healthcheck", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration(), 2*time.Second).Should(ContainSubstring("Hi, I'm Dora!"))
+			}).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 	})
 
@@ -96,7 +94,7 @@ var _ = V3Describe("Healthcheck", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration(), 2*time.Second).Should(ContainSubstring("Hi, I'm Dora!"))
+			}).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 	})
 })

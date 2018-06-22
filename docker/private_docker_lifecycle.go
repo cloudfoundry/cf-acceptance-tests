@@ -48,7 +48,7 @@ var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
 	JustBeforeEach(func() {
 		spaceName := TestSetup.RegularUserContext().Space
 		session := cf.Cf("space", spaceName, "--guid")
-		Eventually(session, Config.DefaultTimeoutDuration()).Should(Exit(0))
+		Eventually(session).Should(Exit(0))
 		spaceGuid := string(session.Out.Contents())
 		spaceGuid = strings.TrimSpace(spaceGuid)
 		appName = random_name.CATSRandomName("APP")
@@ -73,12 +73,12 @@ var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
 		reporter := commandreporter.NewCommandReporter()
 		reporter.Report(time.Now(), cmd)
 
-		Eventually(cfCurlSession, Config.DefaultTimeoutDuration()).Should(Exit(0))
+		Eventually(cfCurlSession).Should(Exit(0))
 	})
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
-		Eventually(cf.Cf("delete", appName, "-f"), Config.DefaultTimeoutDuration()).Should(Exit(0))
+		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
 	})
 
 	Context("when the correct username and password are given", func() {
@@ -89,10 +89,11 @@ var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
 
 		It("starts the docker app successfully", func() {
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
-			Eventually(cf.Cf("map-route", appName, Config.GetAppsDomain(), "--hostname", appName), Config.DefaultTimeoutDuration()).Should(Exit(0))
+			Eventually(cf.Cf("map-route", appName, Config.GetAppsDomain(), "--hostname", appName)).Should(Exit(0))
+
 			Eventually(func() string {
 				return helpers.CurlApp(Config, appName, "/env/INSTANCE_INDEX")
-			}, Config.DefaultTimeoutDuration()).Should(Equal("0"))
+			}).Should(Equal("0"))
 		})
 
 		It("can run a task", func() {
@@ -112,7 +113,7 @@ var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
 				fields := strings.Fields(lines[4])
 				Expect(fields[1]).To(Equal(taskName))
 				return fields[2]
-			}, Config.DefaultTimeoutDuration(), 2*time.Second).Should(Equal("SUCCEEDED"))
+			}).Should(Equal("SUCCEEDED"))
 		})
 	})
 })

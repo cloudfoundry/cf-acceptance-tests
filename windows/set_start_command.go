@@ -42,6 +42,6 @@ var _ = WindowsDescribe("Setting an app's start command", func() {
 		// OUT... to make sure we don't match the Launcher line: Running `loop.bat Hi there!!!'
 		Eventually(func() *Buffer {
 			return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
-		}, Config.DefaultTimeoutDuration()).Should(Say("OUT Hi there!!!"))
+		}).Should(Say("OUT Hi there!!!"))
 	})
 })

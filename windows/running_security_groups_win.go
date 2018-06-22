@@ -17,7 +17,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"time"
 )
 
 type AppsResponse struct {
@@ -195,7 +194,7 @@ var _ = WindowsDescribe("WINDOWS: App Instance Networking", func() {
 			By("Testing that external connectivity to a private ip is refused")
 			Eventually(func() string {
 				return testAppConnectivity(clientAppName, privateAddress, 80).Stderr
-			}, Config.DefaultTimeoutDuration(), 10 * time.Second).Should(ContainSubstring("Unable to connect to the remote server"))
+			}).Should(ContainSubstring("Unable to connect to the remote server"))
 		})
 	})
 })

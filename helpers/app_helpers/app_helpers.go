@@ -16,7 +16,7 @@ import (
 
 func GetAppGuid(appName string) string {
 	cfApp := cf.Cf("app", appName, "--guid")
-	Eventually(cfApp, Config.DefaultTimeoutDuration()).Should(Exit(0))
+	Eventually(cfApp).Should(Exit(0))
 
 	appGuid := strings.TrimSpace(string(cfApp.Out.Contents()))
 	Expect(appGuid).NotTo(Equal(""))

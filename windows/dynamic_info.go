@@ -40,6 +40,6 @@ var _ = WindowsDescribe("A running application", func() {
 
 		Eventually(func() string {
 			return string(cf.Cf("events", appName).Wait(Config.DefaultTimeoutDuration()).Out.Contents())
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Exited"))
+		}).Should(ContainSubstring("Exited"))
 	})
 })

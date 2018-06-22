@@ -80,7 +80,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
+			}).Should(ContainSubstring("Catnip?"))
 		})
 
 		Describe("Context path", func() {
@@ -137,11 +137,11 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 				Eventually(func() string {
 					return helpers.CurlAppRoot(Config, appName)
-				}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
+				}).Should(ContainSubstring("Catnip?"))
 
 				Eventually(func() string {
 					return helpers.CurlApp(Config, appName, appPath)
-				}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello, world!"))
+				}).Should(ContainSubstring("Hello, world!"))
 			})
 		})
 
@@ -158,13 +158,8 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			})
 
 			It("is able to start all instances", func() {
-				Eventually(func() *Session {
-					return cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
-				}, Config.DefaultTimeoutDuration()).Should(Say("#0   running"))
-
-				Eventually(func() *Session {
-					return cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
-				}, Config.DefaultTimeoutDuration()).Should(Say("#1   running"))
+				Eventually(cf.Cf("app", appName)).Should(Say("#0   running"))
+				Eventually(cf.Cf("app", appName)).Should(Say("#1   running"))
 			})
 		})
 
@@ -178,10 +173,8 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			var envOutput string
-			Eventually(func() string {
-				envOutput = helpers.CurlApp(Config, appName, "/env.json")
-				return envOutput
-			}, Config.DefaultTimeoutDuration()).ShouldNot(Equal(""))
+			envOutput = helpers.CurlApp(Config, appName, "/env.json")
+			Expect(envOutput).ToNot(BeEmpty())
 			type env struct {
 				Index      string `json:"CF_INSTANCE_INDEX"`
 				IP         string `json:"CF_INSTANCE_IP"`
@@ -256,7 +249,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(expectedNullResponse))
+			}).Should(ContainSubstring(expectedNullResponse))
 		})
 
 		It("generates an app usage 'stopped' event", func() {
@@ -279,7 +272,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 				Eventually(func() string {
 					return helpers.CurlAppRoot(Config, appName)
-				}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
+				}).Should(ContainSubstring("Catnip?"))
 			})
 		})
 	})
@@ -298,7 +291,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 		It("is reflected through another push", func() {
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
+			}).Should(ContainSubstring("Catnip?"))
 
 			Expect(cf.Cf("push",
 				appName,
@@ -310,7 +303,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello, world!"))
+			}).Should(ContainSubstring("Hello, world!"))
 		})
 	})
 
@@ -343,7 +336,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(expectedNullResponse))
+			}).Should(ContainSubstring(expectedNullResponse))
 		})
 
 		It("generates an app usage 'stopped' event", func() {

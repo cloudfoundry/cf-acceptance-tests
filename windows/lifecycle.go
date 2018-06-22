@@ -66,7 +66,7 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 		By("makes system environment variables available", func() {
 			Eventually(func() string {
 				return helpers.CurlApp(Config, appName, "/env")
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(`"INSTANCE_GUID"`))
+			}).Should(ContainSubstring(`"INSTANCE_GUID"`))
 		})
 
 		By("stopping it", func() {
@@ -91,7 +91,7 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 
 		By("scaling it", func() {
 			Expect(cf.Cf("scale", appName, "-i", "2").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-			Eventually(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration())).Should(gbytes.Say("2/2"))
+			Eventually(cf.Cf("apps")).Should(gbytes.Say("2/2"))
 			Expect(cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())).ToNot(gbytes.Say("insufficient resources"))
 		})
 
@@ -101,7 +101,7 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 			Expect(cf.Cf("restart-app-instance", appName, "1").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			Eventually(func() []string {
 				return differentIDsFrom(idsBefore, appName)
-			}, time.Second*120).Should(HaveLen(1))
+			}, Config.CfPushTimeoutDuration(), 2*time.Second).Should(HaveLen(1))
 		})
 
 		By("updating, is reflected through another push", func() {
@@ -125,7 +125,7 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("404"))
+			}).Should(ContainSubstring("404"))
 
 			found, _ := lastAppUsageEvent(appName, "STOPPED")
 			Expect(found).To(BeTrue())

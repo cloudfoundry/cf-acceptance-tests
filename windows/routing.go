@@ -40,20 +40,20 @@ var _ = WindowsDescribe("Adding and removing routes", func() {
 		secondHost := generator.PrefixedRandomName(Config.GetNamePrefix(), "ROUTE")
 
 		By("changing the environment")
-		Eventually(cf.Cf("set-env", appName, "WHY", "force-app-update"), Config.DefaultTimeoutDuration()).Should(Exit(0))
+		Eventually(cf.Cf("set-env", appName, "WHY", "force-app-update")).Should(Exit(0))
 
 		By("adding a route")
-		Eventually(cf.Cf("map-route", appName, Config.GetAppsDomain(), "-n", secondHost), Config.DefaultTimeoutDuration()).Should(Exit(0))
+		Eventually(cf.Cf("map-route", appName, Config.GetAppsDomain(), "-n", secondHost)).Should(Exit(0))
 		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hello i am nora"))
 		Eventually(helpers.CurlingAppRoot(Config, secondHost)).Should(ContainSubstring("hello i am nora"))
 
 		By("removing a route")
-		Eventually(cf.Cf("unmap-route", appName, Config.GetAppsDomain(), "-n", secondHost), Config.DefaultTimeoutDuration()).Should(Exit(0))
+		Eventually(cf.Cf("unmap-route", appName, Config.GetAppsDomain(), "-n", secondHost)).Should(Exit(0))
 		Eventually(helpers.CurlingAppRoot(Config, secondHost)).Should(ContainSubstring("404"))
 		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hello i am nora"))
 
 		By("deleting the original route")
-		Eventually(cf.Cf("delete-route", Config.GetAppsDomain(), "-n", appName, "-f"), Config.DefaultTimeoutDuration()).Should(Exit(0))
+		Eventually(cf.Cf("delete-route", Config.GetAppsDomain(), "-n", appName, "-f")).Should(Exit(0))
 		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("404"))
 	})
 })

@@ -73,7 +73,7 @@ var _ = WindowsDescribe("SSH", func() {
 
 				Eventually(func() *gbytes.Buffer {
 					return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
-				}, Config.DefaultTimeoutDuration()).Should(gbytes.Say("Successful remote access"))
+				}).Should(gbytes.Say("Successful remote access"))
 
 				eventsCmd := cf.Cf("events", appName).Wait(Config.CfPushTimeoutDuration())
 				Expect(eventsCmd.Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -97,7 +97,7 @@ var _ = WindowsDescribe("SSH", func() {
 
 			Eventually(func() *gbytes.Buffer {
 				return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
-			}, Config.DefaultTimeoutDuration()).Should(gbytes.Say("Successful remote access"))
+			}).Should(gbytes.Say("Successful remote access"))
 
 			eventsCmd := cf.Cf("events", appName).Wait(Config.CfPushTimeoutDuration())
 			Expect(eventsCmd.Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -134,7 +134,7 @@ var _ = WindowsDescribe("SSH", func() {
 
 			Eventually(func() *gbytes.Buffer {
 				return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
-			}, Config.DefaultTimeoutDuration()).Should(gbytes.Say("Successful remote access"))
+			}).Should(gbytes.Say("Successful remote access"))
 
 			eventsCmd := cf.Cf("events", appName).Wait(Config.CfPushTimeoutDuration())
 			Expect(eventsCmd.Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -185,7 +185,7 @@ var _ = WindowsDescribe("SSH", func() {
 
 			Eventually(func() *gbytes.Buffer {
 				return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
-			}, Config.DefaultTimeoutDuration()).Should(gbytes.Say("Successful remote access"))
+			}).Should(gbytes.Say("Successful remote access"))
 
 			eventsCmd := cf.Cf("events", appName).Wait(Config.CfPushTimeoutDuration())
 			Expect(eventsCmd.Wait(Config.CfPushTimeoutDuration())).To(Exit(0))

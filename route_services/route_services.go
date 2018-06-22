@@ -83,7 +83,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 					logs := logshelper.Tail(Config.GetUseLogCache(), routeServiceName)
 					Expect(logs.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 					return logs
-				}, Config.DefaultTimeoutDuration()).Should(Say("Response Body: go, world"))
+				}).Should(Say("Response Body: go, world"))
 			})
 		})
 
@@ -132,7 +132,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 			It("routes to an app", func() {
 				Eventually(func() string {
 					return helpers.CurlAppRoot(Config, appName)
-				}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("go, world"))
+				}).Should(ContainSubstring("go, world"))
 			})
 		})
 
@@ -183,7 +183,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 					logs := logshelper.Tail(Config.GetUseLogCache(), brokerAppName)
 					Expect(logs.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 					return logs
-				}, Config.DefaultTimeoutDuration()).Should(Say("irynaparam"))
+				}).Should(Say("irynaparam"))
 			})
 		})
 	})

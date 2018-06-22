@@ -82,7 +82,7 @@ var _ = V3Describe("droplet features", func() {
 			StartApp(destinationAppGuid)
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, webProcess.Name)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+			}).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 
 		It("creates an audit.app.droplet.create event for the copied droplet", func() {

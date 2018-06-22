@@ -3,8 +3,6 @@ package v3
 import (
 	"encoding/json"
 	"fmt"
-	"time"
-
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -70,7 +68,7 @@ var _ = V3Describe("process", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, webProcess.Name)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
+			}).Should(ContainSubstring("Hi, I'm Dora!"))
 
 			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 		})
@@ -95,14 +93,14 @@ var _ = V3Describe("process", func() {
 					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
 					return statsJSON.Instance[0].State
-				}, 45*time.Second).ShouldNot(Equal("RUNNING"))
+				}).ShouldNot(Equal("RUNNING"))
 
 				By("ensuring the instance is running again")
 				Eventually(func() string {
 					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
 					return statsJSON.Instance[0].State
-				}, 45*time.Second).Should(Equal("RUNNING"))
+				}).Should(Equal("RUNNING"))
 			})
 		})
 
@@ -126,14 +124,14 @@ var _ = V3Describe("process", func() {
 					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
 					return statsJSON.Instance[0].State
-				}, 45*time.Second).ShouldNot(Equal("RUNNING"))
+				}).ShouldNot(Equal("RUNNING"))
 
 				By("ensuring the instance is running again")
 				Eventually(func() string {
 					statsBodyAfter := cf.Cf("curl", statsUrl).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
 					return statsJSON.Instance[0].State
-				}, 45*time.Second).Should(Equal("RUNNING"))
+				}).Should(Equal("RUNNING"))
 			})
 		})
 	})

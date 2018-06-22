@@ -87,15 +87,15 @@ var _ = WindowsDescribe("Context Paths", func() {
 		It("routes to app with context path", func() {
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, hostname)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(strings.ToLower(appName1)))
+			}).Should(ContainSubstring(strings.ToLower(appName1)))
 
 			Eventually(func() string {
 				return helpers.CurlApp(Config, hostname, fmt.Sprintf("%s/env/VCAP_APPLICATION", app2Path))
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(fmt.Sprintf(`\"application_name\":\"%s\"`, appName2)))
+			}).Should(ContainSubstring(fmt.Sprintf(`\"application_name\":\"%s\"`, appName2)))
 
 			Eventually(func() string {
 				return helpers.CurlApp(Config, hostname, fmt.Sprintf("%s/env/VCAP_APPLICATION", app3Path))
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(fmt.Sprintf(`\"application_name\":\"%s\"`, appName3)))
+			}).Should(ContainSubstring(fmt.Sprintf(`\"application_name\":\"%s\"`, appName3)))
 		})
 	})
 })

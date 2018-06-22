@@ -131,7 +131,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 			appGuid = app_helpers.GetAppGuid(appName)
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
+			}).Should(ContainSubstring("Catnip?"))
 		})
 
 		AfterEach(func() {
@@ -174,7 +174,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 				outputName = taskDetails[1]
 				outputState = taskDetails[2]
 				return outputState
-			}, Config.DefaultTimeoutDuration()).Should(Equal("SUCCEEDED"))
+			}).Should(Equal("SUCCEEDED"))
 
 			Expect(outputName).To(Equal(taskName))
 
@@ -209,7 +209,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 					outputName = taskDetails[1]
 					outputState = taskDetails[2]
 					return outputState
-				}, Config.DefaultTimeoutDuration()).Should(Equal("FAILED"))
+				}).Should(Equal("FAILED"))
 				Expect(outputName).To(Equal(taskName))
 				taskGuid := getGuid(appGuid, outputSequenceId)
 

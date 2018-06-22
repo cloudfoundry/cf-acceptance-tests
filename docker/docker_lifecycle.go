@@ -25,12 +25,12 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 		Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 		Eventually(func() string {
 			return helpers.CurlApp(Config, appName, "/env/INSTANCE_INDEX")
-		}, Config.DefaultTimeoutDuration()).Should(Equal("0"))
+		}).Should(Equal("0"))
 	})
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
-		Eventually(cf.Cf("delete", appName, "-f"), Config.DefaultTimeoutDuration()).Should(Exit(0))
+		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
 	})
 
 	Describe("running a docker app with a start command", func() {
@@ -50,21 +50,20 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 				"-d", Config.GetAppsDomain(),
 				"-i", "1",
 				"-c", fmt.Sprintf("/myapp/dockerapp -name=%s", appName)),
-				Config.DefaultTimeoutDuration(),
 			).Should(Exit(0))
 		})
 
 		It("retains its start command through starts and stops", func() {
-			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(Equal("0"))
-			Eventually(helpers.CurlApp(Config, appName, "/name"), Config.DefaultTimeoutDuration()).Should(Equal(appName))
+			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(Equal("0"))
+			Eventually(helpers.CurlApp(Config, appName, "/name")).Should(Equal(appName))
 
 			By("making the app unreachable when it's stopped")
-			Eventually(cf.Cf("stop", appName), Config.DefaultTimeoutDuration()).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(ContainSubstring(expectedNullResponse))
+			Eventually(cf.Cf("stop", appName)).Should(Exit(0))
+			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring(expectedNullResponse))
 
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
-			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(Equal("0"))
-			Eventually(helpers.CurlApp(Config, appName, "/name"), Config.DefaultTimeoutDuration()).Should(Equal(appName))
+			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(Equal("0"))
+			Eventually(helpers.CurlApp(Config, appName, "/name")).Should(Equal(appName))
 		})
 	})
 
@@ -84,7 +83,7 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 		})
 
 		It("handles docker-defined metadata and environment variables correctly", func() {
-			Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(Equal("0"))
+			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(Equal("0"))
 
 			env_json := helpers.CurlApp(Config, appName, "/env")
 			var env_vars map[string]string
@@ -108,26 +107,19 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 
 		Context("when env vars are set with 'cf set-env'", func() {
 			BeforeEach(func() {
-				Eventually(cf.Cf(
-					"set-env", appName,
-					"HOME", "/tmp/fakehome"),
-					Config.DefaultTimeoutDuration()).Should(Exit(0))
-
-				Eventually(cf.Cf(
-					"set-env", appName,
-					"TMPDIR", "/tmp/dir"),
-					Config.DefaultTimeoutDuration()).Should(Exit(0))
+				Eventually(cf.Cf("set-env", appName, "HOME", "/tmp/fakehome")).Should(Exit(0))
+				Eventually(cf.Cf("set-env", appName, "TMPDIR", "/tmp/dir")).Should(Exit(0))
 			})
 
 			It("prefers the env vars from cf set-env over those in the Dockerfile", func() {
-				Eventually(helpers.CurlingAppRoot(Config, appName), Config.DefaultTimeoutDuration()).Should(Equal("0"))
+				Eventually(helpers.CurlingAppRoot(Config, appName)).Should(Equal("0"))
 
-				env_json := helpers.CurlApp(Config, appName, "/env")
-				var env_vars map[string]string
-				json.Unmarshal([]byte(env_json), &env_vars)
+				envJson := helpers.CurlApp(Config, appName, "/env")
+				var envVars map[string]string
+				json.Unmarshal([]byte(envJson), &envVars)
 
-				Expect(env_vars).To(HaveKeyWithValue("HOME", "/tmp/fakehome"))
-				Expect(env_vars).To(HaveKeyWithValue("TMPDIR", "/tmp/dir"))
+				Expect(envVars).To(HaveKeyWithValue("HOME", "/tmp/fakehome"))
+				Expect(envVars).To(HaveKeyWithValue("TMPDIR", "/tmp/dir"))
 			})
 		})
 	})

@@ -49,8 +49,8 @@ var _ = WindowsDescribe("apps without a port", func() {
 	})
 
 	It("runs the app (and doesn't run healthcheck)", func() {
-		Eventually(logs.Out, Config.DefaultTimeoutDuration()).Should(Say("Running Worker 1"))
-		Eventually(logs.Out, Config.DefaultTimeoutDuration()).Should(Say("Running Worker 10"))
+		Eventually(logs.Out).Should(Say("Running Worker 1"))
+		Eventually(logs.Out).Should(Say("Running Worker 10"))
 		Expect(logs.Out).ToNot(Say("healthcheck"))
 	})
 })

@@ -143,14 +143,11 @@ exit 1
 
 			taskName := "get-env"
 
-			Eventually(cf.Cf(
-				"run-task", appName, "env", "--name", taskName),
-				Config.DefaultTimeoutDuration(),
-			).Should(Exit(0))
+			Eventually(cf.Cf("run-task", appName, "env", "--name", taskName)).Should(Exit(0))
 
-			Eventually(func() string {
-				return getTaskDetails(appName)[2]
-			}, Config.DefaultTimeoutDuration()).Should(Equal("SUCCEEDED"))
+			Eventually(func () string {
+				return getTaskState(appName)
+			}).Should(Equal("SUCCEEDED"))
 
 			var taskStdout string
 			Eventually(func() string {
@@ -160,7 +157,7 @@ exit 1
 				taskStdout = string(appLogsSession.Out.Contents())
 
 				return taskStdout
-			}, Config.DefaultTimeoutDuration()).Should(MatchRegexp("TASK.*VCAP_SERVICES=.*"))
+			}).Should(MatchRegexp("TASK.*VCAP_SERVICES=.*"))
 
 			Expect(taskStdout).To(MatchRegexp("TASK.*LANG=en_US\\.UTF-8"))
 			Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_ADDR=.*"))
@@ -191,10 +188,10 @@ func assertPresent(env map[string]string, varNames ...string) {
 	}
 }
 
-func getTaskDetails(appName string) []string {
+func getTaskState(appName string) string {
 	listCommand := cf.Cf("tasks", appName).Wait(Config.DefaultTimeoutDuration())
 	Expect(listCommand).To(Exit(0))
 	listOutput := string(listCommand.Out.Contents())
 	lines := strings.Split(listOutput, "\n")
-	return strings.Fields(lines[4])
+	return strings.Fields(lines[4])[2]
 }

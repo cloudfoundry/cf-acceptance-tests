@@ -39,11 +39,11 @@ var _ = AppsDescribe("A running application", func() {
 		id := helpers.CurlApp(Config, appName, "/id")
 		helpers.CurlApp(Config, appName, "/sigterm/KILL")
 
-		Eventually(func() string {
-			return string(cf.Cf("events", appName).Wait(Config.DefaultTimeoutDuration()).Out.Contents())
-		}, Config.DefaultTimeoutDuration()).Should(MatchRegexp("[eE]xited"))
+		Eventually(cf.Cf("events", appName)).Should(Say("[eE]xited"))
 
-		Eventually(func() string { return helpers.CurlApp(Config, appName, "/id") }).Should(Not(Equal(id)))
+		Eventually(func() string {
+			return helpers.CurlApp(Config, appName, "/id")
+		}).Should(Not(Equal(id)))
 	})
 
 	Context("with multiple instances", func() {

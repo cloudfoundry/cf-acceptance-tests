@@ -48,7 +48,7 @@ var _ = CapiExperimentalDescribe("Private Docker Registry Application Lifecycle"
 	JustBeforeEach(func() {
 		spaceName := TestSetup.RegularUserContext().Space
 		session := cf.Cf("space", spaceName, "--guid")
-		Eventually(session, Config.DefaultTimeoutDuration()).Should(Exit(0))
+		Eventually(session).Should(Exit(0))
 		spaceGuid := string(session.Out.Contents())
 		spaceGuid = strings.TrimSpace(spaceGuid)
 		appName = random_name.CATSRandomName("APP")
@@ -73,12 +73,12 @@ var _ = CapiExperimentalDescribe("Private Docker Registry Application Lifecycle"
 		reporter := commandreporter.NewCommandReporter()
 		reporter.Report(time.Now(), cmd)
 
-		Eventually(cfCurlSession, Config.DefaultTimeoutDuration()).Should(Exit(0))
+		Eventually(cfCurlSession).Should(Exit(0))
 	})
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
-		Eventually(cf.Cf("delete", appName, "-f"), Config.DefaultTimeoutDuration()).Should(Exit(0))
+		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
 	})
 
 	Context("when an incorrect username and password are given", func() {

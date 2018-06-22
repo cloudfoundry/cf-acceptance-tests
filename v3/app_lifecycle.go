@@ -117,7 +117,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, webProcess.Name)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(expectedNullResponse))
+			}).Should(ContainSubstring(expectedNullResponse))
 		})
 	})
 
@@ -168,7 +168,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, webProcess.Name)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(expectedNullResponse))
+			}).Should(ContainSubstring(expectedNullResponse))
 		})
 	})
 })
@@ -224,7 +224,7 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, webProcess.Name)
-		}, Config.DefaultTimeoutDuration()).Should(Equal("0"))
+		}).Should(Equal("0"))
 
 		output := helpers.CurlApp(Config, webProcess.Name, "/env")
 		Expect(output).To(ContainSubstring(fmt.Sprintf("application_name\\\":\\\"%s", appName)))
@@ -246,6 +246,6 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, webProcess.Name)
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(expectedNullResponse))
+		}).Should(ContainSubstring(expectedNullResponse))
 	})
 })

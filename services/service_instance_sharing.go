@@ -76,7 +76,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 
 			if appName != "" {
 				app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
-				Eventually(cf.Cf("delete", appName, "-f"), Config.DefaultTimeoutDuration()).Should(Exit(0))
+				Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
 			}
 
 			if serviceInstanceName != "" {

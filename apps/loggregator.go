@@ -69,13 +69,15 @@ var _ = AppsDescribe("loggregator", func() {
 		It("exercises basic loggregator behavior", func() {
 			if !Config.GetUseLogCache() {
 				// log cache cli will not emit header unless being run in terminal
+				// TODO why such a weird timeout; also no polling interval
 				Eventually(logs, (Config.DefaultTimeoutDuration() + time.Minute)).Should(Say("(Connected, tailing|Retrieving) logs for app"))
 			}
 
 			Eventually(func() string {
 				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Muahaha"))
+			}).Should(ContainSubstring("Muahaha"))
 
+			// TODO why such a weird timeout; also no polling interval
 			Eventually(logs, (Config.DefaultTimeoutDuration() + time.Minute)).Should(Say("Muahaha"))
 		})
 	})
@@ -84,13 +86,9 @@ var _ = AppsDescribe("loggregator", func() {
 		It("makes loggregator buffer and dump log messages", func() {
 			Eventually(func() string {
 				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Muahaha"))
+			}).Should(ContainSubstring("Muahaha"))
 
-			Eventually(func() *Session {
-				appLogsSession := logshelper.Tail(Config.GetUseLogCache(), appName)
-				Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				return appLogsSession
-			}, Config.DefaultTimeoutDuration()).Should(Say("Muahaha"))
+			Eventually(logshelper.Tail(Config.GetUseLogCache(), appName)).Should(Say("Muahaha"))
 		})
 	})
 
@@ -106,9 +104,9 @@ var _ = AppsDescribe("loggregator", func() {
 
 			Eventually(func() string {
 				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Muahaha"))
+			}).Should(ContainSubstring("Muahaha"))
 
-			Eventually(msgChan, Config.DefaultTimeoutDuration()).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
+			Eventually(msgChan).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
 		})
 
 		It("shows container metrics", func() {
@@ -122,6 +120,7 @@ var _ = AppsDescribe("loggregator", func() {
 			defer close(stopchan)
 
 			containerMetrics := make([]*events.ContainerMetric, 2)
+			// todo: insanely weird thing i do not understand
 			Eventually(func() bool {
 				for {
 					select {

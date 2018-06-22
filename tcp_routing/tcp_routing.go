@@ -66,7 +66,7 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 
 		AfterEach(func() {
 			app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
-			Eventually(cf.Cf("delete", appName, "-f", "-r"), Config.DefaultTimeoutDuration()).Should(Exit(0))
+			Eventually(cf.Cf("delete", appName, "-f", "-r")).Should(Exit(0))
 		})
 
 		It("maps a single external port to an application's container port", func() {
@@ -104,7 +104,7 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 
 			AfterEach(func() {
 				app_helpers.AppReport(secondAppName, Config.DefaultTimeoutDuration())
-				Eventually(cf.Cf("delete", appName, "-f", "-r"), Config.DefaultTimeoutDuration()).Should(Exit(0))
+				Eventually(cf.Cf("delete", appName, "-f", "-r")).Should(Exit(0))
 			})
 
 			It("maps single external port to both applications", func() {

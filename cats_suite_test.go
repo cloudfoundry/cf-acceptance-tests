@@ -62,9 +62,6 @@ func TestCATS(t *testing.T) {
 	}
 
 	var _ = SynchronizedBeforeSuite(func() []byte {
-		SetDefaultEventuallyTimeout(Config.DefaultTimeoutDuration())
-		SetDefaultEventuallyPollingInterval(1 * time.Second)
-
 		installedVersion, err := GetInstalledCliVersionString()
 
 		Expect(err).ToNot(HaveOccurred(), "Error trying to determine CF CLI version")
@@ -107,6 +104,9 @@ func TestCATS(t *testing.T) {
 
 		return []byte{}
 	}, func([]byte) {
+		SetDefaultEventuallyTimeout(Config.DefaultTimeoutDuration())
+		SetDefaultEventuallyPollingInterval(1 * time.Second)
+
 		TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.GetScaledTimeout(1*time.Minute), func() {

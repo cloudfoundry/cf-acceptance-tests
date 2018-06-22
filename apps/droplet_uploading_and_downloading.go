@@ -37,12 +37,12 @@ func unpackTarball(tarballPath string) {
 	cmd := exec.Command("gzip", "-dk", tarballPath)
 	session, err := Start(cmd, GinkgoWriter, GinkgoWriter)
 	Expect(err).ToNot(HaveOccurred())
-	Eventually(session, Config.DefaultTimeoutDuration()).Should(Exit(0))
+	Eventually(session).Should(Exit(0))
 
 	cmd = exec.Command("tar", "-tf", strings.Trim(tarballPath, ".gz"))
 	session, err = Start(cmd, GinkgoWriter, GinkgoWriter)
 	Expect(err).ToNot(HaveOccurred())
-	Eventually(session, Config.DefaultTimeoutDuration()).Should(Exit(0))
+	Eventually(session).Should(Exit(0))
 
 	Expect(session.Out.Contents()).To(ContainSubstring("./app/config.ru"))
 	Expect(session.Out.Contents()).To(ContainSubstring("./tmp"))
@@ -80,7 +80,7 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 		Expect(cf.Cf("push", helloWorldAppName, "-p", assets.NewAssets().RubySimple).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, helloWorldAppName)
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Healthy"))
+		}).Should(ContainSubstring("Healthy"))
 
 		By("Uploading the originally downloaded droplet of the app")
 		appDroplet.UploadFrom(appDropletPathToCompressedFile)
@@ -90,6 +90,6 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, helloWorldAppName)
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello, world!"))
+		}).Should(ContainSubstring("Hello, world!"))
 	})
 })

@@ -26,7 +26,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
-		Eventually(cf.Cf("delete", appName, "-f"), Config.DefaultTimeoutDuration()).Should(Exit(0))
+		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
 	})
 
 	Describe("when the healthcheck is set to none", func() {
@@ -49,7 +49,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 				appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
 				Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 				return appLogsSession
-			}, Config.DefaultTimeoutDuration()).Should(gbytes.Say("I am working at"))
+			}).Should(gbytes.Say("I am working at"))
 		})
 	})
 

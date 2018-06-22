@@ -73,7 +73,7 @@ var _ = V3Describe("buildpack", func() {
 			StageBuildpackPackage(packageGuid, buildpackName)
 			Eventually(func() *Session {
 				return FetchRecentLogs(appGuid, token, Config)
-			}, 1*time.Minute, 10*time.Second).Should(Say("STAGED WITH CUSTOM BUILDPACK"))
+			}).Should(Say("STAGED WITH CUSTOM BUILDPACK"))
 		})
 
 		It("Downloads the correct user specified git buildpack", func() {
@@ -84,7 +84,7 @@ var _ = V3Describe("buildpack", func() {
 
 			Eventually(func() *Session {
 				return FetchRecentLogs(appGuid, token, Config)
-			}, 3*time.Minute, 10*time.Second).Should(Say("I'm a buildpack!"))
+			}).Should(Say("I'm a buildpack!"))
 		})
 
 		It("uses buildpack cache for staging", func() {
@@ -172,7 +172,7 @@ var _ = V3Describe("buildpack", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, webProcess.Name)
-			}, 1*time.Minute, 10*time.Second).Should(ContainSubstring("The bundler version is"))
+			}).Should(ContainSubstring("The bundler version is"))
 		})
 	})
 })

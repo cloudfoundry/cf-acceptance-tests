@@ -49,6 +49,6 @@ var _ = AppsDescribe("Copy app bits", func() {
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, golangAppName)
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello, world!"))
+		}).Should(ContainSubstring("Hello, world!"))
 	})
 })

@@ -92,7 +92,7 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 			Eventually(func() string {
 				curl := helpers.Curl(Config, curlArgs).Wait(Config.DefaultTimeoutDuration())
 				return string(curl.Out.Contents())
-			}, Config.DefaultTimeoutDuration()).ShouldNot(ContainSubstring("Hello, world!"))
+			}).ShouldNot(ContainSubstring("Hello, world!"))
 
 			// add a policy
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
@@ -105,7 +105,7 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 			Eventually(func() string {
 				curl := helpers.Curl(Config, curlArgs).Wait(Config.DefaultTimeoutDuration())
 				return string(curl.Out.Contents())
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello, world!"))
+			}).Should(ContainSubstring("Hello, world!"))
 		})
 	})
 })

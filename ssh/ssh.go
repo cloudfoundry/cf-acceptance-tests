@@ -6,8 +6,6 @@ import (
 	"io/ioutil"
 	"os/exec"
 	"strings"
-	"time"
-
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	"golang.org/x/crypto/ssh"
@@ -19,7 +17,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
-	ginkgoconfig "github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
@@ -32,35 +29,23 @@ var _ = SshDescribe("SSH", func() {
 		appName = random_name.CATSRandomName("APP")
 		Eventually(cf.Cf(
 			"push", appName,
-			"--no-start",
 			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Catnip,
 			"-c", "./catnip",
 			"-d", Config.GetAppsDomain(),
-			"-i", "1"),
-			Config.DefaultTimeoutDuration(),
+			"-i", "2"),
+			Config.CfPushTimeoutDuration(),
 		).Should(Exit(0))
-
-		enableSSH(appName)
-
-		Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 	})
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
-		Eventually(cf.Cf("delete", appName, "-f"), Config.DefaultTimeoutDuration()).Should(Exit(0))
+		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
 	})
 
 	Describe("ssh", func() {
 		Context("with multiple instances", func() {
-			BeforeEach(func() {
-				Eventually(cf.Cf("scale", appName, "-i", "2"), Config.CfPushTimeoutDuration()).Should(Exit(0))
-				Eventually(func() string {
-					return helpers.CurlApp(Config, appName, "/env/INSTANCE_INDEX")
-				}, Config.DefaultTimeoutDuration()).Should(Equal("1"))
-			})
-
 			It("can ssh to the second instance", func() {
 				envCmd := cf.Cf("ssh", "-v", "-i", "1", appName, "-c", "/usr/bin/env && /usr/bin/env >&2")
 				Expect(envCmd.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
@@ -76,8 +61,8 @@ var _ = SshDescribe("SSH", func() {
 
 				Eventually(func() *Buffer {
 					return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
-				}, Config.DefaultTimeoutDuration()).Should(Say("Successful remote access"))
-				Eventually(cf.Cf("events", appName), Config.DefaultTimeoutDuration()).Should(Say("audit.app.ssh-authorized"))
+				}).Should(Say("Successful remote access"))
+				Eventually(cf.Cf("events", appName)).Should(Say("audit.app.ssh-authorized"))
 			})
 		})
 
@@ -96,8 +81,8 @@ var _ = SshDescribe("SSH", func() {
 
 			Eventually(func() *Buffer {
 				return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
-			}, Config.DefaultTimeoutDuration()).Should(Say("Successful remote access"))
-			Eventually(cf.Cf("events", appName), Config.DefaultTimeoutDuration()).Should(Say("audit.app.ssh-authorized"))
+			}).Should(Say("Successful remote access"))
+			Eventually(cf.Cf("events", appName)).Should(Say("audit.app.ssh-authorized"))
 		})
 
 		It("runs an interactive session when no command is provided", func() {
@@ -130,7 +115,7 @@ var _ = SshDescribe("SSH", func() {
 			Eventually(func() *Buffer {
 				return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
 			}, Config.DefaultTimeoutDuration()).Should(Say("Successful remote access"))
-			Eventually(cf.Cf("events", appName), Config.DefaultTimeoutDuration()).Should(Say("audit.app.ssh-authorized"))
+			Eventually(cf.Cf("events", appName)).Should(Say("audit.app.ssh-authorized"))
 		})
 
 		It("allows local port forwarding", func() {
@@ -145,7 +130,7 @@ var _ = SshDescribe("SSH", func() {
 			Eventually(func() string {
 				curl := helpers.Curl(Config, "http://127.0.0.1:61007/").Wait(Config.DefaultTimeoutDuration())
 				return string(curl.Out.Contents())
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Catnip?"))
+			}).Should(ContainSubstring("Catnip?"))
 
 			err = stdin.Close()
 			Expect(err).NotTo(HaveOccurred())
@@ -176,12 +161,12 @@ var _ = SshDescribe("SSH", func() {
 
 			Eventually(func() *Buffer {
 				return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
-			}, Config.DefaultTimeoutDuration()).Should(Say("Successful remote access"))
-			Eventually(cf.Cf("events", appName), Config.DefaultTimeoutDuration()).Should(Say("audit.app.ssh-authorized"))
+			}).Should(Say("Successful remote access"))
+			Eventually(cf.Cf("events", appName)).Should(Say("audit.app.ssh-authorized"))
 		})
 
 		It("records failed ssh attempts", func() {
-			Eventually(cf.Cf("disable-ssh", appName), Config.DefaultTimeoutDuration()).Should(Exit(0))
+			Eventually(cf.Cf("disable-ssh", appName)).Should(Exit(0))
 
 			password := sshAccessCode()
 			clientConfig := &ssh.ClientConfig{
@@ -192,32 +177,16 @@ var _ = SshDescribe("SSH", func() {
 			_, err := ssh.Dial("tcp", sshProxyAddress(), clientConfig)
 			Expect(err).To(HaveOccurred())
 
-			Eventually(cf.Cf("events", appName), Config.DefaultTimeoutDuration()).Should(Say("audit.app.ssh-unauthorized"))
+			Eventually(cf.Cf("events", appName)).Should(Say("audit.app.ssh-unauthorized"))
 		})
 	})
 
 })
 
-func enableSSH(appName string) {
-	Eventually(cf.Cf("enable-ssh", appName), Config.DefaultTimeoutDuration()).Should(Exit(0))
-}
-
 func sshAccessCode() string {
 	getCode := cf.Cf("ssh-code")
-	Eventually(getCode, Config.DefaultTimeoutDuration()).Should(Exit(0))
+	Eventually(getCode).Should(Exit(0))
 	return strings.TrimSpace(string(getCode.Buffer().Contents()))
-}
-
-func sayCommandRun(cmd *exec.Cmd) {
-	const timeFormat = "2006-01-02 15:04:05.00 (MST)"
-
-	startColor := ""
-	endColor := ""
-	if !ginkgoconfig.DefaultReporterConfig.NoColor {
-		startColor = "\x1b[32m"
-		endColor = "\x1b[0m"
-	}
-	fmt.Fprintf(GinkgoWriter, "\n%s[%s]> %s %s\n", startColor, time.Now().UTC().Format(timeFormat), strings.Join(cmd.Args, " "), endColor)
 }
 
 func sshProxyAddress() string {

@@ -132,11 +132,7 @@ exit 1
 
 			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 
-			Eventually(func() *Session {
-				appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
-				Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				return appLogsSession
-			}, Config.DefaultTimeoutDuration()).Should(Say(envVarValue))
+			Eventually(logs.Tail(Config.GetUseLogCache(), appName)).Should(Say(envVarValue))
 		})
 	})
 

@@ -93,7 +93,7 @@ func AssignIsolationSegmentToSpace(spaceGuid, isoSegGuid string) {
 		"PATCH",
 		"-d",
 		fmt.Sprintf(`{"data":{"guid":"%s"}}`, isoSegGuid)),
-		Config.DefaultTimeoutDuration()).Should(Exit(0))
+	).Should(Exit(0))
 }
 
 func CreateAndMapRoute(appGuid, space, domain, host string) {
@@ -216,7 +216,7 @@ func PollJob(jobPath string) {
 	Eventually(func() string {
 		jobSession := cf.Cf("curl", jobPath)
 		return string(jobSession.Wait(Config.DefaultTimeoutDuration()).Out.Contents())
-	}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("COMPLETE"))
+	}).Should(ContainSubstring("COMPLETE"))
 }
 
 func DeleteApp(appGuid string) {
@@ -224,7 +224,7 @@ func DeleteApp(appGuid string) {
 }
 
 func DeleteIsolationSegment(guid string) {
-	Eventually(cf.Cf("curl", fmt.Sprintf("/v3/isolation_segments/%s", guid), "-X", "DELETE"), Config.DefaultTimeoutDuration()).Should(Exit(0))
+	Eventually(cf.Cf("curl", fmt.Sprintf("/v3/isolation_segments/%s", guid), "-X", "DELETE")).Should(Exit(0))
 }
 
 func EntitleOrgToIsolationSegment(orgGuid, isoSegGuid string) {
@@ -234,7 +234,7 @@ func EntitleOrgToIsolationSegment(orgGuid, isoSegGuid string) {
 		"POST",
 		"-d",
 		fmt.Sprintf(`{"data":[{ "guid":"%s" }]}`, orgGuid)),
-		Config.DefaultTimeoutDuration()).Should(Exit(0))
+	).Should(Exit(0))
 }
 
 func FetchRecentLogs(appGuid, oauthToken string, config config.CatsConfig) *Session {
@@ -354,7 +354,7 @@ func RevokeOrgEntitlementForIsolationSegment(orgGuid, isoSegGuid string) {
 		fmt.Sprintf("/v3/isolation_segments/%s/relationships/organizations/%s", isoSegGuid, orgGuid),
 		"-X",
 		"DELETE",
-	), Config.DefaultTimeoutDuration()).Should(Exit(0))
+	)).Should(Exit(0))
 }
 
 func ScaleProcess(appGuid, processType, memoryInMb string) {
@@ -382,7 +382,7 @@ func SetDefaultIsolationSegment(orgGuid, isoSegGuid string) {
 		"PATCH",
 		"-d",
 		fmt.Sprintf(`{"data":{"guid":"%s"}}`, isoSegGuid)),
-		Config.DefaultTimeoutDuration()).Should(Exit(0))
+	).Should(Exit(0))
 }
 
 func StageBuildpackPackage(packageGuid string, buildpacks ...string) string {
@@ -426,7 +426,7 @@ func UnassignIsolationSegmentFromSpace(spaceGuid string) {
 		"PATCH",
 		"-d",
 		`{"data":{"guid":null}}`),
-		Config.DefaultTimeoutDuration()).Should(Exit(0))
+	).Should(Exit(0))
 }
 
 func UnsetDefaultIsolationSegment(orgGuid string) {
@@ -436,7 +436,7 @@ func UnsetDefaultIsolationSegment(orgGuid string) {
 		"PATCH",
 		"-d",
 		`{"data":{"guid": null}}`),
-		Config.DefaultTimeoutDuration()).Should(Exit(0))
+	).Should(Exit(0))
 }
 
 func UploadPackage(uploadUrl, packageZipPath, token string) {

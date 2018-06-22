@@ -50,11 +50,11 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 				Eventually(func() string {
 					curlOutput = cf_helpers.CurlAppRoot(Config, hostname)
 					return curlOutput
-				}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("parents:"))
+				}).Should(ContainSubstring("parents:"))
 
 				appLogsSession := logs.Tail(Config.GetUseLogCache(), app1)
 
-				Eventually(appLogsSession, Config.DefaultTimeoutDuration()).Should(gexec.Exit(0))
+				Eventually(appLogsSession).Should(gexec.Exit(0))
 
 				Eventually(appLogsSession.Out).Should(gbytes.Say("x_b3_traceid"))
 				parentSpanID := getID(`x_b3_parentspanid:"([0-9a-fA-F-]*)"`, string(appLogsSession.Out.Contents()))
@@ -70,7 +70,7 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 				Eventually(func() string {
 					curlOutput = cf_helpers.CurlApp(Config, hostname, "/", "-H", header1, "-H", header2)
 					return curlOutput
-				}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("parents:"))
+				}).Should(ContainSubstring("parents:"))
 
 				appLogsSession = logs.Tail(Config.GetUseLogCache(), hostname)
 

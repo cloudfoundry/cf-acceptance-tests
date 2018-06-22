@@ -63,7 +63,7 @@ var _ = RoutingDescribe("Session Affinity", func() {
 					Eventually(func() string {
 						body = curlAppWithCookies(appName, "/", cookieStorePath)
 						return body
-					}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(fmt.Sprintf("Hello, %s", appName)))
+					}).Should(ContainSubstring(fmt.Sprintf("Hello, %s", appName)))
 
 					index := parseInstanceIndex(body)
 
@@ -109,7 +109,7 @@ var _ = RoutingDescribe("Session Affinity", func() {
 					Eventually(func() string {
 						body = helpers.CurlAppRoot(Config, appName)
 						return body
-					}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(fmt.Sprintf("Hello, %s", appName)))
+					}).Should(ContainSubstring(fmt.Sprintf("Hello, %s", appName)))
 
 					indexPre := parseInstanceIndex(body)
 
@@ -117,7 +117,7 @@ var _ = RoutingDescribe("Session Affinity", func() {
 						body := helpers.CurlAppRoot(Config, appName)
 						index := parseInstanceIndex(body)
 						return index
-					}, Config.DefaultTimeoutDuration()).ShouldNot(Equal(indexPre))
+					}).ShouldNot(Equal(indexPre))
 				})
 			})
 		})
@@ -181,7 +181,7 @@ var _ = RoutingDescribe("Session Affinity", func() {
 			Eventually(func() string {
 				body = curlAppWithCookies(hostname, app1Path, cookieStorePath)
 				return body
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(fmt.Sprintf("Hello, %s", app1)))
+			}).Should(ContainSubstring(fmt.Sprintf("Hello, %s", app1)))
 
 			index1 := parseInstanceIndex(body)
 
@@ -189,19 +189,19 @@ var _ = RoutingDescribe("Session Affinity", func() {
 			Eventually(func() string {
 				body = curlAppWithCookies(hostname, app2Path, cookieStorePath)
 				return body
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(fmt.Sprintf("Hello, %s", app2)))
+			}).Should(ContainSubstring(fmt.Sprintf("Hello, %s", app2)))
 
 			index2 := parseInstanceIndex(body)
 
 			// Hit the APP1 again to verify that the session is stick to the right instance.
 			Eventually(func() string {
 				return curlAppWithCookies(hostname, app1Path, cookieStorePath)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(fmt.Sprintf("Hello, %s at index: %d", app1, index1)))
+			}).Should(ContainSubstring(fmt.Sprintf("Hello, %s at index: %d", app1, index1)))
 
 			// Hit the APP2 again to verify that the session is stick to the right instance.
 			Eventually(func() string {
 				return curlAppWithCookies(hostname, app2Path, cookieStorePath)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(fmt.Sprintf("Hello, %s at index: %d", app2, index2)))
+			}).Should(ContainSubstring(fmt.Sprintf("Hello, %s at index: %d", app2, index2)))
 		})
 	})
 
@@ -263,7 +263,7 @@ var _ = RoutingDescribe("Session Affinity", func() {
 			Eventually(func() string {
 				body = curlAppWithCookies(hostname, "/", cookieStorePath)
 				return body
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(fmt.Sprintf("Hello, %s", app1)))
+			}).Should(ContainSubstring(fmt.Sprintf("Hello, %s", app1)))
 
 			index1 := parseInstanceIndex(body)
 
@@ -272,7 +272,7 @@ var _ = RoutingDescribe("Session Affinity", func() {
 			Eventually(func() string {
 				body = curlAppWithCookies(hostname, app2Path, cookieStorePath)
 				return body
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(fmt.Sprintf("Hello, %s", app2)))
+			}).Should(ContainSubstring(fmt.Sprintf("Hello, %s", app2)))
 
 			index2 := parseInstanceIndex(body)
 
@@ -281,14 +281,14 @@ var _ = RoutingDescribe("Session Affinity", func() {
 			// stick correctly. Only send the first session ID.
 			Eventually(func() string {
 				return curlAppWithCookies(hostname, "/", cookieStorePath)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(fmt.Sprintf("Hello, %s at index: %d", app1, index1)))
+			}).Should(ContainSubstring(fmt.Sprintf("Hello, %s at index: %d", app1, index1)))
 
 			// 4. Hit the APP2 (path APP) again, to ensure that the instance ID is
 			// stick correctly. In this case, both the two cookies will be sent to
 			// the server. The curl would store them.
 			Eventually(func() string {
 				return curlAppWithCookies(hostname, app2Path, cookieStorePath)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring(fmt.Sprintf("Hello, %s at index: %d", app2, index2)))
+			}).Should(ContainSubstring(fmt.Sprintf("Hello, %s at index: %d", app2, index2)))
 		})
 	})
 })

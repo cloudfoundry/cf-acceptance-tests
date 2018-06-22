@@ -5,8 +5,6 @@ import (
 	"io/ioutil"
 	"path"
 	"strings"
-	"time"
-
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -88,7 +86,7 @@ var _ = CapiExperimentalDescribe("service bindings", func() {
 			StageBuildpackPackage(packageGuid, buildpackName)
 			Eventually(func() *Session {
 				return FetchRecentLogs(appGuid, token, Config)
-			}, 1*time.Minute, 10*time.Second).Should(Say("my-service"))
+			}).Should(Say("my-service"))
 		})
 	})
 
@@ -104,7 +102,7 @@ var _ = CapiExperimentalDescribe("service bindings", func() {
 
 		Eventually(func() string {
 			return helpers.CurlApp(Config, appName, "/env")
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("my-service"))
+		}).Should(ContainSubstring("my-service"))
 	})
 })
 

@@ -36,11 +36,8 @@ var _ = AppsDescribe("Encoding", func() {
 	})
 
 	It("Does not corrupt UTF-8 characters in filenames", func() {
-		var curlResponse string
-		Eventually(func() string {
-			curlResponse = helpers.CurlApp(Config, appName, "/omega")
-			return curlResponse
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("It's Ω!"))
+		curlResponse := helpers.CurlApp(Config, appName, "/omega")
+		Expect(curlResponse).Should(ContainSubstring("It's Ω!"))
 		Expect(curlResponse).To(ContainSubstring("File encoding is UTF-8"))
 	})
 })

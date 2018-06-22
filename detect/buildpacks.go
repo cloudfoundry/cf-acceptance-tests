@@ -40,7 +40,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello, world!"))
+			}).Should(ContainSubstring("Hello, world!"))
 		})
 	})
 
@@ -50,7 +50,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello from a node app!"))
+			}).Should(ContainSubstring("Hello from a node app!"))
 		})
 	})
 
@@ -62,7 +62,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello, from your friendly neighborhood Java JSP!"))
+			}).Should(ContainSubstring("Hello, from your friendly neighborhood Java JSP!"))
 		})
 	})
 
@@ -72,7 +72,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("go, world"))
+			}).Should(ContainSubstring("go, world"))
 		})
 	})
 
@@ -82,7 +82,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("python, world"))
+			}).Should(ContainSubstring("python, world"))
 		})
 	})
 
@@ -99,7 +99,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello from php"))
+			}).Should(ContainSubstring("Hello from php"))
 		})
 	})
 
@@ -112,7 +112,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello from dotnet-core"))
+			}).Should(ContainSubstring("Hello from dotnet-core"))
 		})
 	})
 
@@ -122,7 +122,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello from a staticfile"))
+			}).Should(ContainSubstring("Hello from a staticfile"))
 		})
 	})
 
@@ -132,7 +132,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello from a binary"))
+			}).Should(ContainSubstring("Hello from a binary"))
 		})
 	})
 })

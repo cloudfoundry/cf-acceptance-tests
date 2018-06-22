@@ -36,7 +36,7 @@ var _ = WindowsDescribe("Getting instance information", func() {
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
-		Eventually(cf.Cf("delete", appName, "-f"), Config.DefaultTimeoutDuration()).Should(Exit(0))
+		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
 	})
 
 	Context("scaling memory beyond the available amount", func() {
@@ -54,7 +54,7 @@ var _ = WindowsDescribe("Getting instance information", func() {
 
 		It("fails with insufficient resources", func() {
 			app := cf.Cf("app", appName)
-			Eventually(app, Config.DefaultTimeoutDuration()).Should(Exit(0))
+			Eventually(app).Should(Exit(0))
 			Expect(app.Out).To(Say("insufficient resources"))
 		})
 	})

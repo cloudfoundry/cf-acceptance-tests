@@ -24,7 +24,7 @@ var _ = InternetDependentDescribe("GitBuildpack", func() {
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, appName)
-		}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("Hello from a node app!"))
+		}).Should(ContainSubstring("Hello from a node app!"))
 	})
 
 	AfterEach(func() {

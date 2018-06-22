@@ -2,8 +2,6 @@ package apps
 
 import (
 	"fmt"
-	"time"
-
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	. "github.com/onsi/ginkgo"
@@ -38,6 +36,6 @@ var _ = AppsDescribe("Large_payload", func() {
 		Eventually(func() int {
 			curlResponse := helpers.CurlApp(Config, appName, fmt.Sprintf("/largetext/%d", payloadSize))
 			return len(curlResponse)
-		}, 10*time.Second, 10*time.Second).Should(Equal(payloadSize * 1024))
+		}).Should(Equal(payloadSize * 1024))
 	})
 })
