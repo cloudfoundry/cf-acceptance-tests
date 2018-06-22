@@ -45,7 +45,7 @@ var _ = RoutingDescribe("Session Affinity", func() {
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(appName)
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			err := os.Remove(cookieStorePath)
 			Expect(err).ToNot(HaveOccurred())
@@ -93,7 +93,7 @@ var _ = RoutingDescribe("Session Affinity", func() {
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(appName)
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		})
 
@@ -165,8 +165,8 @@ var _ = RoutingDescribe("Session Affinity", func() {
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(app1, Config.DefaultTimeoutDuration())
-			app_helpers.AppReport(app2, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(app1)
+			app_helpers.AppReport(app2)
 			Expect(cf.Cf("delete", app1, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			Expect(cf.Cf("delete", app2, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
@@ -245,8 +245,8 @@ var _ = RoutingDescribe("Session Affinity", func() {
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(app1, Config.DefaultTimeoutDuration())
-			app_helpers.AppReport(app2, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(app1)
+			app_helpers.AppReport(app2)
 
 			Expect(cf.Cf("delete", app1, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			Expect(cf.Cf("delete", app2, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))

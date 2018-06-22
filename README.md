@@ -415,7 +415,7 @@ unless the test specifically needs to use a buildpack name or URL specific to th
 
     ```go
     AfterEach(func() {
-      app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+      app_helpers.AppReport(appName)
     })
     ```
 1. Document the purpose of your test groups in this repo's README.md.  This is especially important when changing the explicit behavior of existing test groups or adding new test groups.

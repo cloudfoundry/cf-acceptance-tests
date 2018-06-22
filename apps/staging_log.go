@@ -23,7 +23,7 @@ var _ = AppsDescribe("An application being staged", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(appName)
 
 		cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())
 	})

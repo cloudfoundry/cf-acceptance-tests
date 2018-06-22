@@ -78,7 +78,7 @@ var _ = CredhubDescribe("service keys", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(chBrokerAppName, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(chBrokerAppName)
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 			TestSetup.RegularUserContext().TargetSpace()

@@ -41,7 +41,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(app, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(app)
 		Expect(cf.Cf("delete", app, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 

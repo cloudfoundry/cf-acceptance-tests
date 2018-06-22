@@ -74,8 +74,8 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appNameFrontend, Config.DefaultTimeoutDuration())
-		app_helpers.AppReport(appNameBackend, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(appNameFrontend)
+		app_helpers.AppReport(appNameBackend)
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 			Expect(cf.Cf("target", "-o", orgName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))

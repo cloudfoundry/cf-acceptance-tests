@@ -53,7 +53,7 @@ var _ = InternetDependentDescribe("App container DNS behavior", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(clientAppName, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(clientAppName)
 		Expect(cf.Cf("delete", clientAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 	})

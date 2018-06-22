@@ -67,7 +67,7 @@ exit 1
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(appName)
 
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				if buildpackName != "" {

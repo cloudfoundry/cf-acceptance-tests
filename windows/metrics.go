@@ -43,7 +43,7 @@ var _ = WindowsDescribe("Metrics", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(appName)
 
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(gexec.Exit(0))
 	})
@@ -75,7 +75,6 @@ var _ = WindowsDescribe("Metrics", func() {
 		defer close(stopchan)
 
 		containerMetrics := make([]*events.ContainerMetric, 2)
-		// todo: why such weird timeout and crazy for loop
 		Eventually(func() bool {
 			for {
 				select {

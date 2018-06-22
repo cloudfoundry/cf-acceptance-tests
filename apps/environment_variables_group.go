@@ -108,7 +108,7 @@ exit 1
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(appName)
 
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				revertExtendedEnv("staging", envVarName)
@@ -146,7 +146,7 @@ exit 1
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(appName)
 
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				revertExtendedEnv("running", envVarName)

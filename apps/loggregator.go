@@ -47,7 +47,7 @@ var _ = AppsDescribe("loggregator", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(appName)
 
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
@@ -69,7 +69,6 @@ var _ = AppsDescribe("loggregator", func() {
 		It("exercises basic loggregator behavior", func() {
 			if !Config.GetUseLogCache() {
 				// log cache cli will not emit header unless being run in terminal
-				// TODO why such a weird timeout; also no polling interval
 				Eventually(logs, (Config.DefaultTimeoutDuration() + time.Minute)).Should(Say("(Connected, tailing|Retrieving) logs for app"))
 			}
 
@@ -77,7 +76,6 @@ var _ = AppsDescribe("loggregator", func() {
 				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
 			}).Should(ContainSubstring("Muahaha"))
 
-			// TODO why such a weird timeout; also no polling interval
 			Eventually(logs, (Config.DefaultTimeoutDuration() + time.Minute)).Should(Say("Muahaha"))
 		})
 	})
@@ -120,7 +118,6 @@ var _ = AppsDescribe("loggregator", func() {
 			defer close(stopchan)
 
 			containerMetrics := make([]*events.ContainerMetric, 2)
-			// todo: insanely weird thing i do not understand
 			Eventually(func() bool {
 				for {
 					select {

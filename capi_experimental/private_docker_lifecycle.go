@@ -77,7 +77,7 @@ var _ = CapiExperimentalDescribe("Private Docker Registry Application Lifecycle"
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(appName)
 		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
 	})
 

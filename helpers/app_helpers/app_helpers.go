@@ -2,8 +2,6 @@ package app_helpers
 
 import (
 	"strings"
-	"time"
-
 	"fmt"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -23,15 +21,15 @@ func GetAppGuid(appName string) string {
 	return appGuid
 }
 
-func AppReport(appName string, timeout time.Duration) {
+func AppReport(appName string) {
 	if appName == "" {
 		return
 	}
 
 	printStartAppReport(appName)
 
-	Eventually(cf.Cf("app", appName, "--guid"), timeout).Should(Exit())
-	Eventually(logs.Tail(Config.GetUseLogCache(), appName), timeout).Should(Exit())
+	Eventually(cf.Cf("app", appName, "--guid"), Config.DefaultTimeoutDuration()).Should(Exit())
+	Eventually(logs.Tail(Config.GetUseLogCache(), appName), Config.DefaultTimeoutDuration()).Should(Exit())
 
 	printEndAppReport(appName)
 }

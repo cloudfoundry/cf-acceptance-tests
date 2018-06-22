@@ -65,7 +65,7 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(appName)
 			Eventually(cf.Cf("delete", appName, "-f", "-r")).Should(Exit(0))
 		})
 
@@ -103,7 +103,7 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 			})
 
 			AfterEach(func() {
-				app_helpers.AppReport(secondAppName, Config.DefaultTimeoutDuration())
+				app_helpers.AppReport(secondAppName)
 				Eventually(cf.Cf("delete", appName, "-f", "-r")).Should(Exit(0))
 			})
 

@@ -29,7 +29,7 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(appName)
 		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
 	})
 

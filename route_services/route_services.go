@@ -66,8 +66,8 @@ var _ = RouteServicesDescribe("Route Services", func() {
 			})
 
 			AfterEach(func() {
-				app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
-				app_helpers.AppReport(routeServiceName, Config.DefaultTimeoutDuration())
+				app_helpers.AppReport(appName)
+				app_helpers.AppReport(routeServiceName)
 
 				unbindRouteFromService(appName, serviceInstanceName)
 				deleteServiceInstance(serviceInstanceName)
@@ -120,7 +120,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 			})
 
 			AfterEach(func() {
-				app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+				app_helpers.AppReport(appName)
 
 				unbindRouteFromService(appName, serviceInstanceName)
 				deleteServiceInstance(serviceInstanceName)

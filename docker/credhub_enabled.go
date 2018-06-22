@@ -111,7 +111,7 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 			})
 
 			AfterEach(func() {
-				app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+				app_helpers.AppReport(appName)
 
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 					TestSetup.RegularUserContext().TargetSpace()

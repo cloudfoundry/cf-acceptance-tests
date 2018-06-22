@@ -69,9 +69,9 @@ var _ = AppsDescribe("Logging", func() {
 			logs.Kill()
 			close(interrupt)
 
-			app_helpers.AppReport(logWriterAppName1, Config.DefaultTimeoutDuration())
-			app_helpers.AppReport(logWriterAppName2, Config.DefaultTimeoutDuration())
-			app_helpers.AppReport(listenerAppName, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(logWriterAppName1)
+			app_helpers.AppReport(logWriterAppName2)
+			app_helpers.AppReport(listenerAppName)
 
 			Eventually(cf.Cf("delete", logWriterAppName1, "-f", "-r")).Should(Exit(0), "Failed to delete app")
 			Eventually(cf.Cf("delete", logWriterAppName2, "-f", "-r")).Should(Exit(0), "Failed to delete app")
@@ -99,7 +99,6 @@ var _ = AppsDescribe("Logging", func() {
 			go writeLogsUntilInterrupted(interrupt, randomMessage1, logWriterAppName1)
 			go writeLogsUntilInterrupted(interrupt, randomMessage2, logWriterAppName2)
 
-			// todo: why such weird timeout and no polling interval
 			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(randomMessage1))
 			Consistently(logs, 10).ShouldNot(Say(randomMessage2))
 		})

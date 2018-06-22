@@ -74,9 +74,9 @@ var _ = WindowsDescribe("Context Paths", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName1, Config.DefaultTimeoutDuration())
-		app_helpers.AppReport(appName2, Config.DefaultTimeoutDuration())
-		app_helpers.AppReport(appName3, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(appName1)
+		app_helpers.AppReport(appName2)
+		app_helpers.AppReport(appName3)
 
 		Expect(cf.Cf("delete", appName1, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		Expect(cf.Cf("delete", appName2, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))

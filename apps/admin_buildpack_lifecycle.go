@@ -41,7 +41,7 @@ var _ = AppsDescribe("Admin Buildpacks", func() {
 	}
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(appName)
 		for _, name := range buildpackNames {
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				Expect(cf.Cf("delete-buildpack", name, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))

@@ -61,8 +61,8 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appNameCatnip, Config.DefaultTimeoutDuration())
-		app_helpers.AppReport(appNameSimple, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(appNameCatnip)
+		app_helpers.AppReport(appNameSimple)
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 			Expect(cf.Cf("target", "-o", orgName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))

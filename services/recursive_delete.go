@@ -68,7 +68,7 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(broker.Name, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(broker.Name)
 
 		broker.Destroy()
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {

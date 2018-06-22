@@ -37,8 +37,8 @@ var _ = AppsDescribe("Copy app bits", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(golangAppName, Config.DefaultTimeoutDuration())
-		app_helpers.AppReport(helloWorldAppName, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(golangAppName)
+		app_helpers.AppReport(helloWorldAppName)
 
 		Expect(cf.Cf("delete", golangAppName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		Expect(cf.Cf("delete", helloWorldAppName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))

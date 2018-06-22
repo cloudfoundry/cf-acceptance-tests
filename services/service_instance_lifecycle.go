@@ -82,7 +82,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(broker.Name, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(broker.Name)
 
 			broker.Destroy()
 		})
@@ -262,7 +262,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 			})
 
 			AfterEach(func() {
-				app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+				app_helpers.AppReport(appName)
 				Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 				Expect(cf.Cf("delete-service", instanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			})
@@ -341,7 +341,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(broker.Name, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(broker.Name)
 
 			Expect(cf.Cf("delete-service", instanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			waitForAsyncDeletionToComplete(broker, instanceName)
@@ -445,7 +445,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					})
 
 					AfterEach(func() {
-						app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+						app_helpers.AppReport(appName)
 						Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 					})
 
@@ -525,7 +525,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 			})
 
 			AfterEach(func() {
-				app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+				app_helpers.AppReport(appName)
 				Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			})
 

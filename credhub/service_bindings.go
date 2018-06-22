@@ -204,7 +204,7 @@ EOF
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(appName)
 
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
@@ -240,8 +240,8 @@ EOF
 			})
 
 			AfterEach(func() {
-				app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
-				app_helpers.AppReport(chBrokerAppName, Config.DefaultTimeoutDuration())
+				app_helpers.AppReport(appName)
+				app_helpers.AppReport(chBrokerAppName)
 
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 					TestSetup.RegularUserContext().TargetSpace()

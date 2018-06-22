@@ -20,7 +20,7 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 	var appName, instanceName, asyncInstanceName string
 
 	AfterEach(func() {
-		app_helpers.AppReport(broker.Name, Config.DefaultTimeoutDuration())
+		app_helpers.AppReport(broker.Name)
 		broker.Destroy()
 	})
 
@@ -43,7 +43,7 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(appName)
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			Expect(cf.Cf("delete-service", instanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		})
@@ -110,7 +110,7 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(appName)
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 			Expect(cf.Cf("delete-service", instanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 		})

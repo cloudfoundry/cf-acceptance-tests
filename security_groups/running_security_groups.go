@@ -202,10 +202,10 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(serverAppName, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(serverAppName)
 			Expect(cf.Cf("delete", serverAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-			app_helpers.AppReport(clientAppName, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(clientAppName)
 			Expect(cf.Cf("delete", clientAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			deleteSecurityGroup(securityGroupName)
@@ -301,10 +301,10 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(serverAppName, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(serverAppName)
 			Expect(cf.Cf("delete", serverAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-			app_helpers.AppReport(testAppName, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(testAppName)
 			Expect(cf.Cf("delete", testAppName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			deleteBuildpack(buildpack)

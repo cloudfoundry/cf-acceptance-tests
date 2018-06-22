@@ -75,7 +75,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			broker.Destroy()
 
 			if appName != "" {
-				app_helpers.AppReport(appName, Config.DefaultTimeoutDuration())
+				app_helpers.AppReport(appName)
 				Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
 			}
 

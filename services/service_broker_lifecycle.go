@@ -230,7 +230,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(broker.Name, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(broker.Name)
 
 			broker.Destroy()
 		})
@@ -249,7 +249,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(broker.Name, Config.DefaultTimeoutDuration())
+			app_helpers.AppReport(broker.Name)
 			broker.Destroy()
 		})
 
