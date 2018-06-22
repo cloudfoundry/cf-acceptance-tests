@@ -90,7 +90,7 @@ func (uc UserContext) Login() {
 	}
 
 	session := internal.Cf(uc.CommandStarter, args...).Wait(uc.Timeout)
-	ExpectWithOffset(1, session).Should(Exit(0), apiErrorMessage(session))
+	EventuallyWithOffset(1, session, uc.Timeout).Should(Exit(0), apiErrorMessage(session))
 
 	redactor := internal.NewRedactor(uc.TestUser.Password())
 	redactingReporter := internal.NewRedactingReporter(ginkgo.GinkgoWriter, redactor)
