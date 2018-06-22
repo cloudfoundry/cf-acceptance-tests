@@ -55,6 +55,13 @@ func cliErrorMessage(session *Session) string {
 	return fmt.Sprintf("\n>>> [ %s ] exited with an error \n", command)
 }
 
+func apiErrorMessage(session *Session) string {
+	apiEndpoint := strings.Join(session.Command.Args, " ")
+	stdError := string(session.Err.Contents())
+
+	return fmt.Sprintf("\n>>> [ %s ] exited with an error \n\n%s\n", apiEndpoint, stdError)
+}
+
 func NewUserContext(apiUrl string, testUser userValues, testSpace spaceValues, skipSSLValidation bool, timeout time.Duration) UserContext {
 	var org, space string
 	if testSpace != nil {
@@ -82,8 +89,8 @@ func (uc UserContext) Login() {
 		args = append(args, "--skip-ssl-validation")
 	}
 
-	session := internal.Cf(uc.CommandStarter, args...)
-	EventuallyWithOffset(1, session, uc.Timeout).Should(Exit(0), cliErrorMessage(session))
+	session := internal.Cf(uc.CommandStarter, args...).Wait(uc.Timeout)
+	ExpectWithOffset(1, session).Should(Exit(0), apiErrorMessage(session))
 
 	redactor := internal.NewRedactor(uc.TestUser.Password())
 	redactingReporter := internal.NewRedactingReporter(ginkgo.GinkgoWriter, redactor)
