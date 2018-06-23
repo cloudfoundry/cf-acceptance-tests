@@ -43,17 +43,17 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 			createQuota := cf.Cf("create-quota", quotaName, "-m", "10G", "-r", "1000", "-s", "5").Wait(TestSetup.ShortTimeout())
 			Expect(createQuota).To(Exit(0))
 
-			createOrg := cf.Cf("create-org", orgName).Wait(Config.DefaultTimeoutDuration())
+			createOrg := cf.Cf("create-org", orgName).Wait()
 			Expect(createOrg).To(Exit(0), "failed to create org")
 
 			setQuota := cf.Cf("set-quota", orgName, quotaName).Wait(TestSetup.ShortTimeout())
 			Expect(setQuota).To(Exit(0))
 
-			createSpace := cf.Cf("create-space", spaceName, "-o", orgName).Wait(Config.DefaultTimeoutDuration())
+			createSpace := cf.Cf("create-space", spaceName, "-o", orgName).Wait()
 			Expect(createSpace).To(Exit(0), "failed to create space")
 
 			session := cf.Cf("curl", fmt.Sprintf("/v3/organizations?names=%s", orgName))
-			bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+			bytes := session.Wait().Out.Contents()
 			orgGuid = v3_helpers.GetGuidFromResponse(bytes)
 
 			isoSegGuid = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
@@ -62,7 +62,7 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 
 	AfterEach(func() {
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
-			deleteOrg := cf.Cf("delete-org", orgName, "-f").Wait(Config.DefaultTimeoutDuration())
+			deleteOrg := cf.Cf("delete-org", orgName, "-f").Wait()
 			Expect(deleteOrg).To(Exit(0), "failed to delete org")
 		})
 	})
@@ -74,7 +74,7 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, SHARED_ISOLATION_SEGMENT_GUID)
 				v3_helpers.AssignIsolationSegmentToSpace(spaceGuid, SHARED_ISOLATION_SEGMENT_GUID)
-				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 				Expect(target).To(Exit(0), "failed targeting")
 				appName = random_name.CATSRandomName("APP")
 
@@ -115,11 +115,11 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
 				session := cf.Cf("curl", fmt.Sprintf("/v3/spaces?names=%s", spaceName))
-				bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+				bytes := session.Wait().Out.Contents()
 				spaceGuid = v3_helpers.GetGuidFromResponse(bytes)
 				v3_helpers.AssignIsolationSegmentToSpace(spaceGuid, isoSegGuid)
 
-				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 				Expect(target).To(Exit(0), "failed targeting")
 				appName = random_name.CATSRandomName("APP")
 				Eventually(cf.Cf(

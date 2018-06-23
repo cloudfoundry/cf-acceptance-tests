@@ -28,8 +28,8 @@ func AppReport(appName string) {
 
 	printStartAppReport(appName)
 
-	Eventually(cf.Cf("app", appName, "--guid"), Config.DefaultTimeoutDuration()).Should(Exit())
-	Eventually(logs.Tail(Config.GetUseLogCache(), appName), Config.DefaultTimeoutDuration()).Should(Exit())
+	Eventually(cf.Cf("app", appName, "--guid")).Should(Exit())
+	Eventually(logs.Tail(Config.GetUseLogCache(), appName)).Should(Exit())
 
 	printEndAppReport(appName)
 }

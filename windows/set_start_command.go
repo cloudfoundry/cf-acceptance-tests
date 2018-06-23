@@ -35,13 +35,13 @@ var _ = WindowsDescribe("Setting an app's start command", func() {
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).Should(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).Should(Exit(0))
 	})
 
 	It("uses the given start command", func() {
 		// OUT... to make sure we don't match the Launcher line: Running `loop.bat Hi there!!!'
 		Eventually(func() *Buffer {
-			return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+			return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 		}).Should(Say("OUT Hi there!!!"))
 	})
 })

@@ -110,7 +110,7 @@ func TestCATS(t *testing.T) {
 		TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.GetScaledTimeout(1*time.Minute), func() {
-			buildpacksSession := cf.Cf("buildpacks").Wait(Config.DefaultTimeoutDuration())
+			buildpacksSession := cf.Cf("buildpacks").Wait()
 			Expect(buildpacksSession).To(Exit(0))
 			buildpacks := string(buildpacksSession.Out.Contents())
 

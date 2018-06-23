@@ -68,10 +68,10 @@ var _ = CapiExperimentalDescribe("route_mapping", func() {
 			updateProcessPath := fmt.Sprintf("/v3/processes/%s", webProcess.Guid)
 			setHealthCheckBody := `{"health_check": {"type": "process"}}`
 
-			Expect(cf.Cf("curl", updateProcessPath, "-X", "PATCH", "-d", setHealthCheckBody).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("curl", updateProcessPath, "-X", "PATCH", "-d", setHealthCheckBody).Wait()).To(Exit(0))
 
 			getRoutePath := fmt.Sprintf("/v2/routes?q=host:%s", appName)
-			routeBody := cf.Cf("curl", getRoutePath).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+			routeBody := cf.Cf("curl", getRoutePath).Wait().Out.Contents()
 
 			var routeJSON RouteList
 			json.Unmarshal([]byte(routeBody), &routeJSON)
@@ -84,10 +84,10 @@ var _ = CapiExperimentalDescribe("route_mapping", func() {
 					}
 				}`, appGuid, routeGuid)
 
-			Expect(cf.Cf("curl", "/v3/route_mappings", "-X", "POST", "-d", addRouteBody).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("curl", "/v3/route_mappings", "-X", "POST", "-d", addRouteBody).Wait()).To(Exit(0))
 
 			StartApp(appGuid)
-			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
+			Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)

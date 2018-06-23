@@ -60,7 +60,7 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 		})
 
 		AfterEach(func() {
-			Expect(cf.Cf("delete-service", instanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(gexec.Exit(0))
+			Expect(cf.Cf("delete-service", instanceName, "-f").Wait()).To(gexec.Exit(0))
 		})
 
 		It("can perform an operation on a user's behalf using sso", func() {
@@ -93,7 +93,7 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 		})
 
 		AfterEach(func() {
-			Expect(cf.Cf("delete-service", instanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(gexec.Exit(0))
+			Expect(cf.Cf("delete-service", instanceName, "-f").Wait()).To(gexec.Exit(0))
 		})
 
 		It("can perform an operation on a user's behalf using sso", func() {

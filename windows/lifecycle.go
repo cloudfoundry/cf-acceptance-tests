@@ -50,7 +50,7 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 			var metrics = regexp.MustCompile(`running.*(?:[\d\.]+)%\s+([\d\.]+)[MG]? of (?:[\d\.]+)[MG]\s+([\d\.]+)[MG]? of (?:[\d\.]+)[MG]`)
 			memdisk := func() (float64, float64) {
 				app := cf.Cf("app", appName)
-				Expect(app.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(app.Wait()).To(Exit(0))
 
 				arr := metrics.FindStringSubmatch(string(app.Out.Contents()))
 				mem, err := strconv.ParseFloat(arr[1], 64)
@@ -92,7 +92,7 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 		By("scaling it", func() {
 			Expect(cf.Cf("scale", appName, "-i", "2").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			Eventually(cf.Cf("apps")).Should(gbytes.Say("2/2"))
-			Expect(cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())).ToNot(gbytes.Say("insufficient resources"))
+			Expect(cf.Cf("app", appName).Wait()).ToNot(gbytes.Say("insufficient resources"))
 		})
 
 		By("restarting an instance", func() {
@@ -118,8 +118,8 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 		})
 
 		By("removing it", func() {
-			Expect(cf.Cf("delete", appName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			app := cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
+			Expect(cf.Cf("delete", appName, "-f").Wait()).To(Exit(0))
+			app := cf.Cf("app", appName).Wait()
 			Expect(app).To(Exit(1))
 			Expect(app.Err).To(gbytes.Say("not found"))
 

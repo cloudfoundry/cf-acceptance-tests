@@ -24,7 +24,7 @@ var _ = AppsDescribe("Delete Route", func() {
 
 		appUrl := "https://" + appName + "." + Config.GetAppsDomain()
 
-		nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait(Config.DefaultTimeoutDuration())
+		nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait()
 		expectedNullResponse = string(nullSession.Buffer().Contents())
 
 		Expect(cf.Cf("push",
@@ -42,7 +42,7 @@ var _ = AppsDescribe("Delete Route", func() {
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 	})
 
 	Describe("Removing the route", func() {
@@ -60,7 +60,7 @@ var _ = AppsDescribe("Delete Route", func() {
 			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("Catnip?"))
 
 			By("deleting the original route")
-			Expect(cf.Cf("delete-route", Config.GetAppsDomain(), "-n", appName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("delete-route", Config.GetAppsDomain(), "-n", appName, "-f").Wait()).To(Exit(0))
 			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring(expectedNullResponse))
 		})
 	})

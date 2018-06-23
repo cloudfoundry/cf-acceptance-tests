@@ -48,20 +48,20 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 			createQuota := cf.Cf("create-quota", quotaName, "-m", "10G", "-r", "1000", "-s", "5").Wait(TestSetup.ShortTimeout())
 			Expect(createQuota).To(Exit(0))
 
-			createOrg := cf.Cf("create-org", orgName).Wait(Config.DefaultTimeoutDuration())
+			createOrg := cf.Cf("create-org", orgName).Wait()
 			Expect(createOrg).To(Exit(0), "failed to create org")
 
 			setQuota := cf.Cf("set-quota", orgName, quotaName).Wait(TestSetup.ShortTimeout())
 			Expect(setQuota).To(Exit(0))
 
-			createSpace := cf.Cf("create-space", spaceName, "-o", orgName).Wait(Config.DefaultTimeoutDuration())
+			createSpace := cf.Cf("create-space", spaceName, "-o", orgName).Wait()
 			Expect(createSpace).To(Exit(0), "failed to create space")
 
-			addSpaceDeveloper := cf.Cf("set-space-role", TestSetup.RegularUserContext().Username, orgName, spaceName, "SpaceDeveloper").Wait(Config.DefaultTimeoutDuration())
+			addSpaceDeveloper := cf.Cf("set-space-role", TestSetup.RegularUserContext().Username, orgName, spaceName, "SpaceDeveloper").Wait()
 			Expect(addSpaceDeveloper).To(Exit(0), "failed to add space developer role")
 
 			session := cf.Cf("curl", fmt.Sprintf("/v3/organizations?names=%s", orgName))
-			bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+			bytes := session.Wait().Out.Contents()
 			orgGuid = v3_helpers.GetGuidFromResponse(bytes)
 
 			isoSegGuid = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
@@ -70,7 +70,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 
 	AfterEach(func() {
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
-			deleteOrg := cf.Cf("delete-org", orgName, "-f").Wait(Config.DefaultTimeoutDuration())
+			deleteOrg := cf.Cf("delete-org", orgName, "-f").Wait()
 			Expect(deleteOrg).To(Exit(0), "failed to delete org")
 		})
 	})
@@ -85,7 +85,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 
 		It("can run an app to a space with no assigned segment", func() {
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
-				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 				Expect(target).To(Exit(0), "failed targeting")
 
 				appName := random_name.CATSRandomName("APP")
@@ -113,7 +113,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 
 		It("can run an app to an org where the default is the user-provided isolation segment", func() {
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
-				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 				Expect(target).To(Exit(0), "failed targeting")
 
 				appName := random_name.CATSRandomName("APP")
@@ -160,7 +160,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 
 		It("fails to start an app in the Isolation Segment", func() {
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
-				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 				Expect(target).To(Exit(0), "failed targeting")
 
 				appName := random_name.CATSRandomName("APP")
@@ -184,7 +184,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 					"-X",
 					"PATCH",
 					"-d",
-					fmt.Sprintf(`{"data":{"guid":"%s"}}`, isoSegGuid)).Wait(Config.DefaultTimeoutDuration())
+					fmt.Sprintf(`{"data":{"guid":"%s"}}`, isoSegGuid)).Wait()
 				Expect(session).To(Exit(0))
 				Expect(session).To(Say("Ensure it has been entitled to (the|this) organization"))
 			})
@@ -196,7 +196,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
 				session := cf.Cf("curl", fmt.Sprintf("/v3/spaces?names=%s", spaceName))
-				bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+				bytes := session.Wait().Out.Contents()
 				spaceGuid = v3_helpers.GetGuidFromResponse(bytes)
 				v3_helpers.AssignIsolationSegmentToSpace(spaceGuid, isoSegGuid)
 			})
@@ -210,7 +210,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 
 		It("can run an app in that isolation segment", func() {
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
-				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 				Expect(target).To(Exit(0), "failed targeting")
 
 				appName := random_name.CATSRandomName("APP")

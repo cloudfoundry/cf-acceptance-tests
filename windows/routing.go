@@ -33,7 +33,7 @@ var _ = WindowsDescribe("Adding and removing routes", func() {
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).Should(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).Should(Exit(0))
 	})
 
 	It("should be able to add and remove routes", func() {

@@ -41,16 +41,16 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 			createQuota := cf.Cf("create-quota", quotaName, "-m", "10G", "-r", "1000", "-s", "5").Wait(TestSetup.ShortTimeout())
 			Expect(createQuota).To(Exit(0))
 
-			createOrg := cf.Cf("create-org", orgName).Wait(Config.DefaultTimeoutDuration())
+			createOrg := cf.Cf("create-org", orgName).Wait()
 			Expect(createOrg).To(Exit(0), "failed to create org")
 
 			setQuota := cf.Cf("set-quota", orgName, quotaName).Wait(TestSetup.ShortTimeout())
 			Expect(setQuota).To(Exit(0))
 
-			createSpace := cf.Cf("create-space", spaceName, "-o", orgName).Wait(Config.DefaultTimeoutDuration())
+			createSpace := cf.Cf("create-space", spaceName, "-o", orgName).Wait()
 			Expect(createSpace).To(Exit(0), "failed to create space")
 
-			target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+			target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 			Expect(target).To(Exit(0), "failed targeting")
 
 			createApp := cf.Cf("push",
@@ -62,7 +62,7 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
 			Expect(createApp).To(Exit(0), "failed creating app")
 
-			createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName).Wait(Config.DefaultTimeoutDuration())
+			createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName).Wait()
 			Expect(createService).To(Exit(0), "failed creating service")
 		})
 	})
@@ -72,15 +72,15 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 
 		broker.Destroy()
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-			targetOrg := cf.Cf("target", "-o", orgName).Wait(Config.DefaultTimeoutDuration())
+			targetOrg := cf.Cf("target", "-o", orgName).Wait()
 			if targetOrg.ExitCode() == 0 {
-				targetSpace := cf.Cf("target", "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+				targetSpace := cf.Cf("target", "-s", spaceName).Wait()
 				if targetSpace.ExitCode() == 0 {
-					Expect(cf.Cf("delete", appName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-					Expect(cf.Cf("delete-service", instanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-					Expect(cf.Cf("delete-space", spaceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					Expect(cf.Cf("delete", appName, "-f").Wait()).To(Exit(0))
+					Expect(cf.Cf("delete-service", instanceName, "-f").Wait()).To(Exit(0))
+					Expect(cf.Cf("delete-space", spaceName, "-f").Wait()).To(Exit(0))
 				}
-				Expect(cf.Cf("delete-org", orgName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("delete-org", orgName, "-f").Wait()).To(Exit(0))
 				Expect(cf.Cf("delete-quota", "-f", quotaName).Wait(TestSetup.ShortTimeout())).To(Exit(0))
 			}
 		})
@@ -88,10 +88,10 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 
 	It("deletes all apps and services in all spaces in an org", func() {
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-			deleteOrg := cf.Cf("delete-org", orgName, "-f").Wait(Config.DefaultTimeoutDuration())
+			deleteOrg := cf.Cf("delete-org", orgName, "-f").Wait()
 			Expect(deleteOrg).To(Exit(0), "failed deleting org")
 		})
-		getOrg := cf.Cf("org", orgName).Wait(Config.DefaultTimeoutDuration())
+		getOrg := cf.Cf("org", orgName).Wait()
 		Expect(getOrg).To(Exit(1), "org still exists")
 	})
 })

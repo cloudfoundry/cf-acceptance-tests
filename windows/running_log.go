@@ -37,7 +37,7 @@ var _ = WindowsDescribe("app logs", func() {
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).Should(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).Should(Exit(0))
 	})
 
 	It("captures stdout logs with the correct tag", func() {
@@ -48,7 +48,7 @@ var _ = WindowsDescribe("app logs", func() {
 		helpers.CurlApp(Config, appName, fmt.Sprintf("/print/%s", url.QueryEscape(message)))
 
 		Eventually(func() *Buffer {
-			return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+			return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 		}).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*OUT %s", message)))
 	})
 
@@ -60,7 +60,7 @@ var _ = WindowsDescribe("app logs", func() {
 		helpers.CurlApp(Config, appName, fmt.Sprintf("/print_err/%s", url.QueryEscape(message)))
 
 		Eventually(func() *Buffer {
-			return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+			return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 		}).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*ERR %s", message)))
 	})
 })

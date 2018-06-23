@@ -58,14 +58,14 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 		appName = random_name.CATSRandomName("APP")
 
 		appUrl := "https://" + appName + "." + Config.GetAppsDomain()
-		nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait(Config.DefaultTimeoutDuration())
+		nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait()
 		expectedNullResponse = string(nullSession.Buffer().Contents())
 	})
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 	})
 
 	Describe("pushing", func() {
@@ -101,12 +101,12 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			})
 
 			AfterEach(func() {
-				Expect(cf.Cf("delete", app2, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("delete", app2, "-f", "-r").Wait()).To(Exit(0))
 			})
 
 			It("makes another app available via same host and domain, but different path", func() {
 				getRoutePath := fmt.Sprintf("/v2/routes?q=host:%s", appName)
-				routeBody := cf.Cf("curl", getRoutePath).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+				routeBody := cf.Cf("curl", getRoutePath).Wait().Out.Contents()
 				var routeJSON struct {
 					Resources []struct {
 						Entity struct {
@@ -120,7 +120,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				Expect(len(routeJSON.Resources)).To(BeNumerically(">=", 1))
 				spaceGuid := routeJSON.Resources[0].Entity.SpaceGuid
 				domainGuid := routeJSON.Resources[0].Entity.DomainGuid
-				appGuid := cf.Cf("app", app2, "--guid").Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+				appGuid := cf.Cf("app", app2, "--guid").Wait().Out.Contents()
 
 				jsonBody := "{\"host\":\"" + appName + "\", \"path\":\"" + appPath + "\", \"domain_guid\":\"" + domainGuid + "\",\"space_guid\":\"" + spaceGuid + "\"}"
 				routePostResponseBody := cf.Cf("curl", "/v2/routes", "-X", "POST", "-d", jsonBody).Wait(Config.CfPushTimeoutDuration()).Out.Contents()
@@ -245,7 +245,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 		})
 
 		It("makes the app unreachable", func() {
-			Expect(cf.Cf("stop", appName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("stop", appName).Wait()).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
@@ -253,7 +253,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 		})
 
 		It("generates an app usage 'stopped' event", func() {
-			Expect(cf.Cf("stop", appName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("stop", appName).Wait()).To(Exit(0))
 
 			found, _ := lastAppUsageEvent(appName, "STOPPED")
 			Expect(found).To(BeTrue())
@@ -261,14 +261,14 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 		Describe("and then starting", func() {
 			It("makes the app reachable again", func() {
-				Expect(cf.Cf("stop", appName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("stop", appName).Wait()).To(Exit(0))
 
 				Eventually(func() bool {
 					found, _ := lastAppUsageEvent(appName, "STOPPED")
 					return found
-				}, Config.DefaultTimeoutDuration()).Should(BeTrue())
+				}).Should(BeTrue())
 
-				Expect(cf.Cf("start", appName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("start", appName).Wait()).To(Exit(0))
 
 				Eventually(func() string {
 					return helpers.CurlAppRoot(Config, appName)
@@ -312,7 +312,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 		BeforeEach(func() {
 			appUrl := "https://" + appName + "." + Config.GetAppsDomain()
-			nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait(Config.DefaultTimeoutDuration())
+			nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait()
 			expectedNullResponse = string(nullSession.Buffer().Contents())
 
 			Expect(cf.Cf("push",
@@ -325,14 +325,14 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 		})
 
 		It("removes the application", func() {
-			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 
-			app := cf.Cf("apps").Wait(Config.DefaultTimeoutDuration())
+			app := cf.Cf("apps").Wait()
 			Consistently(app).ShouldNot(Say(appName))
 		})
 
 		It("makes the app unreachable", func() {
-			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
@@ -340,7 +340,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 		})
 
 		It("generates an app usage 'stopped' event", func() {
-			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 
 			found, _ := lastAppUsageEvent(appName, "STOPPED")
 			Expect(found).To(BeTrue())

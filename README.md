@@ -409,7 +409,7 @@ unless the test specifically needs to use a buildpack name or URL specific to th
   ```
 1. Delete all resources that are created, e.g. apps, routes, quotas, etc.  This is in order to leave the system in the same state it was found in.  For example, to delete apps and their associated routes:
     ```
-		Expect(cf.Cf("delete", myAppName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete", myAppName, "-f", "-r").Wait()).To(Exit(0))
     ```
 1. Specifically for apps, before tearing them down, print the app guid and recent application logs. There is a helper method `AppReport` provided in the `app_helpers` package for this purpose.
 

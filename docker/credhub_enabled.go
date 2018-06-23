@@ -32,27 +32,27 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 			pushBroker := cf.Cf("push", chBrokerName, "-b", Config.GetGoBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().CredHubServiceBroker, "-f", assets.NewAssets().CredHubServiceBroker+"/manifest.yml", "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
 			Expect(pushBroker).To(Exit(0), "failed pushing credhub-enabled service broker")
 
-			existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait(Config.DefaultTimeoutDuration()).Out.Contents())
+			existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait().Out.Contents())
 
 			if !strings.Contains(existingEnvVar, "CREDHUB_API") {
 				Expect(cf.Cf(
 					"set-env", chBrokerName,
 					"CREDHUB_API", Config.GetCredHubLocation(),
-				).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_API env var on credhub-enabled service broker")
+				).Wait()).To(Exit(0), "failed setting CREDHUB_API env var on credhub-enabled service broker")
 			}
 
 			Expect(cf.Cf(
 				"set-env", chBrokerName,
 				"CREDHUB_CLIENT", Config.GetCredHubBrokerClientCredential(),
-			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_CLIENT env var on credhub-enabled service broker")
+			).Wait()).To(Exit(0), "failed setting CREDHUB_CLIENT env var on credhub-enabled service broker")
 
 			Expect(cf.CfRedact(
 				Config.GetCredHubBrokerClientSecret(), "set-env", chBrokerName,
 				"CREDHUB_SECRET", Config.GetCredHubBrokerClientSecret(),
-			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_SECRET env var on credhub-enabled service broker")
+			).Wait()).To(Exit(0), "failed setting CREDHUB_SECRET env var on credhub-enabled service broker")
 
 			chServiceName = random_name.CATSRandomName("SERVICE-NAME")
-			setServiceName := cf.Cf("set-env", chBrokerName, "SERVICE_NAME", chServiceName).Wait(Config.DefaultTimeoutDuration())
+			setServiceName := cf.Cf("set-env", chBrokerName, "SERVICE_NAME", chServiceName).Wait()
 			Expect(setServiceName).To(Exit(0), "failed setting SERVICE_NAME env var on credhub-enabled service broker")
 
 			restartBroker := cf.Cf("restart", chBrokerName).Wait(Config.CfPushTimeoutDuration())
@@ -60,15 +60,15 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				serviceUrl := "https://" + chBrokerName + "." + Config.GetAppsDomain()
-				createServiceBroker := cf.Cf("create-service-broker", chBrokerName, Config.GetAdminUser(), Config.GetAdminPassword(), serviceUrl).Wait(Config.DefaultTimeoutDuration())
+				createServiceBroker := cf.Cf("create-service-broker", chBrokerName, Config.GetAdminUser(), Config.GetAdminPassword(), serviceUrl).Wait()
 				Expect(createServiceBroker).To(Exit(0), "failed creating credhub-enabled service broker")
 
-				enableAccess := cf.Cf("enable-service-access", chServiceName, "-o", TestSetup.RegularUserContext().Org).Wait(Config.DefaultTimeoutDuration())
+				enableAccess := cf.Cf("enable-service-access", chServiceName, "-o", TestSetup.RegularUserContext().Org).Wait()
 				Expect(enableAccess).To(Exit(0), "failed to enable service access for credhub-enabled broker")
 
 				TestSetup.RegularUserContext().TargetSpace()
 				instanceName = random_name.CATSRandomName("SVIN-CH")
-				createService := cf.Cf("create-service", chServiceName, "credhub-read-plan", instanceName).Wait(Config.DefaultTimeoutDuration())
+				createService := cf.Cf("create-service", chServiceName, "credhub-read-plan", instanceName).Wait()
 				Expect(createService).To(Exit(0), "failed creating credhub enabled service")
 			})
 		})
@@ -77,9 +77,9 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				TestSetup.RegularUserContext().TargetSpace()
 
-				Expect(cf.Cf("delete-service", instanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(cf.Cf("purge-service-offering", chServiceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(cf.Cf("delete-service-broker", chBrokerName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("delete-service", instanceName, "-f").Wait()).To(Exit(0))
+				Expect(cf.Cf("purge-service-offering", chServiceName).Wait()).To(Exit(0))
+				Expect(cf.Cf("delete-service-broker", chBrokerName, "-f").Wait()).To(Exit(0))
 			})
 		})
 
@@ -98,13 +98,12 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 					"-d", Config.GetAppsDomain(),
 					"-i", "1",
 					"-c", fmt.Sprintf("/myapp/dockerapp -name=%s", appName)),
-					Config.DefaultTimeoutDuration(),
 				).Should(Exit(0))
 
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 					TestSetup.RegularUserContext().TargetSpace()
 
-					bindService := cf.Cf("bind-service", appName, instanceName).Wait(Config.DefaultTimeoutDuration())
+					bindService := cf.Cf("bind-service", appName, instanceName).Wait()
 					Expect(bindService).To(Exit(0), "failed binding app to service")
 					Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 				})
@@ -115,7 +114,7 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 					TestSetup.RegularUserContext().TargetSpace()
-					unbindService := cf.Cf("unbind-service", appName, instanceName).Wait(Config.DefaultTimeoutDuration())
+					unbindService := cf.Cf("unbind-service", appName, instanceName).Wait()
 					Expect(unbindService).To(Exit(0), "failed unbinding app and service")
 
 					Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))

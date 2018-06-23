@@ -25,7 +25,7 @@ var _ = AppsDescribe("An application being staged", func() {
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
 
-		cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())
+		cf.Cf("delete", appName, "-f", "-r").Wait()
 	})
 
 	It("has its staging log streamed during a push", func() {

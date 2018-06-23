@@ -17,7 +17,7 @@ func WithRedirect(url, path string, config config.CatsConfig) error {
 		"-v", fmt.Sprintf("%s%s%s", config.Protocol(), config.GetApiEndpoint(), url),
 		"-H", fmt.Sprintf("Authorization: %s", oauthToken),
 		"-f",
-	).Wait(config.DefaultTimeoutDuration())
+	).Wait()
 	if downloadCurl.ExitCode() != 0 {
 		return fmt.Errorf("curl exited with code: %d", downloadCurl.ExitCode())
 	}
@@ -39,7 +39,7 @@ func WithRedirect(url, path string, config config.CatsConfig) error {
 		"-v", redirectURI,
 		"--output", path,
 		"-f",
-	).Wait(config.DefaultTimeoutDuration())
+	).Wait()
 	if downloadCurl.ExitCode() != 0 {
 		return fmt.Errorf("curl exited with code: %d", downloadCurl.ExitCode())
 	}

@@ -23,7 +23,7 @@ var _ = AppsDescribe("Crashing", func() {
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 	})
 
 	Describe("a continuously crashing app", func() {
@@ -39,7 +39,7 @@ var _ = AppsDescribe("Crashing", func() {
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 
 			Eventually(func() string {
-				return string(cf.Cf("events", appName).Wait(Config.DefaultTimeoutDuration()).Out.Contents())
+				return string(cf.Cf("events", appName).Wait().Out.Contents())
 			}).Should(MatchRegexp("[eE]xited"))
 
 			Eventually(cf.Cf("app", appName)).Should(Say("crashed"))
@@ -63,7 +63,7 @@ var _ = AppsDescribe("Crashing", func() {
 			helpers.CurlApp(Config, appName, "/sigterm/KILL")
 
 			Eventually(func() string {
-				return string(cf.Cf("events", appName).Wait(Config.DefaultTimeoutDuration()).Out.Contents())
+				return string(cf.Cf("events", appName).Wait().Out.Contents())
 			}).Should(MatchRegexp("[eE]xited"))
 		})
 

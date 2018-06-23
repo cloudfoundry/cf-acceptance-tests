@@ -44,27 +44,27 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				orgName := TestSetup.RegularUserContext().Org
 
-				target := cf.Cf("target", "-o", orgName).Wait(Config.DefaultTimeoutDuration())
+				target := cf.Cf("target", "-o", orgName).Wait()
 				Expect(target).To(Exit(0), "failed targeting")
 
 				By("Creating a space that only User A can view")
 				userASpaceName = random_name.CATSRandomName("SPACE")
-				createSpace := cf.Cf("create-space", userASpaceName, "-o", orgName).Wait(Config.DefaultTimeoutDuration())
+				createSpace := cf.Cf("create-space", userASpaceName, "-o", orgName).Wait()
 				Expect(createSpace).To(Exit(0), "failed to create space")
 
-				target = cf.Cf("target", "-s", userASpaceName).Wait(Config.DefaultTimeoutDuration())
+				target = cf.Cf("target", "-s", userASpaceName).Wait()
 				Expect(target).To(Exit(0), "failed targeting")
 
 				serviceInstanceName = random_name.CATSRandomName("SVIN")
 
 				By("Creating a service instance in User A's space")
-				createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
+				createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, serviceInstanceName).Wait()
 				Expect(createService).To(Exit(0))
 
 				By("Sharing the service instance into User B's space")
 				userBSpaceName := TestSetup.RegularUserContext().TestSpace.SpaceName()
 
-				shareSpace := cf.Cf("share-service", serviceInstanceName, "-s", userBSpaceName).Wait(Config.DefaultTimeoutDuration())
+				shareSpace := cf.Cf("share-service", serviceInstanceName, "-s", userBSpaceName).Wait()
 
 				Expect(shareSpace).To(Exit(0), "failed to share")
 				Expect(shareSpace).To(Say("OK"))
@@ -80,19 +80,19 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			}
 
 			if serviceInstanceName != "" {
-				Expect(cf.Cf("delete-service", serviceInstanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("delete-service", serviceInstanceName, "-f").Wait()).To(Exit(0))
 			}
 		})
 
 		It("allows User B to view the shared service", func() {
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
 				By("Asserting the User B sees the service instance listed in `cf services`")
-				servicesCmd := cf.Cf("services").Wait(Config.DefaultTimeoutDuration())
+				servicesCmd := cf.Cf("services").Wait()
 				Expect(servicesCmd).To(Exit(0))
 				Expect(servicesCmd).To(Say(serviceInstanceName))
 
 				By("Asserting the User B sees the service instance in `cf service service-name` output")
-				serviceCmd := cf.Cf("service", serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
+				serviceCmd := cf.Cf("service", serviceInstanceName).Wait()
 				Expect(serviceCmd).To(Exit(0))
 				Expect(serviceCmd).To(Say(serviceInstanceName))
 				Expect(serviceCmd).To(Say(broker.Service.Name))
@@ -112,7 +112,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 					"-c", "./catnip",
 					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
+				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait()
 				Expect(bindCmd).To(Exit(0))
 				Expect(bindCmd).To(Say("OK"))
 			})
@@ -121,10 +121,10 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 				By("Asserting the User A sees the share information for the shared service")
 				orgName := TestSetup.RegularUserContext().Org
 
-				target := cf.Cf("target", "-o", orgName, "-s", userASpaceName).Wait(Config.DefaultTimeoutDuration())
+				target := cf.Cf("target", "-o", orgName, "-s", userASpaceName).Wait()
 				Expect(target).To(Exit(0))
 
-				sharedToCmd := cf.Cf("service", serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
+				sharedToCmd := cf.Cf("service", serviceInstanceName).Wait()
 				Expect(sharedToCmd).To(Exit(0))
 				Expect(sharedToCmd).To(Say("shared with spaces"))
 			})
@@ -142,7 +142,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 					"-c", "./catnip",
 					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
+				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait()
 				Expect(bindCmd).To(Exit(0))
 				Expect(bindCmd).To(Say("OK"))
 
@@ -167,7 +167,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 					"-c", "./catnip",
 					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
+				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait()
 				Expect(bindCmd).To(Exit(0))
 				Expect(bindCmd).To(Say("OK"))
 
@@ -176,7 +176,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
 				By("Asserting User B can unbind from the shared service")
-				unbindCmd := cf.Cf("unbind-service", appName, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
+				unbindCmd := cf.Cf("unbind-service", appName, serviceInstanceName).Wait()
 				Expect(unbindCmd).To(Exit(0))
 				Expect(unbindCmd).To(Say("OK"))
 			})
@@ -194,7 +194,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 					"-c", "./catnip",
 					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait(Config.DefaultTimeoutDuration())
+				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait()
 				Expect(bindCmd).To(Exit(0))
 				Expect(bindCmd).To(Say("OK"))
 
@@ -205,19 +205,19 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				orgName := TestSetup.RegularUserContext().Org
 
-				target := cf.Cf("target", "-o", orgName, "-s", userASpaceName).Wait(Config.DefaultTimeoutDuration())
+				target := cf.Cf("target", "-o", orgName, "-s", userASpaceName).Wait()
 				Expect(target).To(Exit(0))
 
 				userBSpaceName := TestSetup.RegularUserContext().TestSpace.SpaceName()
 
-				unshareSpace := cf.Cf("unshare-service", serviceInstanceName, "-s", userBSpaceName, "-f").Wait(Config.DefaultTimeoutDuration())
+				unshareSpace := cf.Cf("unshare-service", serviceInstanceName, "-s", userBSpaceName, "-f").Wait()
 				Expect(unshareSpace).To(Exit(0))
 				Expect(unshareSpace).ToNot(Say("errors"))
 			})
 
 			By("Asserting the User B can no longer see the service after it has been unshared")
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
-				spaceCmd := cf.Cf("services").Wait(Config.DefaultTimeoutDuration())
+				spaceCmd := cf.Cf("services").Wait()
 				Expect(spaceCmd).To(Exit(0))
 				Expect(spaceCmd).ToNot(Say(serviceInstanceName))
 			})

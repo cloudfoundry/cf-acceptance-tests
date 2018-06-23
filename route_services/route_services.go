@@ -73,15 +73,15 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				deleteServiceInstance(serviceInstanceName)
 				deleteServiceBroker(brokerName)
 
-				Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(cf.Cf("delete", routeServiceName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
+				Expect(cf.Cf("delete", routeServiceName, "-f", "-r").Wait()).To(Exit(0))
 			})
 
 			It("a request to the app is routed through the route service", func() {
 				Eventually(func() *Session {
 					helpers.CurlAppRoot(Config, appName)
 					logs := logshelper.Tail(Config.GetUseLogCache(), routeServiceName)
-					Expect(logs.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					Expect(logs.Wait()).To(Exit(0))
 					return logs
 				}).Should(Say("Response Body: go, world"))
 			})
@@ -126,7 +126,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				deleteServiceInstance(serviceInstanceName)
 				deleteServiceBroker(brokerName)
 
-				Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 			})
 
 			It("routes to an app", func() {
@@ -159,7 +159,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 					TestSetup.RegularUserContext().Space,
 					Config.GetAppsDomain(),
 					"--hostname", hostname,
-				).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				).Wait()).To(Exit(0))
 
 				configureBroker(brokerAppName, "")
 			})
@@ -173,7 +173,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 					Config.GetAppsDomain(),
 					"--hostname", hostname,
 					"-f",
-				).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				).Wait()).To(Exit(0))
 			})
 
 			It("passes them to the service broker", func() {
@@ -181,7 +181,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 
 				Eventually(func() *Session {
 					logs := logshelper.Tail(Config.GetUseLogCache(), brokerAppName)
-					Expect(logs.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					Expect(logs.Wait()).To(Exit(0))
 					return logs
 				}).Should(Say("irynaparam"))
 			})
@@ -199,7 +199,7 @@ func bindRouteToService(hostname, serviceInstanceName string) {
 	Expect(cf.Cf("bind-route-service", Config.GetAppsDomain(), serviceInstanceName,
 		"-f",
 		"--hostname", hostname,
-	).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+	).Wait()).To(Exit(0))
 }
 
 func bindRouteToServiceWithParams(hostname, serviceInstanceName string, params string) {
@@ -207,22 +207,22 @@ func bindRouteToServiceWithParams(hostname, serviceInstanceName string, params s
 		"-f",
 		"--hostname", hostname,
 		"-c", fmt.Sprintf("{\"parameters\": %s}", params),
-	).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+	).Wait()).To(Exit(0))
 }
 
 func unbindRouteFromService(hostname, serviceInstanceName string) {
 	Expect(cf.Cf("unbind-route-service", Config.GetAppsDomain(), serviceInstanceName,
 		"-f",
 		"--hostname", hostname,
-	).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+	).Wait()).To(Exit(0))
 }
 
 func createServiceInstance(serviceInstanceName, serviceName string) {
-	Expect(cf.Cf("create-service", serviceName, "fake-plan", serviceInstanceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+	Expect(cf.Cf("create-service", serviceName, "fake-plan", serviceInstanceName).Wait()).To(Exit(0))
 }
 
 func deleteServiceInstance(serviceInstanceName string) {
-	Expect(cf.Cf("delete-service", serviceInstanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+	Expect(cf.Cf("delete-service", serviceInstanceName, "-f").Wait()).To(Exit(0))
 }
 
 func configureBroker(serviceBrokerAppName, routeServiceName string) {
@@ -266,17 +266,17 @@ func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 		session := cf.Cf("create-service-broker", brokerName, "user", "password", brokerUrl)
-		Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(session.Wait()).To(Exit(0))
 
 		session = cf.Cf("enable-service-access", serviceName)
-		Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(session.Wait()).To(Exit(0))
 	})
 }
 
 func deleteServiceBroker(brokerName string) {
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 		responseBuffer := cf.Cf("delete-service-broker", brokerName, "-f")
-		Expect(responseBuffer.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(responseBuffer.Wait()).To(Exit(0))
 	})
 }
 

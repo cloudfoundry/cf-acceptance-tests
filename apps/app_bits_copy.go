@@ -27,21 +27,21 @@ var _ = AppsDescribe("Copy app bits", func() {
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Golang,
 			"-d", Config.GetAppsDomain(),
-		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		).Wait()).To(Exit(0))
 		Expect(cf.Cf("push", helloWorldAppName,
 			"--no-start",
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().HelloWorld,
 			"-d", Config.GetAppsDomain(),
-		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		).Wait()).To(Exit(0))
 	})
 
 	AfterEach(func() {
 		app_helpers.AppReport(golangAppName)
 		app_helpers.AppReport(helloWorldAppName)
 
-		Expect(cf.Cf("delete", golangAppName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		Expect(cf.Cf("delete", helloWorldAppName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete", golangAppName, "-f", "-r").Wait()).To(Exit(0))
+		Expect(cf.Cf("delete", helloWorldAppName, "-f", "-r").Wait()).To(Exit(0))
 	})
 
 	It("Copies over the package from the source app to the destination app", func() {

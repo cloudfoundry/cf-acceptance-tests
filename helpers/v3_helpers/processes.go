@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 )
 
 type ProcessList struct {
@@ -22,7 +21,7 @@ type Process struct {
 func GetProcesses(appGuid, appName string) []Process {
 	processesURL := fmt.Sprintf("/v3/apps/%s/processes", appGuid)
 	session := cf.Cf("curl", processesURL)
-	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+	bytes := session.Wait().Out.Contents()
 
 	processes := ProcessList{}
 	json.Unmarshal(bytes, &processes)
@@ -46,7 +45,7 @@ func GetProcessByType(processes []Process, processType string) Process {
 func GetProcessByGuid(processGuid string) Process {
 	processURL := fmt.Sprintf("/v3/processes/%s", processGuid)
 	session := cf.Cf("curl", processURL)
-	bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+	bytes := session.Wait().Out.Contents()
 
 	var process Process
 	json.Unmarshal(bytes, &process)

@@ -44,8 +44,8 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 
 		AfterEach(func() {
 			app_helpers.AppReport(appName)
-			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			Expect(cf.Cf("delete-service", instanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
+			Expect(cf.Cf("delete-service", instanceName, "-f").Wait()).To(Exit(0))
 		})
 
 		It("removes all instances and plans of the service, then removes the service offering", func() {
@@ -61,33 +61,33 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 
 			broker.CreateServiceInstance(instanceName)
 
-			services := cf.Cf("services").Wait(Config.DefaultTimeoutDuration())
+			services := cf.Cf("services").Wait()
 			Expect(services).To(Exit(0))
 			Expect(services).To(Say(instanceName))
 
-			bindService := cf.Cf("bind-service", appName, instanceName).Wait(Config.DefaultTimeoutDuration())
+			bindService := cf.Cf("bind-service", appName, instanceName).Wait()
 			Expect(bindService).To(Exit(0), "failed binding app to service")
 
 			By("Having async service instances")
-			Expect(cf.Cf("create-service", broker.Service.Name, broker.AsyncPlans[0].Name, asyncInstanceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			Expect(cf.Cf("service", asyncInstanceName).Wait(Config.DefaultTimeoutDuration())).To(Say("create in progress"))
+			Expect(cf.Cf("create-service", broker.Service.Name, broker.AsyncPlans[0].Name, asyncInstanceName).Wait()).To(Exit(0))
+			Expect(cf.Cf("service", asyncInstanceName).Wait()).To(Say("create in progress"))
 
 			By("Making the broker unavailable")
-			Expect(cf.Cf("delete", broker.Name, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("delete", broker.Name, "-f", "-r").Wait()).To(Exit(0))
 
 			By("Purging the service offering")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("purge-service-offering", broker.Service.Name, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("purge-service-offering", broker.Service.Name, "-f").Wait()).To(Exit(0))
 			})
 
 			By("Ensuring service instances are gone")
-			services = cf.Cf("services").Wait(Config.DefaultTimeoutDuration())
+			services = cf.Cf("services").Wait()
 			Expect(services).To(Exit(0))
 			Expect(services).NotTo(Say(instanceName))
 			Expect(services).NotTo(Say(appName))
 
 			By("Ensuring service offerings are gone")
-			marketplace := cf.Cf("marketplace").Wait(Config.DefaultTimeoutDuration())
+			marketplace := cf.Cf("marketplace").Wait()
 			Expect(marketplace).To(Exit(0))
 			Expect(marketplace).NotTo(Say(broker.Service.Name))
 		})
@@ -111,8 +111,8 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 
 		AfterEach(func() {
 			app_helpers.AppReport(appName)
-			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			Expect(cf.Cf("delete-service", instanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
+			Expect(cf.Cf("delete-service", instanceName, "-f").Wait()).To(Exit(0))
 		})
 
 		It("removes all instances and plans of the service, then removes the service offering", func() {
@@ -129,31 +129,31 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 
 				broker.CreateServiceInstance(instanceName)
 
-				services := cf.Cf("services").Wait(Config.DefaultTimeoutDuration())
+				services := cf.Cf("services").Wait()
 				Expect(services).To(Exit(0))
 				Expect(services).To(Say(instanceName))
 
-				bindService := cf.Cf("bind-service", appName, instanceName).Wait(Config.DefaultTimeoutDuration())
+				bindService := cf.Cf("bind-service", appName, instanceName).Wait()
 				Expect(bindService).To(Exit(0), "failed binding app to service")
 
 				By("Having async service instances")
-				Expect(cf.Cf("create-service", broker.Service.Name, broker.AsyncPlans[0].Name, asyncInstanceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(cf.Cf("service", asyncInstanceName).Wait(Config.DefaultTimeoutDuration())).To(Say("create in progress"))
+				Expect(cf.Cf("create-service", broker.Service.Name, broker.AsyncPlans[0].Name, asyncInstanceName).Wait()).To(Exit(0))
+				Expect(cf.Cf("service", asyncInstanceName).Wait()).To(Say("create in progress"))
 
 				By("Making the broker unavailable")
-				Expect(cf.Cf("delete", broker.Name, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("delete", broker.Name, "-f", "-r").Wait()).To(Exit(0))
 
 				By("Purging the service offering")
-				Expect(cf.Cf("purge-service-offering", broker.Service.Name, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("purge-service-offering", broker.Service.Name, "-f").Wait()).To(Exit(0))
 
 				By("Ensuring service instances are gone")
-				services = cf.Cf("services").Wait(Config.DefaultTimeoutDuration())
+				services = cf.Cf("services").Wait()
 				Expect(services).To(Exit(0))
 				Expect(services).NotTo(Say(instanceName))
 				Expect(services).NotTo(Say(appName))
 
 				By("Ensuring service offerings are gone")
-				marketplace := cf.Cf("marketplace").Wait(Config.DefaultTimeoutDuration())
+				marketplace := cf.Cf("marketplace").Wait()
 				Expect(marketplace).To(Exit(0))
 				Expect(marketplace).NotTo(Say(broker.Service.Name))
 			})

@@ -40,13 +40,13 @@ var _ = WindowsDescribe("SSH", func() {
 			"-p", assets.NewAssets().Nora,
 			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hello i am nora"))
-		Expect(cf.Cf("enable-ssh", appName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("enable-ssh", appName).Wait()).To(Exit(0))
 	})
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).Should(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).Should(Exit(0))
 	})
 
 	Describe("ssh", func() {
@@ -72,7 +72,7 @@ var _ = WindowsDescribe("SSH", func() {
 				Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=1"))
 
 				Eventually(func() *gbytes.Buffer {
-					return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+					return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 				}).Should(gbytes.Say("Successful remote access"))
 
 				eventsCmd := cf.Cf("events", appName).Wait(Config.CfPushTimeoutDuration())
@@ -96,7 +96,7 @@ var _ = WindowsDescribe("SSH", func() {
 			Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
 			Eventually(func() *gbytes.Buffer {
-				return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 			}).Should(gbytes.Say("Successful remote access"))
 
 			eventsCmd := cf.Cf("events", appName).Wait(Config.CfPushTimeoutDuration())
@@ -133,7 +133,7 @@ var _ = WindowsDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
 			Eventually(func() *gbytes.Buffer {
-				return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 			}).Should(gbytes.Say("Successful remote access"))
 
 			eventsCmd := cf.Cf("events", appName).Wait(Config.CfPushTimeoutDuration())
@@ -184,7 +184,7 @@ var _ = WindowsDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
 			Eventually(func() *gbytes.Buffer {
-				return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 			}).Should(gbytes.Say("Successful remote access"))
 
 			eventsCmd := cf.Cf("events", appName).Wait(Config.CfPushTimeoutDuration())

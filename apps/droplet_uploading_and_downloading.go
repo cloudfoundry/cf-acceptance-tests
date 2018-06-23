@@ -21,7 +21,7 @@ import (
 )
 
 func appGuid(appName string) string {
-	guid := cf.Cf("app", appName, "--guid").Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+	guid := cf.Cf("app", appName, "--guid").Wait().Out.Contents()
 	return strings.TrimSpace(string(guid))
 }
 
@@ -61,7 +61,7 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 	AfterEach(func() {
 		app_helpers.AppReport(helloWorldAppName)
 
-		Expect(cf.Cf("delete", helloWorldAppName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete", helloWorldAppName, "-f", "-r").Wait()).To(Exit(0))
 	})
 
 	It("Users can manage droplet bits for an app", func() {
@@ -86,7 +86,7 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 		appDroplet.UploadFrom(appDropletPathToCompressedFile)
 
 		By("Running the original droplet for the app")
-		cf.Cf("restart", helloWorldAppName).Wait(Config.DefaultTimeoutDuration())
+		cf.Cf("restart", helloWorldAppName).Wait()
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, helloWorldAppName)

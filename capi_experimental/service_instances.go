@@ -44,11 +44,11 @@ var _ = CapiExperimentalDescribe("service instances", func() {
 		serviceInstance2Name = random_name.CATSRandomName("SVIN")
 
 		By("Creating a service instance")
-		createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, serviceInstance1Name).Wait(Config.DefaultTimeoutDuration())
+		createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, serviceInstance1Name).Wait()
 		Expect(createService).To(Exit(0))
 
 		By("Creating another service instance")
-		createService2 := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, serviceInstance2Name).Wait(Config.DefaultTimeoutDuration())
+		createService2 := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, serviceInstance2Name).Wait()
 		Expect(createService2).To(Exit(0))
 	})
 
@@ -58,7 +58,7 @@ var _ = CapiExperimentalDescribe("service instances", func() {
 			{Name: serviceInstance2Name},
 		}
 
-		listService := cf.Cf("curl", "/v3/service_instances").Wait(Config.DefaultTimeoutDuration())
+		listService := cf.Cf("curl", "/v3/service_instances").Wait()
 		Expect(listService).To(Exit(0))
 
 		var res Response

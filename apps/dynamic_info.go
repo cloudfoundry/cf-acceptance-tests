@@ -32,7 +32,7 @@ var _ = AppsDescribe("A running application", func() {
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 	})
 
 	It("shows crash events and recovers from crashes", func() {
@@ -52,7 +52,7 @@ var _ = AppsDescribe("A running application", func() {
 		})
 
 		It("can be queried for state by instance", func() {
-			app := cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
+			app := cf.Cf("app", appName).Wait()
 			Expect(app).To(Exit(0))
 			Expect(app).To(Say("#0"))
 			Expect(app).To(Say("#1"))

@@ -103,7 +103,7 @@ EOF
 			_, err = os.Create(path.Join(appPath, "some-file"))
 			Expect(err).ToNot(HaveOccurred())
 
-			createBuildpack := cf.Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0").Wait(Config.DefaultTimeoutDuration())
+			createBuildpack := cf.Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0").Wait()
 			Expect(createBuildpack).Should(Exit(0))
 			Expect(createBuildpack).Should(Say("Creating"))
 			Expect(createBuildpack).Should(Say("OK"))
@@ -115,10 +115,10 @@ EOF
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-			Expect(cf.Cf("delete-buildpack", BuildpackName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("delete-buildpack", BuildpackName, "-f").Wait()).To(Exit(0))
 		})
 	})
 

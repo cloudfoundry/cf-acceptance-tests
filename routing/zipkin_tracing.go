@@ -39,7 +39,7 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 
 	AfterEach(func() {
 		app_helpers.AppReport(app1)
-		Expect(cf.Cf("delete", app1, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete", app1, "-f", "-r").Wait()).To(Exit(0))
 	})
 
 	Context("when zipkin tracing is enabled", func() {
@@ -74,7 +74,7 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 
 				appLogsSession = logs.Tail(Config.GetUseLogCache(), hostname)
 
-				Eventually(appLogsSession, Config.DefaultTimeoutDuration()).Should(gexec.Exit(0))
+				Eventually(appLogsSession).Should(gexec.Exit(0))
 
 				Expect(appLogsSession.Out).To(gbytes.Say(`x_b3_traceid:"fee1f7ba6aeec41c"`))
 

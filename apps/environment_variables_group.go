@@ -62,7 +62,7 @@ exit 1
 	var fetchEnvironmentVariables = func(groupType string) map[string]string {
 		var session *Session
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-			session = cf.Cf("curl", fmt.Sprintf("/v2/config/environment_variable_groups/%s", groupType)).Wait(Config.DefaultTimeoutDuration())
+			session = cf.Cf("curl", fmt.Sprintf("/v2/config/environment_variable_groups/%s", groupType)).Wait()
 			Expect(session).To(Exit(0))
 		})
 
@@ -85,7 +85,7 @@ exit 1
 		jsonObj := marshalUpdatedEnv(envMap)
 
 		command := fmt.Sprintf("set-%s-environment-variable-group", groupType)
-		Expect(cf.Cf(command, string(jsonObj)).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf(command, string(jsonObj)).Wait()).To(Exit(0))
 	}
 
 	var revertExtendedEnv = func(groupType, envVarName string) {
@@ -94,7 +94,7 @@ exit 1
 		jsonObj := marshalUpdatedEnv(envMap)
 
 		apiUrl := fmt.Sprintf("/v2/config/environment_variable_groups/%s", groupType)
-		Expect(cf.Cf("curl", apiUrl, "-X", "PUT", "-d", string(jsonObj)).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("curl", apiUrl, "-X", "PUT", "-d", string(jsonObj)).Wait()).To(Exit(0))
 	}
 
 	Context("Staging environment variable groups", func() {
@@ -113,7 +113,7 @@ exit 1
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				revertExtendedEnv("staging", envVarName)
 				if buildpackName != "" {
-					Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait()).To(Exit(0))
 				}
 			})
 
@@ -127,7 +127,7 @@ exit 1
 
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				extendEnv("staging", envVarName, envVarValue)
-				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait()).To(Exit(0))
 			})
 
 			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))

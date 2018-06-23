@@ -48,7 +48,7 @@ var _ = SshDescribe("SSH", func() {
 		Context("with multiple instances", func() {
 			It("can ssh to the second instance", func() {
 				envCmd := cf.Cf("ssh", "-v", "-i", "1", appName, "-c", "/usr/bin/env && /usr/bin/env >&2")
-				Expect(envCmd.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(envCmd.Wait()).To(Exit(0))
 
 				output := string(envCmd.Out.Contents())
 				stdErr := string(envCmd.Err.Contents())
@@ -60,7 +60,7 @@ var _ = SshDescribe("SSH", func() {
 				Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=1"))
 
 				Eventually(func() *Buffer {
-					return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+					return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 				}).Should(Say("Successful remote access"))
 				Eventually(cf.Cf("events", appName)).Should(Say("audit.app.ssh-authorized"))
 			})
@@ -68,7 +68,7 @@ var _ = SshDescribe("SSH", func() {
 
 		It("can execute a remote command in the container", func() {
 			envCmd := cf.Cf("ssh", "-v", appName, "-c", "/usr/bin/env && /usr/bin/env >&2")
-			Expect(envCmd.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(envCmd.Wait()).To(Exit(0))
 
 			output := string(envCmd.Out.Contents())
 			stdErr := string(envCmd.Err.Contents())
@@ -80,7 +80,7 @@ var _ = SshDescribe("SSH", func() {
 			Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
 			Eventually(func() *Buffer {
-				return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 			}).Should(Say("Successful remote access"))
 			Eventually(cf.Cf("events", appName)).Should(Say("audit.app.ssh-authorized"))
 		})
@@ -113,8 +113,8 @@ var _ = SshDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
 			Eventually(func() *Buffer {
-				return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
-			}, Config.DefaultTimeoutDuration()).Should(Say("Successful remote access"))
+				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
+			}).Should(Say("Successful remote access"))
 			Eventually(cf.Cf("events", appName)).Should(Say("audit.app.ssh-authorized"))
 		})
 
@@ -128,7 +128,7 @@ var _ = SshDescribe("SSH", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() string {
-				curl := helpers.Curl(Config, "http://127.0.0.1:61007/").Wait(Config.DefaultTimeoutDuration())
+				curl := helpers.Curl(Config, "http://127.0.0.1:61007/").Wait()
 				return string(curl.Out.Contents())
 			}).Should(ContainSubstring("Catnip?"))
 
@@ -160,7 +160,7 @@ var _ = SshDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
 			Eventually(func() *Buffer {
-				return logs.Tail(Config.GetUseLogCache(), appName).Wait(Config.DefaultTimeoutDuration()).Out
+				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 			}).Should(Say("Successful remote access"))
 			Eventually(cf.Cf("events", appName)).Should(Say("audit.app.ssh-authorized"))
 		})
@@ -191,7 +191,7 @@ func sshAccessCode() string {
 
 func sshProxyAddress() string {
 	infoCommand := cf.Cf("curl", "/v2/info")
-	Expect(infoCommand.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+	Expect(infoCommand.Wait()).To(Exit(0))
 
 	type infoResponse struct {
 		AppSSHEndpoint string `json:"app_ssh_endpoint"`

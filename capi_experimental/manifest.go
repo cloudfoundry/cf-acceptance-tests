@@ -74,7 +74,7 @@ var _ = CapiExperimentalDescribe("apply_manifest", func() {
 
 		By("Creating a Service Instance")
 		serviceInstance = random_name.CATSRandomName("SVIN")
-		createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, serviceInstance).Wait(Config.DefaultTimeoutDuration())
+		createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, serviceInstance).Wait()
 		Expect(createService).To(Exit(0), "failed creating service")
 	})
 
@@ -165,26 +165,26 @@ applications:
 
 				It("successfully completes the job", func() {
 					session := cf.Cf("curl", applyEndpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifestToApply, "-i")
-					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					Expect(session.Wait()).To(Exit(0))
 					response := session.Out.Contents()
 					Expect(string(response)).To(ContainSubstring("202 Accepted"))
 
 					PollJob(GetJobPath(response))
 
 					workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 						Expect(target).To(Exit(0), "failed targeting")
 
-						session = cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
+						session = cf.Cf("app", appName).Wait()
 						Eventually(session).Should(Say("Showing health"))
 						Eventually(session).Should(Say("instances:\\s+.*?\\d+/2"))
 						Eventually(session).Should(Say("routes:\\s+(?:%s.%s,\\s+)?%s", appName, Config.GetAppsDomain(), route))
 						Eventually(session).Should(Say("stack:\\s+cflinuxfs2"))
 						Eventually(session).Should(Say("buildpack:\\s+ruby_buildpack"))
 						Eventually(session).Should(Exit(0))
-						session = cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
+						session = cf.Cf("app", appName).Wait()
 
-						session = cf.Cf("env", appName).Wait(Config.DefaultTimeoutDuration())
+						session = cf.Cf("env", appName).Wait()
 						Eventually(session).Should(Say("foo:\\s+qux"))
 						Eventually(session).Should(Say("snack:\\s+walnuts"))
 						Eventually(session).Should(Exit(0))
@@ -194,21 +194,21 @@ applications:
 						webProcess := GetProcessByGuid(webProcessWithCommandRedacted.Guid)
 						Expect(webProcess.Command).To(Equal("new-command"))
 
-						session = cf.Cf("get-health-check", appName).Wait(Config.DefaultTimeoutDuration())
+						session = cf.Cf("get-health-check", appName).Wait()
 						Eventually(session).Should(Say("health check type:\\s+http"))
 						Eventually(session).Should(Say("endpoint \\(for http type\\):\\s+/env"))
 						Eventually(session).Should(Exit(0))
 
-						session = cf.Cf("service", serviceInstance).Wait(Config.DefaultTimeoutDuration())
+						session = cf.Cf("service", serviceInstance).Wait()
 						Eventually(session).Should(Say("bound apps:\\s+(?:name\\s+binding name\\s+)?%s", appName))
 						Eventually(session).Should(Exit(0))
 
 						session = cf.Cf("curl", "-i", getManifestEndpoint)
-						Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+						Expect(session.Wait()).To(Exit(0))
 						Expect(session).To(Say("200 OK"))
 
 						session = cf.Cf("curl", getManifestEndpoint)
-						Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+						Expect(session.Wait()).To(Exit(0))
 						response = session.Out.Contents()
 						Expect(string(response)).To(MatchYAML(expectedManifest))
 					})
@@ -226,17 +226,17 @@ applications:
 
 				It("removes existing routes from the app", func() {
 					session := cf.Cf("curl", applyEndpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifestToApply, "-i")
-					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					Expect(session.Wait()).To(Exit(0))
 					response := session.Out.Contents()
 					Expect(string(response)).To(ContainSubstring("202 Accepted"))
 
 					PollJob(GetJobPath(response))
 
 					workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 						Expect(target).To(Exit(0), "failed targeting")
 
-						session = cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
+						session = cf.Cf("app", appName).Wait()
 						Eventually(session).Should(Say("Showing health"))
 						Eventually(session).Should(Say("routes:\\s*\\n"))
 						Eventually(session).Should(Exit(0))
@@ -257,17 +257,17 @@ applications:
 
 				It("successfully adds a random-route", func() {
 					session := cf.Cf("curl", applyEndpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifestToApply, "-i")
-					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					Expect(session.Wait()).To(Exit(0))
 					response := session.Out.Contents()
 					Expect(string(response)).To(ContainSubstring("202 Accepted"))
 
 					PollJob(GetJobPath(response))
 
 					workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 						Expect(target).To(Exit(0), "failed targeting")
 
-						session = cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
+						session = cf.Cf("app", appName).Wait()
 						Eventually(session).Should(Say("routes:\\s+%s-\\w+-\\w+.%s", appName, Config.GetAppsDomain()))
 					})
 				})
@@ -293,17 +293,17 @@ applications:
 			Context("when the process exists already", func() {
 				It("successfully completes the job", func() {
 					session := cf.Cf("curl", applyEndpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifestToApply, "-i")
-					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					Expect(session.Wait()).To(Exit(0))
 					response := session.Out.Contents()
 					Expect(string(response)).To(ContainSubstring("202 Accepted"))
 
 					PollJob(GetJobPath(response))
 
 					workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 						Expect(target).To(Exit(0), "failed targeting")
 
-						session = cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
+						session = cf.Cf("app", appName).Wait()
 						Eventually(session).Should(Say("Showing health"))
 						Eventually(session).Should(Say("instances:\\s+.*?\\d+/2"))
 						Eventually(session).Should(Exit(0))
@@ -313,7 +313,7 @@ applications:
 						webProcess := GetProcessByGuid(webProcessWithCommandRedacted.Guid)
 						Expect(webProcess.Command).To(Equal("new-command"))
 
-						session = cf.Cf("get-health-check", appName).Wait(Config.DefaultTimeoutDuration())
+						session = cf.Cf("get-health-check", appName).Wait()
 						Eventually(session).Should(Say("health check type:\\s+http"))
 						Eventually(session).Should(Say("endpoint \\(for http type\\):\\s+/env"))
 						Eventually(session).Should(Exit(0))
@@ -339,17 +339,17 @@ applications:
 
 				It("creates the process and completes the job", func() {
 					session := cf.Cf("curl", applyEndpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifestToApply, "-i")
-					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					Expect(session.Wait()).To(Exit(0))
 					response := session.Out.Contents()
 					Expect(string(response)).To(ContainSubstring("202 Accepted"))
 
 					PollJob(GetJobPath(response))
 
 					workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 						Expect(target).To(Exit(0), "failed targeting")
 
-						session = cf.Cf("v3-app", appName).Wait(Config.DefaultTimeoutDuration())
+						session = cf.Cf("v3-app", appName).Wait()
 						Eventually(session).Should(Say("potato:0/2"))
 						Eventually(session).Should(Exit(0))
 
@@ -358,7 +358,7 @@ applications:
 						potatoProcess := GetProcessByGuid(potatoProcessWithCommandRedacted.Guid)
 						Expect(potatoProcess.Command).To(Equal("new-command"))
 
-						session = cf.Cf("v3-get-health-check", appName).Wait(Config.DefaultTimeoutDuration())
+						session = cf.Cf("v3-get-health-check", appName).Wait()
 						Eventually(session).Should(Say("potato\\s+http\\s+/env"))
 						Eventually(session).Should(Exit(0))
 					})
@@ -383,17 +383,17 @@ applications:
 
 				It("does not remove existing processes", func() {
 					session := cf.Cf("curl", applyEndpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifestToApply, "-i")
-					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					Expect(session.Wait()).To(Exit(0))
 					response := session.Out.Contents()
 					Expect(string(response)).To(ContainSubstring("202 Accepted"))
 
 					PollJob(GetJobPath(response))
 
 					workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 						Expect(target).To(Exit(0), "failed targeting")
 
-						session = cf.Cf("v3-app", appName).Wait(Config.DefaultTimeoutDuration())
+						session = cf.Cf("v3-app", appName).Wait()
 						Eventually(session).Should(Say("bean:0/2"))
 						Eventually(session).Should(Exit(0))
 						AssignDropletToApp(appGUID, dropletGuid)
@@ -431,17 +431,17 @@ applications:
 
 				It("successfully adds the buildpacks", func() {
 					session := cf.Cf("curl", applyEndpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifestToApply, "-i")
-					Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					Expect(session.Wait()).To(Exit(0))
 					response := session.Out.Contents()
 					Expect(string(response)).To(ContainSubstring("202 Accepted"))
 
 					PollJob(GetJobPath(response))
 
 					workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 						Expect(target).To(Exit(0), "failed targeting")
 
-						session = cf.Cf("curl", fmt.Sprintf("v3/apps/%s", appGUID)).Wait(Config.DefaultTimeoutDuration())
+						session = cf.Cf("curl", fmt.Sprintf("v3/apps/%s", appGUID)).Wait()
 						err := json.Unmarshal(session.Out.Contents(), &app)
 						Expect(err).ToNot(HaveOccurred())
 						Eventually(app.Lifecycle.Data.Buildpacks).Should(Equal([]string{"staticfile_buildpack", "ruby_buildpack"}))
@@ -464,17 +464,17 @@ applications:
 
 					It("successfully updates the buildpacks to autodetect", func() {
 						session := cf.Cf("curl", applyEndpoint, "-X", "POST", "-H", "Content-Type: application/x-yaml", "-d", manifestToApply, "-i")
-						Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+						Expect(session.Wait()).To(Exit(0))
 						response := session.Out.Contents()
 						Expect(string(response)).To(ContainSubstring("202 Accepted"))
 
 						PollJob(GetJobPath(response))
 
 						workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-							target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())
+							target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 							Expect(target).To(Exit(0), "failed targeting")
 
-							session = cf.Cf("curl", fmt.Sprintf("v3/apps/%s/droplets/current", appGUID)).Wait(Config.DefaultTimeoutDuration())
+							session = cf.Cf("curl", fmt.Sprintf("v3/apps/%s/droplets/current", appGUID)).Wait()
 							Eventually(session).Should(Exit(0))
 							err := json.Unmarshal(session.Out.Contents(), &currentDrop)
 							Expect(err).ToNot(HaveOccurred())

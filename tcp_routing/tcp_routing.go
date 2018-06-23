@@ -25,7 +25,7 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 	BeforeEach(func() {
 		domainName = fmt.Sprintf("tcp.%s", Config.GetAppsDomain())
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-			routerGroupOutput := string(cf.Cf("router-groups").Wait(Config.DefaultTimeoutDuration()).Out.Contents())
+			routerGroupOutput := string(cf.Cf("router-groups").Wait().Out.Contents())
 			Expect(routerGroupOutput).To(
 				MatchRegexp(fmt.Sprintf("%s\\s+tcp", DefaultRouterGroupName)),
 				fmt.Sprintf("Router group %s of type tcp doesn't exist", DefaultRouterGroupName),
@@ -34,7 +34,7 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 			Expect(cf.Cf("create-shared-domain",
 				domainName,
 				"--router-group", DefaultRouterGroupName,
-			).Wait(Config.DefaultTimeoutDuration())).To(Exit())
+			).Wait()).To(Exit())
 		})
 	})
 
@@ -59,7 +59,7 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-f", filepath.Join(tcpDropletReceiver, "manifest.yml"),
 				"-c", cmd,
-			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			).Wait()).To(Exit(0))
 			externalPort1 = mapTCPRoute(appName, domainName)
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
@@ -94,11 +94,11 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-f", filepath.Join(tcpDropletReceiver, "manifest.yml"),
 					"-c", cmd,
-				).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				).Wait()).To(Exit(0))
 
 				Expect(cf.Cf("map-route",
 					secondAppName, domainName, "--port", externalPort1,
-				).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				).Wait()).To(Exit(0))
 				Expect(cf.Cf("start", secondAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			})
 
@@ -151,7 +151,7 @@ func getNServerResponses(n int, domainName, externalPort1 string) ([]string, err
 }
 
 func mapTCPRoute(appName, domainName string) string {
-	createRouteSession := cf.Cf("map-route", appName, domainName, "--random-port").Wait(Config.DefaultTimeoutDuration())
+	createRouteSession := cf.Cf("map-route", appName, domainName, "--random-port").Wait()
 	Expect(createRouteSession).To(Exit(0))
 
 	r := regexp.MustCompile(fmt.Sprintf(`.+%s:(\d+).+`, domainName))

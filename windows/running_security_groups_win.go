@@ -48,17 +48,17 @@ func pushApp(appName, buildpack string) {
 		"-b", buildpack,
 		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", assets.NewAssets().Nora,
-		"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		"-d", Config.GetAppsDomain()).Wait()).To(Exit(0))
 }
 
 func getAppHostIpAndPort(appName string) (string, int) {
 	var appsResponse AppsResponse
-	cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/apps?q=name:%s", appName)).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+	cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/apps?q=name:%s", appName)).Wait().Out.Contents()
 	json.Unmarshal(cfResponse, &appsResponse)
 	serverAppUrl := appsResponse.Resources[0].Metadata.Url
 
 	var statsResponse StatsResponse
-	cfResponse = cf.Cf("curl", fmt.Sprintf("%s/stats", serverAppUrl)).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+	cfResponse = cf.Cf("curl", fmt.Sprintf("%s/stats", serverAppUrl)).Wait().Out.Contents()
 	json.Unmarshal(cfResponse, &statsResponse)
 
 	return statsResponse["0"].Stats.Host, statsResponse["0"].Stats.Port
@@ -67,7 +67,7 @@ func getAppHostIpAndPort(appName string) (string, int) {
 func testAppConnectivity(clientAppName string, privateHost string, privatePort int) NoraCurlResponse {
 	var noraCurlResponse NoraCurlResponse
 	uri := helpers.AppUri(clientAppName, fmt.Sprintf("/curl/%s/%d", privateHost, privatePort), Config)
-	curlResponse := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), uri).Wait(Config.DefaultTimeoutDuration())
+	curlResponse := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), uri).Wait()
 	json.Unmarshal([]byte(curlResponse.Out.Contents()), &noraCurlResponse)
 	return noraCurlResponse
 }
@@ -87,7 +87,7 @@ func createSecurityGroup(allowedDestinations ...Destination) string {
 	securityGroupName := random_name.CATSRandomName("SG")
 
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("create-security-group", securityGroupName, rulesPath).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("create-security-group", securityGroupName, rulesPath).Wait()).To(Exit(0))
 	})
 
 	return securityGroupName
@@ -96,20 +96,20 @@ func createSecurityGroup(allowedDestinations ...Destination) string {
 func bindSecurityGroup(securityGroupName, orgName, spaceName string) {
 	By("Applying security group")
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("bind-security-group", securityGroupName, orgName, spaceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("bind-security-group", securityGroupName, orgName, spaceName).Wait()).To(Exit(0))
 	})
 }
 
 func unbindSecurityGroup(securityGroupName, orgName, spaceName string) {
 	By("Unapplying security group")
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("unbind-security-group", securityGroupName, orgName, spaceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("unbind-security-group", securityGroupName, orgName, spaceName).Wait()).To(Exit(0))
 	})
 }
 
 func deleteSecurityGroup(securityGroupName string) {
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("delete-security-group", securityGroupName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete-security-group", securityGroupName, "-f").Wait()).To(Exit(0))
 	})
 }
 

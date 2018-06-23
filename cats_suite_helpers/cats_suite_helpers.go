@@ -246,7 +246,7 @@ func TasksDescribe(description string, callback func()) bool {
 
 func GuidForAppName(appName string) string {
 	cfApp := cf.Cf("app", appName, "--guid")
-	Expect(cfApp.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+	Expect(cfApp.Wait()).To(Exit(0))
 
 	appGuid := strings.TrimSpace(string(cfApp.Out.Contents()))
 	Expect(appGuid).NotTo(Equal(""))

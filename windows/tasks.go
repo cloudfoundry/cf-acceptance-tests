@@ -38,7 +38,7 @@ var _ = WindowsDescribe("Task Lifecycle", func() {
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).Should(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).Should(Exit(0))
 	})
 
 	It("exercises the task lifecycle on windows", func() {
@@ -47,7 +47,7 @@ var _ = WindowsDescribe("Task Lifecycle", func() {
 
 		Eventually(func() *Session {
 			taskSession := cf.Cf("tasks", appName)
-			Expect(taskSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(taskSession.Wait()).To(Exit(0))
 			return taskSession
 		}).Should(Say("SUCCEEDED"))
 	})

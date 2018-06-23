@@ -78,32 +78,32 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 		app_helpers.AppReport(appNameBackend)
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-			Expect(cf.Cf("target", "-o", orgName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			Expect(cf.Cf("delete-shared-domain", domainName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("target", "-o", orgName).Wait()).To(Exit(0))
+			Expect(cf.Cf("delete-shared-domain", domainName, "-f").Wait()).To(Exit(0))
 		})
 
-		Expect(cf.Cf("delete", appNameFrontend, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		Expect(cf.Cf("delete", appNameBackend, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete", appNameFrontend, "-f", "-r").Wait()).To(Exit(0))
+		Expect(cf.Cf("delete", appNameBackend, "-f", "-r").Wait()).To(Exit(0))
 	})
 
 	Describe("Adding an internal route on an app", func() {
 		It("successfully creates a policy", func() {
 			curlArgs := appNameFrontend + "." + Config.GetAppsDomain() + "/proxy/" + internalHostName + "." + internalDomainName + ":8080"
 			Eventually(func() string {
-				curl := helpers.Curl(Config, curlArgs).Wait(Config.DefaultTimeoutDuration())
+				curl := helpers.Curl(Config, curlArgs).Wait()
 				return string(curl.Out.Contents())
 			}).ShouldNot(ContainSubstring("Hello, world!"))
 
 			// add a policy
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).ToNot(ContainSubstring(appNameBackend))
+				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()).To(Exit(0))
+				Expect(string(cf.Cf("network-policies").Wait().Out.Contents())).ToNot(ContainSubstring(appNameBackend))
 				Expect(cf.Cf("add-network-policy", appNameFrontend, "--destination-app", appNameBackend, "--protocol", "tcp", "--port", "8080").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring(appNameBackend))
+				Expect(string(cf.Cf("network-policies").Wait().Out.Contents())).To(ContainSubstring(appNameBackend))
 			})
 
 			Eventually(func() string {
-				curl := helpers.Curl(Config, curlArgs).Wait(Config.DefaultTimeoutDuration())
+				curl := helpers.Curl(Config, curlArgs).Wait()
 				return string(curl.Out.Contents())
 			}).Should(ContainSubstring("Hello, world!"))
 		})

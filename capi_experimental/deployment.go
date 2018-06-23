@@ -51,7 +51,7 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 		ScaleApp(appGuid, 2)
 
 		StartApp(appGuid)
-		Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
+		Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 
 		By("Creating and assigning a second droplet for the app")
 		makeStaticFileZip()

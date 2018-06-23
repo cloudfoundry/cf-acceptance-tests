@@ -69,7 +69,7 @@ var _ = V3Describe("package features", func() {
 			copyUrl := fmt.Sprintf("v3/packages/?source_guid=%s", packageGuid)
 
 			session := cf.Cf("curl", copyUrl, "-X", "POST", "-d", copyRequestBody)
-			bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+			bytes := session.Wait().Out.Contents()
 			var pac struct {
 				Guid string `json:"guid"`
 			}
@@ -88,7 +88,7 @@ var _ = V3Describe("package features", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			session = helpers.Run("unzip", "-l", app_package_path)
-			Expect(session.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(session.Wait()).To(Exit(0))
 			Expect(session.Out).To(Say("dora.rb"))
 		})
 	})
@@ -104,7 +104,7 @@ var _ = V3Describe("package features", func() {
 			buildPath := fmt.Sprintf("/v3/builds/%s", buildGuid)
 
 			Eventually(func() *Session {
-				return cf.Cf("curl", buildPath).Wait(Config.DefaultTimeoutDuration())
+				return cf.Cf("curl", buildPath).Wait()
 			}, Config.CfPushTimeoutDuration()).Should(Say("STAGED"))
 		})
 	})

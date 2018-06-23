@@ -84,6 +84,6 @@ func setTotalMemoryLimit(memoryLimit string) {
 
 	AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 		Expect(cf.Cf("update-quota", quota.Entity.Name,
-			"-m", memoryLimit).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			"-m", memoryLimit).Wait()).To(Exit(0))
 	})
 }

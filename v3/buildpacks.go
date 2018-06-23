@@ -56,13 +56,13 @@ var _ = V3Describe("buildpack", func() {
 			buildpackZip := createBuildpack()
 
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait()).To(Exit(0))
 			})
 		})
 
 		AfterEach(func() {
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait()).To(Exit(0))
 			})
 
 			FetchRecentLogs(appGuid, token, Config)
@@ -93,7 +93,7 @@ var _ = V3Describe("buildpack", func() {
 			dropletGuid := GetDropletFromBuild(firstBuildGuid)
 			dropletPath := fmt.Sprintf("/v3/droplets/%s", dropletGuid)
 
-			result := cf.Cf("curl", dropletPath).Wait(Config.DefaultTimeoutDuration())
+			result := cf.Cf("curl", dropletPath).Wait()
 			Expect(result).To(Say("custom buildpack contents - cache not found"))
 
 			// Wait for buildpack cache to be uploaded to blobstore.
@@ -103,7 +103,7 @@ var _ = V3Describe("buildpack", func() {
 			WaitForBuildToStage(secondBuildGuid)
 			dropletGuid = GetDropletFromBuild(secondBuildGuid)
 			dropletPath = fmt.Sprintf("/v3/droplets/%s", dropletGuid)
-			result = cf.Cf("curl", dropletPath).Wait(Config.DefaultTimeoutDuration())
+			result = cf.Cf("curl", dropletPath).Wait()
 			Expect(result).To(Say("custom buildpack contents - here's a cache"))
 
 			Expect(secondBuildGuid).NotTo(Equal(firstBuildGuid))
@@ -142,7 +142,7 @@ var _ = V3Describe("buildpack", func() {
 			}
 			dropletPath := fmt.Sprintf("/v3/droplets/%s", dropletGUID)
 			session := cf.Cf("curl", dropletPath)
-			bytes := session.Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+			bytes := session.Wait().Out.Contents()
 			json.Unmarshal(bytes, &droplet)
 			Expect(len(droplet.Buildpacks)).To(Equal(2))
 			i := 0

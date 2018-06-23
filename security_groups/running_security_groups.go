@@ -53,17 +53,17 @@ func pushApp(appName, buildpack string) {
 		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", assets.NewAssets().Catnip,
 		"-c", "./catnip",
-		"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		"-d", Config.GetAppsDomain()).Wait()).To(Exit(0))
 }
 
 func getAppHostIpAndPort(appName string) (string, int) {
 	var appsResponse AppsResponse
-	cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/apps?q=name:%s", appName)).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+	cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/apps?q=name:%s", appName)).Wait().Out.Contents()
 	json.Unmarshal(cfResponse, &appsResponse)
 	serverAppUrl := appsResponse.Resources[0].Metadata.Url
 
 	var statsResponse StatsResponse
-	cfResponse = cf.Cf("curl", fmt.Sprintf("%s/stats", serverAppUrl)).Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+	cfResponse = cf.Cf("curl", fmt.Sprintf("%s/stats", serverAppUrl)).Wait().Out.Contents()
 	json.Unmarshal(cfResponse, &statsResponse)
 
 	return statsResponse["0"].Stats.Host, statsResponse["0"].Stats.Port
@@ -104,7 +104,7 @@ func createSecurityGroup(allowedDestinations ...Destination) string {
 	securityGroupName := random_name.CATSRandomName("SG")
 
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("create-security-group", securityGroupName, rulesPath).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("create-security-group", securityGroupName, rulesPath).Wait()).To(Exit(0))
 	})
 
 	return securityGroupName
@@ -113,20 +113,20 @@ func createSecurityGroup(allowedDestinations ...Destination) string {
 func bindSecurityGroup(securityGroupName, orgName, spaceName string) {
 	By("Applying security group")
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("bind-security-group", securityGroupName, orgName, spaceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("bind-security-group", securityGroupName, orgName, spaceName).Wait()).To(Exit(0))
 	})
 }
 
 func unbindSecurityGroup(securityGroupName, orgName, spaceName string) {
 	By("Unapplying security group")
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("unbind-security-group", securityGroupName, orgName, spaceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("unbind-security-group", securityGroupName, orgName, spaceName).Wait()).To(Exit(0))
 	})
 }
 
 func deleteSecurityGroup(securityGroupName string) {
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("delete-security-group", securityGroupName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete-security-group", securityGroupName, "-f").Wait()).To(Exit(0))
 	})
 }
 
@@ -135,21 +135,21 @@ func createDummyBuildpack() string {
 	buildpackZip := assets.NewAssets().SecurityGroupBuildpack
 
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("create-buildpack", buildpack, buildpackZip, "999").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("create-buildpack", buildpack, buildpackZip, "999").Wait()).To(Exit(0))
 	})
 	return buildpack
 }
 
 func deleteBuildpack(buildpack string) {
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("delete-buildpack", buildpack, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete-buildpack", buildpack, "-f").Wait()).To(Exit(0))
 	})
 }
 
 func getStagingOutput(appName string) func() *Session {
 	return func() *Session {
 		appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
-		Expect(appLogsSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(appLogsSession.Wait()).To(Exit(0))
 		return appLogsSession
 	}
 }
@@ -236,10 +236,10 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 
 			By("adding policy")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).ToNot(ContainSubstring(serverAppName))
+				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()).To(Exit(0))
+				Expect(string(cf.Cf("network-policies").Wait().Out.Contents())).ToNot(ContainSubstring(serverAppName))
 				Expect(cf.Cf("add-network-policy", clientAppName, "--destination-app", serverAppName, "--port", fmt.Sprintf("%d", containerPort), "--protocol", "tcp").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring(serverAppName))
+				Expect(string(cf.Cf("network-policies").Wait().Out.Contents())).To(ContainSubstring(serverAppName))
 			})
 
 			By("Testing that client app can connect to server app using the overlay")
@@ -267,10 +267,10 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 
 			By("deleting policy")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(ContainSubstring(serverAppName))
+				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()).To(Exit(0))
+				Expect(string(cf.Cf("network-policies").Wait().Out.Contents())).To(ContainSubstring(serverAppName))
 				Expect(cf.Cf("remove-network-policy", clientAppName, "--destination-app", serverAppName, "--port", fmt.Sprintf("%d", containerPort), "--protocol", "tcp").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-				Expect(string(cf.Cf("network-policies").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).ToNot(ContainSubstring(serverAppName))
+				Expect(string(cf.Cf("network-policies").Wait().Out.Contents())).ToNot(ContainSubstring(serverAppName))
 			})
 
 			By("Testing the client app cannot connect to the server app using the overlay")
@@ -294,7 +294,7 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 			pushApp(testAppName, buildpack)
 
 			privateUri := fmt.Sprintf("%s:%d", privateHost, privatePort)
-			Expect(cf.Cf("set-env", testAppName, "TESTURI", privateUri).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("set-env", testAppName, "TESTURI", privateUri).Wait()).To(Exit(0))
 
 			Expect(cf.Cf("start", testAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 			Eventually(getStagingOutput(testAppName), 5).Should(Say("CURL_EXIT=[^0]"), "Expected staging security groups not to allow internal communication between app containers. Configure your staging security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
@@ -311,7 +311,7 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 		})
 
 		It("allows external and denies internal traffic during staging based on default staging security rules", func() {
-			Expect(cf.Cf("set-env", testAppName, "TESTURI", "www.google.com").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("set-env", testAppName, "TESTURI", "www.google.com").Wait()).To(Exit(0))
 			Expect(cf.Cf("restart", testAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 			Eventually(getStagingOutput(testAppName), 5).Should(Say("CURL_EXIT=0"))
 		})

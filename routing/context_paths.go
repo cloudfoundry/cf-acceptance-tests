@@ -51,17 +51,17 @@ var _ = RoutingDescribe("Context Paths", func() {
 
 		hostname = app1
 
-		Expect(cf.Cf("map-route", app2, domain, "--hostname", hostname, "--path", app2Path).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		Expect(cf.Cf("map-route", app3, domain, "--hostname", hostname, "--path", app3Path).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("map-route", app2, domain, "--hostname", hostname, "--path", app2Path).Wait()).To(Exit(0))
+		Expect(cf.Cf("map-route", app3, domain, "--hostname", hostname, "--path", app3Path).Wait()).To(Exit(0))
 	})
 
 	AfterEach(func() {
 		app_helpers.AppReport(app1)
 		app_helpers.AppReport(app2)
 		app_helpers.AppReport(app3)
-		Expect(cf.Cf("delete", app1, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		Expect(cf.Cf("delete", app2, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		Expect(cf.Cf("delete", app3, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete", app1, "-f", "-r").Wait()).To(Exit(0))
+		Expect(cf.Cf("delete", app2, "-f", "-r").Wait()).To(Exit(0))
+		Expect(cf.Cf("delete", app3, "-f", "-r").Wait()).To(Exit(0))
 	})
 
 	Context("when another app has a route with a context path", func() {

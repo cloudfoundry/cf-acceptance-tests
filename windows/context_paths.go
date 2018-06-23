@@ -51,7 +51,7 @@ var _ = WindowsDescribe("Context Paths", func() {
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", assets.NewAssets().Nora).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			"-p", assets.NewAssets().Nora).Wait()).To(Exit(0))
 
 		// .NET Apps must be pushed with --no-start --no-route before running cf map-route
 		appName3 = random_name.CATSRandomName("APP")
@@ -62,12 +62,12 @@ var _ = WindowsDescribe("Context Paths", func() {
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", assets.NewAssets().Nora).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			"-p", assets.NewAssets().Nora).Wait()).To(Exit(0))
 
 		hostname = appName1
 
-		Expect(cf.Cf("map-route", appName2, domain, "--hostname", hostname, "--path", app2Path).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		Expect(cf.Cf("map-route", appName3, domain, "--hostname", hostname, "--path", app3Path).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("map-route", appName2, domain, "--hostname", hostname, "--path", app2Path).Wait()).To(Exit(0))
+		Expect(cf.Cf("map-route", appName3, domain, "--hostname", hostname, "--path", app3Path).Wait()).To(Exit(0))
 
 		Expect(cf.Cf("start", appName2).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Expect(cf.Cf("start", appName3).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -78,9 +78,9 @@ var _ = WindowsDescribe("Context Paths", func() {
 		app_helpers.AppReport(appName2)
 		app_helpers.AppReport(appName3)
 
-		Expect(cf.Cf("delete", appName1, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		Expect(cf.Cf("delete", appName2, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-		Expect(cf.Cf("delete", appName3, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete", appName1, "-f", "-r").Wait()).To(Exit(0))
+		Expect(cf.Cf("delete", appName2, "-f", "-r").Wait()).To(Exit(0))
+		Expect(cf.Cf("delete", appName3, "-f", "-r").Wait()).To(Exit(0))
 	})
 
 	Context("when another app has a route with a context path", func() {

@@ -42,7 +42,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 
 	AfterEach(func() {
 		app_helpers.AppReport(app)
-		Expect(cf.Cf("delete", app, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("delete", app, "-f", "-r").Wait()).To(Exit(0))
 	})
 
 	Context("when app only has single route", func() {
@@ -62,14 +62,14 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 				"curl",
 				fmt.Sprintf("/v2/apps/%s", appGuid),
 				"-X", "PUT", "-d", `{"ports": [7777,8888,8080]}`,
-			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			).Wait()).To(Exit(0))
 
 			// create 2nd route
 			spacename := TestSetup.RegularUserContext().Space
 			secondRoute = fmt.Sprintf("%s-two", app)
 			Expect(cf.Cf("create-route", spacename, Config.GetAppsDomain(),
 				"--hostname", secondRoute,
-			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			).Wait()).To(Exit(0))
 			// map app route to other port
 			createRouteMapping(app, secondRoute, 7777)
 		})
@@ -89,7 +89,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 func getRouteGuid(hostname string) string {
 	routeQuery := fmt.Sprintf("/v2/routes?q=host:%s", hostname)
 	getRoutesCurl := cf.Cf("curl", routeQuery)
-	Expect(getRoutesCurl.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+	Expect(getRoutesCurl.Wait()).To(Exit(0))
 
 	routeGuidRegex := regexp.MustCompile(`\s+"guid": "(.+)"`)
 	return routeGuidRegex.FindStringSubmatch(string(getRoutesCurl.Out.Contents()))[1]
@@ -108,5 +108,5 @@ func createRouteMapping(appName string, hostname string, appPort uint16) {
 	data, err := json.Marshal(bodyMap)
 	Expect(err).ToNot(HaveOccurred())
 
-	Expect(cf.Cf("curl", fmt.Sprintf("/v2/route_mappings"), "-X", "POST", "-d", string(data)).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+	Expect(cf.Cf("curl", fmt.Sprintf("/v2/route_mappings"), "-X", "POST", "-d", string(data)).Wait()).To(Exit(0))
 }

@@ -31,19 +31,19 @@ var _ = WindowsDescribe("Http Healthcheck", func() {
 			"-b", Config.GetHwcBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Nora,
-			"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			"-d", Config.GetAppsDomain()).Wait()).To(Exit(0))
 		logs = logshelper.TailFollow(Config.GetUseLogCache(), appName)
 	})
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).Should(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).Should(Exit(0))
 	})
 
 	Describe("An app staged and running", func() {
 		It("should not start with an invalid healthcheck endpoint", func() {
-			Expect(cf.Cf("set-health-check", appName, "http", "--endpoint", "/invalidhealthcheck").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("set-health-check", appName, "http", "--endpoint", "/invalidhealthcheck").Wait()).To(Exit(0))
 
 			start := cf.Cf("start", appName)
 			defer start.Kill()
@@ -51,7 +51,7 @@ var _ = WindowsDescribe("Http Healthcheck", func() {
 		})
 
 		It("starts with a valid http healthcheck endpoint", func() {
-			Expect(cf.Cf("set-health-check", appName, "http", "--endpoint", "/healthcheck").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("set-health-check", appName, "http", "--endpoint", "/healthcheck").Wait()).To(Exit(0))
 
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
@@ -59,7 +59,7 @@ var _ = WindowsDescribe("Http Healthcheck", func() {
 		})
 
 		It("starts with a http healthcheck endpoint that is a redirect", func() {
-			Expect(cf.Cf("set-health-check", appName, "http", "--endpoint", "/redirect/healthcheck").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("set-health-check", appName, "http", "--endpoint", "/redirect/healthcheck").Wait()).To(Exit(0))
 
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
@@ -67,7 +67,7 @@ var _ = WindowsDescribe("Http Healthcheck", func() {
 		})
 
 		It("does not start with a http healthcheck endpoint that is an invalid redirect", func() {
-			Expect(cf.Cf("set-health-check", appName, "http", "--endpoint", "/redirect/invalidhealthcheck").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("set-health-check", appName, "http", "--endpoint", "/redirect/invalidhealthcheck").Wait()).To(Exit(0))
 
 			start := cf.Cf("start", appName)
 			defer start.Kill()

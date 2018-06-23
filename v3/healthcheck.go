@@ -52,11 +52,11 @@ var _ = V3Describe("Healthcheck", func() {
 			updateProcessPath := fmt.Sprintf("/v3/processes/%s", webProcess.Guid)
 			setHealthCheckBody := `{"health_check": {"type": "process"}}`
 
-			Expect(cf.Cf("curl", updateProcessPath, "-X", "PATCH", "-d", setHealthCheckBody).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("curl", updateProcessPath, "-X", "PATCH", "-d", setHealthCheckBody).Wait()).To(Exit(0))
 
 			StartApp(appGuid)
 
-			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
+			Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
@@ -69,11 +69,11 @@ var _ = V3Describe("Healthcheck", func() {
 			updateProcessPath := fmt.Sprintf("/v3/processes/%s", webProcess.Guid)
 			setHealthCheckBody := `{"health_check": {"type": "port"}}`
 
-			Expect(cf.Cf("curl", updateProcessPath, "-X", "PATCH", "-d", setHealthCheckBody).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("curl", updateProcessPath, "-X", "PATCH", "-d", setHealthCheckBody).Wait()).To(Exit(0))
 
 			StartApp(appGuid)
 
-			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
+			Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
@@ -86,11 +86,11 @@ var _ = V3Describe("Healthcheck", func() {
 			updateProcessPath := fmt.Sprintf("/v3/processes/%s", webProcess.Guid)
 			setHealthCheckBody := `{"health_check": {"type": "http", "data":{"endpoint":"/health"}}}`
 
-			Expect(cf.Cf("curl", updateProcessPath, "-X", "PATCH", "-d", setHealthCheckBody).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("curl", updateProcessPath, "-X", "PATCH", "-d", setHealthCheckBody).Wait()).To(Exit(0))
 
 			StartApp(appGuid)
 
-			Expect(string(cf.Cf("apps").Wait(Config.DefaultTimeoutDuration()).Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
+			Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)

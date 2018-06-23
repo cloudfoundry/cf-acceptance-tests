@@ -32,14 +32,14 @@ var _ = WindowsDescribe("A running application", func() {
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).Should(Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).Should(Exit(0))
 	})
 
 	It("can show crash events", func() {
 		helpers.CurlApp(Config, appName, "/exit")
 
 		Eventually(func() string {
-			return string(cf.Cf("events", appName).Wait(Config.DefaultTimeoutDuration()).Out.Contents())
+			return string(cf.Cf("events", appName).Wait().Out.Contents())
 		}).Should(ContainSubstring("Exited"))
 	})
 })

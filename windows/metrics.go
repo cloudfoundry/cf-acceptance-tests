@@ -45,7 +45,7 @@ var _ = WindowsDescribe("Metrics", func() {
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(gexec.Exit(0))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(gexec.Exit(0))
 	})
 
 	It("shows logs and metrics", func() {
@@ -65,7 +65,7 @@ var _ = WindowsDescribe("Metrics", func() {
 	})
 
 	It("shows container metrics", func() {
-		appGuid := strings.TrimSpace(string(cf.Cf("app", appName, "--guid").Wait(Config.DefaultTimeoutDuration()).Out.Contents()))
+		appGuid := strings.TrimSpace(string(cf.Cf("app", appName, "--guid").Wait().Out.Contents()))
 
 		noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.GetSkipSSLValidation()}, nil)
 		msgChan := make(chan *events.Envelope, 100000)

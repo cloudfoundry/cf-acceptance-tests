@@ -44,30 +44,30 @@ var _ = WindowsCredhubDescribe("CredHub Integration", func() {
 			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed pushing credhub-enabled service broker")
 
-		existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait(Config.DefaultTimeoutDuration()).Out.Contents())
+		existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait().Out.Contents())
 
 		if !strings.Contains(existingEnvVar, "CREDHUB_API") {
 			Expect(cf.Cf(
 				"set-env", chBrokerAppName,
 				"CREDHUB_API", Config.GetCredHubLocation(),
-			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_API env var on credhub-enabled service broker")
+			).Wait()).To(Exit(0), "failed setting CREDHUB_API env var on credhub-enabled service broker")
 		}
 
 		chServiceName = random_name.CATSRandomName("SERVICE-NAME")
 		Expect(cf.Cf(
 			"set-env", chBrokerAppName,
 			"SERVICE_NAME", chServiceName,
-		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting SERVICE_NAME env var on credhub-enabled service broker")
+		).Wait()).To(Exit(0), "failed setting SERVICE_NAME env var on credhub-enabled service broker")
 
 		Expect(cf.Cf(
 			"set-env", chBrokerAppName,
 			"CREDHUB_CLIENT", Config.GetCredHubBrokerClientCredential(),
-		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_CLIENT env var on credhub-enabled service broker")
+		).Wait()).To(Exit(0), "failed setting CREDHUB_CLIENT env var on credhub-enabled service broker")
 
 		Expect(cf.CfRedact(
 			Config.GetCredHubBrokerClientSecret(), "set-env", chBrokerAppName,
 			"CREDHUB_SECRET", Config.GetCredHubBrokerClientSecret(),
-		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_SECRET env var on credhub-enabled service broker")
+		).Wait()).To(Exit(0), "failed setting CREDHUB_SECRET env var on credhub-enabled service broker")
 
 		Expect(cf.Cf(
 			"restart", chBrokerAppName,
@@ -75,15 +75,15 @@ var _ = WindowsCredhubDescribe("CredHub Integration", func() {
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 			serviceUrl := "https://" + chBrokerAppName + "." + Config.GetAppsDomain()
-			createServiceBroker := cf.Cf("create-service-broker", chBrokerAppName, Config.GetAdminUser(), Config.GetAdminPassword(), serviceUrl).Wait(Config.DefaultTimeoutDuration())
+			createServiceBroker := cf.Cf("create-service-broker", chBrokerAppName, Config.GetAdminUser(), Config.GetAdminPassword(), serviceUrl).Wait()
 			Expect(createServiceBroker).To(Exit(0), "failed creating credhub-enabled service broker")
 
-			enableAccess := cf.Cf("enable-service-access", chServiceName, "-o", TestSetup.RegularUserContext().Org).Wait(Config.DefaultTimeoutDuration())
+			enableAccess := cf.Cf("enable-service-access", chServiceName, "-o", TestSetup.RegularUserContext().Org).Wait()
 			Expect(enableAccess).To(Exit(0), "failed to enable service access for credhub-enabled broker")
 
 			TestSetup.RegularUserContext().TargetSpace()
 			instanceName = random_name.CATSRandomName("SVIN-CH")
-			createService := cf.Cf("create-service", chServiceName, "credhub-read-plan", instanceName).Wait(Config.DefaultTimeoutDuration())
+			createService := cf.Cf("create-service", chServiceName, "credhub-read-plan", instanceName).Wait()
 			Expect(createService).To(Exit(0), "failed creating credhub enabled service")
 		})
 	})
@@ -92,30 +92,30 @@ var _ = WindowsCredhubDescribe("CredHub Integration", func() {
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 			TestSetup.RegularUserContext().TargetSpace()
 
-			Expect(cf.Cf("purge-service-instance", instanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			Expect(cf.Cf("delete-service-broker", chBrokerAppName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			Expect(cf.Cf("delete", chBrokerAppName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("purge-service-instance", instanceName, "-f").Wait()).To(Exit(0))
+			Expect(cf.Cf("delete-service-broker", chBrokerAppName, "-f").Wait()).To(Exit(0))
+			Expect(cf.Cf("delete", chBrokerAppName, "-f").Wait()).To(Exit(0))
 		})
 	})
 
 	bindServiceAndStartApp := func(appName string) {
 		Expect(chServiceName).ToNot(Equal(""))
-		setServiceName := cf.Cf("set-env", appName, "SERVICE_NAME", chServiceName).Wait(Config.DefaultTimeoutDuration())
+		setServiceName := cf.Cf("set-env", appName, "SERVICE_NAME", chServiceName).Wait()
 		Expect(setServiceName).To(Exit(0), "failed setting SERVICE_NAME env var on app")
 
-		existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait(Config.DefaultTimeoutDuration()).Out.Contents())
+		existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait().Out.Contents())
 
 		if !strings.Contains(existingEnvVar, "CREDHUB_API") {
 			Expect(cf.Cf(
 				"set-env", appName,
 				"CREDHUB_API", Config.GetCredHubLocation(),
-			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_API env var on app")
+			).Wait()).To(Exit(0), "failed setting CREDHUB_API env var on app")
 		}
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 			TestSetup.RegularUserContext().TargetSpace()
 
-			bindService := cf.Cf("bind-service", appName, instanceName).Wait(Config.DefaultTimeoutDuration())
+			bindService := cf.Cf("bind-service", appName, instanceName).Wait()
 			Expect(bindService).To(Exit(0), "failed binding app to service")
 		})
 		appStartSession = cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
@@ -175,7 +175,7 @@ echo   web: webapp.exe
 					},
 				})
 
-				createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "0").Wait(Config.DefaultTimeoutDuration())
+				createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "0").Wait()
 				Expect(createBuildpack).Should(Exit(0))
 				Expect(createBuildpack).Should(Say("Creating"))
 				Expect(createBuildpack).Should(Say("OK"))
@@ -189,16 +189,16 @@ echo   web: webapp.exe
 				"-p", assets.NewAssets().WindowsWebapp,
 				"-d", Config.GetAppsDomain(),
 				"-s", Config.GetWindowsStack(),
-			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			).Wait()).To(Exit(0))
 
 			bindServiceAndStartApp(appName)
 		})
 
 		AfterEach(func() {
-			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait()).To(Exit(0))
 			})
 
 			os.RemoveAll(tmpdir)
@@ -234,7 +234,7 @@ echo   web: webapp.exe
 
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 					TestSetup.RegularUserContext().TargetSpace()
-					unbindService := cf.Cf("unbind-service", appName, instanceName).Wait(Config.DefaultTimeoutDuration())
+					unbindService := cf.Cf("unbind-service", appName, instanceName).Wait()
 					Expect(unbindService).To(Exit(0), "failed unbinding app and service")
 
 					Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -250,18 +250,18 @@ echo   web: webapp.exe
 						"-b", Config.GetHwcBuildpackName(),
 						"-m", DEFAULT_MEMORY_LIMIT,
 						"-p", assets.NewAssets().Nora,
-						"-d", Config.GetAppsDomain()).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+						"-d", Config.GetAppsDomain()).Wait()).To(Exit(0))
 					bindServiceAndStartApp(appName)
 				})
 
 				It("the broker returns credhub-ref in the credentials block", func() {
-					appEnv := string(cf.Cf("env", appName).Wait(Config.DefaultTimeoutDuration()).Out.Contents())
+					appEnv := string(cf.Cf("env", appName).Wait().Out.Contents())
 					Expect(appEnv).To(ContainSubstring("credentials"), "credential block missing from service")
 					Expect(appEnv).To(ContainSubstring("credhub-ref"), "credhub-ref not found")
 				})
 
 				It("the bound app gets CredHub refs in VCAP_SERVICES interpolated", func() {
-					curlCmd := helpers.CurlSkipSSL(true, appURL+"/env/VCAP_SERVICES").Wait(Config.DefaultTimeoutDuration())
+					curlCmd := helpers.CurlSkipSSL(true, appURL+"/env/VCAP_SERVICES").Wait()
 					Expect(curlCmd).To(Exit(0))
 
 					bytes := curlCmd.Out.Contents()

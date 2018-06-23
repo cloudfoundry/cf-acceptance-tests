@@ -41,7 +41,7 @@ var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
 
 	Describe("An app staged on the DEA", func() {
 		BeforeEach(func() {
-			guid := cf.Cf("app", appName, "--guid").Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+			guid := cf.Cf("app", appName, "--guid").Wait().Out.Contents()
 			appGuid := strings.TrimSpace(string(guid))
 
 			By("Uploading a droplet staged on the DEA")
@@ -50,7 +50,7 @@ var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
 			token := v3_helpers.GetAuthToken()
 			uploadUrl := fmt.Sprintf("%s%s/v2/apps/%s/droplet/upload", Config.Protocol(), Config.GetApiEndpoint(), appGuid)
 			bits := fmt.Sprintf(`droplet=@%s`, dropletPath)
-			curl := helpers.Curl(Config, "-v", uploadUrl, "-X", "PUT", "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).Wait(Config.DefaultTimeoutDuration())
+			curl := helpers.Curl(Config, "-v", uploadUrl, "-X", "PUT", "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).Wait()
 			Expect(curl).To(Exit(0))
 
 			var job struct {
@@ -63,7 +63,7 @@ var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
 			pollingUrl := job.Metadata.Url
 
 			Eventually(func() *Session {
-				return cf.Cf("curl", pollingUrl).Wait(Config.DefaultTimeoutDuration())
+				return cf.Cf("curl", pollingUrl).Wait()
 			}).Should(gbytes.Say("finished"))
 		})
 

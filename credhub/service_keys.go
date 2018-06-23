@@ -39,41 +39,41 @@ var _ = CredhubDescribe("service keys", func() {
 			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed pushing credhub-enabled service broker")
 
-		existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait(Config.DefaultTimeoutDuration()).Out.Contents())
+		existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait().Out.Contents())
 
 		if !strings.Contains(existingEnvVar, "CREDHUB_API") {
 			Expect(cf.Cf(
 				"set-env", chBrokerAppName,
 				"CREDHUB_API", Config.GetCredHubLocation(),
-			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_API env var on credhub-enabled service broker")
+			).Wait()).To(Exit(0), "failed setting CREDHUB_API env var on credhub-enabled service broker")
 		}
 
 		chServiceName = random_name.CATSRandomName("SERVICE-NAME")
 		Expect(cf.Cf(
 			"set-env", chBrokerAppName,
 			"SERVICE_NAME", chServiceName,
-		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting SERVICE_NAME env var on credhub-enabled service broker")
+		).Wait()).To(Exit(0), "failed setting SERVICE_NAME env var on credhub-enabled service broker")
 
 		Expect(cf.Cf(
 			"set-env", chBrokerAppName,
 			"CREDHUB_CLIENT", Config.GetCredHubBrokerClientCredential(),
-		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_CLIENT env var on credhub-enabled service broker")
+		).Wait()).To(Exit(0), "failed setting CREDHUB_CLIENT env var on credhub-enabled service broker")
 
 		Expect(cf.CfRedact(
 			Config.GetCredHubBrokerClientSecret(), "set-env", chBrokerAppName,
 			"CREDHUB_SECRET", Config.GetCredHubBrokerClientSecret(),
-		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0), "failed setting CREDHUB_SECRET env var on credhub-enabled service broker")
+		).Wait()).To(Exit(0), "failed setting CREDHUB_SECRET env var on credhub-enabled service broker")
 
 		Expect(cf.Cf(
 			"restart", chBrokerAppName,
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed restarting credhub-enabled service broker")
 
 		serviceUrl := "https://" + chBrokerAppName + "." + Config.GetAppsDomain()
-		createServiceBroker := cf.Cf("create-service-broker", chBrokerAppName, "a-user", "a-password", serviceUrl, "--space-scoped").Wait(Config.DefaultTimeoutDuration())
+		createServiceBroker := cf.Cf("create-service-broker", chBrokerAppName, "a-user", "a-password", serviceUrl, "--space-scoped").Wait()
 		Expect(createServiceBroker).To(Exit(0), "failed creating credhub-enabled service broker")
 
 		instanceName = random_name.CATSRandomName("SVIN-CH")
-		createService := cf.Cf("create-service", chServiceName, "credhub-read-plan", instanceName).Wait(Config.DefaultTimeoutDuration())
+		createService := cf.Cf("create-service", chServiceName, "credhub-read-plan", instanceName).Wait()
 		Expect(createService).To(Exit(0), "failed creating credhub enabled service")
 	})
 
@@ -84,18 +84,18 @@ var _ = CredhubDescribe("service keys", func() {
 			TestSetup.RegularUserContext().TargetSpace()
 
 			Expect(cf.Cf("delete-service-key", instanceName, serviceKeyName, "-f").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-			Expect(cf.Cf("purge-service-instance", instanceName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			Expect(cf.Cf("delete-service-broker", chBrokerAppName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("purge-service-instance", instanceName, "-f").Wait()).To(Exit(0))
+			Expect(cf.Cf("delete-service-broker", chBrokerAppName, "-f").Wait()).To(Exit(0))
 		})
 	})
 
 	Context("when a service key for a service instance is requested from a CredHub-enabled broker", func() {
 		It("Cloud Controller retrieves the value from CredHub for the service key", func() {
 			serviceKeyName = random_name.CATSRandomName("SVKEY-CH")
-			createKey := cf.Cf("create-service-key", instanceName, serviceKeyName).Wait(Config.DefaultTimeoutDuration())
+			createKey := cf.Cf("create-service-key", instanceName, serviceKeyName).Wait()
 			Expect(createKey).To(Exit(0), "failed to create key")
 
-			keyInfo := cf.Cf("service-key", instanceName, serviceKeyName).Wait(Config.DefaultTimeoutDuration())
+			keyInfo := cf.Cf("service-key", instanceName, serviceKeyName).Wait()
 			Expect(keyInfo).To(Exit(0), "failed key info")
 
 			Expect(keyInfo).To(Say(`"password": "rainbowDash"`))

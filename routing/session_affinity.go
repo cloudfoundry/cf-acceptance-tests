@@ -46,14 +46,14 @@ var _ = RoutingDescribe("Session Affinity", func() {
 
 		AfterEach(func() {
 			app_helpers.AppReport(appName)
-			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 			err := os.Remove(cookieStorePath)
 			Expect(err).ToNot(HaveOccurred())
 		})
 
 		Context("when an app has multiple instances", func() {
 			BeforeEach(func() {
-				Expect(cf.Cf("scale", appName, "-i", "3").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("scale", appName, "-i", "3").Wait()).To(Exit(0))
 			})
 
 			Context("when the client sends VCAP_ID and JSESSION cookies", func() {
@@ -94,12 +94,12 @@ var _ = RoutingDescribe("Session Affinity", func() {
 
 		AfterEach(func() {
 			app_helpers.AppReport(appName)
-			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 		})
 
 		Context("when an app has multiple instances", func() {
 			BeforeEach(func() {
-				Expect(cf.Cf("scale", appName, "-i", "3").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("scale", appName, "-i", "3").Wait()).To(Exit(0))
 			})
 
 			Context("when the client does not send VCAP_ID and JSESSION cookies", func() {
@@ -151,12 +151,12 @@ var _ = RoutingDescribe("Session Affinity", func() {
 				"-p", stickyAsset,
 				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-			Expect(cf.Cf("scale", app1, "-i", "3").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			Expect(cf.Cf("scale", app2, "-i", "3").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("scale", app1, "-i", "3").Wait()).To(Exit(0))
+			Expect(cf.Cf("scale", app2, "-i", "3").Wait()).To(Exit(0))
 			hostname = random_name.CATSRandomName("ROUTE")
 
-			Expect(cf.Cf("map-route", app1, domain, "--hostname", hostname, "--path", app1Path).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			Expect(cf.Cf("map-route", app2, domain, "--hostname", hostname, "--path", app2Path).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("map-route", app1, domain, "--hostname", hostname, "--path", app1Path).Wait()).To(Exit(0))
+			Expect(cf.Cf("map-route", app2, domain, "--hostname", hostname, "--path", app2Path).Wait()).To(Exit(0))
 
 			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
 			Expect(err).ToNot(HaveOccurred())
@@ -167,8 +167,8 @@ var _ = RoutingDescribe("Session Affinity", func() {
 		AfterEach(func() {
 			app_helpers.AppReport(app1)
 			app_helpers.AppReport(app2)
-			Expect(cf.Cf("delete", app1, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			Expect(cf.Cf("delete", app2, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("delete", app1, "-f", "-r").Wait()).To(Exit(0))
+			Expect(cf.Cf("delete", app2, "-f", "-r").Wait()).To(Exit(0))
 
 			err := os.Remove(cookieStorePath)
 			Expect(err).ToNot(HaveOccurred())
@@ -232,11 +232,11 @@ var _ = RoutingDescribe("Session Affinity", func() {
 				"-p", stickyAsset,
 				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-			Expect(cf.Cf("scale", app1, "-i", "3").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			Expect(cf.Cf("scale", app2, "-i", "3").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("scale", app1, "-i", "3").Wait()).To(Exit(0))
+			Expect(cf.Cf("scale", app2, "-i", "3").Wait()).To(Exit(0))
 			hostname = app1
 
-			Expect(cf.Cf("map-route", app2, domain, "--hostname", hostname, "--path", app2Path).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("map-route", app2, domain, "--hostname", hostname, "--path", app2Path).Wait()).To(Exit(0))
 
 			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
 			Expect(err).ToNot(HaveOccurred())
@@ -248,8 +248,8 @@ var _ = RoutingDescribe("Session Affinity", func() {
 			app_helpers.AppReport(app1)
 			app_helpers.AppReport(app2)
 
-			Expect(cf.Cf("delete", app1, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
-			Expect(cf.Cf("delete", app2, "-f", "-r").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("delete", app1, "-f", "-r").Wait()).To(Exit(0))
+			Expect(cf.Cf("delete", app2, "-f", "-r").Wait()).To(Exit(0))
 
 			err := os.Remove(cookieStorePath)
 			Expect(err).ToNot(HaveOccurred())

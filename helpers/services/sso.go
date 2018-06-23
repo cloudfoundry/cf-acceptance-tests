@@ -42,7 +42,7 @@ func SetOauthEndpoints(apiEndpoint string, oAuthConfig *OAuthConfig, config cats
 		args = append(args, "--insecure")
 	}
 	args = append(args, fmt.Sprintf("%v/info", apiEndpoint))
-	curl := helpers.Curl(Config, args...).Wait(Config.DefaultTimeoutDuration())
+	curl := helpers.Curl(Config, args...).Wait()
 	Expect(curl).To(Exit(0))
 	apiResponse := curl.Out.Contents()
 	jsonResult := ParseJsonResponse(apiResponse)
@@ -63,7 +63,7 @@ func AuthenticateUser(authorizationEndpoint string, username string, password st
 		os.Remove(cookiePath)
 	}()
 
-	curl := helpers.Curl(Config, loginCsrfUri, `--insecure`, `-i`, `-v`, `-c`, cookiePath).Wait(Config.DefaultTimeoutDuration())
+	curl := helpers.Curl(Config, loginCsrfUri, `--insecure`, `-i`, `-v`, `-c`, cookiePath).Wait()
 	apiResponse := string(curl.Out.Contents())
 	csrfRegEx, _ := regexp.Compile(`name="X-Uaa-Csrf" value="(.*)"`)
 	csrfToken := csrfRegEx.FindStringSubmatch(apiResponse)[1]
@@ -74,7 +74,7 @@ func AuthenticateUser(authorizationEndpoint string, username string, password st
 	csrfTokenEncoded := url.QueryEscape(csrfToken)
 	loginCredentials := fmt.Sprintf("username=%v&password=%v&X-Uaa-Csrf=%v", usernameEncoded, passwordEncoded, csrfTokenEncoded)
 
-	curl = helpers.Curl(Config, loginUri, `--data`, loginCredentials, `--insecure`, `-i`, `-v`, `-b`, cookiePath).Wait(Config.DefaultTimeoutDuration())
+	curl = helpers.Curl(Config, loginUri, `--data`, loginCredentials, `--insecure`, `-i`, `-v`, `-b`, cookiePath).Wait()
 	Expect(curl).To(Exit(0))
 	apiResponse = string(curl.Out.Contents())
 
@@ -95,7 +95,7 @@ func RequestScopes(cookie string, config OAuthConfig) (authCode string, httpCode
 		config.RedirectUri,
 		config.RequestedScopes)
 
-	curl := helpers.Curl(Config, requestScopesUri, `-L`, `--cookie`, cookie, `--insecure`, `-w`, `:TestReponseCode:%{http_code}`, `-v`).Wait(Config.DefaultTimeoutDuration())
+	curl := helpers.Curl(Config, requestScopesUri, `-L`, `--cookie`, cookie, `--insecure`, `-w`, `:TestReponseCode:%{http_code}`, `-v`).Wait()
 	Expect(curl).To(Exit(0))
 	apiResponse := string(curl.Out.Contents())
 	resultMap := strings.Split(apiResponse, `:TestReponseCode:`)
@@ -113,7 +113,7 @@ func AuthorizeScopes(cookie string, config OAuthConfig) (authCode string) {
 	authorizedScopes := `scope.0=scope.openid&scope.1=scope.cloud_controller.read&scope.2=scope.cloud_controller.write&user_oauth_approval=true&X-Uaa-Csrf=123456`
 	authorizeScopesUri := fmt.Sprintf("%v/oauth/authorize", config.AuthorizationEndpoint)
 
-	curl := helpers.Curl(Config, authorizeScopesUri, `-i`, `--data`, authorizedScopes, `--cookie`, cookie+`;X-Uaa-Csrf=123456`, `--insecure`, `-v`).Wait(Config.DefaultTimeoutDuration())
+	curl := helpers.Curl(Config, authorizeScopesUri, `-i`, `--data`, authorizedScopes, `--cookie`, cookie+`;X-Uaa-Csrf=123456`, `--insecure`, `-v`).Wait()
 	Expect(curl).To(Exit(0))
 	apiResponse := string(curl.Out.Contents())
 
@@ -131,7 +131,7 @@ func GetAccessToken(authCode string, config OAuthConfig) (accessToken string) {
 	requestTokenUri := fmt.Sprintf("%v/oauth/token", config.TokenEndpoint)
 	requestTokenData := fmt.Sprintf("scope=%v&code=%v&grant_type=authorization_code&redirect_uri=%v", config.RequestedScopes, authCode, config.RedirectUri)
 
-	curl := helpers.Curl(Config, requestTokenUri, `-H`, authHeader, `--data`, requestTokenData, `--insecure`, `-v`).Wait(Config.DefaultTimeoutDuration())
+	curl := helpers.Curl(Config, requestTokenUri, `-H`, authHeader, `--data`, requestTokenData, `--insecure`, `-v`).Wait()
 	Expect(curl).To(Exit(0))
 	apiResponse := curl.Out.Contents()
 	jsonResult := ParseJsonResponse(apiResponse)
@@ -145,7 +145,7 @@ func QueryServiceInstancePermissionEndpoint(apiEndpoint string, accessToken stri
 	authHeader := fmt.Sprintf("Authorization: bearer %v", accessToken)
 	permissionsUri := fmt.Sprintf("%v/v2/service_instances/%v/permissions", apiEndpoint, serviceInstanceGuid)
 
-	curl := helpers.Curl(Config, permissionsUri, `-H`, authHeader, `-w`, `:TestReponseCode:%{http_code}`, `--insecure`, `-v`).Wait(Config.DefaultTimeoutDuration())
+	curl := helpers.Curl(Config, permissionsUri, `-H`, authHeader, `-w`, `:TestReponseCode:%{http_code}`, `--insecure`, `-v`).Wait()
 	Expect(curl).To(Exit(0))
 	apiResponse := string(curl.Out.Contents())
 	resultMap := strings.Split(apiResponse, `:TestReponseCode:`)

@@ -71,7 +71,7 @@ exit 1
 
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				if buildpackName != "" {
-					Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait()).To(Exit(0))
 				}
 			})
 
@@ -83,7 +83,7 @@ exit 1
 			buildpackZip := createBuildpack()
 
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait()).To(Exit(0))
 			})
 
 			push := cf.Cf(
@@ -97,7 +97,7 @@ exit 1
 
 			var appStdout string
 			appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
-			appLogsSession.Wait(Config.DefaultTimeoutDuration())
+			appLogsSession.Wait()
 
 			appStdout = string(appLogsSession.Out.Contents())
 			Expect(appStdout).To(MatchRegexp("LANG=en_US\\.UTF-8"))
@@ -152,7 +152,7 @@ exit 1
 			var taskStdout string
 			Eventually(func() string {
 				appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
-				appLogsSession.Wait(Config.DefaultTimeoutDuration())
+				appLogsSession.Wait()
 
 				taskStdout = string(appLogsSession.Out.Contents())
 
@@ -189,7 +189,7 @@ func assertPresent(env map[string]string, varNames ...string) {
 }
 
 func getTaskState(appName string) string {
-	listCommand := cf.Cf("tasks", appName).Wait(Config.DefaultTimeoutDuration())
+	listCommand := cf.Cf("tasks", appName).Wait()
 	Expect(listCommand).To(Exit(0))
 	listOutput := string(listCommand.Out.Contents())
 	lines := strings.Split(listOutput, "\n")

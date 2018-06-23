@@ -58,7 +58,7 @@ func LastAppUsageEventGuid(testSetup *workflowhelpers.ReproducibleTestSuiteSetup
 }
 
 // Returns all app usage events that occured since the given app usage event guid
-func UsageEventsAfterGuid(testSetup *workflowhelpers.ReproducibleTestSuiteSetup, guid string) []AppUsageEvent {
+func UsageEventsAfterGuid(guid string) []AppUsageEvent {
 	resources := make([]AppUsageEvent, 0)
 
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {

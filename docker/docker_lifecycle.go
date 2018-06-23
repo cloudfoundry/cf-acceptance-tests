@@ -39,7 +39,7 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 		BeforeEach(func() {
 			appName = random_name.CATSRandomName("APP")
 			appUrl := "https://" + appName + "." + Config.GetAppsDomain()
-			nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait(Config.DefaultTimeoutDuration())
+			nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait()
 			expectedNullResponse = string(nullSession.Buffer().Contents())
 			Eventually(cf.Cf(
 				"push", appName,
@@ -78,7 +78,6 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-d", Config.GetAppsDomain(),
 				"-i", "1"),
-				Config.DefaultTimeoutDuration(),
 			).Should(Exit(0))
 		})
 
