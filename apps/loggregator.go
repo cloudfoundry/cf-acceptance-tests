@@ -2,8 +2,6 @@ package apps
 
 import (
 	"fmt"
-	"time"
-
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	. "github.com/onsi/ginkgo"
@@ -69,14 +67,14 @@ var _ = AppsDescribe("loggregator", func() {
 		It("exercises basic loggregator behavior", func() {
 			if !Config.GetUseLogCache() {
 				// log cache cli will not emit header unless being run in terminal
-				Eventually(logs, (Config.DefaultTimeoutDuration() + time.Minute)).Should(Say("(Connected, tailing|Retrieving) logs for app"))
+				Eventually(logs).Should(Say("(Connected, tailing|Retrieving) logs for app"))
 			}
 
 			Eventually(func() string {
 				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
 			}).Should(ContainSubstring("Muahaha"))
 
-			Eventually(logs, (Config.DefaultTimeoutDuration() + time.Minute)).Should(Say("Muahaha"))
+			Eventually(logs).Should(Say("Muahaha"))
 		})
 	})
 
