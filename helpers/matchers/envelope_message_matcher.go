@@ -29,7 +29,7 @@ func (matcher *EnvelopeContainingMessageLikeMatcher) Match(actual interface{}) (
 		return false, fmt.Errorf("EnvelopeContainingMessageLikeMatcher matcher: expected value must be a string")
 	}
 
-	return strings.Contains(string(envelope.GetLogMessage().GetMessage()), expectedMessage), nil
+	return strings.Contains(envelope.GetLogMessage().String(), expectedMessage), nil
 }
 
 func (matcher *EnvelopeContainingMessageLikeMatcher) FailureMessage(actual interface{}) (message string) {
