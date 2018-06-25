@@ -75,32 +75,8 @@ var _ = WindowsDescribe("Metrics", func() {
 		go noaaConnection.Firehose(random_name.CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
 		defer close(stopchan)
 
-		containerMetrics := make([]*events.ContainerMetric, 2)
-		Eventually(func() bool {
-			for {
-				select {
-				case msg := <-msgChan:
-					if cm := msg.GetContainerMetric(); cm != nil {
-						if cm.GetApplicationId() == appGuid {
-							containerMetrics[cm.GetInstanceIndex()] = cm
-
-							if containerMetrics[0] != nil && containerMetrics[1] != nil {
-								return true
-							}
-						}
-					}
-				case e := <-errorChan:
-					Expect(e).ToNot(HaveOccurred())
-				default:
-					return false
-				}
-			}
-		}, 2*Config.DefaultTimeoutDuration()).Should(BeTrue())
-
-		for _, cm := range containerMetrics {
-			Expect(cm.GetMemoryBytes()).ToNot(BeZero())
-			Expect(cm.GetDiskBytes()).ToNot(BeZero())
-		}
+		Eventually(msgChan, Config.DefaultTimeoutDuration(), time.Millisecond).Should(Receive(NonZeroContainerMetricsFor(MetricsApp{AppGuid: appGuid, InstanceId: 0})))
+		Eventually(msgChan, Config.DefaultTimeoutDuration(), time.Millisecond).Should(Receive(NonZeroContainerMetricsFor(MetricsApp{AppGuid: appGuid, InstanceId: 1})))
 	})
 })
 
