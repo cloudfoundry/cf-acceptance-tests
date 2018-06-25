@@ -74,6 +74,7 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 			}).Should(ContainSubstring("Hi, I'm Dora!"))
 
 			deploymentGuid := CreateDeployment(appGuid)
+			Expect(deploymentGuid).ToNot(BeEmpty())
 			webishProcessType := fmt.Sprintf("web-deployment-%s", deploymentGuid)
 
 			Eventually(func() int {
