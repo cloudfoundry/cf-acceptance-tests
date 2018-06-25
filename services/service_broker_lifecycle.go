@@ -60,8 +60,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				Expect(plans).To(Say(broker.SyncPlans[1].Name))
 
 				// Confirm default schemas show up in CAPI
-				cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/service_plans?q=unique_id:%s", broker.SyncPlans[0].ID)).
-					Wait(Config.DefaultTimeoutDuration()).Out.Contents()
+				cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/service_plans?q=unique_id:%s", broker.SyncPlans[0].ID)).Wait().Out.Contents()
 
 				var plansResponse ServicePlansResponse
 				err := json.Unmarshal(cfResponse, &plansResponse)
