@@ -116,8 +116,8 @@ var _ = AppsDescribe("loggregator", func() {
 			go noaaConnection.Firehose(CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
 			defer close(stopchan)
 
-			Eventually(msgChan, Config.DefaultTimeoutDuration(), time.Millisecond).Should(Receive(NonZeroContainerMetricsFor(MetricsApp{AppGuid: appGuid, InstanceId: 0})))
-			Eventually(msgChan, Config.DefaultTimeoutDuration(), time.Millisecond).Should(Receive(NonZeroContainerMetricsFor(MetricsApp{AppGuid: appGuid, InstanceId: 1})))
+			Eventually(msgChan, 2*Config.DefaultTimeoutDuration(), time.Millisecond).Should(Receive(NonZeroContainerMetricsFor(MetricsApp{AppGuid: appGuid, InstanceId: 0})))
+			Eventually(msgChan, 2*Config.DefaultTimeoutDuration(), time.Millisecond).Should(Receive(NonZeroContainerMetricsFor(MetricsApp{AppGuid: appGuid, InstanceId: 1})))
 		})
 	})
 })
