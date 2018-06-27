@@ -101,10 +101,11 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 
 		It("is not reachable from the isolation segment router", func() {
 			//send a request to app in the shared domain, but through the isolation segment router
-			resp := v3_helpers.SendRequestWithSpoofedHeader(fmt.Sprintf("%s.%s", appName, appsDomain), isoSegDomain)
-			defer resp.Body.Close()
-
-			Expect(resp.StatusCode).To(Equal(404))
+			Eventually(func() int {
+				resp := v3_helpers.SendRequestWithSpoofedHeader(fmt.Sprintf("%s.%s", appName, appsDomain), isoSegDomain)
+				defer resp.Body.Close()
+				return resp.StatusCode
+			}).Should(Equal(404))
 		})
 	})
 
