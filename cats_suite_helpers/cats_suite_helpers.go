@@ -17,6 +17,8 @@ import (
 const (
 	CF_JAVA_TIMEOUT      = 10 * time.Minute
 	DEFAULT_MEMORY_LIMIT = "256M"
+	POLICY_TIMEOUT       = 10 * time.Second
+	EVENTS_TIMEOUT       = 5 * time.Second
 )
 
 var (

@@ -75,10 +75,9 @@ var _ = WindowsDescribe("SSH", func() {
 					return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 				}).Should(gbytes.Say("Successful remote access"))
 
-				eventsCmd := cf.Cf("events", appName).Wait(Config.CfPushTimeoutDuration())
-				Expect(eventsCmd.Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-				output = string(eventsCmd.Out.Contents())
-				Expect(output).To(ContainSubstring("audit.app.ssh-authorized"))
+				Eventually(func() string {
+					return string(cf.Cf("events", appName).Wait().Out.Contents())
+				}, EVENTS_TIMEOUT).Should(MatchRegexp("audit.app.ssh-authorized"))
 			})
 		})
 
@@ -99,10 +98,9 @@ var _ = WindowsDescribe("SSH", func() {
 				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 			}).Should(gbytes.Say("Successful remote access"))
 
-			eventsCmd := cf.Cf("events", appName).Wait(Config.CfPushTimeoutDuration())
-			Expect(eventsCmd.Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-			output = string(eventsCmd.Out.Contents())
-			Expect(output).To(ContainSubstring("audit.app.ssh-authorized"))
+			Eventually(func() string {
+				return string(cf.Cf("events", appName).Wait().Out.Contents())
+			}, EVENTS_TIMEOUT).Should(MatchRegexp("audit.app.ssh-authorized"))
 		})
 
 		It("runs an interactive session when no command is provided", func() {
@@ -136,10 +134,9 @@ var _ = WindowsDescribe("SSH", func() {
 				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 			}).Should(gbytes.Say("Successful remote access"))
 
-			eventsCmd := cf.Cf("events", appName).Wait(Config.CfPushTimeoutDuration())
-			Expect(eventsCmd.Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-			output = eventsCmd.Out.Contents()
-			Expect(string(output)).To(ContainSubstring("audit.app.ssh-authorized"))
+			Eventually(func() string {
+				return string(cf.Cf("events", appName).Wait().Out.Contents())
+			}, EVENTS_TIMEOUT).Should(MatchRegexp("audit.app.ssh-authorized"))
 		})
 
 		It("allows local port forwarding", func() {
@@ -187,10 +184,9 @@ var _ = WindowsDescribe("SSH", func() {
 				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 			}).Should(gbytes.Say("Successful remote access"))
 
-			eventsCmd := cf.Cf("events", appName).Wait(Config.CfPushTimeoutDuration())
-			Expect(eventsCmd.Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-			output = eventsCmd.Out.Contents()
-			Expect(string(output)).To(ContainSubstring("audit.app.ssh-authorized"))
+			Eventually(func() string {
+				return string(cf.Cf("events", appName).Wait().Out.Contents())
+			}, EVENTS_TIMEOUT).Should(MatchRegexp("audit.app.ssh-authorized"))
 		})
 
 		It("records failed ssh attempts", func() {
@@ -205,10 +201,9 @@ var _ = WindowsDescribe("SSH", func() {
 			_, err := ssh.Dial("tcp", sshProxyAddress(), clientConfig)
 			Expect(err).To(HaveOccurred())
 
-			eventsCmd := cf.Cf("events", appName).Wait(Config.CfPushTimeoutDuration())
-			Expect(eventsCmd.Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-			output := eventsCmd.Out.Contents()
-			Expect(string(output)).To(ContainSubstring("audit.app.ssh-unauthorized"))
+			Eventually(func() string {
+				return string(cf.Cf("events", appName).Wait().Out.Contents())
+			}, EVENTS_TIMEOUT).Should(MatchRegexp("audit.app.ssh-unauthorized"))
 		})
 	})
 

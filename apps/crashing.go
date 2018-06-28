@@ -40,7 +40,7 @@ var _ = AppsDescribe("Crashing", func() {
 
 			Eventually(func() string {
 				return string(cf.Cf("events", appName).Wait().Out.Contents())
-			}).Should(MatchRegexp("[eE]xited"))
+			}, EVENTS_TIMEOUT).Should(MatchRegexp("app.crash"))
 
 			Eventually(cf.Cf("app", appName)).Should(Say("crashed"))
 		})
@@ -64,7 +64,7 @@ var _ = AppsDescribe("Crashing", func() {
 
 			Eventually(func() string {
 				return string(cf.Cf("events", appName).Wait().Out.Contents())
-			}).Should(MatchRegexp("[eE]xited"))
+			}, EVENTS_TIMEOUT).Should(MatchRegexp("app.crash"))
 		})
 
 		It("recovers", func() {

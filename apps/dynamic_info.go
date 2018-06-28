@@ -39,7 +39,9 @@ var _ = AppsDescribe("A running application", func() {
 		id := helpers.CurlApp(Config, appName, "/id")
 		helpers.CurlApp(Config, appName, "/sigterm/KILL")
 
-		Eventually(cf.Cf("events", appName)).Should(Say("[eE]xited"))
+		Eventually(func() string {
+			return string(cf.Cf("events", appName).Wait().Out.Contents())
+		}, EVENTS_TIMEOUT).Should(MatchRegexp("app.crash"))
 
 		Eventually(func() string {
 			return helpers.CurlApp(Config, appName, "/id")

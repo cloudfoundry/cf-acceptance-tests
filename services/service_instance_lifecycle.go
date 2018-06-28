@@ -254,7 +254,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
 				Expect(createApp).To(Exit(0), "failed creating app")
 
-				checkForAppEvents(appName, []string{"audit.app.create"})
+				checkForAppEvent(appName, "audit.app.create")
 
 				instanceName = random_name.CATSRandomName("SVIN")
 				createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName).Wait()
@@ -272,7 +272,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					bindService := cf.Cf("bind-service", appName, instanceName).Wait()
 					Expect(bindService).To(Exit(0), "failed binding app to service")
 
-					checkForAppEvents(appName, []string{"audit.app.update"})
+					checkForAppEvent(appName, "audit.app.update")
 
 					appEnv := cf.Cf("env", appName).Wait()
 					Expect(appEnv).To(Exit(0), "failed get env for app")
@@ -309,7 +309,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 						unbindService := cf.Cf("unbind-service", appName, instanceName).Wait()
 						Expect(unbindService).To(Exit(0), "failed unbinding app to service")
 
-						checkForAppEvents(appName, []string{"audit.app.update"})
+						checkForAppEvent(appName, "audit.app.update")
 
 						appEnv := cf.Cf("env", appName).Wait()
 						Expect(appEnv).To(Exit(0), "failed get env for app")
@@ -453,12 +453,12 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 						bindService := cf.Cf("bind-service", appName, instanceName).Wait()
 						Expect(bindService).To(Exit(0), "failed binding app to service")
 
-						checkForAppEvents(appName, []string{"audit.app.update"})
+						checkForAppEvent(appName, "audit.app.update")
 
 						restageApp := cf.Cf("restage", appName).Wait(Config.CfPushTimeoutDuration())
 						Expect(restageApp).To(Exit(0), "failed restaging app")
 
-						checkForAppEvents(appName, []string{"audit.app.restage"})
+						checkForAppEvent(appName, "audit.app.restage")
 
 						appEnv := cf.Cf("env", appName).Wait()
 						Expect(appEnv).To(Exit(0), "failed get env for app")
@@ -469,7 +469,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 						bindService := cf.Cf("bind-service", appName, instanceName, "-c", params).Wait()
 						Expect(bindService).To(Exit(0), "failed binding app to service")
 
-						checkForAppEvents(appName, []string{"audit.app.update"})
+						checkForAppEvent(appName, "audit.app.update")
 					})
 
 					Context("when there is an existing binding", func() {
@@ -482,7 +482,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 							unbindService := cf.Cf("unbind-service", appName, instanceName).Wait()
 							Expect(unbindService).To(Exit(0), "failed unbinding app to service")
 
-							checkForAppEvents(appName, []string{"audit.app.update"})
+							checkForAppEvent(appName, "audit.app.update")
 
 							appEnv := cf.Cf("env", appName).Wait()
 							Expect(appEnv).To(Exit(0), "failed get env for app")
@@ -568,13 +568,10 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 	})
 })
 
-func checkForAppEvents(name string, eventNames []string) {
-	events := cf.Cf("events", name).Wait()
-	Expect(events).To(Exit(0), fmt.Sprintf("failed getting events for %s", name))
-
-	for _, eventName := range eventNames {
-		Expect(events).To(Say(eventName), "failed to find event")
-	}
+func checkForAppEvent(appName string, eventName string) {
+	Eventually(func() string {
+		return string(cf.Cf("events", appName).Wait().Out.Contents())
+	}, EVENTS_TIMEOUT).Should(MatchRegexp(eventName))
 }
 
 func getBindingParamsEndpoint(appGUID string, instanceGUID string) string {

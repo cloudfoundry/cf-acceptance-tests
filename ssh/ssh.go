@@ -62,7 +62,10 @@ var _ = SshDescribe("SSH", func() {
 				Eventually(func() *Buffer {
 					return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 				}).Should(Say("Successful remote access"))
-				Eventually(cf.Cf("events", appName)).Should(Say("audit.app.ssh-authorized"))
+
+				Eventually(func() string {
+					return string(cf.Cf("events", appName).Wait().Out.Contents())
+				}, EVENTS_TIMEOUT).Should(MatchRegexp("audit.app.ssh-authorized"))
 			})
 		})
 
@@ -82,7 +85,9 @@ var _ = SshDescribe("SSH", func() {
 			Eventually(func() *Buffer {
 				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 			}).Should(Say("Successful remote access"))
-			Eventually(cf.Cf("events", appName)).Should(Say("audit.app.ssh-authorized"))
+			Eventually(func() string {
+				return string(cf.Cf("events", appName).Wait().Out.Contents())
+			}, EVENTS_TIMEOUT).Should(MatchRegexp("audit.app.ssh-authorized"))
 		})
 
 		It("runs an interactive session when no command is provided", func() {
@@ -115,7 +120,10 @@ var _ = SshDescribe("SSH", func() {
 			Eventually(func() *Buffer {
 				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 			}).Should(Say("Successful remote access"))
-			Eventually(cf.Cf("events", appName)).Should(Say("audit.app.ssh-authorized"))
+
+			Eventually(func() string {
+				return string(cf.Cf("events", appName).Wait().Out.Contents())
+			}, EVENTS_TIMEOUT).Should(MatchRegexp("audit.app.ssh-authorized"))
 		})
 
 		It("allows local port forwarding", func() {
@@ -162,7 +170,10 @@ var _ = SshDescribe("SSH", func() {
 			Eventually(func() *Buffer {
 				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 			}).Should(Say("Successful remote access"))
-			Eventually(cf.Cf("events", appName)).Should(Say("audit.app.ssh-authorized"))
+
+			Eventually(func() string {
+				return string(cf.Cf("events", appName).Wait().Out.Contents())
+			}, EVENTS_TIMEOUT).Should(MatchRegexp("audit.app.ssh-authorized"))
 		})
 
 		It("records failed ssh attempts", func() {
@@ -177,7 +188,9 @@ var _ = SshDescribe("SSH", func() {
 			_, err := ssh.Dial("tcp", sshProxyAddress(), clientConfig)
 			Expect(err).To(HaveOccurred())
 
-			Eventually(cf.Cf("events", appName)).Should(Say("audit.app.ssh-unauthorized"))
+			Eventually(func() string {
+				return string(cf.Cf("events", appName).Wait().Out.Contents())
+			}, EVENTS_TIMEOUT).Should(MatchRegexp("audit.app.ssh-unauthorized"))
 		})
 	})
 

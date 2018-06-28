@@ -40,6 +40,6 @@ var _ = WindowsDescribe("A running application", func() {
 
 		Eventually(func() string {
 			return string(cf.Cf("events", appName).Wait().Out.Contents())
-		}).Should(ContainSubstring("Exited"))
+		}, EVENTS_TIMEOUT).Should(MatchRegexp("app.crash"))
 	})
 })
