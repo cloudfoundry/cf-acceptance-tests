@@ -113,7 +113,7 @@ var _ = V3Describe("buildpack", func() {
 	Context("With a multi buildpack app", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeCapiNoBridge() {
-				Skip(`Skipping this test because Config.IncludeCapiNoBridge is set to 'false'.`)
+				Skip(skip_messages.SkipCapiNoBridgeMessage)
 			}
 
 			appName = random_name.CATSRandomName("APP")

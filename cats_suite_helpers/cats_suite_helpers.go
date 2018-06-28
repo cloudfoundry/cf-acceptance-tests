@@ -31,7 +31,7 @@ func AppsDescribe(description string, callback func()) bool {
 	return Describe("[apps]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeApps() {
-				Skip(`Skipping this test because Config.IncludeApps is set to 'false'.`)
+				Skip(skip_messages.SkipAppsMessage)
 			}
 		})
 		Describe(description, callback)
@@ -42,7 +42,7 @@ func IsolationSegmentsDescribe(description string, callback func()) bool {
 	return Describe("[isolation_segments]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeIsolationSegments() {
-				Skip(`Skipping this test because Config.IncludeIsolationSegments is set to 'false'.`)
+				Skip(skip_messages.SkipIsolationSegmentsMessage)
 			}
 		})
 		Describe(description, callback)
@@ -64,7 +64,7 @@ func DetectDescribe(description string, callback func()) bool {
 	return Describe("[detect]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeDetect() {
-				Skip(`Skipping this test because Config.IncludeDetect is set to 'false'.`)
+				Skip(skip_messages.SkipDetectMessage)
 			}
 		})
 		Describe(description, callback)
@@ -75,8 +75,7 @@ func DockerDescribe(description string, callback func()) bool {
 	return Describe("[docker]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeDocker() {
-				Skip(`Skipping this test because Config.IncludeDocker is set to 'false'.
-				NOTE: Ensure Docker containers are enabled on your platform before enabling this test.`)
+				Skip(skip_messages.SkipDockerMessage)
 			}
 		})
 		Describe(description, callback)
@@ -87,8 +86,7 @@ func InternetDependentDescribe(description string, callback func()) bool {
 	return Describe("[internet_dependent]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeInternetDependent() {
-				Skip(`Skipping this test because Config.IncludeInternetDependent is set to 'false'.
-NOTE: Ensure that your deployment has access to the internet before running this test.`)
+				Skip(skip_messages.SkipInternetDependentMessage)
 			}
 		})
 		Describe(description, callback)
@@ -99,8 +97,7 @@ func RouteServicesDescribe(description string, callback func()) bool {
 	return Describe("[route_services]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeRouteServices() {
-				Skip(`Skipping this test because Config.IncludeRouteServices is set to 'false'.
-			NOTE: Ensure that route services are enabled in your deployment before running this test.`)
+				Skip(skip_messages.SkipRouteServicesMessage)
 			}
 		})
 		Describe(description, callback)
@@ -111,7 +108,7 @@ func RoutingDescribe(description string, callback func()) bool {
 	return Describe("[routing]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeRouting() {
-				Skip(`Skipping this test because Config.IncludeRouting is set to 'false'.`)
+				Skip(skip_messages.SkipRoutingMessage)
 			}
 		})
 		Describe(description, callback)
@@ -122,7 +119,7 @@ func TCPRoutingDescribe(description string, callback func()) bool {
 	return Describe("[tcp routing]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeTCPRouting() {
-				Skip(`Skipping this test because Config.IncludeTCPRouting is set to 'false'.`)
+				Skip(skip_messages.SkipTCPRoutingMessage)
 			}
 		})
 		Describe(description, callback)
@@ -133,7 +130,7 @@ func RoutingIsolationSegmentsDescribe(description string, callback func()) bool 
 	return Describe("[routing_isolation_segments]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeRoutingIsolationSegments() {
-				Skip(`Skipping this test because Config.IncludeRoutingIsolationSegments is set to 'false'.`)
+				Skip(skip_messages.SkipRoutingIsolationSegmentsMessage)
 			}
 		})
 		Describe(description, callback)
@@ -144,11 +141,11 @@ func ZipkinDescribe(description string, callback func()) bool {
 	return Describe("[routing]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeRouting() {
-				Skip(`Skipping this test because Config.IncludeRouting is set to 'false'`)
+				Skip(skip_messages.SkipRoutingMessage)
 			}
 
 			if !Config.GetIncludeZipkin() {
-				Skip(`Skipping this test because Config.IncludeZipkin is set to 'false'`)
+				Skip(skip_messages.SkipZipkinMessage)
 			}
 		})
 		Describe(description, callback)
@@ -159,8 +156,7 @@ func SecurityGroupsDescribe(description string, callback func()) bool {
 	return Describe("[security_groups]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeSecurityGroups() {
-				Skip(`Skipping this test because Config.IncludeSecurityGroups is set to 'false'.
-			NOTE: Ensure that your deployment restricts internal network traffic by default in order to run this test.`)
+				Skip(skip_messages.SkipSecurityGroupsMessage)
 			}
 		})
 		Describe(description, callback)
@@ -171,7 +167,7 @@ func ServiceDiscoveryDescribe(description string, callback func()) bool {
 	return Describe("[service discovery]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeServiceDiscovery() {
-				Skip(`Skipping this test because Config.IncludeServiceDiscovery is set to 'false'.`)
+				Skip(skip_messages.SkipServiceDiscoveryMessage)
 			}
 		})
 		Describe(description, callback)
@@ -182,7 +178,7 @@ func ServicesDescribe(description string, callback func()) bool {
 	return Describe("[services]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeServices() {
-				Skip(`Skipping this test because Config.IncludeServices is set to 'false'.`)
+				Skip(skip_messages.SkipServicesMessage)
 			}
 		})
 		Describe(description, callback)
@@ -193,7 +189,7 @@ func ServiceInstanceSharingDescribe(description string, callback func()) bool {
 	return Describe("[service instance sharing]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeServiceInstanceSharing() {
-				Skip(`Skipping this test because Config.IncludeServiceInstanceSharing is set to 'false'.`)
+				Skip(skip_messages.SkipServiceInstanceSharingMessage)
 			}
 		})
 		Describe(description, callback)
@@ -204,8 +200,7 @@ func SshDescribe(description string, callback func()) bool {
 	return Describe("[ssh]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeSsh() {
-				Skip(`Skipping this test because Config.IncludeSsh is set to 'false'.
-			NOTE: Ensure that your platform is deployed with a Diego SSH proxy in order to run this test.`)
+				Skip(skip_messages.SkipSSHMessage)
 			}
 		})
 		Describe(description, callback)
@@ -216,7 +211,7 @@ func V3Describe(description string, callback func()) bool {
 	return Describe("[v3]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeV3() {
-				Skip(`Skipping this test because Config.IncludeV3 is set to 'false'.`)
+				Skip(skip_messages.SkipV3Message)
 			}
 		})
 		Describe(description, callback)
@@ -227,7 +222,7 @@ func CapiExperimentalDescribe(description string, callback func()) bool {
 	return Describe("[capi_experimental]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeCapiExperimental() {
-				Skip(`Skipping this test because Config.IncludeCapiExperimental is set to 'false'.`)
+				Skip(skip_messages.SkipCapiExperimentalMessage)
 			}
 		})
 		Describe(description, callback)
@@ -238,7 +233,7 @@ func TasksDescribe(description string, callback func()) bool {
 	return Describe("[tasks]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeTasks() {
-				Skip(`Skipping this test because Config.IncludeTasks is set to 'false'.`)
+				Skip(skip_messages.SkipTasksMessage)
 			}
 		})
 		Describe(description, callback)

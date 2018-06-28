@@ -12,6 +12,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
 var _ = WindowsDescribe("Task Lifecycle", func() {
@@ -19,7 +20,7 @@ var _ = WindowsDescribe("Task Lifecycle", func() {
 
 	BeforeEach(func() {
 		if !Config.GetUseWindowsTestTask() {
-			Skip("Skipping tasks tests (requires diego-release v1.20.0 and above)")
+			Skip(skip_messages.SkipWindowsTasksMessage)
 		}
 
 		appName = random_name.CATSRandomName("APP")

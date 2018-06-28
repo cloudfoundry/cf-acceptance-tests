@@ -20,6 +20,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
 var _ = WindowsDescribe("SSH", func() {
@@ -27,7 +28,7 @@ var _ = WindowsDescribe("SSH", func() {
 
 	BeforeEach(func() {
 		if Config.GetWindowsStack() == "windows2012R2" {
-			Skip("cf ssh does not work on windows2012R2")
+			Skip(skip_messages.SkipSSHOnWindows2012R2Message)
 		}
 
 		appName = random_name.CATSRandomName("APP")
