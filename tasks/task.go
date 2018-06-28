@@ -25,8 +25,6 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-const policyTimeout = "10s"
-
 type Result struct {
 	FailureReason string `json:"failure_reason"`
 }
@@ -291,7 +289,7 @@ exit 1`
 					outputName = taskDetails[1]
 					outputState = taskDetails[2]
 					return outputState
-				}, policyTimeout).Should(Equal("SUCCEEDED"))
+				}).Should(Equal("SUCCEEDED"))
 				Expect(outputName).To(Equal(taskName))
 
 				close(done)
