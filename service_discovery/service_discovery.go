@@ -48,6 +48,7 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 			} `json:"resources"`
 		}
 		Expect(json.Unmarshal([]byte(sharedDomainBody), &sharedDomainJSON)).To(Succeed())
+		Expect(sharedDomainJSON.Resources).ToNot(BeEmpty())
 		Expect(sharedDomainJSON.Resources[0].Metadata.SharedDomainGuid).ToNot(BeNil())
 
 		// push backend app
