@@ -10,12 +10,13 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 
+	"encoding/json"
+
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
-	"encoding/json"
 )
 
 var _ = CapiExperimentalDescribe("apply_manifest", func() {
@@ -200,7 +201,7 @@ applications:
 						Eventually(session).Should(Exit(0))
 
 						session = cf.Cf("service", serviceInstance).Wait()
-						Eventually(session).Should(Say("bound apps:\\s+(?:name\\s+binding name\\s+)?%s", appName))
+						Eventually(session).Should(Say("(?s)bound apps:.*%s", appName))
 						Eventually(session).Should(Exit(0))
 
 						session = cf.Cf("curl", "-i", getManifestEndpoint)
