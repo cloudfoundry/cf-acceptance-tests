@@ -571,7 +571,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 func checkForAppEvent(appName string, eventName string) {
 	Eventually(func() string {
 		return string(cf.Cf("events", appName).Wait().Out.Contents())
-	}, EVENTS_TIMEOUT).Should(MatchRegexp(eventName))
+	}).Should(MatchRegexp(eventName))
 }
 
 func getBindingParamsEndpoint(appGUID string, instanceGUID string) string {

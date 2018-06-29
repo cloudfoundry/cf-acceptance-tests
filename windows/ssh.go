@@ -78,7 +78,7 @@ var _ = WindowsDescribe("SSH", func() {
 
 				Eventually(func() string {
 					return string(cf.Cf("events", appName).Wait().Out.Contents())
-				}, EVENTS_TIMEOUT).Should(MatchRegexp("audit.app.ssh-authorized"))
+				}).Should(MatchRegexp("audit.app.ssh-authorized"))
 			})
 		})
 
@@ -101,7 +101,7 @@ var _ = WindowsDescribe("SSH", func() {
 
 			Eventually(func() string {
 				return string(cf.Cf("events", appName).Wait().Out.Contents())
-			}, EVENTS_TIMEOUT).Should(MatchRegexp("audit.app.ssh-authorized"))
+			}).Should(MatchRegexp("audit.app.ssh-authorized"))
 		})
 
 		It("runs an interactive session when no command is provided", func() {
@@ -137,7 +137,7 @@ var _ = WindowsDescribe("SSH", func() {
 
 			Eventually(func() string {
 				return string(cf.Cf("events", appName).Wait().Out.Contents())
-			}, EVENTS_TIMEOUT).Should(MatchRegexp("audit.app.ssh-authorized"))
+			}).Should(MatchRegexp("audit.app.ssh-authorized"))
 		})
 
 		It("allows local port forwarding", func() {
@@ -187,7 +187,7 @@ var _ = WindowsDescribe("SSH", func() {
 
 			Eventually(func() string {
 				return string(cf.Cf("events", appName).Wait().Out.Contents())
-			}, EVENTS_TIMEOUT).Should(MatchRegexp("audit.app.ssh-authorized"))
+			}).Should(MatchRegexp("audit.app.ssh-authorized"))
 		})
 
 		It("records failed ssh attempts", func() {
@@ -204,7 +204,7 @@ var _ = WindowsDescribe("SSH", func() {
 
 			Eventually(func() string {
 				return string(cf.Cf("events", appName).Wait().Out.Contents())
-			}, EVENTS_TIMEOUT).Should(MatchRegexp("audit.app.ssh-unauthorized"))
+			}).Should(MatchRegexp("audit.app.ssh-unauthorized"))
 		})
 	})
 
