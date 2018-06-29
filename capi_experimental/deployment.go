@@ -10,14 +10,15 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"io/ioutil"
-	"github.com/mholt/archiver"
 	"os"
 	"time"
+
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/mholt/archiver"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 var (
@@ -27,13 +28,14 @@ var (
 var _ = CapiExperimentalDescribe("deployment", func() {
 
 	var (
-		appName     string
-		appGuid     string
-		spaceGuid   string
-		spaceName   string
-		token       string
-		webProcess  Process
+		appName              string
+		appGuid              string
+		spaceGuid            string
+		spaceName            string
+		token                string
+		webProcess           Process
 		stopCheckingAppAlive chan<- bool
+		appCheckerIsDone     <-chan bool
 	)
 
 	BeforeEach(func() {
@@ -57,12 +59,13 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 		makeStaticFileZip()
 		uploadAndAssignDroplet(appGuid, staticFileZip, Config.GetStaticFileBuildpackName(), token)
 
-		stopCheckingAppAlive = checkAppRemainsAlive(appName)
+		stopCheckingAppAlive, appCheckerIsDone = checkAppRemainsAlive(appName)
 	})
 
 	AfterEach(func() {
 		FetchRecentLogs(appGuid, token, Config)
 		stopCheckingAppAlive <- true
+		<-appCheckerIsDone
 		DeleteApp(appGuid)
 		os.Remove("assets/staticfile.zip")
 	})
@@ -71,27 +74,39 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 		It("deploys an app with no downtime", func() {
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}).Should(ContainSubstring("Hi, I'm Dora!"))
+			}).Should(ContainSubstring("Hi, I'm Dora"))
 
 			deploymentGuid := CreateDeployment(appGuid)
 			Expect(deploymentGuid).ToNot(BeEmpty())
 			webishProcessType := fmt.Sprintf("web-deployment-%s", deploymentGuid)
 
 			Eventually(func() int {
-				return GetRunningInstancesStats(GetProcessGuidForType(appGuid, "web"))
+				guid := GetProcessGuidForType(appGuid, "web")
+				Expect(guid).ToNot(BeEmpty())
+				return GetRunningInstancesStats(guid)
 			}).Should(Equal(1))
 
 			Eventually(func() int {
-				return GetRunningInstancesStats(GetProcessGuidForType(appGuid, webishProcessType))
+				guid := GetProcessGuidForType(appGuid, webishProcessType)
+				Expect(guid).ToNot(BeEmpty())
+				return GetRunningInstancesStats(guid)
 			}).Should(BeNumerically(">", 0))
 
 			Eventually(func() int {
-				return GetRunningInstancesStats(GetProcessGuidForType(appGuid, "web"))
+				guid := GetProcessGuidForType(appGuid, "web")
+				Expect(guid).ToNot(BeEmpty())
+				return GetRunningInstancesStats(guid)
 			}).Should(Equal(0))
 
 			Eventually(func() int {
-				return GetRunningInstancesStats(GetProcessGuidForType(appGuid, webishProcessType))
-			}).Should(Equal(2))
+				guid := GetProcessGuidForType(appGuid, "web")
+				Expect(guid).ToNot(BeEmpty())
+				return GetRunningInstancesStats(guid)
+			}).Should(BeNumerically(">", 0))
+
+			Eventually(func() string {
+				return GetProcessGuidForType(appGuid, webishProcessType)
+			}).Should(BeEmpty())
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
@@ -100,10 +115,9 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 	})
 })
 
-
-
-func checkAppRemainsAlive(appName string) chan<- bool {
+func checkAppRemainsAlive(appName string) (chan<- bool, <-chan bool) {
 	doneChannel := make(chan bool, 1)
+	appCheckerIsDone := make(chan bool, 1)
 	ticker := time.NewTicker(1 * time.Second)
 	tickerChannel := ticker.C
 
@@ -113,6 +127,7 @@ func checkAppRemainsAlive(appName string) chan<- bool {
 			select {
 			case <-doneChannel:
 				ticker.Stop()
+				appCheckerIsDone <- true
 				return
 			case <-tickerChannel:
 				Expect(helpers.CurlAppRoot(Config, appName)).ToNot(ContainSubstring("404 Not Found"))
@@ -120,9 +135,8 @@ func checkAppRemainsAlive(appName string) chan<- bool {
 		}
 	}()
 
-	return doneChannel
+	return doneChannel, appCheckerIsDone
 }
-
 
 func makeStaticFileZip() {
 	staticFiles, err := ioutil.ReadDir(assets.NewAssets().Staticfile)

@@ -47,7 +47,7 @@ func GetRunningInstancesStats(processGuid string) int {
 	session := cf.Cf("curl", processPath).Wait()
 	instancesJson := struct {
 		Resources []struct {
-			Type string `json:"type"`
+			Type  string `json:"type"`
 			State string `json:"state"`
 		} `json:"resources"`
 	}{}
@@ -73,7 +73,10 @@ func GetProcessGuidForType(appGuid string, processType string) string {
 		} `json:"resources"`
 	}{}
 	bytes := session.Wait().Out.Contents()
-	json.Unmarshal(bytes, &processesJSON)
+	err := json.Unmarshal(bytes, &processesJSON)
+	if err != nil || len(processesJSON.Resources) == 0 {
+		return ""
+	}
 	return processesJSON.Resources[0].Guid
 }
 
