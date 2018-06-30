@@ -94,14 +94,14 @@ var _ = V3Describe("process", func() {
 					statsBodyAfter := cf.Cf("curl", statsUrl).Wait().Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
 					return statsJSON.Instance[0].State
-				}).ShouldNot(Equal("RUNNING"))
+				}, V3_PROCESS_TIMEOUT, 1*time.Second).ShouldNot(Equal("RUNNING"))
 
 				By("ensuring the instance is running again")
 				Eventually(func() string {
 					statsBodyAfter := cf.Cf("curl", statsUrl).Wait().Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
 					return statsJSON.Instance[0].State
-				}).Should(Equal("RUNNING"))
+				}, V3_PROCESS_TIMEOUT, 1*time.Second).Should(Equal("RUNNING"))
 			})
 		})
 
@@ -125,14 +125,14 @@ var _ = V3Describe("process", func() {
 					statsBodyAfter := cf.Cf("curl", statsUrl).Wait().Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
 					return statsJSON.Instance[0].State
-				}, Config.CfPushTimeoutDuration(), 1*time.Second).ShouldNot(Equal("RUNNING"))
+				}, V3_PROCESS_TIMEOUT, 1*time.Second).ShouldNot(Equal("RUNNING"))
 
 				By("ensuring the instance is running again")
 				Eventually(func() string {
 					statsBodyAfter := cf.Cf("curl", statsUrl).Wait().Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
 					return statsJSON.Instance[0].State
-				}, Config.CfPushTimeoutDuration(), 1*time.Second).Should(Equal("RUNNING"))
+				}, V3_PROCESS_TIMEOUT, 1*time.Second).Should(Equal("RUNNING"))
 			})
 		})
 	})
