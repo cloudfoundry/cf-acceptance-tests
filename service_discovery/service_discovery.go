@@ -2,6 +2,7 @@ package service_discovery
 
 import (
 	"encoding/json"
+	"fmt"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
@@ -33,23 +34,24 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 			Expect(cf.Cf("create-shared-domain", domainName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
-		internalDomainName = "apps.internal"
+		internalDomainName = Config.GetInternalDomain()
 		internalHostName = random_name.CATSRandomName("HOST")
 		appNameFrontend = random_name.CATSRandomName("APP-FRONT")
 		appNameBackend = random_name.CATSRandomName("APP-BACK")
 
-		// check that the internal domain has been seeded
-		sharedDomainBody := cf.Cf("curl", "/v2/shared_domains?q=name:apps.internal").Wait(Config.CfPushTimeoutDuration()).Out.Contents()
+		// check that the internal domain exists
+		sharedDomainBody := cf.Cf("curl", fmt.Sprintf("/v2/shared_domains?q=name:%s", internalDomainName)).Wait(Config.CfPushTimeoutDuration()).Out.Contents()
 		var sharedDomainJSON struct {
 			Resources []struct {
-				Metadata struct {
-					SharedDomainGuid string `json:"guid"`
-				} `json:"metadata"`
+				Entity struct {
+					Internal bool `json:"internal"`
+				} `json:"entity"`
 			} `json:"resources"`
 		}
 		Expect(json.Unmarshal([]byte(sharedDomainBody), &sharedDomainJSON)).To(Succeed())
 		Expect(sharedDomainJSON.Resources).ToNot(BeEmpty())
-		Expect(sharedDomainJSON.Resources[0].Metadata.SharedDomainGuid).ToNot(BeNil())
+		Expect(sharedDomainJSON.Resources).To(HaveLen(1), fmt.Sprintf("shared domain %q doesn't exist", internalDomainName))
+		Expect(sharedDomainJSON.Resources[0].Entity.Internal).To(BeTrue(), fmt.Sprintf("%q not an internal domain", internalDomainName))
 
 		// push backend app
 		Expect(cf.Cf(

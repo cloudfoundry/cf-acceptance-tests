@@ -177,7 +177,6 @@ include_capi_no_bridge
 * `include_routing`: Flag to include the routing tests.
 * `include_routing_isolation_segments`: Flag to include routing isolation segments. [See below](#routing-isolation-segments)
 * `include_security_groups`: Flag to include tests for security groups. [See below](#container-networking-and-application-security-groups)
-* `include_service_discovery`: Flag to include test for the service discovery.
 * `include_services`: Flag to include test for the services API.
 * `include_service_instance_sharing`: Flag to include tests for service instance sharing between spaces. `include_services` must be set for these tests to run. The `service_instance_sharing` feature flag must also be enabled for these tests to pass.
 * `include_ssh`: Flag to include tests for Diego container ssh feature.
@@ -222,6 +221,9 @@ include_capi_no_bridge
 * `use_windows_test_task`: Flag to include the tasks tests on Windows cells. Default is `false`.
 * `use_windows_context_path`: Flag to include the Windows context path routing tests. Default is `false`.
 * `windows_stack`: Windows stack to run tests against. Must be either `windows2012R2` or `windows2016`. Defaults to `windows2012R2`.
+
+* `include_service_discovery`: Flag to include test for the service discovery. Must set `internal_domain`.
+* `internal_domain`: An existing internal domain to use in the service discovery tests. Default is empty.
 
 #### Buildpack Names
 Many tests specify a buildpack when pushing an app, so that on diego the app staging process completes in less time. The default names for the buildpacks are as follows; if you have buildpacks with different names, you can override them by setting different names:
