@@ -142,11 +142,14 @@ namespace nora.Controllers
         [HttpGet]
         public IHttpActionResult Curl(string host, int port)
         {
+            Console.WriteLine("Starting /curl handling...");
             var req = WebRequest.Create("http://" + host + ":" + port);
+            Console.WriteLine("Created request...");
             req.Timeout = 10000;
             try
             {
                 var resp = (HttpWebResponse)req.GetResponse();
+                Console.WriteLine("Got response...");
                 return Json(new
                 {
                     stdout = new StreamReader(resp.GetResponseStream()).ReadToEnd(),
@@ -155,6 +158,7 @@ namespace nora.Controllers
             }
             catch (WebException ex)
             {
+                Console.WriteLine("Got an exception: ", ex);
                 return Json(new
                 {
                     stderr = ex.Message,
