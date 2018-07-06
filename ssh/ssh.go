@@ -48,7 +48,7 @@ var _ = SshDescribe("SSH", func() {
 		Context("with multiple instances", func() {
 			It("can ssh to the second instance", func() {
 				envCmd := cf.Cf("ssh", "-v", "-i", "1", appName, "-c", "/usr/bin/env && /usr/bin/env >&2")
-				Expect(envCmd.Wait()).To(Exit(0))
+				Eventually(envCmd, Config.DefaultTimeoutDuration()).Should(Exit(0))
 
 				output := string(envCmd.Out.Contents())
 				stdErr := string(envCmd.Err.Contents())
