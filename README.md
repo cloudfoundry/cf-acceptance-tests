@@ -420,7 +420,7 @@ unless the test specifically needs to use a buildpack name or URL specific to th
     ```
 1. Document the purpose of your test groups in this repo's README.md.  This is especially important when changing the explicit behavior of existing test groups or adding new test groups.
 1. Document all changes to the config object in this repo's README.md.
-1. If you add a test that requires a new minimum `cf` CLI version, update the `minCliVersion` in `cats_suite_test.go`.
+1. If you add a test that requires a new minimum `cf` CLI version, update the `minCliVersion` in `cats_suite_test.go` .
 
 [networking-releases]: https://github.com/cloudfoundry-incubator/cf-networking-release/releases
 [credhub-secure-service-credentials]: https://github.com/pivotal-cf/credhub-release/blob/master/docs/secure-service-credentials.md
