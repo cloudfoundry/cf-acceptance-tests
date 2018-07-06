@@ -158,8 +158,13 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			})
 
 			It("is able to start all instances", func() {
-				Eventually(cf.Cf("app", appName)).Should(Say("#0   running"))
-				Eventually(cf.Cf("app", appName)).Should(Say("#1   running"))
+				Eventually(func() *Session {
+					return cf.Cf("app", appName).Wait()
+				}).Should(Say("#0   running"))
+
+				Eventually(func() *Session {
+					return cf.Cf("app", appName).Wait()
+				}).Should(Say("#1   running"))
 			})
 		})
 
