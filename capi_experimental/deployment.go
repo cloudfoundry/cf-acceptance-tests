@@ -1,6 +1,5 @@
 package capi_experimental
 
-
 import (
 	"fmt"
 
@@ -76,6 +75,8 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 				return helpers.CurlAppRoot(Config, appName)
 			}).Should(ContainSubstring("Hi, I'm Dora"))
 
+			_, originalWorkerStartEvent := GetLastAppUseEventForProcess("worker", "STARTED", "")
+
 			deploymentGuid := CreateDeployment(appGuid)
 			Expect(deploymentGuid).ToNot(BeEmpty())
 			webishProcessType := fmt.Sprintf("web-deployment-%s", deploymentGuid)
@@ -111,6 +112,11 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
 			}).Should(ContainSubstring("Hello from a staticfile"))
+
+			Eventually(func() bool {
+				restartEventExists, _ := GetLastAppUseEventForProcess("worker", "STARTED", originalWorkerStartEvent.Metadata.Guid)
+				return restartEventExists
+			}).Should(BeTrue(), "Did not find a start event indicating the 'worker' process restarted")
 		})
 	})
 })

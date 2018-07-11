@@ -11,6 +11,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
 
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -22,6 +23,7 @@ const (
 	V3_DEFAULT_MEMORY_LIMIT = "256"
 	V3_JAVA_MEMORY_LIMIT    = "1024"
 )
+
 func CreateDeployment(appGuid string) string {
 	deploymentPath := fmt.Sprintf("/v3/deployments")
 	deploymentRequestBody := fmt.Sprintf(`{"relationships": {"app": {"data": {"guid": "%s"}}}}`, appGuid)
@@ -473,6 +475,40 @@ func WaitForPackageToBeReady(packageGuid string) {
 		Expect(session.Wait()).To(Exit(0))
 		return session
 	}, Config.LongCurlTimeoutDuration()).Should(Say("READY"))
+}
+
+type ProcessAppUsageEvent struct {
+	Metadata struct {
+		Guid        string `json:"guid"`
+	} `json:"metadata"`
+	Entity struct {
+		ProcessType string `json:"process_type"`
+		State       string `json:"state"`
+	} `json:"entity"`
+}
+
+type ProcessAppUsageEvents struct {
+	Resources []ProcessAppUsageEvent `struct:"resources"`
+}
+
+func GetLastAppUseEventForProcess(processType string, state string, afterGUID string) (bool, ProcessAppUsageEvent) {
+	var response ProcessAppUsageEvents
+	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+		afterGuidParam := ""
+		if afterGUID != "" {
+			afterGuidParam = fmt.Sprintf("&after_guid=%s", afterGUID)
+		}
+		usageEventsUrl := fmt.Sprintf("/v2/app_usage_events?order-direction=desc&page=1&results-per-page=150%s", afterGuidParam)
+		workflowhelpers.ApiRequest("GET", usageEventsUrl, &response, Config.DefaultTimeoutDuration())
+	})
+
+	for _, event := range response.Resources {
+		if event.Entity.ProcessType == processType && event.Entity.State == state {
+			return true, event
+		}
+	}
+
+	return false, ProcessAppUsageEvent{}
 }
 
 //private
