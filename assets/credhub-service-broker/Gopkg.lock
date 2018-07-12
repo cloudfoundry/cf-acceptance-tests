@@ -2,22 +2,32 @@
 
 
 [[projects]]
-  name = "github.com/cloudfoundry-incubator/credhub-cli"
-  packages = ["credhub","credhub/auth","credhub/auth/uaa","credhub/credentials","credhub/credentials/generate","credhub/credentials/values","credhub/permissions","credhub/server","errors","util"]
-  revision = "35c317ce9a93f63777191868b38fe323f5d1b958"
-  version = "1.6.0"
+  branch = "master"
+  name = "code.cloudfoundry.org/credhub-cli"
+  packages = [
+    "credhub",
+    "credhub/auth",
+    "credhub/auth/uaa",
+    "credhub/credentials",
+    "credhub/credentials/generate",
+    "credhub/credentials/values",
+    "credhub/permissions",
+    "credhub/server",
+    "errors",
+    "util"
+  ]
+  revision = "08873874034020de155ae5026720a571703669c4"
 
 [[projects]]
   branch = "master"
+  name = "github.com/cloudfoundry/go-socks5"
+  packages = ["."]
+  revision = "54f73bdb8a8e85a6611d3d29ab9bbf98c2a060d7"
+
+[[projects]]
   name = "github.com/cloudfoundry/socks5-proxy"
   packages = ["."]
-  revision = "a5dbd34501d246ab6c004c9afebb5bd0dd9d7d22"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/genevievelesperance/go-socks5"
-  packages = ["."]
-  revision = "f07e0bb84629ba30f60da69274cd1d9dbb4a1d08"
+  revision = "3c6b4eec9c2d16c1dac4c42bdb5f755ba09daff8"
 
 [[projects]]
   name = "github.com/gorilla/context"
@@ -46,18 +56,28 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["curve25519","ed25519","ed25519/internal/edwards25519","internal/chacha20","poly1305","ssh"]
+  packages = [
+    "curve25519",
+    "ed25519",
+    "ed25519/internal/edwards25519",
+    "internal/chacha20",
+    "poly1305",
+    "ssh"
+  ]
   revision = "9de5f2eaf759b4c4550b3db39fed2e9e5f86f45c"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context","proxy"]
+  packages = [
+    "context",
+    "proxy"
+  ]
   revision = "f5dfe339be1d06f81b22525fe34671ee7d2c8904"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8448dc161843ec28c51127eb1047bde9e31e9aab7088f3c9d357cd26b3e1f0f7"
+  inputs-digest = "6e029f9b346db2eeab0f5c366c351703a01368e9089be1fc2ddc535b507c1f43"
   solver-name = "gps-cdcl"
   solver-version = 1
