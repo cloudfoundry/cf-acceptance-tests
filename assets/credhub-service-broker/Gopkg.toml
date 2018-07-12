@@ -24,3 +24,11 @@
 [[constraint]]
   name = "github.com/gorilla/mux"
   version = "1.4.0"
+
+[[constraint]]
+  name = "code.cloudfoundry.org/credhub-cli"
+  branch = "master"
+
+[prune]
+  go-tests = true
+  unused-packages = true
