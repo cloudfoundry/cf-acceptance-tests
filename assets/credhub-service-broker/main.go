@@ -133,6 +133,7 @@ func (s *ServiceBroker) Bind(w http.ResponseWriter, r *http.Request) {
 		_, err = ch.AddPermissions(cred.Name, []permissions.Permission{{
 			Actor:      "mtls-app:" + body.AppGuid,
 			Operations: []string{"read"},
+			Path: cred.Name,
 		}})
 		handleError(err)
 	}
