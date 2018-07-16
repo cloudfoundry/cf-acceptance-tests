@@ -16,7 +16,7 @@
     "errors",
     "util"
   ]
-  revision = "08873874034020de155ae5026720a571703669c4"
+  revision = "55d15b91e8ce00af0e7a1ea22f9e95d23ee3a0e0"
 
 [[projects]]
   branch = "master"

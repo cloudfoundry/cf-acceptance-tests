@@ -73,6 +73,7 @@ var _ = Describe("Permissions", func() {
 					{
 						Actor:      "some-actor",
 						Operations: []string{"operation-1", "operation-2"},
+						Path: "/example-password",
 					},
 				})
 
@@ -90,7 +91,8 @@ var _ = Describe("Permissions", func() {
 			  "permissions": [
 			  {
 				"actor": "some-actor",
-				"operations": ["operation-1", "operation-2"]
+				"operations": ["operation-1", "operation-2"],
+				"path": "/example-password"
 			  }]
 			}`
 				Expect(params).To(MatchJSON(expectedParams))
@@ -109,6 +111,7 @@ var _ = Describe("Permissions", func() {
 					{
 						Actor:      "some-actor",
 						Operations: []string{"operation-1", "operation-2"},
+						Path: "/example-password",
 					},
 				})
 
