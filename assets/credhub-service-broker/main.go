@@ -9,11 +9,11 @@ import (
 	"strconv"
 	"time"
 
-	"code.cloudfoundry.org/credhub-cli/credhub"
-	"code.cloudfoundry.org/credhub-cli/credhub/auth"
-	"code.cloudfoundry.org/credhub-cli/credhub/credentials/values"
-	"code.cloudfoundry.org/credhub-cli/credhub/permissions"
-	"code.cloudfoundry.org/credhub-cli/util"
+	"github.com/cloudfoundry-incubator/credhub-cli/credhub"
+	"github.com/cloudfoundry-incubator/credhub-cli/credhub/auth"
+	"github.com/cloudfoundry-incubator/credhub-cli/credhub/credentials/values"
+	"github.com/cloudfoundry-incubator/credhub-cli/credhub/permissions"
+	"github.com/cloudfoundry-incubator/credhub-cli/util"
 	"github.com/gorilla/mux"
 	"github.com/satori/go.uuid"
 )
@@ -123,7 +123,7 @@ func (s *ServiceBroker) Bind(w http.ResponseWriter, r *http.Request) {
 	storedJson["user-name"] = "pinkyPie"
 	storedJson["password"] = "rainbowDash"
 
-	cred, err := ch.SetJSON(name, storedJson)
+	cred, err := ch.SetJSON(name, storedJson, credhub.Overwrite)
 	handleError(err)
 
 	pathVariables := mux.Vars(r)
@@ -133,7 +133,6 @@ func (s *ServiceBroker) Bind(w http.ResponseWriter, r *http.Request) {
 		_, err = ch.AddPermissions(cred.Name, []permissions.Permission{{
 			Actor:      "mtls-app:" + body.AppGuid,
 			Operations: []string{"read"},
-			Path: cred.Name,
 		}})
 		handleError(err)
 	}
