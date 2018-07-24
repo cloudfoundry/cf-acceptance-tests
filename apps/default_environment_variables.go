@@ -101,14 +101,16 @@ exit 1
 
 			appStdout = string(appLogsSession.Out.Contents())
 			Expect(appStdout).To(MatchRegexp("LANG=en_US\\.UTF-8"))
-			Expect(appStdout).To(MatchRegexp("CF_INSTANCE_ADDR=.*"))
 			Expect(appStdout).To(MatchRegexp("CF_INSTANCE_INTERNAL_IP=.*"))
 			Expect(appStdout).To(MatchRegexp("CF_INSTANCE_IP=.*"))
-			Expect(appStdout).To(MatchRegexp("CF_INSTANCE_PORT=.*"))
 			Expect(appStdout).To(MatchRegexp("CF_INSTANCE_PORTS=.*"))
 			Expect(appStdout).To(MatchRegexp("CF_STACK=.*"))
 			Expect(appStdout).To(MatchRegexp("VCAP_APPLICATION=.*"))
 			Expect(appStdout).To(MatchRegexp("VCAP_SERVICES=.*"))
+
+			// these vars are set to the empty string (use m flag to make $ match eol)
+			Expect(appStdout).To(MatchRegexp("(?m)CF_INSTANCE_ADDR=$"))
+			Expect(appStdout).To(MatchRegexp("(?m)CF_INSTANCE_PORT=$"))
 		})
 
 		It("applies default environment variables while running apps and tasks", func() {
@@ -130,22 +132,32 @@ exit 1
 			Expect(env["LANG"]).To(Equal("en_US.UTF-8"))
 			assertJsonParseable(env, "VCAP_APPLICATION", "VCAP_SERVICES")
 			assertPresent(env,
-				"CF_INSTANCE_ADDR",
 				"CF_INSTANCE_GUID",
 				"CF_INSTANCE_INDEX",
 				"CF_INSTANCE_INTERNAL_IP",
 				"CF_INSTANCE_IP",
-				"CF_INSTANCE_PORT",
 				"CF_INSTANCE_PORTS",
 				"VCAP_APP_HOST",
 				"VCAP_APP_PORT",
 			)
 
+			if Config.GetDisallowUnproxiedAppTraffic() {
+				assertNotPresent(env,
+					"CF_INSTANCE_ADDR",
+					"CF_INSTANCE_PORT",
+				)
+			} else {
+				assertPresent(env,
+					"CF_INSTANCE_ADDR",
+					"CF_INSTANCE_PORT",
+				)
+			}
+
 			taskName := "get-env"
 
 			Eventually(cf.Cf("run-task", appName, "env", "--name", taskName)).Should(Exit(0))
 
-			Eventually(func () string {
+			Eventually(func() string {
 				return getTaskState(appName)
 			}).Should(Equal("SUCCEEDED"))
 
@@ -160,13 +172,15 @@ exit 1
 			}).Should(MatchRegexp("TASK.*VCAP_SERVICES=.*"))
 
 			Expect(taskStdout).To(MatchRegexp("TASK.*LANG=en_US\\.UTF-8"))
-			Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_ADDR=.*"))
 			Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_INTERNAL_IP=.*"))
 			Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_IP=.*"))
-			Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_PORT=.*"))
 			Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_PORTS=.*"))
 			Expect(taskStdout).To(MatchRegexp("TASK.*VCAP_APPLICATION=.*"))
 			Expect(taskStdout).To(MatchRegexp("TASK.*VCAP_SERVICES=.*"))
+
+			// these vars are set to the empty string (use m flag to make $ match eol)
+			Expect(taskStdout).To(MatchRegexp("(?m)TASK.*CF_INSTANCE_ADDR=$"))
+			Expect(taskStdout).To(MatchRegexp("(?m)TASK.*CF_INSTANCE_PORT=$"))
 		})
 	})
 })
@@ -183,8 +197,13 @@ func assertJsonParseable(env map[string]string, varNames ...string) {
 
 func assertPresent(env map[string]string, varNames ...string) {
 	for _, varName := range varNames {
-		_, ok := env[varName]
-		Expect(ok).To(BeTrue())
+		Expect(env).To(HaveKey(varName))
+	}
+}
+
+func assertNotPresent(env map[string]string, varNames ...string) {
+	for _, varName := range varNames {
+		Expect(env).NotTo(HaveKey(varName))
 	}
 }
 

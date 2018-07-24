@@ -208,6 +208,8 @@ include_capi_no_bridge
 * `private_docker_registry_password`: Password to access the private docker repository. [See below](#private-docker)
 * `unallocated_ip_for_security_group`: An unused IP address in the private network used by CF. Defaults to 10.0.244.255. [See below](#container-networking-and-application-security-groups)
 
+* `disallow_unproxied_app_traffic`: Set this to `true` if Diego was configured to disallow unproxied port mappings, i.e. if `containers.proxy.enable_unproxied_port_mappings` is set to `false`.  Note that this also requires using the [cf-syslog-skip-cert-verify](https://github.com/cloudfoundry/cf-deployment/blob/master/operations/cf-syslog-skip-cert-verify.yml).
+
 * `staticfile_buildpack_name` [See below](#buildpack-names).
 * `java_buildpack_name` [See below](#buildpack-names).
 * `ruby_buildpack_name` [See below](#buildpack-names).

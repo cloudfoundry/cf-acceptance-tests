@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net"
@@ -47,9 +48,30 @@ func handleConnection(conn net.Conn) {
 
 func logIP() {
 	ip := os.Getenv("CF_INSTANCE_IP")
-	port := os.Getenv("CF_INSTANCE_PORT")
+	portsJson := os.Getenv("CF_INSTANCE_PORTS")
+	ports := []struct {
+		External         uint16 `json:"external"`
+		ExternalTLSProxy uint16 `json:"external_tls_proxy"`
+	}{}
+
+	err := json.Unmarshal([]byte(portsJson), &ports)
+	if err != nil {
+		fmt.Printf("Cannot unmarshal CF_INSTANCE_PORTS: %s", err)
+		os.Exit(1)
+	}
+
+	if len(ports) <= 0 {
+		fmt.Printf("CF_INSTANCE_PORTS is empty")
+		os.Exit(1)
+	}
+
+	port := ports[0].External
+	if port == 0 {
+		port = ports[0].ExternalTLSProxy
+	}
+
 	for {
-		fmt.Printf("ADDRESS: |%s:%s|\n", ip, port)
+		fmt.Printf("ADDRESS: |%s:%d|\n", ip, port)
 		time.Sleep(5 * time.Second)
 	}
 }

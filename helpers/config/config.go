@@ -65,6 +65,7 @@ type CatsConfig interface {
 	GetPrivateDockerRegistryPassword() string
 	GetRubyBuildpackName() string
 	GetUnallocatedIPForSecurityGroup() string
+	GetDisallowUnproxiedAppTraffic() bool
 	Protocol() string
 
 	GetUseWindowsTestTask() bool

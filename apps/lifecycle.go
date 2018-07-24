@@ -214,17 +214,25 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			Expect(envValues.Index).To(Equal("0"))
 			Expect(envValues.IP).To(MatchRegexp(`[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+`))
 			Expect(envValues.InternalIP).To(MatchRegexp(`[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+`))
-			Expect(envValues.Port).To(MatchRegexp(`[0-9]+`))
-			Expect(envValues.Addr).To(MatchRegexp(`[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+`))
 			var ports []struct {
-				External int `json:"external"`
-				Internal int `json:"internal"`
+				External *int `json:"external"`
+				Internal int  `json:"internal"`
 			}
 			err = json.Unmarshal([]byte(envValues.Ports), &ports)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(ports)).NotTo(BeZero())
 			Expect(ports[0].Internal).NotTo(BeZero())
-			Expect(ports[0].External).NotTo(BeZero())
+
+			if Config.GetDisallowUnproxiedAppTraffic() {
+				Expect(ports[0].External).To(BeNil())
+				Expect(envValues.Port).To(BeZero())
+				Expect(envValues.Addr).To(BeZero())
+			} else {
+				Expect(ports[0].External).NotTo(BeNil())
+				Expect(*ports[0].External).NotTo(BeZero())
+				Expect(envValues.Port).To(MatchRegexp(`[0-9]+`))
+				Expect(envValues.Addr).To(MatchRegexp(`[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+`))
+			}
 		})
 
 		It("generates an app usage 'started' event", func() {
