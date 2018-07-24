@@ -89,7 +89,7 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 
 	Describe("Adding an internal route on an app", func() {
 		It("successfully creates a policy", func() {
-			curlArgs := appNameFrontend + "." + Config.GetAppsDomain() + "/proxy/" + internalHostName + "." + internalDomainName + ":8080"
+			curlArgs := Config.Protocol() + appNameFrontend + "." + Config.GetAppsDomain() + "/proxy/" + internalHostName + "." + internalDomainName + ":8080"
 			Eventually(func() string {
 				curl := helpers.Curl(Config, curlArgs).Wait()
 				return string(curl.Out.Contents())
