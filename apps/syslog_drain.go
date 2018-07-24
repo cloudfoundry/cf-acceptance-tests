@@ -30,9 +30,9 @@ var _ = AppsDescribe("Logging", func() {
 		BeforeEach(func() {
 			interrupt = make(chan struct{}, 1)
 			serviceName = random_name.CATSRandomName("SVIN")
-			listenerAppName = random_name.CATSRandomName("APP")
-			logWriterAppName1 = random_name.CATSRandomName("APP")
-			logWriterAppName2 = random_name.CATSRandomName("APP")
+			listenerAppName = random_name.CATSRandomName("APP-SYSLOG-LISTENER")
+			logWriterAppName1 = random_name.CATSRandomName("APP-FIRST-LOG-WRITER")
+			logWriterAppName2 = random_name.CATSRandomName("APP-SECOND-LOG-WRITER")
 
 			Eventually(cf.Cf(
 				"push",
@@ -84,7 +84,12 @@ var _ = AppsDescribe("Logging", func() {
 		})
 
 		It("forwards app messages to registered syslog drains", func() {
-			syslogDrainURL := "syslog://" + getSyslogDrainAddress(listenerAppName)
+			var syslogDrainURL string
+			if Config.GetDisallowUnproxiedAppTraffic() {
+				syslogDrainURL = "syslog-tls://" + getSyslogDrainAddress(listenerAppName)
+			} else {
+				syslogDrainURL = "syslog://" + getSyslogDrainAddress(listenerAppName)
+			}
 
 			Eventually(cf.Cf("cups", serviceName, "-l", syslogDrainURL)).Should(Exit(0), "Failed to create syslog drain service")
 			Eventually(cf.Cf("bind-service", logWriterAppName1, serviceName)).Should(Exit(0), "Failed to bind service")
