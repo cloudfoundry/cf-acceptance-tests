@@ -2,7 +2,6 @@ package isolation_segments
 
 import (
 	"fmt"
-	"io/ioutil"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/ginkgo"
@@ -126,13 +125,12 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 					"-c", "./app"),
 					Config.CfPushTimeoutDuration()).Should(Exit(0))
 
-				resp := v3_helpers.SendRequestWithSpoofedHeader(fmt.Sprintf("%s.%s", appName, isoSegDomain), isoSegDomain)
-				defer resp.Body.Close()
+				hostHeader := fmt.Sprintf("Host: %s.%s", appName, isoSegDomain)
+				host := fmt.Sprintf("http://wildcard-path.%s", isoSegDomain)
 
-				Expect(resp.StatusCode).To(Equal(200))
-				htmlData, err := ioutil.ReadAll(resp.Body)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(string(htmlData)).To(ContainSubstring(binaryHi))
+				curlSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), host, "-H", hostHeader)
+				Eventually(curlSession).Should(Exit(0))
+				Expect(curlSession.Out).To(Say(binaryHi))
 			})
 		})
 	})
@@ -223,13 +221,12 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 					"-c", "./app"),
 					Config.CfPushTimeoutDuration()).Should(Exit(0))
 
-				resp := v3_helpers.SendRequestWithSpoofedHeader(fmt.Sprintf("%s.%s", appName, isoSegDomain), isoSegDomain)
-				defer resp.Body.Close()
+				hostHeader := fmt.Sprintf("Host: %s.%s", appName, isoSegDomain)
+				host := fmt.Sprintf("http://wildcard-path.%s", isoSegDomain)
 
-				Expect(resp.StatusCode).To(Equal(200))
-				htmlData, err := ioutil.ReadAll(resp.Body)
-				Expect(err).NotTo(HaveOccurred())
-				Expect(string(htmlData)).To(ContainSubstring(binaryHi))
+				curlSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), host, "-H", hostHeader)
+				Eventually(curlSession).Should(Exit(0))
+				Expect(curlSession.Out).To(Say(binaryHi))
 			})
 		})
 	})

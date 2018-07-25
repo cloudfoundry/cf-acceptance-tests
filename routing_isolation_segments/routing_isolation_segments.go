@@ -2,14 +2,15 @@ package routing_isolation_segments
 
 import (
 	"fmt"
-	"io/ioutil"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -90,22 +91,23 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 		})
 
 		It("is reachable from the shared router", func() {
-			resp := v3_helpers.SendRequestWithSpoofedHeader(fmt.Sprintf("%s.%s", appName, appsDomain), appsDomain)
-			defer resp.Body.Close()
+			hostHeader := fmt.Sprintf("Host: %s.%s", appName, appsDomain)
+			host := fmt.Sprintf("http://wildcard-path.%s", appsDomain)
 
-			Expect(resp.StatusCode).To(Equal(200))
-			htmlData, err := ioutil.ReadAll(resp.Body)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(string(htmlData)).To(ContainSubstring(binaryHi))
+			curlSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), host, "-H", hostHeader)
+			Eventually(curlSession).Should(Exit(0))
+			Expect(curlSession.Out).To(Say(binaryHi))
 		})
 
 		It("is not reachable from the isolation segment router", func() {
 			//send a request to app in the shared domain, but through the isolation segment router
-			Eventually(func() int {
-				resp := v3_helpers.SendRequestWithSpoofedHeader(fmt.Sprintf("%s.%s", appName, appsDomain), isoSegDomain)
-				defer resp.Body.Close()
-				return resp.StatusCode
-			}).Should(Equal(404))
+			hostHeader := fmt.Sprintf("Host: %s.%s", appName, appsDomain)
+			host := fmt.Sprintf("http://wildcard-path.%s", isoSegDomain)
+
+			curlSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), host, "-H", hostHeader)
+
+			Eventually(curlSession).Should(Exit(0))
+			Expect(curlSession.Out).To(Say("404 Not Found"))
 		})
 	})
 
@@ -135,21 +137,21 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 		})
 
 		It("the app is reachable from the isolated router", func() {
-			resp := v3_helpers.SendRequestWithSpoofedHeader(fmt.Sprintf("%s.%s", appName, isoSegDomain), isoSegDomain)
-			defer resp.Body.Close()
+			hostHeader := fmt.Sprintf("Host: %s.%s", appName, isoSegDomain)
+			host := fmt.Sprintf("http://wildcard-path.%s", isoSegDomain)
 
-			Expect(resp.StatusCode).To(Equal(200))
-			htmlData, err := ioutil.ReadAll(resp.Body)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(string(htmlData)).To(ContainSubstring(binaryHi))
+			curlSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), host, "-H", hostHeader)
+			Eventually(curlSession).Should(Exit(0))
+			Expect(curlSession.Out).To(Say(binaryHi))
 		})
 
 		It("the app is not reachable from the shared router", func() {
+			hostHeader := fmt.Sprintf("Host: %s.%s", appName, isoSegDomain)
+			host := fmt.Sprintf("http://wildcard-path.%s", appsDomain)
 
-			resp := v3_helpers.SendRequestWithSpoofedHeader(fmt.Sprintf("%s.%s", appName, isoSegDomain), appsDomain)
-			defer resp.Body.Close()
-
-			Expect(resp.StatusCode).To(Equal(404))
+			curlSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), host, "-H", hostHeader)
+			Eventually(curlSession).Should(Exit(0))
+			Expect(curlSession.Out).To(Say("404 Not Found"))
 		})
 	})
 })

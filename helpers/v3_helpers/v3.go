@@ -3,7 +3,6 @@ package v3_helpers
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"regexp"
 	"strings"
 
@@ -371,15 +370,6 @@ func ScaleProcess(appGuid, processType, memoryInMb string) {
 	Expect(strings.Contains(string(result), "errors")).To(BeFalse())
 }
 
-func SendRequestWithSpoofedHeader(host, domain string) *http.Response {
-	req, _ := http.NewRequest("GET", fmt.Sprintf("http://wildcard-path.%s", domain), nil)
-	req.Host = host
-
-	resp, err := http.DefaultClient.Do(req)
-	Expect(err).NotTo(HaveOccurred())
-	return resp
-}
-
 func SetDefaultIsolationSegment(orgGuid, isoSegGuid string) {
 	Eventually(cf.Cf("curl",
 		fmt.Sprintf("/v3/organizations/%s/relationships/default_isolation_segment", orgGuid),
@@ -479,7 +469,7 @@ func WaitForPackageToBeReady(packageGuid string) {
 
 type ProcessAppUsageEvent struct {
 	Metadata struct {
-		Guid        string `json:"guid"`
+		Guid string `json:"guid"`
 	} `json:"metadata"`
 	Entity struct {
 		ProcessType string `json:"process_type"`
