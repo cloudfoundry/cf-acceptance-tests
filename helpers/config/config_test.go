@@ -64,7 +64,6 @@ type testConfig struct {
 	WindowsStack          *string `json:"windows_stack,omitempty"`
 
 	IncludeServiceDiscovery *bool   `json:"include_service_discovery,omitempty"`
-	InternalDomain          *string `json:"internal_domain"`
 
 	IncludeTCPRouting *bool `json:"include_tcp_routing,omitempty"`
 
@@ -266,7 +265,6 @@ var _ = Describe("Config", func() {
 		Expect(config.GetWindowsStack()).To(Equal("windows2012R2"))
 
 		Expect(config.GetIncludeServiceDiscovery()).To(BeFalse())
-		Expect(config.GetInternalDomain()).To(Equal(""))
 
 		testReporterConfig := config.GetReporterConfig()
 		Expect(testReporterConfig.HoneyCombDataset).To(Equal(""))
@@ -541,24 +539,6 @@ var _ = Describe("Config", func() {
 				config, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(config.GetUseWindowsContextPath()).To(BeTrue())
-			})
-		})
-	})
-
-	Context("when including service discovery", func() {
-		BeforeEach(func() {
-			testCfg.IncludeServiceDiscovery = ptrToBool(true)
-		})
-
-		Context("when internal domain is not set", func() {
-			BeforeEach(func() {
-				testCfg.InternalDomain = ptrToString("")
-			})
-
-			It("errors", func() {
-				config, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(config).To(BeNil())
-				Expect(err).To(MatchError("* Invalid configuration: must set internal domain for service discovery tests"))
 			})
 		})
 	})

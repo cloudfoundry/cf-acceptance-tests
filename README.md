@@ -222,8 +222,7 @@ include_capi_no_bridge
 * `use_windows_context_path`: Flag to include the Windows context path routing tests. Default is `false`.
 * `windows_stack`: Windows stack to run tests against. Must be either `windows2012R2` or `windows2016`. Defaults to `windows2012R2`.
 
-* `include_service_discovery`: Flag to include test for the service discovery. Must set `internal_domain`.
-* `internal_domain`: An existing internal domain to use in the service discovery tests. Default is empty.
+* `include_service_discovery`: Flag to include test for the service discovery. These tests use `apps.internal` domain, which is the default in `cf-networking-release`. The internal domain is currently not configurable.
 
 #### Buildpack Names
 Many tests specify a buildpack when pushing an app, so that on diego the app staging process completes in less time. The default names for the buildpacks are as follows; if you have buildpacks with different names, you can override them by setting different names:

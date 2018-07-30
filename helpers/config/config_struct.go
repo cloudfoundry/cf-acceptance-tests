@@ -76,6 +76,7 @@ type config struct {
 	IncludeSSO                      *bool `json:"include_sso"`
 	IncludeSecurityGroups           *bool `json:"include_security_groups"`
 	IncludeServices                 *bool `json:"include_services"`
+	IncludeServiceDiscovery         *bool `json:"include_service_discovery"`
 	IncludeServiceInstanceSharing   *bool `json:"include_service_instance_sharing"`
 	IncludeSsh                      *bool `json:"include_ssh"`
 	IncludeTasks                    *bool `json:"include_tasks"`
@@ -96,9 +97,6 @@ type config struct {
 	UseWindowsTestTask    *bool   `json:"use_windows_test_task"`
 	UseWindowsContextPath *bool   `json:"use_windows_context_path"`
 	WindowsStack          *string `json:"windows_stack"`
-
-	IncludeServiceDiscovery *bool   `json:"include_service_discovery"`
-	InternalDomain          *string `json:"internal_domain"`
 
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image"`
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username"`
@@ -171,6 +169,7 @@ func getDefaults() config {
 	defaults.IncludeRoutingIsolationSegments = ptrToBool(false)
 	defaults.IncludeSSO = ptrToBool(false)
 	defaults.IncludeSecurityGroups = ptrToBool(false)
+	defaults.IncludeServiceDiscovery = ptrToBool(false)
 	defaults.IncludeServices = ptrToBool(false)
 	defaults.IncludeSsh = ptrToBool(false)
 	defaults.IncludeTasks = ptrToBool(false)
@@ -185,8 +184,6 @@ func getDefaults() config {
 	defaults.WindowsStack = ptrToString("windows2012R2")
 	defaults.UseWindowsTestTask = ptrToBool(false)
 
-	defaults.IncludeServiceDiscovery = ptrToBool(false)
-	defaults.InternalDomain = ptrToString("")
 
 	defaults.ReporterConfig = &reporterConfig{}
 
@@ -282,11 +279,6 @@ func validateConfig(config *config) Errors {
 	}
 
 	err = validateWindows(config)
-	if err != nil {
-		errs.Add(err)
-	}
-
-	err = validateServiceDiscovery(config)
 	if err != nil {
 		errs.Add(err)
 	}
@@ -407,6 +399,9 @@ func validateConfig(config *config) Errors {
 	}
 	if config.IncludeSecurityGroups == nil {
 		errs.Add(fmt.Errorf("* 'include_security_groups' must not be null"))
+	}
+	if config.IncludeServiceDiscovery == nil {
+		errs.Add(fmt.Errorf("* 'include_service_discovery' must not be null"))
 	}
 	if config.IncludeServices == nil {
 		errs.Add(fmt.Errorf("* 'include_services' must not be null"))
@@ -633,18 +628,6 @@ func validateWindows(config *config) error {
 	case "windows2012R2", "windows2016":
 	default:
 		return fmt.Errorf("* Invalid configuration: unknown Windows stack %s", config.GetWindowsStack())
-	}
-
-	return nil
-}
-
-func validateServiceDiscovery(config *config) error {
-	if config.IncludeServiceDiscovery == nil {
-		return fmt.Errorf("* 'include_service_discovery' must not be null")
-	}
-
-	if config.GetIncludeServiceDiscovery() && config.GetInternalDomain() == "" {
-		return fmt.Errorf("* Invalid configuration: must set internal domain for service discovery tests")
 	}
 
 	return nil
@@ -907,10 +890,6 @@ func (c *config) GetIncludeWindows() bool {
 
 func (c *config) GetIncludeServiceDiscovery() bool {
 	return *c.IncludeServiceDiscovery
-}
-
-func (c *config) GetInternalDomain() string {
-	return *c.InternalDomain
 }
 
 func (c *config) GetUseLogCache() bool {

@@ -22,6 +22,7 @@ type CatsConfig interface {
 	GetIncludeSSO() bool
 	GetIncludeSecurityGroups() bool
 	GetIncludeServices() bool
+	GetIncludeServiceDiscovery() bool
 	GetIncludeSsh() bool
 	GetIncludeTasks() bool
 	GetIncludeV3() bool
@@ -69,9 +70,6 @@ type CatsConfig interface {
 	GetUseWindowsTestTask() bool
 	GetUseWindowsContextPath() bool
 	GetWindowsStack() string
-
-	GetIncludeServiceDiscovery() bool
-	GetInternalDomain() string
 
 	GetReporterConfig() reporterConfig
 
