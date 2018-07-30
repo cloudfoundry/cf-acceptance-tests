@@ -63,6 +63,9 @@ type testConfig struct {
 	UseWindowsContextPath *bool   `json:"use_windows_context_path,omitempty"`
 	WindowsStack          *string `json:"windows_stack,omitempty"`
 
+	IncludeServiceDiscovery *bool   `json:"include_service_discovery,omitempty"`
+	InternalDomain          *string `json:"internal_domain"`
+
 	IncludeTCPRouting *bool `json:"include_tcp_routing,omitempty"`
 
 	ReporterConfig *testReporterConfig `json:"reporter_config"`
@@ -137,6 +140,7 @@ type allConfig struct {
 	IncludeZipkin                 *bool `json:"include_zipkin"`
 	IncludeIsolationSegments      *bool `json:"include_isolation_segments"`
 	IncludeTCPRouting             *bool `json:"include_tcp_routing"`
+	IncludeServiceDiscovery       *bool `json:"include_service_discovery"`
 
 	CredhubMode         *string `json:"credhub_mode"`
 	CredhubLocation     *string `json:"credhub_location"`
@@ -244,7 +248,6 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeRouteServices()).To(BeFalse())
 		Expect(config.GetIncludeContainerNetworking()).To(BeFalse())
 		Expect(config.GetIncludeSecurityGroups()).To(BeFalse())
-		Expect(config.GetIncludeServiceDiscovery()).To(BeFalse())
 		Expect(config.GetIncludeServices()).To(BeFalse())
 		Expect(config.GetIncludeSsh()).To(BeFalse())
 		Expect(config.GetIncludeIsolationSegments()).To(BeFalse())
@@ -261,6 +264,9 @@ var _ = Describe("Config", func() {
 		Expect(config.GetUseWindowsTestTask()).To(BeFalse())
 		Expect(config.GetUseWindowsContextPath()).To(BeFalse())
 		Expect(config.GetWindowsStack()).To(Equal("windows2012R2"))
+
+		Expect(config.GetIncludeServiceDiscovery()).To(BeFalse())
+		Expect(config.GetInternalDomain()).To(Equal(""))
 
 		testReporterConfig := config.GetReporterConfig()
 		Expect(testReporterConfig.HoneyCombDataset).To(Equal(""))
@@ -368,6 +374,7 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_zipkin' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_isolation_segments' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_windows' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_service_discovery' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_image' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_username' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_password' must not be null"))
@@ -534,6 +541,24 @@ var _ = Describe("Config", func() {
 				config, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(config.GetUseWindowsContextPath()).To(BeTrue())
+			})
+		})
+	})
+
+	Context("when including service discovery", func() {
+		BeforeEach(func() {
+			testCfg.IncludeServiceDiscovery = ptrToBool(true)
+		})
+
+		Context("when internal domain is not set", func() {
+			BeforeEach(func() {
+				testCfg.InternalDomain = ptrToString("")
+			})
+
+			It("errors", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(config).To(BeNil())
+				Expect(err).To(MatchError("* Invalid configuration: must set internal domain for service discovery tests"))
 			})
 		})
 	})
