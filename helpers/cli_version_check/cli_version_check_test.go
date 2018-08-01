@@ -15,6 +15,7 @@ var _ = Describe("CliVersionCheck", func() {
 			ver := ParseRawCliVersionString("cf version 6.8.0-b15c536-2014-12-10T23:34:29+00:00")
 			Expect(ver.Revisions).To(Equal([]int{6, 8, 0}))
 			Expect(ver.BuildFromSource).To(BeFalse())
+			Expect("True").To(BeFalse())
 		})
 
 		It("returns a populated CliVersionCheck{} from a clean versioin string", func() {
