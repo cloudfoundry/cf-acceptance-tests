@@ -14,7 +14,6 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
-	"github.com/onsi/gomega/gbytes"
 )
 
 const defaultInternalDomain = "apps.internal"
@@ -23,16 +22,23 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 	var appNameFrontend string
 	var appNameBackend string
 	var internalHostName string
+	var orgName string
+	var spaceName string
 
 	BeforeEach(func() {
+		orgName = TestSetup.RegularUserContext().Org
+		spaceName = TestSetup.RegularUserContext().Space
+
 		internalHostName = random_name.CATSRandomName("HOST")
 		appNameFrontend = random_name.CATSRandomName("APP-FRONT")
 		appNameBackend = random_name.CATSRandomName("APP-BACK")
 
 		// create internal domain
-		createInternalDomainCommand := cf.Cf("curl", "/v2/shared_domains", "-X", "POST", "-d", fmt.Sprintf(`{"name":"%s", "internal":true}`, defaultInternalDomain))
-		Expect(createInternalDomainCommand.Wait()).To(Exit(0))
-		Expect(createInternalDomainCommand.Out).To(Or(gbytes.Say(defaultInternalDomain), gbytes.Say("CF-DomainNameTaken")))
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			createInternalDomainCommand := cf.Cf("curl", "/v2/shared_domains", "-X", "POST", "-d", fmt.Sprintf(`{"name":"%s", "internal":true}`, defaultInternalDomain))
+			Expect(createInternalDomainCommand.Wait()).To(Exit(0))
+			Expect(string(createInternalDomainCommand.Out.Contents())).To(Or(ContainSubstring(defaultInternalDomain), ContainSubstring("CF-DomainNameTaken")))
+		})
 
 		// push backend app
 		Expect(cf.Cf(
@@ -74,9 +80,6 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 			}).ShouldNot(ContainSubstring("Hello, world!"))
 
 			// add a policy
-			orgName := TestSetup.RegularUserContext().Org
-			spaceName := TestSetup.RegularUserContext().Space
-
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()).To(Exit(0))
 				Expect(string(cf.Cf("network-policies").Wait().Out.Contents())).ToNot(ContainSubstring(appNameBackend))
