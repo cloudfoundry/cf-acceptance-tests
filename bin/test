@@ -18,10 +18,11 @@ pushd "${project_go_root}" > /dev/null
 popd > /dev/null
 
 export GOPATH="${project_gopath}"
-export PATH="${project_gopath}/bin":$PATH
 
 export RUN_ID=$(openssl rand -hex 16)
 
-go install -v github.com/cloudfoundry/cf-acceptance-tests/vendor/github.com/onsi/ginkgo/ginkgo
+go build -v -o bin/ginkgo github.com/cloudfoundry/cf-acceptance-tests/vendor/github.com/onsi/ginkgo/ginkgo
+export PATH=$PWD/bin:$PATH
 
+echo "Using $(ginkgo version)" > /dev/null
 ginkgo "$@"
