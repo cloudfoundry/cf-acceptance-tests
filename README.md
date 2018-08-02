@@ -388,6 +388,15 @@ When making changes to the test suite that bring in additional `go` packages,
 you should use the workflow described in the
 [gvt documentation](https://github.com/FiloSottile/gvt#basic-usage).
 
+
+Although the default branch for this repository is `master`, we ask that all
+pull requests be made against the `develop` branch. Please run the unit tests
+and make sure they are passing before submitting. Use `./bin/run_units` to run
+these unit tests.
+
+
+**Note**: it is necessary to run the tests from the root of the repo.
+
 ### Code Conventions
 
 There are a number of conventions we recommend developers of CF acceptance tests
