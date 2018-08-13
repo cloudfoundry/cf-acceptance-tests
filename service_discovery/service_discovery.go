@@ -1,8 +1,6 @@
 package service_discovery
 
 import (
-	"fmt"
-
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
@@ -32,13 +30,6 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 		internalHostName = random_name.CATSRandomName("HOST")
 		appNameFrontend = random_name.CATSRandomName("APP-FRONT")
 		appNameBackend = random_name.CATSRandomName("APP-BACK")
-
-		// create internal domain
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-			createInternalDomainCommand := cf.Cf("curl", "/v2/shared_domains", "-X", "POST", "-d", fmt.Sprintf(`{"name":"%s", "internal":true}`, defaultInternalDomain))
-			Expect(createInternalDomainCommand.Wait()).To(Exit(0))
-			Expect(string(createInternalDomainCommand.Out.Contents())).To(Or(ContainSubstring(defaultInternalDomain), ContainSubstring("CF-DomainNameTaken")))
-		})
 
 		// push backend app
 		Expect(cf.Cf(
