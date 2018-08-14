@@ -21,7 +21,7 @@ _Include any links to other PRs, stories, slack discussions, etc... that will he
 
 
 ### Please check all that apply for this PR:
-- [ ] introduces a new test --- are you sure everyone should be running this test?
+- [ ] introduces a new test --- Are you sure everyone should be running this test?
 - [ ] changes an existing test
 - [ ] requires an update to a CATs integration-config
 
