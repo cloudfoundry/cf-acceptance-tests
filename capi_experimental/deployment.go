@@ -18,6 +18,7 @@ import (
 	"github.com/mholt/archiver"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/cloudfoundry/cf-acceptance-tests/vendor/github.com/cloudfoundry-incubator/cf-test-helpers/config"
 )
 
 var (
@@ -104,6 +105,16 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 				Expect(guid).ToNot(BeEmpty())
 				return GetRunningInstancesStats(guid)
 			}).Should(BeNumerically(">", 0))
+
+			if Config.GetUseLogcache() && cf.Cf("feature-flag temporary_use_logcache").Wait().Out.Contents() == "false" {
+				cf.Cf("enable-feature-flag temporary_use_logcache").Wait()
+				Eventually(func() int {
+					guid := GetProcessGuidForType(appGuid, "web")
+					Expect(guid).ToNot(BeEmpty())
+					return GetRunningInstancesStats(guid)
+				}).Should(BeNumerically(">", 0))
+				cf.Cf("disable-feature-flag temporary_use_logcache").Wait()
+			}
 
 			Eventually(func() string {
 				return GetProcessGuidForType(appGuid, webishProcessType)
