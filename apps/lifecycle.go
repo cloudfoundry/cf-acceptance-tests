@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"regexp"
+	"strconv"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
@@ -165,6 +167,24 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				Eventually(func() *Session {
 					return cf.Cf("app", appName).Wait()
 				}).Should(Say("#1   running"))
+			})
+
+			It("is able to retrieve container metrics", func() {
+				// #0   running   2015-06-10 02:22:39 PM   0.0%   48.7M of 2G   14M of 1G
+				var metrics = regexp.MustCompile(`running.*(?:[\d\.]+)%\s+([\d\.]+)[MG]? of (?:[\d\.]+)[MG]\s+([\d\.]+)[MG]? of (?:[\d\.]+)[MG]`)
+				memdisk := func() (float64, float64) {
+					app := cf.Cf("app", appName)
+					Expect(app.Wait()).To(Exit(0))
+
+					arr := metrics.FindStringSubmatch(string(app.Out.Contents()))
+					mem, err := strconv.ParseFloat(arr[1], 64)
+					Expect(err).ToNot(HaveOccurred())
+					disk, err := strconv.ParseFloat(arr[2], 64)
+					Expect(err).ToNot(HaveOccurred())
+					return mem, disk
+				}
+				Eventually(func() float64 { m, _ := memdisk(); return m }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
+				Eventually(func() float64 { _, d := memdisk(); return d }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
 			})
 		})
 
