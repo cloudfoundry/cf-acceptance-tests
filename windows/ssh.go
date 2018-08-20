@@ -16,11 +16,11 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
 var _ = WindowsDescribe("SSH", func() {
@@ -141,7 +141,7 @@ var _ = WindowsDescribe("SSH", func() {
 		})
 
 		It("allows local port forwarding", func() {
-			listenCmd := exec.Command("cf", "ssh", "-v", "-L", "127.0.0.1:61007:127.0.0.1:8080", appName)
+			listenCmd := exec.Command("cf", "ssh", "-v", "-L", "127.0.0.1:61009:127.0.0.1:8080", appName)
 
 			stdin, err := listenCmd.StdinPipe()
 			Expect(err).NotTo(HaveOccurred())
@@ -150,7 +150,7 @@ var _ = WindowsDescribe("SSH", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() string {
-				curl := helpers.Curl(Config, "http://127.0.0.1:61007/").Wait(Config.CfPushTimeoutDuration())
+				curl := helpers.Curl(Config, "http://127.0.0.1:61009/").Wait(Config.CfPushTimeoutDuration())
 				return string(curl.Out.Contents())
 			}, Config.CfPushTimeoutDuration()).Should(ContainSubstring("hello i am nora"))
 

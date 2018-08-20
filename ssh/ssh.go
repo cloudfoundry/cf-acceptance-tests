@@ -34,8 +34,7 @@ var _ = SshDescribe("SSH", func() {
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Catnip,
 			"-c", "./catnip",
-			"-d", Config.GetAppsDomain(),
-			"-i", "2"),
+			"-d", Config.GetAppsDomain()),
 			Config.CfPushTimeoutDuration(),
 		).Should(Exit(0))
 	})
@@ -47,6 +46,10 @@ var _ = SshDescribe("SSH", func() {
 
 	Describe("ssh", func() {
 		Context("with multiple instances", func() {
+			BeforeEach(func() {
+				Eventually(cf.Cf("scale", appName, "-i", "2")).Should(Exit(0))
+			})
+
 			It("can ssh to the second instance", func() {
 				// sometimes ssh'ing to the second instance fails because the instance isn't running
 				// so we try a few times
