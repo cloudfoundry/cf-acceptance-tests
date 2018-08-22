@@ -177,7 +177,7 @@ func getDefaults() config {
 	defaults.IncludeServiceInstanceSharing = ptrToBool(false)
 	defaults.IncludeTCPRouting = ptrToBool(false)
 
-	defaults.UseLogCache = ptrToBool(false)
+	defaults.UseLogCache = ptrToBool(true)
 
 	defaults.IncludeWindows = ptrToBool(false)
 	defaults.UseWindowsContextPath = ptrToBool(false)
