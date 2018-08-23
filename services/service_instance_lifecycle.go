@@ -534,7 +534,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 				bindService := cf.Cf(
 					"curl", "/v2/service_bindings?accepts_incomplete=true", "-X", "POST",
 					"-d", fmt.Sprintf(`'{ "app_guid": "%s", "service_instance_guid": "%s" }'`, appGUID, serviceGUID)).
-						Wait()
+					Wait()
 
 				Expect(bindService).To(Exit(0), "failed to asynchronously bind service")
 
@@ -568,14 +568,14 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 				unbindService := cf.Cf(
 					"curl", "-X", "DELETE",
 					fmt.Sprintf("/v2/service_bindings/%s?accepts_incomplete=true", bindingMetadata.GUID)).
-					Wait(Config.DefaultTimeoutDuration())
+					Wait()
 				Expect(unbindService).To(Exit(0), "failed to asynchronously unbind service")
 				Expect(unbindService).To(Say("delete"))
 				Expect(unbindService).To(Say("in progress"))
 
 				By("waiting for binding to be deleted")
 				Eventually(func() string {
-					bindingDetails := cf.Cf("curl", bindingMetadata.URL).Wait(Config.DefaultTimeoutDuration())
+					bindingDetails := cf.Cf("curl", bindingMetadata.URL).Wait()
 					Expect(bindingDetails).To(Exit(0), "failed getting service binding details")
 
 					var errorResponse ErrorResponse
@@ -585,7 +585,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					return errorResponse.ErrorCode
 				}, Config.AsyncServiceOperationTimeoutDuration(), ASYNC_OPERATION_POLL_INTERVAL).Should(Equal("CF-ServiceBindingNotFound"))
 
-				appEnv = cf.Cf("env", appName).Wait(Config.DefaultTimeoutDuration())
+				appEnv = cf.Cf("env", appName).Wait()
 				Expect(appEnv).To(Exit(0), "failed get env for app")
 				Expect(appEnv).ToNot(Say("credentials"))
 
