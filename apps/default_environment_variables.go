@@ -141,7 +141,7 @@ exit 1
 				"VCAP_APP_PORT",
 			)
 
-			if Config.GetDisallowUnproxiedAppTraffic() {
+			if Config.GetRequireProxiedAppTraffic() {
 				assertNotPresent(env,
 					"CF_INSTANCE_ADDR",
 					"CF_INSTANCE_PORT",

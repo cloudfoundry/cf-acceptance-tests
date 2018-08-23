@@ -223,7 +223,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			Expect(len(ports)).NotTo(BeZero())
 			Expect(ports[0].Internal).NotTo(BeZero())
 
-			if Config.GetDisallowUnproxiedAppTraffic() {
+			if Config.GetRequireProxiedAppTraffic() {
 				Expect(ports[0].External).To(BeNil())
 				Expect(envValues.Port).To(BeZero())
 				Expect(envValues.Addr).To(BeZero())

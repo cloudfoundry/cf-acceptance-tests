@@ -85,7 +85,7 @@ var _ = AppsDescribe("Logging", func() {
 
 		It("forwards app messages to registered syslog drains", func() {
 			var syslogDrainURL string
-			if Config.GetDisallowUnproxiedAppTraffic() {
+			if Config.GetRequireProxiedAppTraffic() {
 				syslogDrainURL = "syslog-tls://" + getSyslogDrainAddress(listenerAppName)
 			} else {
 				syslogDrainURL = "syslog://" + getSyslogDrainAddress(listenerAppName)
