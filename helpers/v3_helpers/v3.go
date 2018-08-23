@@ -179,11 +179,11 @@ func CreateIsolationSegment(name string) string {
 }
 
 func CreateOrGetIsolationSegment(name string) string {
-	if IsolationSegmentExists(name) {
-		return GetIsolationSegmentGuid(name)
+	isoSegGUID := CreateIsolationSegment(name)
+	if isoSegGUID == "" {
+		isoSegGUID = GetIsolationSegmentGuid(name)
 	}
-
-	return CreateIsolationSegment(name)
+	return isoSegGUID
 }
 
 func CreatePackage(appGuid string) string {
