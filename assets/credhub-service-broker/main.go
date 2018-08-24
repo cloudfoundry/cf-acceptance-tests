@@ -101,10 +101,11 @@ func (s *ServiceBroker) RemoveServiceInstance(w http.ResponseWriter, r *http.Req
 }
 
 func (s *ServiceBroker) Bind(w http.ResponseWriter, r *http.Request) {
+	credhubClient := os.Getenv("CREDHUB_CLIENT")
 	ch, err := credhub.New(
 		util.AddDefaultSchemeIfNecessary(os.Getenv("CREDHUB_API")),
 		credhub.SkipTLSValidation(true),
-		credhub.Auth(auth.UaaClientCredentials(os.Getenv("CREDHUB_CLIENT"), os.Getenv("CREDHUB_SECRET"))),
+		credhub.Auth(auth.UaaClientCredentials(credhubClient, os.Getenv("CREDHUB_SECRET"))),
 	)
 
 	if err != nil {
@@ -129,11 +130,26 @@ func (s *ServiceBroker) Bind(w http.ResponseWriter, r *http.Request) {
 	pathVariables := mux.Vars(r)
 	s.NameMap[pathVariables["service_binding_guid"]] = name
 
+	// Temporary workaround until we bump
+	// credhub to 2.0 in cf-deployment
+	if credhubClient != "cc_service_key_client" {
+		ccServiceKeyClientReadPermission := permissions.Permission{
+			Actor:      "uaa-client:cc_service_key_client",
+			Operations: []string{"read"},
+		}
+
+		_, err = ch.AddPermissions(cred.Name, []permissions.Permission{ccServiceKeyClientReadPermission})
+		handleError(err)
+	}
+
 	if body.AppGuid != "" {
-		_, err = ch.AddPermissions(cred.Name, []permissions.Permission{{
+		appReadPermission := permissions.Permission{
 			Actor:      "mtls-app:" + body.AppGuid,
 			Operations: []string{"read"},
-		}})
+		}
+
+		_, err = ch.AddPermissions(cred.Name, []permissions.Permission{appReadPermission})
+
 		handleError(err)
 	}
 

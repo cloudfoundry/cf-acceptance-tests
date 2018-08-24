@@ -301,6 +301,9 @@ var _ = Describe("Config", func() {
 
 		Expect(config.GetPublicDockerAppImage()).To(Equal("cloudfoundry/diego-docker-app-custom:latest"))
 		Expect(config.GetUnallocatedIPForSecurityGroup()).To(Equal("10.0.244.255"))
+
+		Expect(config.GetCredHubBrokerClientCredential()).To(Equal("cc_service_key_client"))
+		Expect(config.GetCredHubLocation()).To(Equal("https://credhub.service.cf.internal:8844"))
 	})
 
 	Context("when all values are null", func() {
