@@ -116,7 +116,7 @@ cat > integration_config.json <<EOF
   "include_capi_experimental": false,
   "include_capi_no_bridge": false,
   "include_container_networking": false,
-  "include_credhub" : false,
+  "credhub_mode" : false,
   "include_detect": true,
   "include_docker": false,
   "include_internet_dependent": false,
