@@ -96,7 +96,7 @@ func (uc UserContext) Login() {
 	redactingReporter := internal.NewRedactingReporter(ginkgo.GinkgoWriter, redactor)
 
 	session = workflowhelpersinternal.CfAuth(uc.CommandStarter, redactingReporter, uc.TestUser.Username(), uc.TestUser.Password())
-	EventuallyWithOffset(1, session, uc.Timeout).Should(Exit(0), cliErrorMessage(session))
+	Expect(session).To(Exit(0), cliErrorMessage(session))
 }
 
 func (uc UserContext) SetCfHomeDir() (string, string) {
