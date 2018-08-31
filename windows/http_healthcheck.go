@@ -47,7 +47,7 @@ var _ = WindowsDescribe("Http Healthcheck", func() {
 
 			start := cf.Cf("start", appName)
 			defer start.Kill()
-			Eventually(logs.Out, Config.CfPushTimeoutDuration()).Should(Say("health check never passed."))
+			Eventually(logs.Out, Config.CfPushTimeoutDuration()*2).Should(Say("health check never passed."))
 		})
 
 		It("starts with a valid http healthcheck endpoint", func() {
@@ -71,7 +71,7 @@ var _ = WindowsDescribe("Http Healthcheck", func() {
 
 			start := cf.Cf("start", appName)
 			defer start.Kill()
-			Eventually(logs.Out, Config.CfPushTimeoutDuration()).Should(Say("health check never passed."))
+			Eventually(logs.Out, Config.CfPushTimeoutDuration()*2).Should(Say("health check never passed."))
 		})
 	})
 })
