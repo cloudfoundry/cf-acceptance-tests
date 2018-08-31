@@ -21,6 +21,8 @@ export GOPATH="${project_gopath}"
 
 export RUN_ID=$(openssl rand -hex 16)
 
+export CF_PLUGIN_HOME=$HOME
+
 go build -v -o bin/ginkgo github.com/cloudfoundry/cf-acceptance-tests/vendor/github.com/onsi/ginkgo/ginkgo
 export PATH=$PWD/bin:$PATH
 
