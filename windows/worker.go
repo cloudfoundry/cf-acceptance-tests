@@ -49,8 +49,11 @@ var _ = WindowsDescribe("apps without a port", func() {
 	})
 
 	It("runs the app (and doesn't run healthcheck)", func() {
-		Eventually(logs.Out).Should(Say("Running Worker 1"))
-		Eventually(logs.Out).Should(Say("Running Worker 10"))
+		// check that the app keeps running
+		// by checking we see incrementing integers in the logs
+		Eventually(logs.Out).Should(Say(`Running Worker \d`))
+		Eventually(logs.Out).Should(Say(`Running Worker \d{2}`))
+
 		Expect(logs.Out).ToNot(Say("healthcheck"))
 	})
 })
