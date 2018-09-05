@@ -2,19 +2,17 @@ package capi_experimental
 
 import (
 	"fmt"
-
-	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
+	"io/ioutil"
+	"os"
+	"strings"
+	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
-
-	"io/ioutil"
-	"os"
-	"time"
-
+	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 	"github.com/mholt/archiver"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -29,9 +27,11 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 	var (
 		appName              string
 		appGuid              string
+		dropletGuid          string
 		spaceGuid            string
 		spaceName            string
 		token                string
+		instances            int
 		webProcess           Process
 		stopCheckingAppAlive chan<- bool
 		appCheckerIsDone     <-chan bool
@@ -43,33 +43,49 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 		spaceGuid = GetSpaceGuidFromName(spaceName)
 		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
 		token = GetAuthToken()
-		uploadAndAssignDroplet(appGuid, assets.NewAssets().DoraZip, Config.GetRubyBuildpackName(), token)
+		dropletGuid = uploadDroplet(appGuid, assets.NewAssets().DoraZip, Config.GetRubyBuildpackName(), token)
+		AssignDropletToApp(appGuid, dropletGuid)
 
 		processes := GetProcesses(appGuid, appName)
 		webProcess = GetProcessByType(processes, "web")
 
 		CreateAndMapRoute(appGuid, spaceName, Config.GetAppsDomain(), appName)
-		ScaleApp(appGuid, 2)
+		instances = 2
+		ScaleApp(appGuid, instances)
 
 		StartApp(appGuid)
 		Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 
-		By("Creating and assigning a second droplet for the app")
-		makeStaticFileZip()
-		uploadAndAssignDroplet(appGuid, staticFileZip, Config.GetStaticFileBuildpackName(), token)
+		By("waiting until all instances are running")
+		Eventually(func() int {
+			guid := GetProcessGuidForType(appGuid, "web")
+			Expect(guid).ToNot(BeEmpty())
+			return GetRunningInstancesStats(guid)
+		}).Should(Equal(instances))
 
-		stopCheckingAppAlive, appCheckerIsDone = checkAppRemainsAlive(appName)
+		By("Creating a second droplet for the app")
+		makeStaticFileZip()
+		dropletGuid = uploadDroplet(appGuid, staticFileZip, Config.GetStaticFileBuildpackName(), token)
 	})
 
 	AfterEach(func() {
 		FetchRecentLogs(appGuid, token, Config)
-		stopCheckingAppAlive <- true
-		<-appCheckerIsDone
 		DeleteApp(appGuid)
 		os.Remove("assets/staticfile.zip")
 	})
 
 	Describe("Deployment", func() {
+		BeforeEach(func() {
+			By("Assigning a second droplet for the app")
+			AssignDropletToApp(appGuid, dropletGuid)
+			stopCheckingAppAlive, appCheckerIsDone = checkAppRemainsAlive(appName)
+		})
+
+		AfterEach(func() {
+			stopCheckingAppAlive <- true
+			<-appCheckerIsDone
+		})
+
 		It("deploys an app with no downtime", func() {
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
@@ -109,14 +125,60 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 				return GetProcessGuidForType(appGuid, webishProcessType)
 			}).Should(BeEmpty())
 
-			Eventually(func() string {
-				return helpers.CurlAppRoot(Config, appName)
-			}).Should(ContainSubstring("Hello from a staticfile"))
+			counter := 0
+			Eventually(func() int {
+				if strings.Contains(helpers.CurlAppRoot(Config, appName), "Hello from a staticfile") {
+					counter++
+				} else {
+					counter = 0
+				}
+				return counter
+			}).Should(Equal(10))
 
 			Eventually(func() bool {
 				restartEventExists, _ := GetLastAppUseEventForProcess("worker", "STARTED", originalWorkerStartEvent.Metadata.Guid)
 				return restartEventExists
 			}).Should(BeTrue(), "Did not find a start event indicating the 'worker' process restarted")
+		})
+	})
+
+	Describe("cancelling deployments", func() {
+		It("rolls back to the previous droplet", func() {
+			By("creating a deployment with the second droplet")
+			deploymentGuid := CreateDeploymentForDroplet(appGuid, dropletGuid)
+			Expect(deploymentGuid).ToNot(BeEmpty())
+			webishProcessType := fmt.Sprintf("web-deployment-%s", deploymentGuid)
+
+			By("waiting until there is a webish process before canceling")
+			Eventually(func() int {
+				guid := GetProcessGuidForType(appGuid, webishProcessType)
+				Expect(guid).ToNot(BeEmpty())
+				return GetRunningInstancesStats(guid)
+			}).Should(BeNumerically(">", 0))
+
+			By("canceling the deployment")
+			CancelDeployment(deploymentGuid)
+
+			By("waiting until there are no webish processes")
+			Eventually(func() string {
+				return GetProcessGuidForType(appGuid, webishProcessType)
+			}).Should(BeEmpty())
+
+			Eventually(func() int {
+				guid := GetProcessGuidForType(appGuid, "web")
+				Expect(guid).ToNot(BeEmpty())
+				return GetRunningInstancesStats(guid)
+			}).Should(Equal(instances))
+
+			counter := 0
+			Eventually(func() int {
+				if strings.Contains(helpers.CurlAppRoot(Config, appName), "Hi, I'm Dora") {
+					counter++
+				} else {
+					counter = 0
+				}
+				return counter
+			}).Should(Equal(10))
 		})
 	})
 })
@@ -157,7 +219,7 @@ func makeStaticFileZip() {
 	Expect(err).NotTo(HaveOccurred())
 }
 
-func uploadAndAssignDroplet(appGuid, zipFile, buildpackName, token string) {
+func uploadDroplet(appGuid, zipFile, buildpackName, token string) string {
 	packageGuid := CreatePackage(appGuid)
 	url := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.GetApiEndpoint(), packageGuid)
 
@@ -166,6 +228,5 @@ func uploadAndAssignDroplet(appGuid, zipFile, buildpackName, token string) {
 
 	buildGuid := StageBuildpackPackage(packageGuid, buildpackName)
 	WaitForBuildToStage(buildGuid)
-	dropletGuid := GetDropletFromBuild(buildGuid)
-	AssignDropletToApp(appGuid, dropletGuid)
+	return GetDropletFromBuild(buildGuid)
 }
