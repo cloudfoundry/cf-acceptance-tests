@@ -84,11 +84,10 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 		})
 
 		Describe("service bindings", func() {
-			var appName, appURL, dockerImage string
+			var appName, dockerImage string
 
 			JustBeforeEach(func() {
 				appName = random_name.CATSRandomName("APP-CH")
-				appURL = "https://" + appName + "." + Config.GetAppsDomain()
 				Eventually(cf.Cf(
 					"push", appName,
 					"--no-start",
