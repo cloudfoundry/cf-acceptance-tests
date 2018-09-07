@@ -26,7 +26,6 @@ var _ = CapiExperimentalDescribe("setting_process_commands", func() {
 		packageGUID         string
 		spaceGUID           string
 		spaceName           string
-		orgName             string
 		token               string
 		dropletGuid         string
 	)
@@ -34,7 +33,6 @@ var _ = CapiExperimentalDescribe("setting_process_commands", func() {
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 		spaceName = TestSetup.RegularUserContext().Space
-		orgName = TestSetup.RegularUserContext().Org
 		spaceGUID = GetSpaceGuidFromName(spaceName)
 		By("Creating an App")
 		appGUID = CreateApp(appName, spaceGUID, `{"foo":"bar"}`)
