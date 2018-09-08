@@ -48,6 +48,7 @@ func handleConnection(conn net.Conn) {
 
 func logIP() {
 	ip := os.Getenv("CF_INSTANCE_IP")
+	internalIP := os.Getenv("CF_INSTANCE_INTERNAL_IP")
 	portsJson := os.Getenv("CF_INSTANCE_PORTS")
 	ports := []struct {
 		External         uint16 `json:"external"`
@@ -71,7 +72,7 @@ func logIP() {
 	}
 
 	for {
-		fmt.Printf("ADDRESS: |%s:%d|\n", ip, port)
+		fmt.Printf("EXTERNAL ADDRESS: |%s:%d|; INTERNAL ADDRESS: |%s:8080|\n", ip, port, internalIP)
 		time.Sleep(5 * time.Second)
 	}
 }
