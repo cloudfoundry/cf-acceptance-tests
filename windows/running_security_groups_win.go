@@ -133,10 +133,6 @@ func assertNetworkingPreconditions(clientAppName string, privateHost string, pri
 	By("Asserting default running security group configuration for traffic between containers")
 	noraCurlResponse := testAppConnectivity(clientAppName, privateHost, privatePort)
 	Expect(noraCurlResponse.ReturnCode).NotTo(Equal(0), "Expected default running security groups not to allow internal communication between app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
-
-	By("Asserting default running security group configuration from a running container to an external destination")
-	noraCurlResponse = testAppConnectivity(clientAppName, "www.google.com", 80)
-	Expect(noraCurlResponse.ReturnCode).To(Equal(0), "Expected default running security groups to allow external traffic from app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
 }
 
 var _ = WindowsDescribe("WINDOWS: App Instance Networking", func() {
@@ -195,6 +191,17 @@ var _ = WindowsDescribe("WINDOWS: App Instance Networking", func() {
 			Eventually(func() string {
 				return testAppConnectivity(clientAppName, privateAddress, 80).Stderr
 			}).Should(ContainSubstring("Unable to connect to the remote server"))
+		})
+
+		It("allows traffic to the public internet by default", func() {
+			if !Config.GetIncludeInternetDependent() {
+				Skip("skipping internet dependent test as 'include_internet_dependent' is not set")
+			}
+
+			By("Asserting default running security group configuration from a running container to an external destination")
+			noraCurlResponse := testAppConnectivity(clientAppName, "www.google.com", 80)
+
+			Expect(noraCurlResponse.ReturnCode).To(Equal(0), "Expected default running security groups to allow external traffic from app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
 		})
 	})
 })
