@@ -1,19 +1,23 @@
-import sys
-from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
+from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from SocketServer import ThreadingMixIn
+import os
 
-port = int(sys.argv[1])
-
-class requestHandler(BaseHTTPRequestHandler):
-    def do_GET(s):
-        s.send_response(200)
-        s.send_header("Content-type", "text/html")
-        s.end_headers()
-        s.wfile.write("<html>")
-        s.wfile.write("<head><title>Python app.</title></head>")
-        s.wfile.write("<body><p>python, world</p></body>")
-        s.wfile.write("</html>")
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        message =  "Hello python, world!"
+        self.wfile.write(message)
+        self.wfile.write('\n')
         return
 
-web_server = HTTPServer(('0.0.0.0', port), requestHandler)
-print 'Started on port', port
-web_server.serve_forever()
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    """Handle requests in a separate thread."""
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', '8080'))
+    host = os.environ.get('VCAP_APP_HOST', '127.0.0.1')
+    print "Goin to start sever on %s:%s" % (host, port)
+    server = ThreadedHTTPServer((host, port), Handler)
+    print 'Starting server, use <Ctrl-C> to stop'
+    server.serve_forever()
