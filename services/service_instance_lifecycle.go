@@ -60,12 +60,12 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 		}, Config.AsyncServiceOperationTimeoutDuration(), ASYNC_OPERATION_POLL_INTERVAL).Should(Say("not found"))
 	}
 
-	waitForAsyncOperationToComplete := func(broker ServiceBroker, instanceName string) {
+	waitForAsyncOperationToCompleteAndSay := func(broker ServiceBroker, instanceName, expectedText string) {
 		Eventually(func() *Session {
 			serviceDetails := cf.Cf("service", instanceName).Wait()
 			Expect(serviceDetails).To(Exit(0), "failed getting service instance details")
 			return serviceDetails
-		}, Config.AsyncServiceOperationTimeoutDuration(), ASYNC_OPERATION_POLL_INTERVAL).Should(Say("succeeded"))
+		}, Config.AsyncServiceOperationTimeoutDuration(), ASYNC_OPERATION_POLL_INTERVAL).Should(Say(expectedText))
 	}
 
 	Describe("Synchronous operations", func() {
@@ -359,7 +359,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 				Expect(createService).To(Exit(0))
 				Expect(createService).To(Say("Create in progress."))
 
-				waitForAsyncOperationToComplete(broker, instanceName)
+				waitForAsyncOperationToCompleteAndSay(broker, instanceName, "succeeded")
 
 				serviceInfo := cf.Cf("-v", "service", instanceName).Wait()
 				Expect(serviceInfo).To(Say("[P|p]lan:\\s+%s", broker.AsyncPlans[0].Name))
@@ -378,7 +378,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					Expect(createService).To(Exit(0))
 					Expect(createService).To(Say("Create in progress."))
 
-					waitForAsyncOperationToComplete(broker, instanceName)
+					waitForAsyncOperationToCompleteAndSay(broker, instanceName, "succeeded")
 				})
 
 				It("can update a service plan", func() {
@@ -390,7 +390,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					Expect(serviceInfo).To(Exit(0), "failed getting service instance details")
 					Expect(serviceInfo).To(Say("[P|p]lan:\\s+%s", broker.AsyncPlans[0].Name))
 
-					waitForAsyncOperationToComplete(broker, instanceName)
+					waitForAsyncOperationToCompleteAndSay(broker, instanceName, "succeeded")
 
 					serviceInfo = cf.Cf("service", instanceName).Wait()
 					Expect(serviceInfo).To(Exit(0), "failed getting service instance details")
@@ -402,7 +402,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					Expect(updateService).To(Exit(0))
 					Expect(updateService).To(Say("Update in progress."))
 
-					waitForAsyncOperationToComplete(broker, instanceName)
+					waitForAsyncOperationToCompleteAndSay(broker, instanceName, "succeeded")
 				})
 
 				It("can update all of the possible parameters at once", func() {
@@ -414,7 +414,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					Expect(updateService).To(Exit(0))
 					Expect(updateService).To(Say("Update in progress."))
 
-					waitForAsyncOperationToComplete(broker, instanceName)
+					waitForAsyncOperationToCompleteAndSay(broker, instanceName, "succeeded")
 
 					serviceInfo := cf.Cf("-v", "service", instanceName).Wait()
 					Expect(serviceInfo).To(Exit(0), "failed getting service instance details")
@@ -494,11 +494,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 		})
 
 		Describe("for a service binding", func() {
-			var (
-				appName     string
-				appGUID     string
-				serviceGUID string
-			)
+			var appName string
 
 			BeforeEach(func() {
 				instanceName = random_name.CATSRandomName("SVC")
@@ -506,7 +502,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 				Expect(createService).To(Exit(0))
 				Expect(createService).To(Say("Create in progress."))
 
-				waitForAsyncOperationToComplete(broker, instanceName)
+				waitForAsyncOperationToCompleteAndSay(broker, instanceName, "succeeded")
 
 				appName = random_name.CATSRandomName("APP")
 				createApp := cf.Cf("push",
@@ -519,9 +515,6 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					"-d", Config.GetAppsDomain()).Wait()
 				Expect(createApp).To(Exit(0), "failed creating app")
 				Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-				appGUID = getGuidFor("app", appName)
-				serviceGUID = getGuidFor("service", instanceName)
 			})
 
 			AfterEach(func() {
@@ -531,29 +524,13 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 			It("can bind and unbind asynchronously", func() {
 				By("creating a binding asynchronously")
-				bindService := cf.Cf(
-					"curl", "/v2/service_bindings?accepts_incomplete=true", "-X", "POST",
-					"-d", fmt.Sprintf(`'{ "app_guid": "%s", "service_instance_guid": "%s" }'`, appGUID, serviceGUID)).
-					Wait()
+				bindService := cf.Cf("bind-service", appName, instanceName).Wait()
 
 				Expect(bindService).To(Exit(0), "failed to asynchronously bind service")
-
-				var bindingResource Resource
-				err := json.Unmarshal(bindService.Out.Contents(), &bindingResource)
-				Expect(err).NotTo(HaveOccurred())
-				bindingMetadata := bindingResource.Metadata
+				Expect(bindService).To(Say("Binding in progress."))
 
 				By("waiting for binding to be created")
-				Eventually(func() string {
-					bindingDetails := cf.Cf("curl", bindingMetadata.URL).Wait()
-					Expect(bindingDetails).To(Exit(0), "failed getting service binding details")
-
-					var binding Resource
-					err := json.Unmarshal(bindingDetails.Out.Contents(), &binding)
-					Expect(err).NotTo(HaveOccurred())
-
-					return binding.Entity.LastOperation.State
-				}, Config.AsyncServiceOperationTimeoutDuration(), ASYNC_OPERATION_POLL_INTERVAL).Should(Equal("succeeded"))
+				waitForAsyncOperationToCompleteAndSay(broker, instanceName, appName+".*\\ssucceeded")
 
 				appEnv := cf.Cf("env", appName).Wait()
 				Expect(appEnv).To(Exit(0), "failed get env for app")
@@ -565,25 +542,12 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 				Expect(helpers.CurlApp(Config, appName, "/env/VCAP_SERVICES")).Should(ContainSubstring("fake-service://fake-user:fake-password@fake-host:3306/fake-dbname"))
 
 				By("deleting the binding asynchronously")
-				unbindService := cf.Cf(
-					"curl", "-X", "DELETE",
-					fmt.Sprintf("/v2/service_bindings/%s?accepts_incomplete=true", bindingMetadata.GUID)).
-					Wait()
+				unbindService := cf.Cf("unbind-service", appName, instanceName).Wait()
 				Expect(unbindService).To(Exit(0), "failed to asynchronously unbind service")
-				Expect(unbindService).To(Say("delete"))
-				Expect(unbindService).To(Say("in progress"))
+				Expect(unbindService).To(Say("Unbinding in progress."))
 
 				By("waiting for binding to be deleted")
-				Eventually(func() string {
-					bindingDetails := cf.Cf("curl", bindingMetadata.URL).Wait()
-					Expect(bindingDetails).To(Exit(0), "failed getting service binding details")
-
-					var errorResponse ErrorResponse
-					err := json.Unmarshal(bindingDetails.Out.Contents(), &errorResponse)
-					Expect(err).NotTo(HaveOccurred())
-
-					return errorResponse.ErrorCode
-				}, Config.AsyncServiceOperationTimeoutDuration(), ASYNC_OPERATION_POLL_INTERVAL).Should(Equal("CF-ServiceBindingNotFound"))
+				waitForAsyncOperationToCompleteAndSay(broker, instanceName, "There are no bound apps for this service.")
 
 				appEnv = cf.Cf("env", appName).Wait()
 				Expect(appEnv).To(Exit(0), "failed get env for app")
