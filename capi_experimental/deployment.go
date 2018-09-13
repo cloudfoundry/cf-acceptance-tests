@@ -101,29 +101,17 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 				guid := GetProcessGuidForType(appGuid, "web")
 				Expect(guid).ToNot(BeEmpty())
 				return GetRunningInstancesStats(guid)
-			}).Should(Equal(1))
-
-			Eventually(func() int {
-				guid := GetProcessGuidForType(appGuid, webishProcessType)
-				Expect(guid).ToNot(BeEmpty())
-				return GetRunningInstancesStats(guid)
-			}).Should(BeNumerically(">", 0))
-
-			Eventually(func() int {
-				guid := GetProcessGuidForType(appGuid, "web")
-				Expect(guid).ToNot(BeEmpty())
-				return GetRunningInstancesStats(guid)
-			}).Should(Equal(0))
-
-			Eventually(func() int {
-				guid := GetProcessGuidForType(appGuid, "web")
-				Expect(guid).ToNot(BeEmpty())
-				return GetRunningInstancesStats(guid)
-			}).Should(BeNumerically(">", 0))
+			}).Should(BeNumerically("<", instances))
 
 			Eventually(func() string {
 				return GetProcessGuidForType(appGuid, webishProcessType)
 			}).Should(BeEmpty())
+
+			Eventually(func() int {
+				guid := GetProcessGuidForType(appGuid, "web")
+				Expect(guid).ToNot(BeEmpty())
+				return GetRunningInstancesStats(guid)
+			}).Should(Equal(instances))
 
 			counter := 0
 			Eventually(func() int {
