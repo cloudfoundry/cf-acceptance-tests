@@ -21,13 +21,11 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 	var appNameBackend string
 	var domainName string
 	var orgName string
-	var spaceName string
 	var internalDomainName string
 	var internalHostName string
 
 	BeforeEach(func() {
 		orgName = TestSetup.RegularUserContext().Org
-		spaceName = TestSetup.RegularUserContext().Space
 		domainName = random_name.CATSRandomName("DOMAIN") + "." + Config.GetAppsDomain()
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 			Expect(cf.Cf("create-shared-domain", domainName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
