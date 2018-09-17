@@ -53,6 +53,8 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 				Expect(app.Wait()).To(Exit(0))
 
 				arr := metrics.FindStringSubmatch(string(app.Out.Contents()))
+				Expect(arr).NotTo(BeNil())
+
 				mem, err := strconv.ParseFloat(arr[1], 64)
 				Expect(err).ToNot(HaveOccurred())
 				disk, err := strconv.ParseFloat(arr[2], 64)

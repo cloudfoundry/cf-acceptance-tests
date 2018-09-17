@@ -3,9 +3,9 @@ package apps
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 	"regexp"
 	"strconv"
+	"strings"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
@@ -177,6 +177,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 					Expect(app.Wait()).To(Exit(0))
 
 					arr := metrics.FindStringSubmatch(string(app.Out.Contents()))
+					Expect(arr).NotTo(BeNil())
 					mem, err := strconv.ParseFloat(arr[1], 64)
 					Expect(err).ToNot(HaveOccurred())
 					disk, err := strconv.ParseFloat(arr[2], 64)
