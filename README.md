@@ -31,7 +31,7 @@ and should not modify the CF state
 in such a way as to impact other tests.
 
 1. [Test Setup](#test-setup)
-    1. [Install Required Dependencies](#install-required-dependencies)
+    1. [Install Required Dependencies](#prerequisites-for-running-cats)
     1. [Test Configuration](#test-configuration)
 1. [Test Execution](#test-execution)
 1. [Explanation of Test Groups](#explanation-of-test-groups)
@@ -69,22 +69,14 @@ in such a way as to impact other tests.
 All `go` dependencies required by CATs
 are vendored in the `vendor` directory.
 
-Install [gvt](https://github.com/FiloSottile/gvt) and make sure it is available
-in your $PATH. The recommended way to do this is to run:
-```bash
-go get -u github.com/FiloSottile/gvt
-```
+Install [dep](https://golang.github.io/dep/docs/installation.html) and make sure it is available
+in your `$PATH`.
 
 In order to update a current dependency to a specific version,
-do the following:
+follow the official
+[documentation](https://golang.github.io/dep/docs/daily-dep.html#updating-dependencies).
 
-```bash
-cd cf-acceptance-tests
-gvt delete <import_path>
-gvt fetch -revision <revision_number> <import_path>
-```
-
-If you'd like to add a new dependency just `gvt fetch`.
+If you'd like to add a new dependency just `dep ensure`.
 
 ## Test Configuration
 You must set the environment variable `$CONFIG`
@@ -382,14 +374,13 @@ Test Group Name| Description
 
 ## Contributing
 
-This repository uses [gvt](https://github.com/FiloSottile/gvt) to manage `go` dependencies.
+This repository uses [dep](https://golang.github.io/dep/docs) to manage `go` dependencies.
 
 All `go` dependencies required by CATs are vendored in the `vendor` directory.
 
-When making changes to the test suite that bring in additional `go` packages,
-you should use the workflow described in the
-[gvt documentation](https://github.com/FiloSottile/gvt#basic-usage).
-
+When making changes that bring in additional `go` packages,
+please refer to the ["Updating `go` dependencies"
+section](#updating-go-dependencies)
 
 Although the default branch for this repository is `master`, we ask that all
 pull requests be made against the `develop` branch. Please run the unit tests
