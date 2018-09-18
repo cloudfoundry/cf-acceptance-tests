@@ -1,0 +1,10 @@
+---
+applications:
+  - name: proxy
+    memory: 32M
+    disk_quota: 32M
+    buildpack: go_buildpack
+    env:
+      GOPACKAGENAME: example-apps/proxy
+    routes:
+      - route: app-smoke.apps.internal
