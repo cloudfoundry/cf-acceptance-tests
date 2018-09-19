@@ -136,7 +136,7 @@ func (b ServiceBroker) Push(config cats_config.CatsConfig) {
 		"-p", b.Path,
 		"-d", config.GetAppsDomain(),
 	).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
-	Expect(cf.Cf("set-health-check", b.Name, "http", "--endpoint", "/v2/catalog").Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
+	Expect(cf.Cf("v3-set-health-check", b.Name, "http", "--endpoint", "/v2/catalog", "--invocation-timeout", "10").Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
 	Expect(cf.Cf("start", b.Name).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
 }
 
@@ -150,7 +150,7 @@ func (b ServiceBroker) PushWithBuildpackAndManifest(config cats_config.CatsConfi
 		"-f", b.Path+"/manifest.yml",
 		"-d", config.GetAppsDomain(),
 	).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
-	Expect(cf.Cf("set-health-check", b.Name, "http", "--endpoint", "/v2/catalog").Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
+	Expect(cf.Cf("v3-set-health-check", b.Name, "http", "--endpoint", "/v2/catalog", "--invocation-timeout", "10").Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
 	Expect(cf.Cf("start", b.Name).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
 }
 
