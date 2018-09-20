@@ -3,6 +3,8 @@ package apps
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -166,6 +168,25 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 					return cf.Cf("app", appName).Wait()
 				}).Should(Say("#1   running"))
 			})
+
+			It("is able to retrieve container metrics", func() {
+				// #0   running   2015-06-10 02:22:39 PM   0.0%   48.7M of 2G   14M of 1G
+				var metrics = regexp.MustCompile(`running.*(?:[\d\.]+)%\s+([\d\.]+)[MG]? of (?:[\d\.]+)[MG]\s+([\d\.]+)[MG]? of (?:[\d\.]+)[MG]`)
+				memdisk := func() (float64, float64) {
+					app := cf.Cf("app", appName)
+					Expect(app.Wait()).To(Exit(0))
+
+					arr := metrics.FindStringSubmatch(string(app.Out.Contents()))
+					Expect(arr).NotTo(BeNil())
+					mem, err := strconv.ParseFloat(arr[1], 64)
+					Expect(err).ToNot(HaveOccurred())
+					disk, err := strconv.ParseFloat(arr[2], 64)
+					Expect(err).ToNot(HaveOccurred())
+					return mem, disk
+				}
+				Eventually(func() float64 { m, _ := memdisk(); return m }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
+				Eventually(func() float64 { _, d := memdisk(); return d }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
+			})
 		})
 
 		It("makes system environment variables available", func() {
@@ -194,17 +215,25 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			Expect(envValues.Index).To(Equal("0"))
 			Expect(envValues.IP).To(MatchRegexp(`[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+`))
 			Expect(envValues.InternalIP).To(MatchRegexp(`[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+`))
-			Expect(envValues.Port).To(MatchRegexp(`[0-9]+`))
-			Expect(envValues.Addr).To(MatchRegexp(`[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+`))
 			var ports []struct {
-				External int `json:"external"`
-				Internal int `json:"internal"`
+				External *int `json:"external"`
+				Internal int  `json:"internal"`
 			}
 			err = json.Unmarshal([]byte(envValues.Ports), &ports)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(ports)).NotTo(BeZero())
 			Expect(ports[0].Internal).NotTo(BeZero())
-			Expect(ports[0].External).NotTo(BeZero())
+
+			if Config.GetRequireProxiedAppTraffic() {
+				Expect(ports[0].External).To(BeNil())
+				Expect(envValues.Port).To(BeZero())
+				Expect(envValues.Addr).To(BeZero())
+			} else {
+				Expect(ports[0].External).NotTo(BeNil())
+				Expect(*ports[0].External).NotTo(BeZero())
+				Expect(envValues.Port).To(MatchRegexp(`[0-9]+`))
+				Expect(envValues.Addr).To(MatchRegexp(`[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+`))
+			}
 		})
 
 		It("generates an app usage 'started' event", func() {

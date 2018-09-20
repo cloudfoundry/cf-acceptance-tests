@@ -116,7 +116,7 @@ cat > integration_config.json <<EOF
   "include_capi_experimental": false,
   "include_capi_no_bridge": false,
   "include_container_networking": false,
-  "include_credhub" : false,
+  "credhub_mode" : "assisted",
   "include_detect": true,
   "include_docker": false,
   "include_internet_dependent": false,
@@ -186,7 +186,7 @@ include_capi_no_bridge
 * `include_v3`: Flag to include tests for the v3 API.
 * `include_zipkin`: Flag to include tests for Zipkin tracing. `include_routing` must also be set for tests to run. CF must be deployed with `router.tracing.enable_zipkin` set for tests to pass.
 * `use_http`: Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
-* `use_log_cache`: Set to true if you would like CF Acceptance Tests to use Log Cache for reading application logs. Log Cache must be deployed. (default is false)
+* `use_log_cache`: Set to false if you don't want CF Acceptance Tests to use Log Cache for reading application logs. (default is true)
 * `use_existing_organization`: Set to true when you need to specify an existing organization to use rather than creating a new organization.
 * `existing_organization`: Name of the existing organization to use.
 * `use_existing_user`: The admin user configured above will normally be used to create a temporary user (with lesser permissions) to perform actions (such as push applications) during tests, and then delete said user after the tests have run; set this to `true` if you want to use an existing user, configured via the following properties.
@@ -207,6 +207,8 @@ include_capi_no_bridge
 * `private_docker_registry_username`: Username to access the private docker repository. [See below](#private-docker)
 * `private_docker_registry_password`: Password to access the private docker repository. [See below](#private-docker)
 * `unallocated_ip_for_security_group`: An unused IP address in the private network used by CF. Defaults to 10.0.244.255. [See below](#container-networking-and-application-security-groups)
+
+* `require_proxied_app_traffic`: Set this to `true` if Diego was configured to require proxied port mappings, i.e. if `containers.proxy.enable_unproxied_port_mappings` is set to `false`.  Note that this also requires using the [cf-syslog-skip-cert-verify](https://github.com/cloudfoundry/cf-deployment/blob/master/operations/cf-syslog-skip-cert-verify.yml).
 
 * `staticfile_buildpack_name` [See below](#buildpack-names).
 * `java_buildpack_name` [See below](#buildpack-names).
@@ -387,6 +389,15 @@ All `go` dependencies required by CATs are vendored in the `vendor` directory.
 When making changes to the test suite that bring in additional `go` packages,
 you should use the workflow described in the
 [gvt documentation](https://github.com/FiloSottile/gvt#basic-usage).
+
+
+Although the default branch for this repository is `master`, we ask that all
+pull requests be made against the `develop` branch. Please run the unit tests
+and make sure they are passing before submitting. Use `./bin/run_units` to run
+these unit tests.
+
+
+**Note**: it is necessary to run the tests from the root of the repo.
 
 ### Code Conventions
 

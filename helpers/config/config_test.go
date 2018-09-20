@@ -57,6 +57,7 @@ type testConfig struct {
 	IsolationSegmentDomain          *string `json:"isolation_segment_domain,omitempty"`
 
 	UnallocatedIPForSecurityGroup *string `json:"unallocated_ip_for_security_group"`
+	RequireProxiedAppTraffic      *bool   `json:"require_proxied_app_traffic"`
 
 	IncludeWindows        *bool   `json:"include_windows,omitempty"`
 	UseWindowsTestTask    *bool   `json:"use_windows_test_task,omitempty"`
@@ -301,6 +302,11 @@ var _ = Describe("Config", func() {
 
 		Expect(config.GetPublicDockerAppImage()).To(Equal("cloudfoundry/diego-docker-app-custom:latest"))
 		Expect(config.GetUnallocatedIPForSecurityGroup()).To(Equal("10.0.244.255"))
+
+		Expect(config.GetCredHubBrokerClientCredential()).To(Equal("cc_service_key_client"))
+		Expect(config.GetCredHubLocation()).To(Equal("https://credhub.service.cf.internal:8844"))
+
+		Expect(config.GetRequireProxiedAppTraffic()).To(BeFalse())
 	})
 
 	Context("when all values are null", func() {
@@ -392,6 +398,7 @@ var _ = Describe("Config", func() {
 			testCfg.SleepTimeout = ptrToInt(101)
 			testCfg.TimeoutScale = ptrToFloat(1.0)
 			testCfg.UnallocatedIPForSecurityGroup = ptrToString("192.168.0.1")
+			testCfg.RequireProxiedAppTraffic = ptrToBool(true)
 		})
 
 		It("respects the overriden values", func() {
@@ -407,6 +414,7 @@ var _ = Describe("Config", func() {
 			Expect(config.SleepTimeoutDuration()).To(Equal(101 * time.Second))
 			Expect(config.SleepTimeoutDuration()).To(Equal(101 * time.Second))
 			Expect(config.GetUnallocatedIPForSecurityGroup()).To(Equal("192.168.0.1"))
+			Expect(config.GetRequireProxiedAppTraffic()).To(BeTrue())
 		})
 	})
 

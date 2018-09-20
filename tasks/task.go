@@ -349,7 +349,7 @@ exit 1`
 					appLogs := logs.Tail(Config.GetUseLogCache(), appName).Wait()
 					Expect(appLogs).To(Exit(0))
 					return string(appLogs.Out.Contents())
-				}, Config.CfPushTimeoutDuration()).Should(ContainSubstring("Connection timed out"), "ASG configured to allow connection to the private IP but the app is still refused by private ip")
+				}, Config.CfPushTimeoutDuration()).Should(MatchRegexp("Connection timed out|No route to host"), "ASG configured to allow connection to the private IP but the app is still refused by private ip")
 
 				close(done)
 			}, 30*60 /* <-- overall spec timeout in seconds */)

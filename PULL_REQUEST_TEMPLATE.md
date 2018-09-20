@@ -1,3 +1,9 @@
+### Are you submitting this PR against the [develop branch](https://github.com/cloudfoundry/cf-acceptance-tests/tree/develop)?
+
+_All PR's to CATs should be submitted to develop and will be merged to master once they've passed acceptance._
+
+
+
 ### What is this change about?
 
 _Describe the change and why it's needed._
@@ -15,7 +21,7 @@ _Include any links to other PRs, stories, slack discussions, etc... that will he
 
 
 ### Please check all that apply for this PR:
-- [ ] introduces a new test --- are you sure everyone should be running this test?
+- [ ] introduces a new test --- Are you sure everyone should be running this test?
 - [ ] changes an existing test
 - [ ] requires an update to a CATs integration-config
 

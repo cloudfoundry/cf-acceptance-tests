@@ -104,6 +104,7 @@ type config struct {
 	PublicDockerAppImage          *string `json:"public_docker_app_image"`
 
 	UnallocatedIPForSecurityGroup *string `json:"unallocated_ip_for_security_group"`
+	RequireProxiedAppTraffic      *bool   `json:"require_proxied_app_traffic"`
 
 	NamePrefix *string `json:"name_prefix"`
 
@@ -177,7 +178,7 @@ func getDefaults() config {
 	defaults.IncludeServiceInstanceSharing = ptrToBool(false)
 	defaults.IncludeTCPRouting = ptrToBool(false)
 
-	defaults.UseLogCache = ptrToBool(false)
+	defaults.UseLogCache = ptrToBool(true)
 
 	defaults.IncludeWindows = ptrToBool(false)
 	defaults.UseWindowsContextPath = ptrToBool(false)
@@ -214,6 +215,7 @@ func getDefaults() config {
 	defaults.PublicDockerAppImage = ptrToString("cloudfoundry/diego-docker-app-custom:latest")
 
 	defaults.UnallocatedIPForSecurityGroup = ptrToString("10.0.244.255")
+	defaults.RequireProxiedAppTraffic = ptrToBool(false)
 
 	defaults.NamePrefix = ptrToString("CATS")
 	return defaults
@@ -942,6 +944,10 @@ func (c *config) GetPublicDockerAppImage() string {
 
 func (c *config) GetUnallocatedIPForSecurityGroup() string {
 	return *c.UnallocatedIPForSecurityGroup
+}
+
+func (c *config) GetRequireProxiedAppTraffic() bool {
+	return *c.RequireProxiedAppTraffic
 }
 
 func (c *config) GetUseWindowsTestTask() bool {

@@ -135,14 +135,12 @@ applications:
   services:
   - %s
   processes:
-  - command: bundle exec irb
-    disk_quota: 1024M
+  - disk_quota: 1024M
     health-check-type: process
     instances: 0
     memory: 256M
     type: console
-  - command: bundle exec rake
-    disk_quota: 1024M
+  - disk_quota: 1024M
     health-check-type: process
     instances: 0
     memory: 256M
@@ -155,8 +153,7 @@ applications:
     memory: 300M
     timeout: 75
     type: web
-  - command: bundle exec rackup config.ru -p $PORT
-    disk_quota: 1024M
+  - disk_quota: 1024M
     health-check-type: process
     instances: 0
     memory: 256M

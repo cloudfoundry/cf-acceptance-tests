@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os/exec"
 	"strings"
+
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	"golang.org/x/crypto/ssh"
@@ -33,8 +34,7 @@ var _ = SshDescribe("SSH", func() {
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Catnip,
 			"-c", "./catnip",
-			"-d", Config.GetAppsDomain(),
-			"-i", "2"),
+			"-d", Config.GetAppsDomain()),
 			Config.CfPushTimeoutDuration(),
 		).Should(Exit(0))
 	})
@@ -46,10 +46,20 @@ var _ = SshDescribe("SSH", func() {
 
 	Describe("ssh", func() {
 		Context("with multiple instances", func() {
-			It("can ssh to the second instance", func() {
-				envCmd := cf.Cf("ssh", "-v", "-i", "1", appName, "-c", "/usr/bin/env && /usr/bin/env >&2")
-				Eventually(envCmd, Config.DefaultTimeoutDuration()).Should(Exit(0))
+			BeforeEach(func() {
+				Eventually(cf.Cf("scale", appName, "-i", "2")).Should(Exit(0))
+			})
 
+			It("can ssh to the second instance", func() {
+				// sometimes ssh'ing to the second instance fails because the instance isn't running
+				// so we try a few times
+				Eventually(func() *Session {
+					return cf.Cf("ssh", "-v", "-i", "1", appName, "-c", "/usr/bin/env && /usr/bin/env >&2").Wait()
+				}).Should(Exit(0))
+
+				// once we know that ssh can succeed we grab the output for checking
+				envCmd := cf.Cf("ssh", "-v", "-i", "1", appName, "-c", "/usr/bin/env && /usr/bin/env >&2")
+				Eventually(envCmd).Should(Exit(0))
 				output := string(envCmd.Out.Contents())
 				stdErr := string(envCmd.Err.Contents())
 

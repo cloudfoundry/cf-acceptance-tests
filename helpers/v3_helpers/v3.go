@@ -37,6 +37,27 @@ func CreateDeployment(appGuid string) string {
 	return deployment.Guid
 }
 
+func CreateDeploymentForDroplet(appGuid, dropletGuid string) string {
+	deploymentPath := fmt.Sprintf("/v3/deployments")
+	deploymentRequestBody := fmt.Sprintf(`{"droplet": {"guid": "%s"}, "relationships": {"app": {"data": {"guid": "%s"}}}}`, dropletGuid, appGuid)
+	session := cf.Cf("curl", deploymentPath, "-X", "POST", "-d", deploymentRequestBody).Wait()
+	Expect(session).To(Exit(0))
+	var deployment struct {
+		Guid string `json:"guid"`
+	}
+
+	bytes := session.Wait().Out.Contents()
+	json.Unmarshal(bytes, &deployment)
+	return deployment.Guid
+}
+
+func CancelDeployment(deploymentGuid string) {
+	deploymentPath := fmt.Sprintf("/v3/deployments/%s/actions/cancel", deploymentGuid)
+	session := cf.Cf("curl", deploymentPath, "-X", "POST", "-i").Wait()
+	Expect(session.Out.Contents()).To(ContainSubstring("200 OK"))
+	Expect(session).To(Exit(0))
+}
+
 func ScaleApp(appGuid string, instances int) {
 	scalePath := fmt.Sprintf("/v3/apps/%s/processes/web/actions/scale", appGuid)
 	scaleBody := fmt.Sprintf(`{"instances": "%d"}`, instances)
@@ -179,11 +200,11 @@ func CreateIsolationSegment(name string) string {
 }
 
 func CreateOrGetIsolationSegment(name string) string {
-	if IsolationSegmentExists(name) {
-		return GetIsolationSegmentGuid(name)
+	isoSegGUID := CreateIsolationSegment(name)
+	if isoSegGUID == "" {
+		isoSegGUID = GetIsolationSegmentGuid(name)
 	}
-
-	return CreateIsolationSegment(name)
+	return isoSegGUID
 }
 
 func CreatePackage(appGuid string) string {

@@ -3,9 +3,10 @@ package windows
 import (
 	"encoding/json"
 	"fmt"
-	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"io/ioutil"
 	"os"
+
+	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -43,12 +44,19 @@ type NoraCurlResponse struct {
 func pushApp(appName, buildpack string) {
 	Expect(cf.Cf("push",
 		appName,
-		"--no-start",
 		"-s", Config.GetWindowsStack(),
 		"-b", buildpack,
 		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", assets.NewAssets().Nora,
-		"-d", Config.GetAppsDomain()).Wait()).To(Exit(0))
+		"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+	warmUpRequest(appName)
+}
+
+// When a .NET app running via HWC buildpack receives its first HTTP request,
+// it has to do just-in-time compilation, which can take ~10 seconds.
+func warmUpRequest(appName string) {
+	Expect(helpers.CurlAppRoot(Config, appName)).To(ContainSubstring("hello i am nora running on"))
 }
 
 func getAppHostIpAndPort(appName string) (string, int) {
@@ -116,7 +124,6 @@ func deleteSecurityGroup(securityGroupName string) {
 func pushServerApp() (serverAppName string, privateHost string, privatePort int) {
 	serverAppName = random_name.CATSRandomName("APP")
 	pushApp(serverAppName, Config.GetHwcBuildpackName())
-	Expect(cf.Cf("start", serverAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 	privateHost, privatePort = getAppHostIpAndPort(serverAppName)
 	return
@@ -125,7 +132,6 @@ func pushServerApp() (serverAppName string, privateHost string, privatePort int)
 func pushClientApp() (clientAppName string) {
 	clientAppName = random_name.CATSRandomName("APP")
 	pushApp(clientAppName, Config.GetHwcBuildpackName())
-	Expect(cf.Cf("start", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	return
 }
 

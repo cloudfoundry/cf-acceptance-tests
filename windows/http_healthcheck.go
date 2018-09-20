@@ -7,18 +7,15 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
-	logshelper "github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 )
 
 var _ = WindowsDescribe("Http Healthcheck", func() {
 	var (
 		appName string
-		logs    *Session
 	)
 
 	BeforeEach(func() {
@@ -32,7 +29,6 @@ var _ = WindowsDescribe("Http Healthcheck", func() {
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Nora,
 			"-d", Config.GetAppsDomain()).Wait()).To(Exit(0))
-		logs = logshelper.TailFollow(Config.GetUseLogCache(), appName)
 	})
 
 	AfterEach(func() {
@@ -42,14 +38,6 @@ var _ = WindowsDescribe("Http Healthcheck", func() {
 	})
 
 	Describe("An app staged and running", func() {
-		It("should not start with an invalid healthcheck endpoint", func() {
-			Expect(cf.Cf("set-health-check", appName, "http", "--endpoint", "/invalidhealthcheck").Wait()).To(Exit(0))
-
-			start := cf.Cf("start", appName)
-			defer start.Kill()
-			Eventually(logs.Out, Config.CfPushTimeoutDuration()).Should(Say("health check never passed."))
-		})
-
 		It("starts with a valid http healthcheck endpoint", func() {
 			Expect(cf.Cf("set-health-check", appName, "http", "--endpoint", "/healthcheck").Wait()).To(Exit(0))
 
@@ -64,14 +52,6 @@ var _ = WindowsDescribe("Http Healthcheck", func() {
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hello i am nora"))
-		})
-
-		It("does not start with a http healthcheck endpoint that is an invalid redirect", func() {
-			Expect(cf.Cf("set-health-check", appName, "http", "--endpoint", "/redirect/invalidhealthcheck").Wait()).To(Exit(0))
-
-			start := cf.Cf("start", appName)
-			defer start.Kill()
-			Eventually(logs.Out, Config.CfPushTimeoutDuration()).Should(Say("health check never passed."))
 		})
 	})
 })
