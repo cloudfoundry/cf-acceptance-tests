@@ -160,7 +160,7 @@ func getDefaults() config {
 	defaults.IncludeContainerNetworking = ptrToBool(false)
 	defaults.CredhubMode = ptrToString("")
 	defaults.CredhubLocation = ptrToString("https://credhub.service.cf.internal:8844")
-	defaults.CredhubClientName = ptrToString("cc_service_key_client")
+	defaults.CredhubClientName = ptrToString("credhub_admin_client")
 	defaults.CredhubClientSecret = ptrToString("")
 	defaults.IncludeDocker = ptrToBool(false)
 	defaults.IncludeInternetDependent = ptrToBool(false)

@@ -164,7 +164,7 @@ include_capi_no_bridge
   `include_security_groups` must also be set for tests to run. [See below](#container-networking-and-application-security-groups)
 * `credhub_mode`: Valid values are `assisted` or `non-assisted`. [See below](#credhub-modes).
 * `credhub_location`: Location of CredHub instance; default is `https://credhub.service.cf.internal:8844`
-* `credhub_client`: UAA client credential for Service Broker write access to CredHub (required for CredHub tests); default is `cc_service_key_client`.
+* `credhub_client`: UAA client credential for Service Broker write access to CredHub (required for CredHub tests); default is `credhub_admin_client`.
 * `credhub_secret`: UAA client secret for Service Broker write access to CredHub (required for CredHub tests).
 * `include_capi_experimental`: Flag to run experimental tests for the CAPI release. Not stable!
 * `include_capi_no_bridge`: Flag to run tests that require CAPI's (currently optional) bridge consumption features.
