@@ -64,7 +64,7 @@ type testConfig struct {
 	UseWindowsContextPath *bool   `json:"use_windows_context_path,omitempty"`
 	WindowsStack          *string `json:"windows_stack,omitempty"`
 
-	IncludeServiceDiscovery *bool   `json:"include_service_discovery,omitempty"`
+	IncludeServiceDiscovery *bool `json:"include_service_discovery,omitempty"`
 
 	IncludeTCPRouting *bool `json:"include_tcp_routing,omitempty"`
 
@@ -303,7 +303,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetPublicDockerAppImage()).To(Equal("cloudfoundry/diego-docker-app-custom:latest"))
 		Expect(config.GetUnallocatedIPForSecurityGroup()).To(Equal("10.0.244.255"))
 
-		Expect(config.GetCredHubBrokerClientCredential()).To(Equal("cc_service_key_client"))
+		Expect(config.GetCredHubBrokerClientCredential()).To(Equal("credhub_admin_client"))
 		Expect(config.GetCredHubLocation()).To(Equal("https://credhub.service.cf.internal:8844"))
 
 		Expect(config.GetRequireProxiedAppTraffic()).To(BeFalse())
