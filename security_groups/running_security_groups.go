@@ -263,7 +263,7 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 
 			By("Testing that external connectivity to a private ip is refused")
 			catnipCurlResponse = testAppConnectivity(clientAppName, privateAddress, 80)
-			Expect(catnipCurlResponse.Stderr).To(MatchRegexp("refused|No route to host"))
+			Expect(catnipCurlResponse.Stderr).To(MatchRegexp("refused|No route to host|Connection timed out"))
 
 			By("deleting policy")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
