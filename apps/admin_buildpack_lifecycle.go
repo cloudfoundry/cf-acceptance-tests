@@ -273,7 +273,7 @@ exit 1
 		start := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
 		Expect(start).To(Exit(0))
 		appOutput := cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
-		Expect(appOutput).To(Say("buildpack:\\s+Simple"))
+		Expect(appOutput).To(Say("buildpacks?:\\s+Simple"))
 	}
 
 	itDoesNotDetectForEmptyApp := func() {
@@ -365,7 +365,7 @@ exit 1
 			Expect(start).To(Exit(0))
 
 			appOutput := cf.Cf("app", appName).Wait(Config.DefaultTimeoutDuration())
-			Expect(appOutput).To(Say("buildpack:\\s+" + buildpackName))
+			Expect(appOutput).To(Say("buildpacks?:\\s+" + buildpackName))
 		})
 
 		It("fails if the specified buildpack is disabled", func() {
