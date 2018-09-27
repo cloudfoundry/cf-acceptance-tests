@@ -343,7 +343,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 		AfterEach(func() {
 			app_helpers.AppReport(broker.Name)
 
-			Expect(cf.Cf("delete-service", instanceName, "-f").Wait()).To(Exit(0))
+			Expect(cf.Cf("delete-service", instanceName, "-f").Wait()).To(Exit())
 			waitForAsyncDeletionToComplete(broker, instanceName)
 
 			broker.Destroy()
