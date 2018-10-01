@@ -135,6 +135,12 @@ func pushClientApp() (clientAppName string) {
 	return
 }
 
+func restartClientApp(clientAppName string) {
+	Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+	warmUpRequest(clientAppName)
+}
+
 func assertNetworkingPreconditions(clientAppName string, privateHost string, privatePort int) {
 	By("Asserting default running security group configuration for traffic between containers")
 	noraCurlResponse := testAppConnectivity(clientAppName, privateHost, privatePort)
@@ -183,7 +189,7 @@ var _ = WindowsDescribe("WINDOWS: App Instance Networking", func() {
 			By("binding new security group")
 			bindSecurityGroup(securityGroupName, orgName, spaceName)
 
-			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			restartClientApp(clientAppName)
 
 			By("Testing that external connectivity to a private ip is not refused (but may be unreachable for other reasons)")
 
@@ -192,10 +198,10 @@ var _ = WindowsDescribe("WINDOWS: App Instance Networking", func() {
 
 			By("unbinding the wide-open security group")
 			unbindSecurityGroup(securityGroupName, orgName, spaceName)
-			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			restartClientApp(clientAppName)
 
 			By("restarting the app")
-			Expect(cf.Cf("restart", clientAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			restartClientApp(clientAppName)
 
 			By("Testing that external connectivity to a private ip is refused")
 			Eventually(func() string {
