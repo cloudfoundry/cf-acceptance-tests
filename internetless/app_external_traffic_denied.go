@@ -41,7 +41,7 @@ func testAppConnectivity(clientAppName string, privateHost string, privatePort i
 	return catnipCurlResponse
 }
 
-var _ = InternetlessDescribe("App container DNS behavior", func() {
+var _ = InternetlessDescribe("App external traffic denied", func() {
 	var clientAppName string
 	var catnipCurlResponse CatnipCurlResponse
 
@@ -63,6 +63,6 @@ var _ = InternetlessDescribe("App container DNS behavior", func() {
 
 		By("Connecting from running container to an external destination")
 		catnipCurlResponse = testAppConnectivity(clientAppName, "www.google.com", 80)
-		Expect(catnipCurlResponse.ReturnCode).ToNot(Equal(0), "Expected external traffic to be denied from app containers to external addresses.")
+		Expect(catnipCurlResponse.ReturnCode).ToNot(Equal(0), "Expected traffic to be denied from app containers to external addresses.")
 	})
 })
