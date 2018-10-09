@@ -97,6 +97,10 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 			Expect(deploymentGuid).ToNot(BeEmpty())
 			webishProcessType := fmt.Sprintf("web-deployment-%s", deploymentGuid)
 
+			secondDeploymentGuid := CreateDeployment(appGuid)
+			Expect(secondDeploymentGuid).ToNot(BeEmpty())
+			secondWebishProcessType := fmt.Sprintf("web-deployment-%s", secondDeploymentGuid)
+
 			Eventually(func() int {
 				guid := GetProcessGuidForType(appGuid, "web")
 				Expect(guid).ToNot(BeEmpty())
@@ -105,6 +109,10 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 
 			Eventually(func() string {
 				return GetProcessGuidForType(appGuid, webishProcessType)
+			}).Should(BeEmpty())
+
+			Eventually(func() string {
+				return GetProcessGuidForType(appGuid, secondWebishProcessType)
 			}).Should(BeEmpty())
 
 			Eventually(func() int {
