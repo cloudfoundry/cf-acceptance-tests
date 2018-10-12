@@ -24,12 +24,15 @@ var _ = AppsDescribe("Logging", func() {
 	var listenerAppName string
 	var logs *Session
 	var interrupt chan struct{}
-	var serviceName string
+	var serviceNames []string
 
 	Describe("Syslog drains", func() {
 		BeforeEach(func() {
 			interrupt = make(chan struct{}, 1)
-			serviceName = random_name.CATSRandomName("SVIN")
+			serviceNames = []string{
+				random_name.CATSRandomName("SVIN"),
+				random_name.CATSRandomName("SVIN-INT"),
+			}
 			listenerAppName = random_name.CATSRandomName("APP-SYSLOG-LISTENER")
 			logWriterAppName1 = random_name.CATSRandomName("APP-FIRST-LOG-WRITER")
 			logWriterAppName2 = random_name.CATSRandomName("APP-SECOND-LOG-WRITER")
@@ -76,24 +79,34 @@ var _ = AppsDescribe("Logging", func() {
 			Eventually(cf.Cf("delete", logWriterAppName1, "-f", "-r")).Should(Exit(0), "Failed to delete app")
 			Eventually(cf.Cf("delete", logWriterAppName2, "-f", "-r")).Should(Exit(0), "Failed to delete app")
 			Eventually(cf.Cf("delete", listenerAppName, "-f", "-r")).Should(Exit(0), "Failed to delete app")
-			if serviceName != "" {
-				Eventually(cf.Cf("delete-service", serviceName, "-f")).Should(Exit(0), "Failed to delete service")
+			for _, serviceName := range serviceNames {
+				if serviceName != "" {
+					Eventually(cf.Cf("delete-service", serviceName, "-f")).Should(Exit(0), "Failed to delete service")
+				}
 			}
 
 			Eventually(cf.Cf("delete-orphaned-routes", "-f"), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to delete orphaned routes")
 		})
 
 		It("forwards app messages to registered syslog drains", func() {
-			var syslogDrainURL string
-			if Config.GetRequireProxiedAppTraffic() {
-				syslogDrainURL = "syslog-tls://" + getSyslogDrainAddress(listenerAppName)
-			} else {
-				syslogDrainURL = "syslog://" + getSyslogDrainAddress(listenerAppName)
-			}
+			// The syslog drains return two IP addresses: external & internal.
+			// On a vanilla environment, apps can connect through the syslog service
+			// to the external IP (Diego cell address and external port) of the drain
+			// container.
+			// On NSX-T, apps cannot connect to the external IP, but they can connect
+			// to the internal IP (container IP and port 8080).
+			for i, address := range getSyslogDrainAddresses(listenerAppName) {
+				var syslogDrainURL string
+				if Config.GetRequireProxiedAppTraffic() {
+					syslogDrainURL = "syslog-tls://" + address
+				} else {
+					syslogDrainURL = "syslog://" + address
+				}
 
-			Eventually(cf.Cf("cups", serviceName, "-l", syslogDrainURL)).Should(Exit(0), "Failed to create syslog drain service")
-			Eventually(cf.Cf("bind-service", logWriterAppName1, serviceName)).Should(Exit(0), "Failed to bind service")
-			// We don't need to restage, because syslog service bindings don't change the app's environment variables
+				Eventually(cf.Cf("cups", serviceNames[i], "-l", syslogDrainURL)).Should(Exit(0), "Failed to create syslog drain service")
+				Eventually(cf.Cf("bind-service", logWriterAppName1, serviceNames[i])).Should(Exit(0), "Failed to bind service")
+				// We don't need to restage, because syslog service bindings don't change the app's environment variables
+			}
 
 			randomMessage1 := random_name.CATSRandomName("RANDOM-MESSAGE-A")
 			randomMessage2 := random_name.CATSRandomName("RANDOM-MESSAGE-B")
@@ -110,23 +123,24 @@ var _ = AppsDescribe("Logging", func() {
 	})
 })
 
-func getSyslogDrainAddress(appName string) string {
-	var address []byte
+func getSyslogDrainAddresses(appName string) []string {
+	var address, internalAddress []byte
 
-	Eventually(func() []byte {
-		re, err := regexp.Compile("ADDRESS: \\|(.*)\\|")
+	Eventually(func() [][]byte {
+		re, err := regexp.Compile("EXTERNAL ADDRESS: \\|(.*)\\|; INTERNAL ADDRESS: \\|(.*)\\|")
 		Expect(err).NotTo(HaveOccurred())
 
 		logs := logshelper.Tail(Config.GetUseLogCache(), appName).Wait()
 		matched := re.FindSubmatch(logs.Out.Contents())
-		if len(matched) < 2 {
+		if len(matched) < 3 {
 			return nil
 		}
 		address = matched[1]
-		return address
+		internalAddress = matched[2]
+		return [][]byte{address, internalAddress}
 	}).Should(Not(BeNil()))
 
-	return string(address)
+	return []string{string(address), string(internalAddress)}
 }
 
 func writeLogsUntilInterrupted(interrupt chan struct{}, randomMessage string, logWriterAppName string) {
