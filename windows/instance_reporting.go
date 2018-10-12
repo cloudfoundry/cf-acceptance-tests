@@ -39,23 +39,23 @@ var _ = WindowsDescribe("Getting instance information", func() {
 		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
 	})
 
-	Context("scaling memory beyond the available amount", func() {
+	Context("scaling memory", func() {
 		BeforeEach(func() {
 			setTotalMemoryLimit(RUNAWAY_QUOTA_MEM_LIMIT)
-
-			scale := cf.Cf("scale", appName, "-m", EXCEED_CELL_MEMORY, "-f")
-			Eventually(scale, Config.CfPushTimeoutDuration()).Should(Say("insufficient resources|down"))
-			scale.Kill()
 		})
 
 		AfterEach(func() {
 			setTotalMemoryLimit("10G")
 		})
 
-		It("fails with insufficient resources", func() {
+		It("fails when scaled beyond available resources", func() {
+			scale := cf.Cf("scale", appName, "-m", EXCEED_CELL_MEMORY, "-f")
+			Eventually(scale, Config.CfPushTimeoutDuration()).Should(Or(Say("insufficient resources"), Say("down")))
+			scale.Kill()
+
 			app := cf.Cf("app", appName)
 			Eventually(app).Should(Exit(0))
-			Expect(app.Out).To(Say("insufficient resources"))
+			Expect(app.Out).NotTo(Say("instances: 1/1"))
 		})
 	})
 })
