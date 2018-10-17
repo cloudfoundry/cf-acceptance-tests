@@ -101,7 +101,7 @@ to run the core test suites
 against a [BOSH-Lite](https://github.com/cloudfoundry/bosh-lite)
 deployment of CF.
 
-See `example-cats-config.json` for reference.
+See [`example-cats-config.json`](example-cats-config.json) for reference.
 
 Only the following test groups are run by default:
 ```
