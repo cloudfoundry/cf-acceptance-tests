@@ -62,6 +62,11 @@ type config struct {
 	RubyBuildpackName       *string `json:"ruby_buildpack_name"`
 	StaticFileBuildpackName *string `json:"staticfile_buildpack_name"`
 
+	VolumeServiceName         *string `json:"volume_service_name"`
+	VolumeServicePlanName     *string `json:"volume_service_plan_name"`
+	VolumeServiceCreateConfig *string `json:"volume_service_create_config"`
+	VolumeServiceBindConfig   *string `json:"volume_service_bind_config"`
+
 	IncludeApps                     *bool `json:"include_apps"`
 	IncludeBackendCompatiblity      *bool `json:"include_backend_compatibility"`
 	IncludeCapiExperimental         *bool `json:"include_capi_experimental"`
@@ -85,6 +90,7 @@ type config struct {
 	IncludeZipkin                   *bool `json:"include_zipkin"`
 	IncludeIsolationSegments        *bool `json:"include_isolation_segments"`
 	IncludeRoutingIsolationSegments *bool `json:"include_routing_isolation_segments"`
+	IncludeVolumeServices           *bool `json:"include_volume_services"`
 
 	UseLogCache *bool `json:"use_log_cache"`
 
@@ -177,6 +183,7 @@ func getDefaults() config {
 	defaults.IncludeZipkin = ptrToBool(false)
 	defaults.IncludeServiceInstanceSharing = ptrToBool(false)
 	defaults.IncludeTCPRouting = ptrToBool(false)
+	defaults.IncludeVolumeServices = ptrToBool(false)
 
 	defaults.UseLogCache = ptrToBool(true)
 
@@ -185,6 +192,10 @@ func getDefaults() config {
 	defaults.WindowsStack = ptrToString("windows2012R2")
 	defaults.UseWindowsTestTask = ptrToBool(false)
 
+	defaults.VolumeServiceName = ptrToString("")
+	defaults.VolumeServicePlanName = ptrToString("")
+	defaults.VolumeServiceCreateConfig = ptrToString("")
+	defaults.VolumeServiceBindConfig = ptrToString("")
 
 	defaults.ReporterConfig = &reporterConfig{}
 
@@ -281,6 +292,11 @@ func validateConfig(config *config) Errors {
 	}
 
 	err = validateWindows(config)
+	if err != nil {
+		errs.Add(err)
+	}
+
+	err = validateVolumeServices(config)
 	if err != nil {
 		errs.Add(err)
 	}
@@ -617,6 +633,27 @@ func validateCredHubSettings(config *config) error {
 	return nil
 }
 
+func validateVolumeServices(config *config) error {
+	if !config.GetIncludeVolumeServices() {
+		return nil
+	}
+
+	if config.GetVolumeServiceName() == "" {
+		return fmt.Errorf("* Invalid configuration: 'volume_service_name' must be provided if 'include_volume_services' is true")
+	}
+	if config.GetVolumeServicePlanName() == "" {
+		return fmt.Errorf("* Invalid configuration: 'volume_service_plan_name' must be provided if 'include_volume_services' is true")
+	}
+	if config.GetVolumeServiceCreateConfig() == "" {
+		return fmt.Errorf("* Invalid configuration: 'volume_service_create_config' must be provided if 'include_volume_services' is true")
+	}
+	if config.GetVolumeServiceBindConfig() == "" {
+		return fmt.Errorf("* Invalid configuration: 'volume_service_bind_config' must be provided if 'include_volume_services' is true")
+	}
+
+	return nil
+}
+
 func validateWindows(config *config) error {
 	if config.IncludeWindows == nil {
 		return fmt.Errorf("* 'include_windows' must not be null")
@@ -894,6 +931,10 @@ func (c *config) GetIncludeServiceDiscovery() bool {
 	return *c.IncludeServiceDiscovery
 }
 
+func (c *config) GetIncludeVolumeServices() bool {
+	return *c.IncludeVolumeServices
+}
+
 func (c *config) GetUseLogCache() bool {
 	return *c.UseLogCache
 }
@@ -960,6 +1001,22 @@ func (c *config) GetUseWindowsContextPath() bool {
 
 func (c *config) GetWindowsStack() string {
 	return *c.WindowsStack
+}
+
+func (c *config) GetVolumeServiceName() string {
+	return *c.VolumeServiceName
+}
+
+func (c *config) GetVolumeServicePlanName() string {
+	return *c.VolumeServicePlanName
+}
+
+func (c *config) GetVolumeServiceCreateConfig() string {
+	return *c.VolumeServiceCreateConfig
+}
+
+func (c *config) GetVolumeServiceBindConfig() string {
+	return *c.VolumeServiceBindConfig
 }
 
 func (c *config) GetReporterConfig() reporterConfig {

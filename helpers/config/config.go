@@ -31,6 +31,7 @@ type CatsConfig interface {
 	GetIncludeServiceInstanceSharing() bool
 	GetIncludeTCPRouting() bool
 	GetIncludeWindows() bool
+	GetIncludeVolumeServices() bool
 	GetUseLogCache() bool
 	GetShouldKeepUser() bool
 	GetSkipSSLValidation() bool
@@ -71,6 +72,11 @@ type CatsConfig interface {
 	GetUseWindowsTestTask() bool
 	GetUseWindowsContextPath() bool
 	GetWindowsStack() string
+
+	GetVolumeServiceName() string
+	GetVolumeServicePlanName() string
+	GetVolumeServiceCreateConfig() string
+	GetVolumeServiceBindConfig() string
 
 	GetReporterConfig() reporterConfig
 

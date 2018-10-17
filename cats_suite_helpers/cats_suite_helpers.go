@@ -16,7 +16,7 @@ import (
 
 const (
 	CF_JAVA_TIMEOUT      = 10 * time.Minute
-	V3_PROCESS_TIMEOUT = 45 * time.Second
+	V3_PROCESS_TIMEOUT   = 45 * time.Second
 	DEFAULT_MEMORY_LIMIT = "256M"
 )
 
@@ -323,6 +323,17 @@ func WindowsDescribe(description string, callback func()) bool {
 		BeforeEach(func() {
 			if !Config.GetIncludeWindows() {
 				Skip(skip_messages.SkipWindowsMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
+func VolumeServicesDescribe(description string, callback func()) bool {
+	return Describe("[volume_services]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeVolumeServices() {
+				Skip(skip_messages.SkipVolumeServicesMessage)
 			}
 		})
 		Describe(description, callback)
