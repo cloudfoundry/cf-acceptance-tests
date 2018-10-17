@@ -34,5 +34,6 @@ IN DEVELOPMENT
   "include_assisted_credhub": true,
   "include_credhub": true,
   "include_tcp_routing": true,
-  "stacks":["cflinuxfs2","cflinuxfs3"]
+  "stacks":["cflinuxfs2","cflinuxfs3"],
+  "include_volume_services": false
 }

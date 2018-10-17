@@ -339,3 +339,14 @@ func WindowsDescribe(description string, callback func()) bool {
 		Describe(description, callback)
 	})
 }
+
+func VolumeServicesDescribe(description string, callback func()) bool {
+	return Describe("[volume_services]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeVolumeServices() {
+				Skip(skip_messages.SkipVolumeServicesMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}

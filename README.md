@@ -192,6 +192,12 @@ include_capi_no_bridge
 * `include_service_discovery`: Flag to include test for the service discovery. These tests use `apps.internal` domain, which is the default in `cf-networking-release`. The internal domain is currently not configurable.
 * `stacks`: An array of stacks to test against. Currently only `cflinuxfs3` and `cflinuxfs2` stacks are supported. Default is `[cflinuxfs2]`.
 
+* `include_volume_services`: Flag to include the tests for volume services. Diego must be deployed for these tests to pass and volume service broker should be registered in platform.
+* `volume_service_name`: The name of the volume service provided by the volume service broker.
+* `volume_service_plan_name`: The name of the plan of the service provided by the volume service broker.
+* `volume_service_create_config`: The JSON configuration that is used when volume service is created.
+* `volume_service_bind_config`: The JSON configuration that is used when volume service is bound to the test application.
+
 #### Buildpack Names
 Many tests specify a buildpack when pushing an app, so that on diego the app staging process completes in less time. The default names for the buildpacks are as follows; if you have buildpacks with different names, you can override them by setting different names:
 
@@ -355,6 +361,7 @@ Test Group Name| Description
 `tasks`| Tests Cloud Foundry's [Tasks](https://docs.cloudfoundry.org/devguide/using-tasks.html) feature.
 `tcp_routing`| Tests TCP Routing Feature of Cloud Foundry. You need to make sure you've set up a TCP domain `tcp.<SYSTEM_DOMAIN>` as described [here](https://docs.cloudfoundry.org/adminguide/enabling-tcp-routing.html). If you are using `bbl` (BOSH Bootloader), TCP domain is set up for you automatically.
 `v3`| This test group contains tests for the next-generation v3 Cloud Controller API.
+`volume_services` | Tests the [Volume Services](https://docs.cloudfoundry.org/devguide/services/using-vol-services.html) feature of Cloud Foundry.
 
 ## Contributing
 
