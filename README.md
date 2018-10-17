@@ -284,13 +284,22 @@ To execute all test groups, run the following from the root directory of cf-acce
 ```
 
 ##### Parallel execution
-To execute all test groups, and have tests run in parallel across four processes one would run:
+It's possible execute all test groups, and have tests run in parallel across multiple processes.
+This parallelization can significantly decrease CATs runtime.
 
+_However_, be careful with this number, as it's effectively "how many apps to push at once", as nearly every example pushes an app.
+
+In order to run 12 processes in parallel run the following:
 ```bash
-./bin/test -nodes=4
+./bin/test -nodes=12
 ```
 
-Be careful with this number, as it's effectively "how many apps to push at once", as nearly every example pushes an app.
+For reference here's how many parallel processes the Release Integration team runs with:
+
+| Foundation Type | # of Parallel Processes |
+| ----------- | ----------- |
+| [Vanilla CF](https://github.com/cloudfoundry/cf-deployment/blob/master/cf-deployment.yml) | 12 |
+| [BOSH Lite](https://github.com/cloudfoundry/cf-deployment/blob/master/operations/bosh-lite.yml) | 4 |
 
 
 ##### Focusing Test Groups
