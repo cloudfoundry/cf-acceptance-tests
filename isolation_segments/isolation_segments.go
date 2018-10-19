@@ -2,6 +2,7 @@ package isolation_segments
 
 import (
 	"fmt"
+	"strings"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/ginkgo"
@@ -166,7 +167,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 
 				session = cf.Cf("oauth-token")
 				Eventually(session, Config.CfPushTimeoutDuration()).Should(Exit(0))
-				token := string(session.Out.Contents())
+				token := strings.TrimSpace(string(session.Out.Contents()))
 				authHeader := fmt.Sprintf("Authorization: %s", token)
 
 				url = fmt.Sprintf("https://iso-log-cache.%s/v1/meta", isoSegDomain)
@@ -174,7 +175,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 				Eventually(func() string {
 					curlSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), url, "-H", authHeader)
 					Eventually(curlSession).Should(Exit(0))
-					return string(curlSession.Out.Contents())
+					return strings.TrimSpace(string(curlSession.Out.Contents()))
 				}, Config.LongCurlTimeoutDuration()).Should(ContainSubstring(isoGuid))
 			})
 		})
