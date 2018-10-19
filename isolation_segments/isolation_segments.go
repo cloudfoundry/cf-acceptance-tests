@@ -163,7 +163,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 
 				session := cf.Cf("app", appName, "--guid")
 				Eventually(session, Config.CfPushTimeoutDuration()).Should(Exit(0))
-				isoGuid := string(session.Out.Contents())
+				isoGuid := strings.TrimSpace(string(session.Out.Contents()))
 
 				session = cf.Cf("oauth-token")
 				Eventually(session, Config.CfPushTimeoutDuration()).Should(Exit(0))
