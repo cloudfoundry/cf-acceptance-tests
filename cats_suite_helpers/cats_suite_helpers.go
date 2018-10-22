@@ -16,7 +16,7 @@ import (
 
 const (
 	CF_JAVA_TIMEOUT      = 10 * time.Minute
-	V3_PROCESS_TIMEOUT = 45 * time.Second
+	V3_PROCESS_TIMEOUT   = 45 * time.Second
 	DEFAULT_MEMORY_LIMIT = "256M"
 )
 
@@ -87,6 +87,17 @@ func InternetDependentDescribe(description string, callback func()) bool {
 		BeforeEach(func() {
 			if !Config.GetIncludeInternetDependent() {
 				Skip(skip_messages.SkipInternetDependentMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
+func InternetlessDescribe(description string, callback func()) bool {
+	return Describe("[internetless]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeInternetless() {
+				Skip(skip_messages.SkipInternetlessMessage)
 			}
 		})
 		Describe(description, callback)

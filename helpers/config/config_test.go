@@ -126,6 +126,7 @@ type allConfig struct {
 	IncludeDetect                 *bool `json:"include_detect"`
 	IncludeDocker                 *bool `json:"include_docker"`
 	IncludeInternetDependent      *bool `json:"include_internet_dependent"`
+	IncludeInternetless           *bool `json:"include_internetless"`
 	IncludePrivateDockerRegistry  *bool `json:"include_private_docker_registry"`
 	IncludeRouteServices          *bool `json:"include_route_services"`
 	IncludeRouting                *bool `json:"include_routing"`
@@ -245,6 +246,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeCapiNoBridge()).To(BeTrue())
 		Expect(config.GetIncludeDocker()).To(BeFalse())
 		Expect(config.GetIncludeInternetDependent()).To(BeFalse())
+		Expect(config.GetIncludeInternetless()).To(BeFalse())
 		Expect(config.GetIncludeRouteServices()).To(BeFalse())
 		Expect(config.GetIncludeContainerNetworking()).To(BeFalse())
 		Expect(config.GetIncludeSecurityGroups()).To(BeFalse())
