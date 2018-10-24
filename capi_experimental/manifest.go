@@ -175,10 +175,10 @@ applications:
 
 						session = cf.Cf("app", appName).Wait()
 						Eventually(session).Should(Say("Showing health"))
-						Eventually(session).Should(Say("instances:\\s+.*?\\d+/2"))
 						Eventually(session).Should(Say("routes:\\s+(?:%s.%s,\\s+)?%s", appName, Config.GetAppsDomain(), route))
 						Eventually(session).Should(Say("stack:\\s+cflinuxfs2"))
-						Eventually(session).Should(Say("buildpack:\\s+ruby_buildpack"))
+						Eventually(session).Should(Say("buildpacks:\\s+ruby"))
+						Eventually(session).Should(Say("instances:\\s+.*?\\d+/2"))
 						Eventually(session).Should(Exit(0))
 						session = cf.Cf("app", appName).Wait()
 
@@ -347,8 +347,9 @@ applications:
 						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 						Expect(target).To(Exit(0), "failed targeting")
 
-						session = cf.Cf("v3-app", appName).Wait()
-						Eventually(session).Should(Say("potato:0/2"))
+						session = cf.Cf("app", appName).Wait()
+						Eventually(session).Should(Say("type:\\s+potato"))
+						Eventually(session).Should(Say("instances:\\s+0/2"))
 						Eventually(session).Should(Exit(0))
 
 						processes := GetProcesses(appGUID, appName)
@@ -391,8 +392,9 @@ applications:
 						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 						Expect(target).To(Exit(0), "failed targeting")
 
-						session = cf.Cf("v3-app", appName).Wait()
-						Eventually(session).Should(Say("bean:0/2"))
+						session = cf.Cf("app", appName).Wait()
+						Eventually(session).Should(Say("type:\\s+bean"))
+						Eventually(session).Should(Say("instances:\\s+0/2"))
 						Eventually(session).Should(Exit(0))
 						AssignDropletToApp(appGUID, dropletGuid)
 
