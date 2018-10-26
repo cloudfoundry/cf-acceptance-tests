@@ -110,7 +110,7 @@ func RequestScopes(cookie string, config OAuthConfig) (authCode string, httpCode
 }
 
 func AuthorizeScopes(cookie string, config OAuthConfig) (authCode string) {
-	authorizedScopes := `scope.0=scope.openid&scope.1=scope.cloud_controller.read&scope.2=scope.cloud_controller.write&user_oauth_approval=true&X-Uaa-Csrf=123456`
+	authorizedScopes := `scope.0=scope.openid&scope.1=scope.cloud_controller_service_permissions.read&user_oauth_approval=true&X-Uaa-Csrf=123456`
 	authorizeScopesUri := fmt.Sprintf("%v/oauth/authorize", config.AuthorizationEndpoint)
 
 	curl := helpers.Curl(Config, authorizeScopesUri, `-i`, `--data`, authorizedScopes, `--cookie`, cookie+`;X-Uaa-Csrf=123456`, `--insecure`, `-v`).Wait()
