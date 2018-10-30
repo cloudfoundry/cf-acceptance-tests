@@ -121,14 +121,13 @@ var _ = SshDescribe("SSH", func() {
 			err = stdin.Close()
 			Expect(err).NotTo(HaveOccurred())
 
-			exitErr := envCmd.Wait()
-
 			output, err := ioutil.ReadAll(stdout)
 			Expect(err).NotTo(HaveOccurred())
 
 			errOutput, err := ioutil.ReadAll(stderr)
 			Expect(err).NotTo(HaveOccurred())
 
+			exitErr := envCmd.Wait()
 			Expect(exitErr).NotTo(HaveOccurred(), "Failed to run SSH command: %s, %s", output, errOutput)
 
 			Expect(string(output)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
