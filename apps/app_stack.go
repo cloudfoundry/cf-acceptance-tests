@@ -119,23 +119,56 @@ EOF
 		os.RemoveAll(tmpdir)
 	})
 
-	It("uses cflinuxfs2 for staging and running", func() {
-		stackName := "cflinuxfs2"
-		expected_lsb_release := "DISTRIB_CODENAME=trusty"
+	Context("when 'cflinuxfs2' is specified", func() {
+		It("uses cflinuxfs2 for staging and running", func() {
+			stackName := "cflinuxfs2"
+			expected_lsb_release := "DISTRIB_CODENAME=trusty"
 
-		push := cf.Cf("push", appName,
-			"-b", BuildpackName,
-			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", appPath,
-			"-s", stackName,
-			"-d", Config.GetAppsDomain(),
-		).Wait(Config.CfPushTimeoutDuration())
-		Expect(push).To(Exit(0))
-		Expect(push).To(Say(expected_lsb_release))
-		Expect(push).To(Say(""))
+			push := cf.Cf("push", appName,
+				"-b", BuildpackName,
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", appPath,
+				"-s", stackName,
+				"-d", Config.GetAppsDomain(),
+			).Wait(Config.CfPushTimeoutDuration())
+			Expect(push).To(Exit(0))
+			Expect(push).To(Say(expected_lsb_release))
+			Expect(push).To(Say(""))
 
-		Eventually(func() string {
-			return helpers.CurlAppRoot(Config, appName)
-		}).Should(ContainSubstring(expected_lsb_release))
+			Eventually(func() string {
+				return helpers.CurlAppRoot(Config, appName)
+			}).Should(ContainSubstring(expected_lsb_release))
+		})
+	})
+
+	Context("when an alternate stack is specified", func() {
+
+		It("uses the alternate stack for staging and running", func() {
+			stackName := Config.GetAlternateStack()
+			if stackName == "" {
+				Skip("no alternate stack specified in config")
+			}
+
+			var expected_lsb_release string
+			switch stackName {
+			case "cflinuxfs3":
+				expected_lsb_release = "DISTRIB_CODENAME=bionic"
+			}
+
+			push := cf.Cf("push", appName,
+				"-b", BuildpackName,
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", appPath,
+				"-s", stackName,
+				"-d", Config.GetAppsDomain(),
+			).Wait(Config.CfPushTimeoutDuration())
+			Expect(push).To(Exit(0))
+			Expect(push).To(Say(expected_lsb_release))
+			Expect(push).To(Say(""))
+
+			Eventually(func() string {
+				return helpers.CurlAppRoot(Config, appName)
+			}).Should(ContainSubstring(expected_lsb_release))
+		})
 	})
 })
