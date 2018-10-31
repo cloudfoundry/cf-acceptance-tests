@@ -47,3 +47,4 @@ const SkipCapiExperimentalMessage = `Skipping this test because Config.IncludeCa
 const SkipCapiNoBridgeMessage = `Skipping this test because Config.IncludeCapiNoBridge is set to 'false'.`
 const SkipSSHOnWindows2012R2Message = `cf ssh does not work on windows2012R2`
 const SkipWindowsTasksMessage = `Skipping Windows tasks tests (requires diego-release v1.20.0 and above)`
+const SkipNoAlternateStacksMessage = `Skipping this test because no 'alternate_stacks' are specified.`
