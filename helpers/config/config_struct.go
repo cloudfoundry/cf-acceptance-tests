@@ -94,7 +94,7 @@ type config struct {
 	CredhubClientName   *string `json:"credhub_client"`
 	CredhubClientSecret *string `json:"credhub_secret"`
 
-	Stacks []string `json:"stacks"`
+	Stacks *[]string `json:"stacks,omitempty"`
 
 	IncludeWindows        *bool   `json:"include_windows"`
 	UseWindowsTestTask    *bool   `json:"use_windows_test_task"`
@@ -222,7 +222,7 @@ func getDefaults() config {
 
 	defaults.NamePrefix = ptrToString("CATS")
 
-	defaults.Stacks = []string{"cflinuxfs2"}
+	defaults.Stacks = &[]string{"cflinuxfs2"}
 	return defaults
 }
 
@@ -649,6 +649,10 @@ func validateWindows(config *config) error {
 }
 
 func validateStacks(config *config) error {
+	if config.Stacks == nil {
+		return fmt.Errorf("* 'stacks' must not be null")
+	}
+
 	for _, stack := range config.GetStacks() {
 		if stack != "cflinuxfs2" && stack != "cflinuxfs3" {
 			return fmt.Errorf("* Invalid configuration: unknown stack '%s'. Only 'cflinuxfs2' and 'cflinuxfs3 are supported for the 'stacks' property", stack)
@@ -978,7 +982,7 @@ func (c *config) GetRequireProxiedAppTraffic() bool {
 }
 
 func (c *config) GetStacks() []string {
-	return c.Stacks
+	return *c.Stacks
 }
 
 func (c *config) GetUseWindowsTestTask() bool {

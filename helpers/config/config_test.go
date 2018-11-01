@@ -70,7 +70,7 @@ type testConfig struct {
 
 	ReporterConfig *testReporterConfig `json:"reporter_config"`
 
-	Stacks []string `json:"stacks"`
+	Stacks *[]string `json:"stacks,omitempty"`
 }
 
 type allConfig struct {
@@ -157,7 +157,7 @@ type allConfig struct {
 
 	NamePrefix *string `json:"name_prefix"`
 
-	Stacks []string `json:"stacks"`
+	Stacks *[]string `json:"stacks"`
 }
 
 type testReporterConfig struct {
@@ -392,6 +392,8 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_password' must not be null"))
 
 			Expect(err.Error()).To(ContainSubstring("'name_prefix' must not be null"))
+
+			Expect(err.Error()).To(ContainSubstring("'stacks' must not be null"))
 		})
 	})
 
@@ -593,7 +595,7 @@ var _ = Describe("Config", func() {
 
 	Context("when providing stacks property", func() {
 		BeforeEach(func() {
-			testCfg.Stacks = append(testCfg.Stacks, "my-custom-stack")
+			testCfg.Stacks = &[]string{"my-custom-stack"}
 		})
 
 		It("returns error if a stack other than cflinuxfs2 or cflinuxfs3 is provided", func() {
