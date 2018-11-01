@@ -190,6 +190,7 @@ include_capi_no_bridge
 * `windows_stack`: Windows stack to run tests against. Must be either `windows2012R2` or `windows2016`. Defaults to `windows2012R2`.
 
 * `include_service_discovery`: Flag to include test for the service discovery. These tests use `apps.internal` domain, which is the default in `cf-networking-release`. The internal domain is currently not configurable.
+* `stacks`: An array of stacks to test against. Currently only `cflinuxfs3` and `cflinuxfs2` stacks are supported. Default is `[cflinuxfs2]`.
 
 #### Buildpack Names
 Many tests specify a buildpack when pushing an app, so that on diego the app staging process completes in less time. The default names for the buildpacks are as follows; if you have buildpacks with different names, you can override them by setting different names:
