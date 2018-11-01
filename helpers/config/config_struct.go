@@ -290,6 +290,11 @@ func validateConfig(config *config) Errors {
 		errs.Add(err)
 	}
 
+	err = validateStacks(config)
+	if err != nil {
+		errs.Add(err)
+	}
+
 	if config.UseHttp == nil {
 		errs.Add(fmt.Errorf("* 'use_http' must not be null"))
 	}
@@ -638,6 +643,16 @@ func validateWindows(config *config) error {
 	case "windows2012R2", "windows2016":
 	default:
 		return fmt.Errorf("* Invalid configuration: unknown Windows stack %s", config.GetWindowsStack())
+	}
+
+	return nil
+}
+
+func validateStacks(config *config) error {
+	for _, stack := range config.GetStacks() {
+		if stack != "cflinuxfs2" && stack != "cflinuxfs3" {
+			return fmt.Errorf("* Invalid configuration: unknown stack '%s'. Only 'cflinuxfs2' and 'cflinuxfs3 are supported for the 'stacks' property", stack)
+		}
 	}
 
 	return nil

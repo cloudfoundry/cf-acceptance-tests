@@ -591,6 +591,18 @@ var _ = Describe("Config", func() {
 		})
 	})
 
+	Context("when providing stacks property", func() {
+		BeforeEach(func() {
+			testCfg.Stacks = append(testCfg.Stacks, "my-custom-stack")
+		})
+
+		It("returns error if a stack other than cflinuxfs2 or cflinuxfs3 is provided", func() {
+			_, err := cfg.NewCatsConfig(tmpFilePath)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError("* Invalid configuration: unknown stack 'my-custom-stack'. Only 'cflinuxfs2' and 'cflinuxfs3 are supported for the 'stacks' property"))
+		})
+	})
+
 	Context("when including a reporter config", func() {
 		BeforeEach(func() {
 			reporterConfig := &testReporterConfig{
