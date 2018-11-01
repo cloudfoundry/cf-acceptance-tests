@@ -69,6 +69,8 @@ type testConfig struct {
 	IncludeTCPRouting *bool `json:"include_tcp_routing,omitempty"`
 
 	ReporterConfig *testReporterConfig `json:"reporter_config"`
+
+	Stacks []string `json:"stacks"`
 }
 
 type allConfig struct {
@@ -154,6 +156,8 @@ type allConfig struct {
 	PublicDockerAppImage          *string `json:"public_docker_app_image"`
 
 	NamePrefix *string `json:"name_prefix"`
+
+	Stacks []string `json:"stacks"`
 }
 
 type testReporterConfig struct {
@@ -309,6 +313,8 @@ var _ = Describe("Config", func() {
 		Expect(config.GetCredHubLocation()).To(Equal("https://credhub.service.cf.internal:8844"))
 
 		Expect(config.GetRequireProxiedAppTraffic()).To(BeFalse())
+
+		Expect(config.GetStacks()).To(ConsistOf("cflinuxfs2"))
 	})
 
 	Context("when all values are null", func() {

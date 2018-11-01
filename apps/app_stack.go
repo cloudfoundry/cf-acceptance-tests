@@ -24,7 +24,7 @@ import (
 var _ = AppsDescribe("Specifying a specific Stack", func() {
 	var (
 		appName       string
-		BuildpackName string
+		buildpackName string
 
 		appPath string
 
@@ -40,7 +40,7 @@ var _ = AppsDescribe("Specifying a specific Stack", func() {
 
 	BeforeEach(func() {
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-			BuildpackName = CATSRandomName("BPK")
+			buildpackName = CATSRandomName("BPK")
 			appName = CATSRandomName("APP")
 
 			var err error
@@ -99,7 +99,7 @@ EOF
 			_, err = os.Create(path.Join(appPath, "some-file"))
 			Expect(err).ToNot(HaveOccurred())
 
-			createBuildpack := cf.Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0").Wait()
+			createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "0").Wait()
 			Expect(createBuildpack).Should(Exit(0))
 			Expect(createBuildpack).Should(Say("Creating"))
 			Expect(createBuildpack).Should(Say("OK"))
@@ -114,31 +114,10 @@ EOF
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-			Expect(cf.Cf("delete-buildpack", BuildpackName, "-f").Wait()).To(Exit(0))
+			Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait()).To(Exit(0))
 		})
 
 		os.RemoveAll(tmpdir)
-	})
-
-	Context("when 'cflinuxfs2' is specified", func() {
-		It("uses cflinuxfs2 for staging and running", func() {
-			stackName := "cflinuxfs2"
-			expectedLSBRelease := "DISTRIB_CODENAME=trusty"
-
-			push := cf.Cf("push", appName,
-				"-b", BuildpackName,
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", appPath,
-				"-s", stackName,
-				"-d", Config.GetAppsDomain(),
-			).Wait(Config.CfPushTimeoutDuration())
-			Expect(push).To(Exit(0))
-			Expect(push).To(Say(expectedLSBRelease))
-
-			Eventually(func() string {
-				return helpers.CurlAppRoot(Config, appName)
-			}).Should(ContainSubstring(expectedLSBRelease))
-		})
 	})
 
 	Context("when alternate stack(s) are specified", func() {
@@ -156,10 +135,12 @@ EOF
 				switch stackName {
 				case "cflinuxfs3":
 					expectedLSBRelease = "DISTRIB_CODENAME=bionic"
+				case "cflinuxfs2":
+					expectedLSBRelease = "DISTRIB_CODENAME=trusty"
 				}
 
 				push := cf.Cf("push", appName,
-					"-b", BuildpackName,
+					"-b", buildpackName,
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", appPath,
 					"-s", stackName,

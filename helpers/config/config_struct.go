@@ -94,7 +94,7 @@ type config struct {
 	CredhubClientName   *string `json:"credhub_client"`
 	CredhubClientSecret *string `json:"credhub_secret"`
 
-	AlternateStacks []string `json:"alternate_stacks"`
+	Stacks []string `json:"stacks"`
 
 	IncludeWindows        *bool   `json:"include_windows"`
 	UseWindowsTestTask    *bool   `json:"use_windows_test_task"`
@@ -221,6 +221,8 @@ func getDefaults() config {
 	defaults.RequireProxiedAppTraffic = ptrToBool(false)
 
 	defaults.NamePrefix = ptrToString("CATS")
+
+	defaults.Stacks = []string{"cflinuxfs2"}
 	return defaults
 }
 
@@ -960,8 +962,8 @@ func (c *config) GetRequireProxiedAppTraffic() bool {
 	return *c.RequireProxiedAppTraffic
 }
 
-func (c *config) GetAlternateStacks() []string {
-	return c.AlternateStacks
+func (c *config) GetStacks() []string {
+	return c.Stacks
 }
 
 func (c *config) GetUseWindowsTestTask() bool {

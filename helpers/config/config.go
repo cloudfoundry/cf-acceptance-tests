@@ -69,7 +69,7 @@ type CatsConfig interface {
 	GetRequireProxiedAppTraffic() bool
 	Protocol() string
 
-	GetAlternateStacks() []string
+	GetStacks() []string
 
 	GetUseWindowsTestTask() bool
 	GetUseWindowsContextPath() bool
