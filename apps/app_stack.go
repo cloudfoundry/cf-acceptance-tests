@@ -123,7 +123,7 @@ EOF
 	Context("when 'cflinuxfs2' is specified", func() {
 		It("uses cflinuxfs2 for staging and running", func() {
 			stackName := "cflinuxfs2"
-			expected_lsb_release := "DISTRIB_CODENAME=trusty"
+			expectedLSBRelease := "DISTRIB_CODENAME=trusty"
 
 			push := cf.Cf("push", appName,
 				"-b", BuildpackName,
@@ -133,11 +133,11 @@ EOF
 				"-d", Config.GetAppsDomain(),
 			).Wait(Config.CfPushTimeoutDuration())
 			Expect(push).To(Exit(0))
-			Expect(push).To(Say(expected_lsb_release))
+			Expect(push).To(Say(expectedLSBRelease))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}).Should(ContainSubstring(expected_lsb_release))
+			}).Should(ContainSubstring(expectedLSBRelease))
 		})
 	})
 
@@ -152,10 +152,10 @@ EOF
 			for _, stackName := range stacks {
 				By(fmt.Sprintf("testing stack: %s", stackName))
 
-				var expected_lsb_release string
+				var expectedLSBRelease string
 				switch stackName {
 				case "cflinuxfs3":
-					expected_lsb_release = "DISTRIB_CODENAME=bionic"
+					expectedLSBRelease = "DISTRIB_CODENAME=bionic"
 				}
 
 				push := cf.Cf("push", appName,
@@ -166,11 +166,11 @@ EOF
 					"-d", Config.GetAppsDomain(),
 				).Wait(Config.CfPushTimeoutDuration())
 				Expect(push).To(Exit(0))
-				Expect(push).To(Say(expected_lsb_release))
+				Expect(push).To(Say(expectedLSBRelease))
 
 				Eventually(func() string {
 					return helpers.CurlAppRoot(Config, appName)
-				}).Should(ContainSubstring(expected_lsb_release))
+				}).Should(ContainSubstring(expectedLSBRelease))
 			}
 		})
 	})
