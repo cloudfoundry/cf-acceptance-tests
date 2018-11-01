@@ -14,6 +14,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -119,23 +120,58 @@ EOF
 		os.RemoveAll(tmpdir)
 	})
 
-	It("uses cflinuxfs2 for staging and running", func() {
-		stackName := "cflinuxfs2"
-		expected_lsb_release := "DISTRIB_CODENAME=trusty"
+	Context("when 'cflinuxfs2' is specified", func() {
+		It("uses cflinuxfs2 for staging and running", func() {
+			stackName := "cflinuxfs2"
+			expected_lsb_release := "DISTRIB_CODENAME=trusty"
 
-		push := cf.Cf("push", appName,
-			"-b", BuildpackName,
-			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", appPath,
-			"-s", stackName,
-			"-d", Config.GetAppsDomain(),
-		).Wait(Config.CfPushTimeoutDuration())
-		Expect(push).To(Exit(0))
-		Expect(push).To(Say(expected_lsb_release))
-		Expect(push).To(Say(""))
+			push := cf.Cf("push", appName,
+				"-b", BuildpackName,
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", appPath,
+				"-s", stackName,
+				"-d", Config.GetAppsDomain(),
+			).Wait(Config.CfPushTimeoutDuration())
+			Expect(push).To(Exit(0))
+			Expect(push).To(Say(expected_lsb_release))
 
-		Eventually(func() string {
-			return helpers.CurlAppRoot(Config, appName)
-		}).Should(ContainSubstring(expected_lsb_release))
+			Eventually(func() string {
+				return helpers.CurlAppRoot(Config, appName)
+			}).Should(ContainSubstring(expected_lsb_release))
+		})
+	})
+
+	Context("when alternate stack(s) are specified", func() {
+
+		It("uses the alternate stack(s) for staging and running", func() {
+			stacks := Config.GetAlternateStacks()
+			if len(stacks) == 0 {
+				Skip(skip_messages.SkipNoAlternateStacksMessage)
+			}
+
+			for _, stackName := range stacks {
+				By(fmt.Sprintf("testing stack: %s", stackName))
+
+				var expected_lsb_release string
+				switch stackName {
+				case "cflinuxfs3":
+					expected_lsb_release = "DISTRIB_CODENAME=bionic"
+				}
+
+				push := cf.Cf("push", appName,
+					"-b", BuildpackName,
+					"-m", DEFAULT_MEMORY_LIMIT,
+					"-p", appPath,
+					"-s", stackName,
+					"-d", Config.GetAppsDomain(),
+				).Wait(Config.CfPushTimeoutDuration())
+				Expect(push).To(Exit(0))
+				Expect(push).To(Say(expected_lsb_release))
+
+				Eventually(func() string {
+					return helpers.CurlAppRoot(Config, appName)
+				}).Should(ContainSubstring(expected_lsb_release))
+			}
+		})
 	})
 })
