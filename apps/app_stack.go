@@ -21,7 +21,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = AppsDescribe("Specifying a specific Stack", func() {
+var _ = AppsDescribe("Specifying a specific stack", func() {
 	var (
 		appName       string
 		buildpackName string
@@ -120,10 +120,9 @@ EOF
 		os.RemoveAll(tmpdir)
 	})
 
-	Context("when alternate stack(s) are specified", func() {
-
-		It("uses the alternate stack(s) for staging and running", func() {
-			stacks := Config.GetAlternateStacks()
+	Context("when stack(s) are specified", func() {
+		It("uses stack(s) for staging and running", func() {
+			stacks := Config.GetStacks()
 			if len(stacks) == 0 {
 				Skip(skip_messages.SkipNoAlternateStacksMessage)
 			}
