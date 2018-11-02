@@ -33,5 +33,6 @@ IN DEVELOPMENT
   "include_zipkin": true,
   "include_assisted_credhub": true,
   "include_credhub": true,
-  "include_tcp_routing": true
+  "include_tcp_routing": true,
+  "stacks":["cflinuxfs2","cflinuxfs3"]
 }
