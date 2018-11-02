@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 
 	"encoding/json"
+	"regexp"
+
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
@@ -16,7 +18,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
-	"regexp"
 )
 
 var _ = RoutingDescribe("Multiple App Ports", func() {
@@ -57,13 +58,6 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 
 	Context("when app has multiple ports mapped", func() {
 		BeforeEach(func() {
-			appGuid := app_helpers.GetAppGuid(app)
-			Expect(cf.Cf(
-				"curl",
-				fmt.Sprintf("/v2/apps/%s", appGuid),
-				"-X", "PUT", "-d", `{"ports": [7777,8888,8080]}`,
-			).Wait()).To(Exit(0))
-
 			// create 2nd route
 			spacename := TestSetup.RegularUserContext().Space
 			secondRoute = fmt.Sprintf("%s-two", app)
@@ -75,6 +69,12 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 		})
 
 		It("should listen on multiple ports", func() {
+			Eventually(func() string {
+				return helpers.CurlApp(Config, secondRoute, "/port")
+			}).Should(ContainSubstring("404 Not Found"))
+
+			Expect(cf.Cf("restart", app).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
 			Eventually(func() string {
 				return helpers.CurlApp(Config, secondRoute, "/port")
 			}).Should(ContainSubstring("7777"))
