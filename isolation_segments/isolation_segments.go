@@ -170,7 +170,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 				token := strings.TrimSpace(string(session.Out.Contents()))
 				authHeader := fmt.Sprintf("Authorization: %s", token)
 
-				url = fmt.Sprintf("https://iso-log-cache.%s/v1/meta", isoSegDomain)
+				url = fmt.Sprintf("https://iso-log-cache.%s/api/v1/meta", isoSegDomain)
 
 				Eventually(func() string {
 					curlSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), url, "-H", authHeader)
