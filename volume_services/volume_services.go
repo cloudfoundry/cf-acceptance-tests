@@ -42,7 +42,7 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 			"-f", filepath.Join(poraAsset, "manifest.yml"),
 			"-d", Config.GetAppsDomain(),
 			"--no-start",
-		).Wait()).To(Exit(0))
+		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		By("creating a service")
 		createServiceSession := cf.Cf("create-service", serviceName, Config.GetVolumeServicePlanName(), serviceInstanceName, "-c", Config.GetVolumeServiceCreateConfig())
