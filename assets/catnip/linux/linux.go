@@ -19,7 +19,9 @@ func ReleaseHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func MyIPHandler(res http.ResponseWriter, req *http.Request) {
-	cmd := exec.Command("bash", "-c", "ip route get 1 | awk '{print $NF;exit}'")
+	// example output from `ip`: `1.0.0.0 via 169.254.0.1 dev eth0 src 10.255.97.224 uid 2000`,
+	// in older rootfs the `uid 2000` is omitted
+	cmd := exec.Command("bash", "-c", `ip route get 1 | sed -n -e 's/^.*src \([^ ]\+\).*$/\1/p'`)
 	outBytes, _ := cmd.Output()
 
 	res.Write(outBytes)

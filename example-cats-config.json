@@ -1,10 +1,12 @@
 IN DEVELOPMENT
 {
-  "api": "api.bosh-lite.com",
-  "apps_domain": "bosh-lite.com",
+  "api": "api.DOMAIN.com",
+  "apps_domain": "DOMAIN.com",
   "admin_user": "admin",
-  "admin_password": "admin",
+  "admin_password": "PASSWORD",
+  "artifacts_directory": "logs",
   "skip_ssl_validation": true,
+  "timeout_scale": 1,
   "use_http": true,
   "use_log_cache": false,
   "include_apps": true,
@@ -13,18 +15,21 @@ IN DEVELOPMENT
   "include_capi_no_bridge": true,
   "include_container_networking": true,
   "credhub_mode" : "assisted",
+  "credhub_client": "credhub_admin_client",
   "include_detect": true,
-  "include_docker": false,
+  "include_docker": true,
   "include_internet_dependent": true,
+  "include_internetless": false,
   "include_isolation_segments": false,
   "include_private_docker_registry": false,
   "include_route_services": true,
   "include_routing": true,
+  "include_tcp_routing": true,
   "include_routing_isolation_segments": false,
   "include_security_groups": true,
   "include_service_discovery": false,
   "include_services": true,
-  "include_service_instance_sharing": false,
+  "include_service_instance_sharing": true,
   "include_ssh": true,
   "include_sso": true,
   "include_tasks": true,
@@ -33,5 +38,9 @@ IN DEVELOPMENT
   "include_assisted_credhub": true,
   "include_credhub": true,
   "include_tcp_routing": true,
-  "include_volume_services": false
+  "include_volume_services": false,
+  "stacks": [
+    "cflinuxfs2",
+    "cflinuxfs3"
+  ]
 }

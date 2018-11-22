@@ -109,6 +109,9 @@ var _ = SshDescribe("SSH", func() {
 			stdout, err := envCmd.StdoutPipe()
 			Expect(err).NotTo(HaveOccurred())
 
+			stderr, err := envCmd.StderrPipe()
+			Expect(err).NotTo(HaveOccurred())
+
 			err = envCmd.Start()
 			Expect(err).NotTo(HaveOccurred())
 
@@ -121,8 +124,11 @@ var _ = SshDescribe("SSH", func() {
 			output, err := ioutil.ReadAll(stdout)
 			Expect(err).NotTo(HaveOccurred())
 
-			err = envCmd.Wait()
+			errOutput, err := ioutil.ReadAll(stderr)
 			Expect(err).NotTo(HaveOccurred())
+
+			exitErr := envCmd.Wait()
+			Expect(exitErr).NotTo(HaveOccurred(), "Failed to run SSH command: %s, %s", output, errOutput)
 
 			Expect(string(output)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))

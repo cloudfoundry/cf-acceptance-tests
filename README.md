@@ -101,7 +101,7 @@ to run the core test suites
 against a [BOSH-Lite](https://github.com/cloudfoundry/bosh-lite)
 deployment of CF.
 
-See `example-cats-config.json` for reference.
+See [`example-cats-config.json`](example-cats-config.json) for reference.
 
 Only the following test groups are run by default:
 ```
@@ -135,6 +135,7 @@ include_capi_no_bridge
 * `include_detect`: Flag to include tests in the detect group.
 * `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
 * `include_internet_dependent`: Flag to include tests that require the deployment to have internet access.
+* `include_internetless`: Flag to include tests that require the deployment to not have internet access.
 * `include_isolation_segments`: Flag to include isolation segment tests.
 * `include_private_docker_registry`: Flag to run tests that rely on a private docker image. [See below](#private-docker).
 * `include_route_services`: Flag to include the route services tests. Diego must be deployed for these tests to pass.
@@ -189,6 +190,13 @@ include_capi_no_bridge
 * `windows_stack`: Windows stack to run tests against. Must be either `windows2012R2` or `windows2016`. Defaults to `windows2012R2`.
 
 * `include_service_discovery`: Flag to include test for the service discovery. These tests use `apps.internal` domain, which is the default in `cf-networking-release`. The internal domain is currently not configurable.
+* `stacks`: An array of stacks to test against. Currently only `cflinuxfs3` and `cflinuxfs2` stacks are supported. Default is `[cflinuxfs2]`.
+
+* `include_volume_services`: Flag to include the tests for volume services. Diego must be deployed for these tests to pass and volume service broker should be registered in platform.
+* `volume_service_name`: The name of the volume service provided by the volume service broker.
+* `volume_service_plan_name`: The name of the plan of the service provided by the volume service broker.
+* `volume_service_create_config`: The JSON configuration that is used when volume service is created.
+* `volume_service_bind_config`: The JSON configuration that is used when volume service is bound to the test application.
 
 * `include_volume_services`: Flag to include the tests for volume services. Diego must be deployed for these tests to pass and volume service broker should be registered in platform.
 * `volume_service_name`: The name of the volume service provided by the volume service broker.
@@ -290,13 +298,22 @@ To execute all test groups, run the following from the root directory of cf-acce
 ```
 
 ##### Parallel execution
-To execute all test groups, and have tests run in parallel across four processes one would run:
+It's possible execute all test groups, and have tests run in parallel across multiple processes.
+This parallelization can significantly decrease CATs runtime.
 
+_However_, be careful with this number, as it's effectively "how many apps to push at once", as nearly every example pushes an app.
+
+In order to run 12 processes in parallel run the following:
 ```bash
-./bin/test -nodes=4
+./bin/test -nodes=12
 ```
 
-Be careful with this number, as it's effectively "how many apps to push at once", as nearly every example pushes an app.
+For reference here's how many parallel processes the Release Integration team runs with:
+
+| Foundation Type | # of Parallel Processes |
+| ----------- | ----------- |
+| [Vanilla CF](https://github.com/cloudfoundry/cf-deployment/blob/master/cf-deployment.yml) | 12 |
+| [BOSH Lite](https://github.com/cloudfoundry/cf-deployment/blob/master/operations/bosh-lite.yml) | 4 |
 
 
 ##### Focusing Test Groups
@@ -338,6 +355,7 @@ Test Group Name| Description
 `detect` | Tests the ability of the platform to detect the correct buildpack for compiling an application if no buildpack is explicitly specified.
 `docker`| Tests our ability to run docker containers on Diego and that we handle docker metadata correctly.
 `internet_dependent`| Tests the feature of being able to specify a buildpack via a Github URL.  As such, this depends on your Cloud Foundry application containers having access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
+`internetless`| Tests that your Cloud Foundry application containers do not have access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
 `isolation_segments` | This test group requires that Diego be deployed with a minimum of 2 cells. One of those cells must have been deployed with a `placement_tag`. If the deployment has been deployed with a routing isolation segment, `isolation_segment_domain` must also be set. For more information, please refer to the [Isolation Segments documentation](https://docs.cloudfoundry.org/adminguide/isolation-segments.html).
 `route_services` | Tests the [Route Services](https://docs.cloudfoundry.org/services/route-services.html) feature of Cloud Foundry.
 `routing`| This package contains routing specific acceptance tests (context paths, wildcards, SSL termination, sticky sessions, and zipkin tracing).

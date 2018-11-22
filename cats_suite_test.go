@@ -19,6 +19,7 @@ import (
 	_ "github.com/cloudfoundry/cf-acceptance-tests/detect"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/docker"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/internet_dependent"
+	_ "github.com/cloudfoundry/cf-acceptance-tests/internetless"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/isolation_segments"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/route_services"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/routing"

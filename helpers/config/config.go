@@ -15,6 +15,7 @@ type CatsConfig interface {
 	GetIncludeDetect() bool
 	GetIncludeDocker() bool
 	GetIncludeInternetDependent() bool
+	GetIncludeInternetless() bool
 	GetIncludePrivateDockerRegistry() bool
 	GetIncludeRouteServices() bool
 	GetIncludeRouting() bool
@@ -68,6 +69,8 @@ type CatsConfig interface {
 	GetUnallocatedIPForSecurityGroup() string
 	GetRequireProxiedAppTraffic() bool
 	Protocol() string
+
+	GetStacks() []string
 
 	GetUseWindowsTestTask() bool
 	GetUseWindowsContextPath() bool

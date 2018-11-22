@@ -69,6 +69,8 @@ type testConfig struct {
 	IncludeTCPRouting *bool `json:"include_tcp_routing,omitempty"`
 
 	ReporterConfig *testReporterConfig `json:"reporter_config"`
+
+	Stacks *[]string `json:"stacks,omitempty"`
 }
 
 type allConfig struct {
@@ -126,6 +128,7 @@ type allConfig struct {
 	IncludeDetect                 *bool `json:"include_detect"`
 	IncludeDocker                 *bool `json:"include_docker"`
 	IncludeInternetDependent      *bool `json:"include_internet_dependent"`
+	IncludeInternetless           *bool `json:"include_internetless"`
 	IncludePrivateDockerRegistry  *bool `json:"include_private_docker_registry"`
 	IncludeRouteServices          *bool `json:"include_route_services"`
 	IncludeRouting                *bool `json:"include_routing"`
@@ -153,6 +156,8 @@ type allConfig struct {
 	PublicDockerAppImage          *string `json:"public_docker_app_image"`
 
 	NamePrefix *string `json:"name_prefix"`
+
+	Stacks *[]string `json:"stacks"`
 }
 
 type testReporterConfig struct {
@@ -245,6 +250,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeCapiNoBridge()).To(BeTrue())
 		Expect(config.GetIncludeDocker()).To(BeFalse())
 		Expect(config.GetIncludeInternetDependent()).To(BeFalse())
+		Expect(config.GetIncludeInternetless()).To(BeFalse())
 		Expect(config.GetIncludeRouteServices()).To(BeFalse())
 		Expect(config.GetIncludeContainerNetworking()).To(BeFalse())
 		Expect(config.GetIncludeSecurityGroups()).To(BeFalse())
@@ -307,6 +313,8 @@ var _ = Describe("Config", func() {
 		Expect(config.GetCredHubLocation()).To(Equal("https://credhub.service.cf.internal:8844"))
 
 		Expect(config.GetRequireProxiedAppTraffic()).To(BeFalse())
+
+		Expect(config.GetStacks()).To(ConsistOf("cflinuxfs2"))
 	})
 
 	Context("when all values are null", func() {
@@ -384,6 +392,8 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_password' must not be null"))
 
 			Expect(err.Error()).To(ContainSubstring("'name_prefix' must not be null"))
+
+			Expect(err.Error()).To(ContainSubstring("'stacks' must not be null"))
 		})
 	})
 
@@ -580,6 +590,18 @@ var _ = Describe("Config", func() {
 				Expect(config).To(BeNil())
 				Expect(err).To(MatchError("* Invalid configuration: 'isolation_segment_domain' must be provided if 'include_routing_isolation_segments' is true"))
 			})
+		})
+	})
+
+	Context("when providing stacks property", func() {
+		BeforeEach(func() {
+			testCfg.Stacks = &[]string{"my-custom-stack"}
+		})
+
+		It("returns error if a stack other than cflinuxfs2 or cflinuxfs3 is provided", func() {
+			_, err := cfg.NewCatsConfig(tmpFilePath)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError("* Invalid configuration: unknown stack 'my-custom-stack'. Only 'cflinuxfs2' and 'cflinuxfs3 are supported for the 'stacks' property"))
 		})
 	})
 

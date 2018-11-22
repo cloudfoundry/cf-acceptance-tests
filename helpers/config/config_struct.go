@@ -75,6 +75,7 @@ type config struct {
 	IncludeDetect                   *bool `json:"include_detect"`
 	IncludeDocker                   *bool `json:"include_docker"`
 	IncludeInternetDependent        *bool `json:"include_internet_dependent"`
+	IncludeInternetless             *bool `json:"include_internetless"`
 	IncludePrivateDockerRegistry    *bool `json:"include_private_docker_registry"`
 	IncludeRouteServices            *bool `json:"include_route_services"`
 	IncludeRouting                  *bool `json:"include_routing"`
@@ -98,6 +99,8 @@ type config struct {
 	CredhubLocation     *string `json:"credhub_location"`
 	CredhubClientName   *string `json:"credhub_client"`
 	CredhubClientSecret *string `json:"credhub_secret"`
+
+	Stacks *[]string `json:"stacks,omitempty"`
 
 	IncludeWindows        *bool   `json:"include_windows"`
 	UseWindowsTestTask    *bool   `json:"use_windows_test_task"`
@@ -170,6 +173,7 @@ func getDefaults() config {
 	defaults.CredhubClientSecret = ptrToString("")
 	defaults.IncludeDocker = ptrToBool(false)
 	defaults.IncludeInternetDependent = ptrToBool(false)
+	defaults.IncludeInternetless = ptrToBool(false)
 	defaults.IncludeIsolationSegments = ptrToBool(false)
 	defaults.IncludePrivateDockerRegistry = ptrToBool(false)
 	defaults.IncludeRouteServices = ptrToBool(false)
@@ -229,6 +233,8 @@ func getDefaults() config {
 	defaults.RequireProxiedAppTraffic = ptrToBool(false)
 
 	defaults.NamePrefix = ptrToString("CATS")
+
+	defaults.Stacks = &[]string{"cflinuxfs2"}
 	return defaults
 }
 
@@ -292,6 +298,11 @@ func validateConfig(config *config) Errors {
 	}
 
 	err = validateWindows(config)
+	if err != nil {
+		errs.Add(err)
+	}
+
+	err = validateStacks(config)
 	if err != nil {
 		errs.Add(err)
 	}
@@ -402,6 +413,9 @@ func validateConfig(config *config) Errors {
 	}
 	if config.IncludeInternetDependent == nil {
 		errs.Add(fmt.Errorf("* 'include_internet_dependent' must not be null"))
+	}
+	if config.IncludeInternetless == nil {
+		errs.Add(fmt.Errorf("* 'include_internetless' must not be null"))
 	}
 	if config.IncludePrivateDockerRegistry == nil {
 		errs.Add(fmt.Errorf("* 'include_private_docker_registry' must not be null"))
@@ -672,6 +686,20 @@ func validateWindows(config *config) error {
 	return nil
 }
 
+func validateStacks(config *config) error {
+	if config.Stacks == nil {
+		return fmt.Errorf("* 'stacks' must not be null")
+	}
+
+	for _, stack := range config.GetStacks() {
+		if stack != "cflinuxfs2" && stack != "cflinuxfs3" {
+			return fmt.Errorf("* Invalid configuration: unknown stack '%s'. Only 'cflinuxfs2' and 'cflinuxfs3 are supported for the 'stacks' property", stack)
+		}
+	}
+
+	return nil
+}
+
 func load(path string, config *config) Errors {
 	errs := Errors{}
 	err := loadConfigFromPath(path, config)
@@ -843,6 +871,10 @@ func (c *config) GetIncludeInternetDependent() bool {
 	return *c.IncludeInternetDependent
 }
 
+func (c *config) GetIncludeInternetless() bool {
+	return *c.IncludeInternetless
+}
+
 func (c *config) GetIncludeRouteServices() bool {
 	return *c.IncludeRouteServices
 }
@@ -989,6 +1021,10 @@ func (c *config) GetUnallocatedIPForSecurityGroup() string {
 
 func (c *config) GetRequireProxiedAppTraffic() bool {
 	return *c.RequireProxiedAppTraffic
+}
+
+func (c *config) GetStacks() []string {
+	return *c.Stacks
 }
 
 func (c *config) GetUseWindowsTestTask() bool {
