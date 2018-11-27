@@ -135,16 +135,6 @@ applications:
   services:
   - %s
   processes:
-  - disk_quota: 1024M
-    health-check-type: process
-    instances: 0
-    memory: 256M
-    type: console
-  - disk_quota: 1024M
-    health-check-type: process
-    instances: 0
-    memory: 256M
-    type: rake
   - command: new-command
     disk_quota: 1024M
     health-check-http-endpoint: /env
