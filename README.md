@@ -175,14 +175,14 @@ include_capi_no_bridge
 
 * `require_proxied_app_traffic`: Set this to `true` if Diego was configured to require proxied port mappings, i.e. if `containers.proxy.enable_unproxied_port_mappings` is set to `false`.  Note that this also requires using the [cf-syslog-skip-cert-verify](https://github.com/cloudfoundry/cf-deployment/blob/master/operations/cf-syslog-skip-cert-verify.yml).
 
-* `staticfile_buildpack_name` [See below](#buildpack-names).
-* `java_buildpack_name` [See below](#buildpack-names).
-* `ruby_buildpack_name` [See below](#buildpack-names).
-* `nodejs_buildpack_name` [See below](#buildpack-names).
-* `go_buildpack_name` [See below](#buildpack-names).
-* `python_buildpack_name` [See below](#buildpack-names).
-* `php_buildpack_name` [See below](#buildpack-names).
-* `binary_buildpack_name` [See below](#buildpack-names).
+* `staticfile_buildpack_name` [See below](#buildpack-names)
+* `java_buildpack_name` [See below](#buildpack-names)
+* `ruby_buildpack_name` [See below](#buildpack-names)
+* `nodejs_buildpack_name` [See below](#buildpack-names)
+* `go_buildpack_name` [See below](#buildpack-names)
+* `python_buildpack_name` [See below](#buildpack-names)
+* `php_buildpack_name` [See below](#buildpack-names)
+* `binary_buildpack_name` [See below](#buildpack-names)
 
 * `include_windows`: Flag to include the tests that run against Windows cells.
 * `use_windows_test_task`: Flag to include the tasks tests on Windows cells. Default is `false`.
