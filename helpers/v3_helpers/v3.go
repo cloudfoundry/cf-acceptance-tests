@@ -87,6 +87,10 @@ func GetRunningInstancesStats(processGuid string) int {
 }
 
 func GetProcessGuidForType(appGuid string, processType string) string {
+	return GetProcessGuidsForType(appGuid, processType)[0]
+}
+
+func GetProcessGuidsForType(appGuid string, processType string) []string {
 	processesPath := fmt.Sprintf("/v3/apps/%s/processes?types=%s", appGuid, processType)
 	session := cf.Cf("curl", processesPath).Wait()
 	processesJSON := struct {
@@ -96,10 +100,14 @@ func GetProcessGuidForType(appGuid string, processType string) string {
 	}{}
 	bytes := session.Wait().Out.Contents()
 	err := json.Unmarshal(bytes, &processesJSON)
+	var guids []string
 	if err != nil || len(processesJSON.Resources) == 0 {
-		return ""
+		return guids
 	}
-	return processesJSON.Resources[0].Guid
+	for _, r := range processesJSON.Resources {
+		guids = append(guids, r.Guid)
+	}
+	return guids
 }
 
 func AssignDropletToApp(appGuid, dropletGuid string) {

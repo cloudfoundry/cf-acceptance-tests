@@ -92,33 +92,38 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 			}).Should(ContainSubstring("Hi, I'm Dora"))
 
 			_, originalWorkerStartEvent := GetLastAppUseEventForProcess("worker", "STARTED", "")
+			originalProcessGuid := GetProcessGuidsForType(appGuid, "web")[0]
 
 			deploymentGuid := CreateDeployment(appGuid)
 			Expect(deploymentGuid).ToNot(BeEmpty())
-			webishProcessType := fmt.Sprintf("web-deployment-%s", deploymentGuid)
+
+			Eventually(func() int { return len(GetProcessGuidsForType(appGuid, "web")) }).
+				Should(BeNumerically(">", 1))
+
+			intermediateProcessGuid := GetProcessGuidsForType(appGuid, "web")[1]
 
 			secondDeploymentGuid := CreateDeployment(appGuid)
 			Expect(secondDeploymentGuid).ToNot(BeEmpty())
-			secondWebishProcessType := fmt.Sprintf("web-deployment-%s", secondDeploymentGuid)
+
+			Eventually(func() int { return GetRunningInstancesStats(originalProcessGuid) }).
+				Should(BeNumerically("<", instances))
+
+			Eventually(func() []string {
+				return GetProcessGuidsForType(appGuid, "web")
+			}). // there should eventually be a different final process guid from the first 2
+				Should(ContainElement(Not(SatisfyAny(
+					Equal(originalProcessGuid),
+					Equal(intermediateProcessGuid)))))
+
+			guids := GetProcessGuidsForType(appGuid, "web")
+			finalProcessGuid := guids[len(guids)-1]
+
+			Eventually(func() []string {
+				return GetProcessGuidsForType(appGuid, "web")
+			}).Should(ConsistOf(finalProcessGuid))
 
 			Eventually(func() int {
-				guid := GetProcessGuidForType(appGuid, "web")
-				Expect(guid).ToNot(BeEmpty())
-				return GetRunningInstancesStats(guid)
-			}).Should(BeNumerically("<", instances))
-
-			Eventually(func() string {
-				return GetProcessGuidForType(appGuid, webishProcessType)
-			}).Should(BeEmpty())
-
-			Eventually(func() string {
-				return GetProcessGuidForType(appGuid, secondWebishProcessType)
-			}).Should(BeEmpty())
-
-			Eventually(func() int {
-				guid := GetProcessGuidForType(appGuid, "web")
-				Expect(guid).ToNot(BeEmpty())
-				return GetRunningInstancesStats(guid)
+				return GetRunningInstancesStats(finalProcessGuid)
 			}).Should(Equal(instances))
 
 			counter := 0
@@ -141,29 +146,32 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 	Describe("cancelling deployments", func() {
 		It("rolls back to the previous droplet", func() {
 			By("creating a deployment with the second droplet")
+			originalProcessGuid := GetProcessGuidsForType(appGuid, "web")[0]
+
 			deploymentGuid := CreateDeploymentForDroplet(appGuid, dropletGuid)
 			Expect(deploymentGuid).ToNot(BeEmpty())
-			webishProcessType := fmt.Sprintf("web-deployment-%s", deploymentGuid)
 
-			By("waiting until there is a webish process before canceling")
-			Eventually(func() int {
-				guid := GetProcessGuidForType(appGuid, webishProcessType)
-				Expect(guid).ToNot(BeEmpty())
-				return GetRunningInstancesStats(guid)
-			}).Should(BeNumerically(">", 0))
+			By("waiting until there is a second web process  with instances before canceling")
+			Eventually(func() int { return len(GetProcessGuidsForType(appGuid, "web")) }).
+				Should(BeNumerically(">", 1))
+
+			intermediateProcessGuid := GetProcessGuidsForType(appGuid, "web")[1]
+
+			Eventually(func() int { return GetRunningInstancesStats(intermediateProcessGuid) }).
+				Should(BeNumerically(">", 0))
+
+			Eventually(func() int { return GetRunningInstancesStats(originalProcessGuid) }).
+				Should(BeNumerically("<", instances))
 
 			By("canceling the deployment")
 			CancelDeployment(deploymentGuid)
 
-			By("waiting until there are no webish processes")
-			Eventually(func() string {
-				return GetProcessGuidForType(appGuid, webishProcessType)
-			}).Should(BeEmpty())
+			By("waiting until there is no second web process")
+			Eventually(func() int { return len(GetProcessGuidsForType(appGuid, "web")) }).
+				Should(Equal(1))
 
 			Eventually(func() int {
-				guid := GetProcessGuidForType(appGuid, "web")
-				Expect(guid).ToNot(BeEmpty())
-				return GetRunningInstancesStats(guid)
+				return GetRunningInstancesStats(originalProcessGuid)
 			}).Should(Equal(instances))
 
 			counter := 0
