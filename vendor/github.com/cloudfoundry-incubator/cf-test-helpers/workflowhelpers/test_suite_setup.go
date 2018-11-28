@@ -14,21 +14,15 @@ type remoteResource interface {
 }
 
 type testSuiteConfig interface {
+	internal.AdminUserConfig
+	internal.SpaceAndOrgConfig
+	internal.UserConfig
+
 	GetApiEndpoint() string
-	GetConfigurableTestPassword() string
-	GetScaledTimeout(time.Duration) time.Duration
-	GetAdminPassword() string
-	GetExistingUser() string
-	GetExistingUserPassword() string
-	GetShouldKeepUser() bool
-	GetUseExistingUser() bool
-	GetAdminUser() string
-	GetUseExistingOrganization() bool
-	GetUseExistingSpace() bool
-	GetExistingOrganization() string
-	GetExistingSpace() string
 	GetSkipSSLValidation() bool
+
 	GetNamePrefix() string
+	GetScaledTimeout(time.Duration) time.Duration
 }
 
 type ReproducibleTestSuiteSetup struct {
@@ -55,13 +49,9 @@ type ReproducibleTestSuiteSetup struct {
 const RUNAWAY_QUOTA_MEM_LIMIT = "99999G"
 
 func NewTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSuiteSetup {
-	var testSpace *internal.TestSpace
-	var testUser *internal.TestUser
-	var adminUser *internal.TestUser
-
-	testSpace = internal.NewRegularTestSpace(config, "10G")
-	testUser = internal.NewTestUser(config, commandstarter.NewCommandStarter())
-	adminUser = internal.NewAdminUser(config, commandstarter.NewCommandStarter())
+	testSpace := internal.NewRegularTestSpace(config, "10G")
+	testUser := internal.NewTestUser(config, commandstarter.NewCommandStarter())
+	adminUser := internal.NewAdminUser(config, commandstarter.NewCommandStarter())
 
 	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
 	regularUserContext := NewUserContext(config.GetApiEndpoint(), testUser, testSpace, config.GetSkipSSLValidation(), shortTimeout)
@@ -72,13 +62,9 @@ func NewTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSuiteSetup {
 }
 
 func NewSmokeTestSuiteSetup(config testSuiteConfig) *ReproducibleTestSuiteSetup {
-	var testSpace *internal.TestSpace
-	var testUser *internal.TestUser
-	var adminUser *internal.TestUser
-
-	testSpace = internal.NewRegularTestSpace(config, "10G")
-	testUser = internal.NewTestUser(config, commandstarter.NewCommandStarter())
-	adminUser = internal.NewAdminUser(config, commandstarter.NewCommandStarter())
+	testSpace := internal.NewRegularTestSpace(config, "10G")
+	testUser := internal.NewTestUser(config, commandstarter.NewCommandStarter())
+	adminUser := internal.NewAdminUser(config, commandstarter.NewCommandStarter())
 
 	shortTimeout := config.GetScaledTimeout(1 * time.Minute)
 	regularUserContext := NewUserContext(config.GetApiEndpoint(), testUser, testSpace, config.GetSkipSSLValidation(), shortTimeout)

@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/internal"
 	"github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/generator"
 )
 
 type TestUser struct {
@@ -22,17 +22,22 @@ type TestUser struct {
 	shouldKeepUser bool
 }
 
-type userConfig interface {
+type UserConfig interface {
 	GetUseExistingUser() bool
 	GetExistingUser() string
 	GetExistingUserPassword() string
 	GetConfigurableTestPassword() string
-	GetScaledTimeout(time.Duration) time.Duration
 	GetShouldKeepUser() bool
+}
+
+type userConfig interface {
+	UserConfig
+
+	GetScaledTimeout(time.Duration) time.Duration
 	GetNamePrefix() string
 }
 
-type adminuserConfig interface {
+type AdminUserConfig interface {
 	GetAdminUser() string
 	GetAdminPassword() string
 }
@@ -61,7 +66,7 @@ func NewTestUser(config userConfig, cmdStarter internal.Starter) *TestUser {
 	}
 }
 
-func NewAdminUser(config adminuserConfig, cmdStarter internal.Starter) *TestUser {
+func NewAdminUser(config AdminUserConfig, cmdStarter internal.Starter) *TestUser {
 	return &TestUser{
 		username:   config.GetAdminUser(),
 		password:   config.GetAdminPassword(),

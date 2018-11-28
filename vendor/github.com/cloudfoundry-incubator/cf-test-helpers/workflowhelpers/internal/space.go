@@ -28,13 +28,17 @@ type TestSpace struct {
 	Timeout                              time.Duration
 }
 
-type spaceConfig interface {
-	GetScaledTimeout(time.Duration) time.Duration
-	GetNamePrefix() string
+type SpaceAndOrgConfig interface {
 	GetUseExistingOrganization() bool
 	GetUseExistingSpace() bool
 	GetExistingOrganization() string
 	GetExistingSpace() string
+}
+
+type spaceConfig interface {
+	SpaceAndOrgConfig
+	GetScaledTimeout(time.Duration) time.Duration
+	GetNamePrefix() string
 }
 
 type Space interface {
