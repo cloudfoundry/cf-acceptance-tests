@@ -2,6 +2,7 @@ package isolation_segments
 
 import (
 	"fmt"
+	"strings"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/ginkgo"
@@ -131,6 +132,51 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 				curlSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), host, "-H", hostHeader)
 				Eventually(curlSession).Should(Exit(0))
 				Expect(curlSession.Out).To(Say(binaryHi))
+			})
+		})
+	})
+
+	Context("When the user-provided Isolation Segment has a logging system", func() {
+		BeforeEach(func() {
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
+				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
+				v3_helpers.SetDefaultIsolationSegment(orgGuid, isoSegGuid)
+			})
+		})
+
+		It("forwards logs to the isolated logging system", func() {
+			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
+				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
+				Expect(target).To(Exit(0), "failed targeting")
+
+				appName := random_name.CATSRandomName("APP")
+				Eventually(cf.Cf(
+					"push", appName,
+					"-p", assets.NewAssets().Dora,
+					"-m", DEFAULT_MEMORY_LIMIT,
+					"-d", isoSegDomain),
+					Config.CfPushTimeoutDuration()).Should(Exit(0))
+
+				url := fmt.Sprintf("https://%s.%s/logspew/10", appName, isoSegDomain)
+				curlSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), url)
+				Eventually(curlSession).Should(Exit(0))
+
+				session := cf.Cf("app", appName, "--guid")
+				Eventually(session, Config.CfPushTimeoutDuration()).Should(Exit(0))
+				isoGuid := strings.TrimSpace(string(session.Out.Contents()))
+
+				session = cf.Cf("oauth-token")
+				Eventually(session, Config.CfPushTimeoutDuration()).Should(Exit(0))
+				token := strings.TrimSpace(string(session.Out.Contents()))
+				authHeader := fmt.Sprintf("Authorization: %s", token)
+
+				url = fmt.Sprintf("https://iso-log-cache.%s/api/v1/meta", isoSegDomain)
+
+				Eventually(func() string {
+					curlSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), url, "-H", authHeader)
+					Eventually(curlSession).Should(Exit(0))
+					return strings.TrimSpace(string(curlSession.Out.Contents()))
+				}, Config.LongCurlTimeoutDuration()).Should(ContainSubstring(isoGuid))
 			})
 		})
 	})
