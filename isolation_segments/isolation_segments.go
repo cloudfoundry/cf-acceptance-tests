@@ -15,6 +15,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 )
 
@@ -138,6 +139,9 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 
 	Context("When the user-provided Isolation Segment has a logging system", func() {
 		BeforeEach(func() {
+			if Config.GetIncludeRoutingIsolationSegments() {
+				Skip(skip_messages.SkipLoggingIsolationSegmentsMessage)
+			}
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
 				v3_helpers.SetDefaultIsolationSegment(orgGuid, isoSegGuid)
