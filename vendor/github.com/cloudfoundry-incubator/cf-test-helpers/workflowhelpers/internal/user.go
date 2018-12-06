@@ -26,8 +26,8 @@ type UserConfig interface {
 	GetUseExistingUser() bool
 	GetExistingUser() string
 	GetExistingUserPassword() string
-	GetConfigurableTestPassword() string
 	GetShouldKeepUser() bool
+	GetConfigurableTestPassword() string
 }
 
 type userConfig interface {
@@ -40,6 +40,16 @@ type userConfig interface {
 type AdminUserConfig interface {
 	GetAdminUser() string
 	GetAdminPassword() string
+}
+
+type ClientConfig interface {
+	GetExistingClient() string
+	GetExistingClientSecret() string
+}
+
+type AdminClientConfig interface {
+	GetAdminClient() string
+	GetAdminClientSecret() string
 }
 
 func NewTestUser(config userConfig, cmdStarter internal.Starter) *TestUser {
@@ -70,6 +80,22 @@ func NewAdminUser(config AdminUserConfig, cmdStarter internal.Starter) *TestUser
 	return &TestUser{
 		username:   config.GetAdminUser(),
 		password:   config.GetAdminPassword(),
+		cmdStarter: cmdStarter,
+	}
+}
+
+func NewAdminClient(config AdminClientConfig, cmdStarter internal.Starter) *TestUser {
+	return &TestUser{
+		username:   config.GetAdminClient(),
+		password:   config.GetAdminClientSecret(),
+		cmdStarter: cmdStarter,
+	}
+}
+
+func NewTestClient(config ClientConfig, cmdStarter internal.Starter) *TestUser {
+	return &TestUser{
+		username:   config.GetExistingClient(),
+		password:   config.GetExistingClientSecret(),
 		cmdStarter: cmdStarter,
 	}
 }

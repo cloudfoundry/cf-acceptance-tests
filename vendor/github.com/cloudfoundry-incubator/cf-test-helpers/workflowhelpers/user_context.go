@@ -41,6 +41,8 @@ type UserContext struct {
 	Password string
 	Org      string
 	Space    string
+
+	UseClientCredentials bool
 }
 
 func cliErrorMessage(session *Session) string {
@@ -95,7 +97,13 @@ func (uc UserContext) Login() {
 	redactor := internal.NewRedactor(uc.TestUser.Password())
 	redactingReporter := internal.NewRedactingReporter(ginkgo.GinkgoWriter, redactor)
 
-	err := workflowhelpersinternal.CfAuth(uc.CommandStarter, redactingReporter, uc.TestUser.Username(), uc.TestUser.Password(), uc.Timeout)
+	var err error
+	if uc.UseClientCredentials {
+		err = workflowhelpersinternal.CfClientAuth(uc.CommandStarter, redactingReporter, uc.TestUser.Username(), uc.TestUser.Password(), uc.Timeout)
+	} else {
+		err = workflowhelpersinternal.CfAuth(uc.CommandStarter, redactingReporter, uc.TestUser.Username(), uc.TestUser.Password(), uc.Timeout)
+	}
+
 	Expect(err).NotTo(HaveOccurred())
 }
 

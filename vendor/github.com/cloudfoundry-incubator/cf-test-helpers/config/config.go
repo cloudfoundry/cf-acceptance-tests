@@ -16,10 +16,16 @@ type Config struct {
 	AdminUser     string `json:"admin_user"`
 	AdminPassword string `json:"admin_password"`
 
+	AdminClient       string `json:"admin_client"`
+	AdminClientSecret string `json:"admin_client_secret"`
+
 	UseExistingUser      bool   `json:"use_existing_user"`
 	ShouldKeepUser       bool   `json:"keep_user_at_suite_end"`
 	ExistingUser         string `json:"existing_user"`
 	ExistingUserPassword string `json:"existing_user_password"`
+
+	ExistingClient       string `json:"existing_client"`
+	ExistingClientSecret string `json:"existing_client_secret"`
 
 	ConfigurableTestPassword string `json:"test_password"`
 
@@ -276,4 +282,20 @@ func (c *Config) GetExistingSpace() string {
 
 func (c *Config) GetApiEndpoint() string {
 	return c.ApiEndpoint
+}
+
+func (c *Config) GetAdminClient() string {
+	return c.AdminClient
+}
+
+func (c *Config) GetAdminClientSecret() string {
+	return c.AdminClientSecret
+}
+
+func (c *Config) GetExistingClient() string {
+	return c.ExistingClient
+}
+
+func (c *Config) GetExistingClientSecret() string {
+	return c.ExistingClientSecret
 }
