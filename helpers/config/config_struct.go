@@ -1055,6 +1055,22 @@ func (c *config) GetVolumeServiceBindConfig() string {
 	return *c.VolumeServiceBindConfig
 }
 
+func (c *config) GetAdminClient() string {
+	return ""
+}
+
+func (c *config) GetAdminClientSecret() string {
+	return ""
+}
+
+func (c *config) GetExistingClient() string {
+	return ""
+}
+
+func (c *config) GetExistingClientSecret() string {
+	return ""
+}
+
 func (c *config) GetReporterConfig() reporterConfig {
 	reporterConfigFromConfig := c.ReporterConfig
 

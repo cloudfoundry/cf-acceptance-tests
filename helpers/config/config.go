@@ -40,6 +40,8 @@ type CatsConfig interface {
 
 	GetAdminPassword() string
 	GetAdminUser() string
+	GetAdminClient() string
+	GetAdminClientSecret() string
 	GetApiEndpoint() string
 	GetAppsDomain() string
 	GetArtifactsDirectory() string
@@ -55,6 +57,8 @@ type CatsConfig interface {
 	GetUseExistingSpace() bool
 	GetExistingUser() string
 	GetExistingUserPassword() string
+	GetExistingClient() string
+	GetExistingClientSecret() string
 	GetGoBuildpackName() string
 	GetHwcBuildpackName() string
 	GetIsolationSegmentName() string
