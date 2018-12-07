@@ -137,11 +137,11 @@ include_capi_no_bridge
 * `include_internet_dependent`: Flag to include tests that require the deployment to have internet access.
 * `include_internetless`: Flag to include tests that require the deployment to not have internet access.
 * `include_isolation_segments`: Flag to include isolation segment tests.
-* `include_logging_isolation_segments`: Flag to include logging isolation segments.
+* `include_logging_isolation_segments`: Flag to include logging isolation segments tests. Cannot be run together with routing isolation segments tests.
 * `include_private_docker_registry`: Flag to run tests that rely on a private docker image. [See below](#private-docker).
 * `include_route_services`: Flag to include the route services tests. Diego must be deployed for these tests to pass.
 * `include_routing`: Flag to include the routing tests.
-* `include_routing_isolation_segments`: Flag to include routing isolation segments. [See below](#routing-isolation-segments)
+* `include_routing_isolation_segments`: Flag to include routing isolation segments tests. [See below](#routing-isolation-segments). Cannot be run together with logging isolation segments tests.
 * `include_security_groups`: Flag to include tests for security groups. [See below](#container-networking-and-application-security-groups)
 * `include_services`: Flag to include test for the services API.
 * `include_service_instance_sharing`: Flag to include tests for service instance sharing between spaces. `include_services` must be set for these tests to run. The `service_instance_sharing` feature flag must also be enabled for these tests to pass.
