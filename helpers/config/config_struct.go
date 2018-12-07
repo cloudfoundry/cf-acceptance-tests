@@ -91,6 +91,7 @@ type config struct {
 	IncludeZipkin                   *bool `json:"include_zipkin"`
 	IncludeIsolationSegments        *bool `json:"include_isolation_segments"`
 	IncludeRoutingIsolationSegments *bool `json:"include_routing_isolation_segments"`
+	IncludeLoggingIsolationSegments *bool `json:"include_logging_isolation_segments"`
 	IncludeVolumeServices           *bool `json:"include_volume_services"`
 
 	UseLogCache *bool `json:"use_log_cache"`
@@ -175,9 +176,10 @@ func getDefaults() config {
 	defaults.IncludeInternetDependent = ptrToBool(false)
 	defaults.IncludeInternetless = ptrToBool(false)
 	defaults.IncludeIsolationSegments = ptrToBool(false)
+	defaults.IncludeRoutingIsolationSegments = ptrToBool(false)
+	defaults.IncludeLoggingIsolationSegments = ptrToBool(false)
 	defaults.IncludePrivateDockerRegistry = ptrToBool(false)
 	defaults.IncludeRouteServices = ptrToBool(false)
-	defaults.IncludeRoutingIsolationSegments = ptrToBool(false)
 	defaults.IncludeSSO = ptrToBool(false)
 	defaults.IncludeSecurityGroups = ptrToBool(false)
 	defaults.IncludeServiceDiscovery = ptrToBool(false)
@@ -288,6 +290,11 @@ func validateConfig(config *config) Errors {
 	}
 
 	err = validateRoutingIsolationSegments(config)
+	if err != nil {
+		errs.Add(err)
+	}
+
+	err = validateLoggingIsolationSegments(config)
 	if err != nil {
 		errs.Add(err)
 	}
@@ -633,6 +640,26 @@ func validateRoutingIsolationSegments(config *config) error {
 	return nil
 }
 
+func validateLoggingIsolationSegments(config *config) error {
+	if config.IncludeRoutingIsolationSegments == nil {
+		return fmt.Errorf("* 'include_logging_isolation_segments' must not be null")
+	}
+
+	if !config.GetIncludeLoggingIsolationSegments() {
+		return nil
+	}
+
+	if config.GetIncludeRoutingIsolationSegments() {
+		return fmt.Errorf("* Invalid configuration: 'include_routing_isolation_segments' and 'include_logging_isolation_segments' cannot be both set to true. These tests are currently not compatible and can't be run together.")
+	}
+
+	if config.GetIsolationSegmentName() == "" {
+		return fmt.Errorf("* Invalid configuration: 'isolation_segment_name' must be provided if 'include_logging_isolation_segments' is true")
+	}
+
+	return nil
+}
+
 func validateCredHubSettings(config *config) error {
 	if config.CredhubMode == nil {
 		return fmt.Errorf("* 'credhub_mode' must not be null")
@@ -921,6 +948,10 @@ func (c *config) GetIncludeIsolationSegments() bool {
 
 func (c *config) GetIncludeRoutingIsolationSegments() bool {
 	return *c.IncludeRoutingIsolationSegments
+}
+
+func (c *config) GetIncludeLoggingIsolationSegments() bool {
+	return *c.IncludeLoggingIsolationSegments
 }
 
 func (c *config) GetIncludeCapiExperimental() bool {

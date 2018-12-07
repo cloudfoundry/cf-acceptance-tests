@@ -53,6 +53,7 @@ type testConfig struct {
 
 	IncludeIsolationSegments        *bool   `json:"include_isolation_segments,omitempty"`
 	IncludeRoutingIsolationSegments *bool   `json:"include_routing_isolation_segments,omitempty"`
+	IncludeLoggingIsolationSegments *bool   `json:"include_logging_isolation_segments,omitempty"`
 	IsolationSegmentName            *string `json:"isolation_segment_name,omitempty"`
 	IsolationSegmentDomain          *string `json:"isolation_segment_domain,omitempty"`
 
@@ -120,30 +121,32 @@ type allConfig struct {
 
 	ReporterConfig *testReporterConfig `json:"reporter_config"`
 
-	IncludeApps                   *bool `json:"include_apps"`
-	IncludeBackendCompatiblity    *bool `json:"include_backend_compatibility"`
-	IncludeCapiExperimental       *bool `json:"include_capi_experimental"`
-	IncludeCapiNoBridge           *bool `json:"include_capi_no_bridge"`
-	IncludeContainerNetworking    *bool `json:"include_container_networking"`
-	IncludeDetect                 *bool `json:"include_detect"`
-	IncludeDocker                 *bool `json:"include_docker"`
-	IncludeInternetDependent      *bool `json:"include_internet_dependent"`
-	IncludeInternetless           *bool `json:"include_internetless"`
-	IncludePrivateDockerRegistry  *bool `json:"include_private_docker_registry"`
-	IncludeRouteServices          *bool `json:"include_route_services"`
-	IncludeRouting                *bool `json:"include_routing"`
-	IncludeSSO                    *bool `json:"include_sso"`
-	IncludeSecurityGroups         *bool `json:"include_security_groups"`
-	IncludeServices               *bool `json:"include_services"`
-	IncludeServiceInstanceSharing *bool `json:"include_service_instance_sharing"`
-	IncludeSsh                    *bool `json:"include_ssh"`
-	IncludeTasks                  *bool `json:"include_tasks"`
-	IncludeV3                     *bool `json:"include_v3"`
-	IncludeWindows                *bool `json:"include_windows"`
-	IncludeZipkin                 *bool `json:"include_zipkin"`
-	IncludeIsolationSegments      *bool `json:"include_isolation_segments"`
-	IncludeTCPRouting             *bool `json:"include_tcp_routing"`
-	IncludeServiceDiscovery       *bool `json:"include_service_discovery"`
+	IncludeApps                     *bool `json:"include_apps"`
+	IncludeBackendCompatiblity      *bool `json:"include_backend_compatibility"`
+	IncludeCapiExperimental         *bool `json:"include_capi_experimental"`
+	IncludeCapiNoBridge             *bool `json:"include_capi_no_bridge"`
+	IncludeContainerNetworking      *bool `json:"include_container_networking"`
+	IncludeDetect                   *bool `json:"include_detect"`
+	IncludeDocker                   *bool `json:"include_docker"`
+	IncludeInternetDependent        *bool `json:"include_internet_dependent"`
+	IncludeInternetless             *bool `json:"include_internetless"`
+	IncludePrivateDockerRegistry    *bool `json:"include_private_docker_registry"`
+	IncludeRouteServices            *bool `json:"include_route_services"`
+	IncludeRouting                  *bool `json:"include_routing"`
+	IncludeSSO                      *bool `json:"include_sso"`
+	IncludeSecurityGroups           *bool `json:"include_security_groups"`
+	IncludeServices                 *bool `json:"include_services"`
+	IncludeServiceInstanceSharing   *bool `json:"include_service_instance_sharing"`
+	IncludeSsh                      *bool `json:"include_ssh"`
+	IncludeTasks                    *bool `json:"include_tasks"`
+	IncludeV3                       *bool `json:"include_v3"`
+	IncludeWindows                  *bool `json:"include_windows"`
+	IncludeZipkin                   *bool `json:"include_zipkin"`
+	IncludeIsolationSegments        *bool `json:"include_isolation_segments"`
+	IncludeRoutingIsolationSegments *bool `json:"include_routing_isolation_segments"`
+	IncludeLoggingIsolationSegments *bool `json:"include_logging_isolation_segments"`
+	IncludeTCPRouting               *bool `json:"include_tcp_routing"`
+	IncludeServiceDiscovery         *bool `json:"include_service_discovery"`
 
 	CredhubMode         *string `json:"credhub_mode"`
 	CredhubLocation     *string `json:"credhub_location"`
@@ -257,6 +260,8 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeServices()).To(BeFalse())
 		Expect(config.GetIncludeSsh()).To(BeFalse())
 		Expect(config.GetIncludeIsolationSegments()).To(BeFalse())
+		Expect(config.GetIncludeRoutingIsolationSegments()).To(BeFalse())
+		Expect(config.GetIncludeLoggingIsolationSegments()).To(BeFalse())
 		Expect(config.GetIncludePrivateDockerRegistry()).To(BeFalse())
 		Expect(config.GetIncludeZipkin()).To(BeFalse())
 		Expect(config.GetIncludeSSO()).To(BeFalse())
@@ -385,6 +390,8 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_v3' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_zipkin' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_isolation_segments' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_routing_isolation_segments' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_logging_isolation_segments' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_windows' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_service_discovery' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_image' must not be null"))
@@ -506,7 +513,7 @@ var _ = Describe("Config", func() {
 			testCfg.IsolationSegmentName = ptrToString("value")
 		})
 
-		Context("when image is an empty string", func() {
+		Context("when name is an empty string", func() {
 			BeforeEach(func() {
 				testCfg.IsolationSegmentName = ptrToString("")
 			})
@@ -515,6 +522,36 @@ var _ = Describe("Config", func() {
 				config, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(config).To(BeNil())
 				Expect(err).To(MatchError("* Invalid configuration: 'isolation_segment_name' must be provided if 'include_isolation_segments' is true"))
+			})
+		})
+	})
+
+	Context("when including logging isolation tests", func() {
+		Context("when including routing isolation segments", func() {
+			BeforeEach(func() {
+				testCfg.IncludeRoutingIsolationSegments = ptrToBool(true)
+				testCfg.IsolationSegmentName = ptrToString("foo")
+				testCfg.IsolationSegmentDomain = ptrToString("bar.baz")
+				testCfg.IncludeLoggingIsolationSegments = ptrToBool(true)
+			})
+
+			It("returns error", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(config).To(BeNil())
+				Expect(err).To(MatchError("* Invalid configuration: 'include_routing_isolation_segments' and 'include_logging_isolation_segments' cannot be both set to true. These tests are currently not compatible and can't be run together."))
+			})
+		})
+
+		Context("when isolation segment name is not provided", func() {
+			BeforeEach(func() {
+				testCfg.IsolationSegmentName = ptrToString("")
+				testCfg.IncludeLoggingIsolationSegments = ptrToBool(true)
+			})
+
+			It("returns error", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(config).To(BeNil())
+				Expect(err).To(MatchError("* Invalid configuration: 'isolation_segment_name' must be provided if 'include_logging_isolation_segments' is true"))
 			})
 		})
 	})
