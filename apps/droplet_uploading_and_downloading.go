@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path"
 	"strings"
+	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
@@ -64,7 +65,7 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 		Expect(cf.Cf("delete", helloWorldAppName, "-f", "-r").Wait()).To(Exit(0))
 	})
 
-	It("Users can manage droplet bits for an app", func() {
+	FIt("Users can manage droplet bits for an app", func() {
 		guid := appGuid(helloWorldAppName)
 		tmpdir := makeTempDir()
 		defer os.RemoveAll(tmpdir)
@@ -90,6 +91,6 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, helloWorldAppName)
-		}).Should(ContainSubstring("Hello, world!"))
+		}, 66 * time.Second).Should(ContainSubstring("Hello, world!"))
 	})
 })

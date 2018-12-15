@@ -53,7 +53,7 @@ var _ = V3Describe("droplet features", func() {
 			destinationAppGuid = CreateApp(destinationAppName, spaceGuid, "{}")
 		})
 
-		It("can copy a droplet", func() {
+		FIt("can copy a droplet", func() {
 			copyRequestBody := fmt.Sprintf("{\"relationships\": {\"app\": {\"data\": {\"guid\":\"%s\"}}}}", destinationAppGuid)
 			copyUrl := fmt.Sprintf("/v3/droplets?source_guid=%s", sourceDropletGuid)
 			session := cf.Cf("curl", copyUrl, "-X", "POST", "-d", copyRequestBody)

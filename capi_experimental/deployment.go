@@ -144,7 +144,7 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 	})
 
 	Describe("cancelling deployments", func() {
-		It("rolls back to the previous droplet", func() {
+		FIt("rolls back to the previous droplet", func() {
 			By("creating a deployment with the second droplet")
 			originalProcessGuid := GetProcessGuidsForType(appGuid, "web")[0]
 
@@ -182,7 +182,7 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 					counter = 0
 				}
 				return counter
-			}).Should(Equal(10))
+			}, 66 * time.Second).Should(Equal(10))
 		})
 	})
 })
