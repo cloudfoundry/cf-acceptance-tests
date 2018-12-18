@@ -192,7 +192,7 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 		spaceGuid = GetSpaceGuidFromName(TestSetup.RegularUserContext().Space)
 		appCreationEnvironmentVariables = `"foo":"bar"`
 		appGuid = CreateDockerApp(appName, spaceGuid, `{"foo":"bar"}`)
-		packageGuid = CreateDockerPackage(appGuid, "cloudfoundry/diego-docker-app:latest")
+		packageGuid = CreateDockerPackage(appGuid, Config.GetPublicDockerAppImage())
 		token = GetAuthToken()
 
 		appUrl := "https://" + appName + "." + Config.GetAppsDomain()
