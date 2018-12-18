@@ -489,11 +489,13 @@ func WaitForDropletToCopy(dropletGuid string) {
 
 func WaitForPackageToBeReady(packageGuid string) {
 	pkgUrl := fmt.Sprintf("/v3/packages/%s", packageGuid)
+	var session *Session
 	Eventually(func() *Session {
-		session := cf.Cf("curl", pkgUrl)
+		session = cf.Cf("curl", pkgUrl)
 		Expect(session.Wait()).To(Exit(0))
 		return session
-	}, Config.LongCurlTimeoutDuration()).Should(Say("READY"))
+	}, Config.LongCurlTimeoutDuration()).Should(Say("READY|FAILED"))
+	Expect(string(session.Out.Contents())).To(ContainSubstring("READY"))
 }
 
 type ProcessAppUsageEvent struct {
