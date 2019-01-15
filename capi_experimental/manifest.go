@@ -116,7 +116,6 @@ applications:
   routes:
   - route: %s
   env: { foo: qux, snack: walnuts }
-  command: new-command
   health-check-type: http
   health-check-http-endpoint: /env
   timeout: 75
@@ -135,8 +134,7 @@ applications:
   services:
   - %s
   processes:
-  - command: new-command
-    disk_quota: 1024M
+  - disk_quota: 1024M
     health-check-http-endpoint: /env
     health-check-type: http
     instances: 2
@@ -159,6 +157,8 @@ applications:
 
 					PollJob(GetJobPath(response))
 
+					session = cf.Cf("restage", appName).Wait(Config.CfPushTimeoutDuration())
+
 					workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 						target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 						Expect(target).To(Exit(0), "failed targeting")
@@ -176,11 +176,6 @@ applications:
 						Eventually(session).Should(Say("foo:\\s+qux"))
 						Eventually(session).Should(Say("snack:\\s+walnuts"))
 						Eventually(session).Should(Exit(0))
-
-						processes := GetProcesses(appGUID, appName)
-						webProcessWithCommandRedacted := GetProcessByType(processes, "web")
-						webProcess := GetProcessByGuid(webProcessWithCommandRedacted.Guid)
-						Expect(webProcess.Command).To(Equal("new-command"))
 
 						session = cf.Cf("get-health-check", appName).Wait()
 						Eventually(session).Should(Say("health check type:\\s+http"))
