@@ -176,8 +176,9 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 					app := cf.Cf("app", appName)
 					Expect(app.Wait()).To(Exit(0))
 
-					arr := metrics.FindStringSubmatch(string(app.Out.Contents()))
-					Expect(arr).NotTo(BeNil())
+					contents := string(app.Out.Contents())
+					arr := metrics.FindStringSubmatch(contents)
+					Expect(arr).NotTo(BeNil(), "Regex did not find a match in contents '%s'", contents)
 					mem, err := strconv.ParseFloat(arr[1], 64)
 					Expect(err).ToNot(HaveOccurred())
 					disk, err := strconv.ParseFloat(arr[2], 64)
