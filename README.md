@@ -132,6 +132,7 @@ include_capi_no_bridge
 * `credhub_secret`: UAA client secret for Service Broker write access to CredHub (required for CredHub tests).
 * `include_capi_experimental`: Flag to run experimental tests for the CAPI release. Not stable!
 * `include_capi_no_bridge`: Flag to run tests that require CAPI's (currently optional) bridge consumption features.
+* `include_deployments`: Flag to include tests for the cloud controller rolling deployments. V3 must also be enabled.
 * `include_detect`: Flag to include tests in the detect group.
 * `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
 * `include_internet_dependent`: Flag to include tests that require the deployment to have internet access.

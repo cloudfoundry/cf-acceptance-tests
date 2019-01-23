@@ -34,6 +34,8 @@ const SkipTasksMessage = `Skipping this test because config.IncludeTasks is set 
 NOTE: Ensure tasks are enabled on your platform before enabling this test.`
 const SkipV3Message = `Skipping this test because config.IncludeV3 is set to 'false'.
 NOTE: Ensure that the v3 api features are enabled on your platform before running this test.`
+const SkipDeploymentsMessage = `Skipping this test because config.IncludeDeployments is set to 'false'.
+NOTE: Ensure that deployments and v3 features are enabled on your platform before running this test.`
 const SkipWindowsMessage = `Skipping this test because config.IncludeWindows is set to 'false'.
 NOTE: Ensure that your deployment includes at least one Windows cell before enabling this test.`
 const SkipWindowsContextPathsMessage = `Skipping this test because config.UseWindowsContextPath is set to 'false'.

@@ -27,6 +27,7 @@ type CatsConfig interface {
 	GetIncludeSsh() bool
 	GetIncludeTasks() bool
 	GetIncludeV3() bool
+	GetIncludeDeployments() bool
 	GetIncludeIsolationSegments() bool
 	GetIncludeRoutingIsolationSegments() bool
 	GetIncludeLoggingIsolationSegments() bool

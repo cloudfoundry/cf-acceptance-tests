@@ -1,7 +1,8 @@
-package capi_experimental
+package v3
 
 import (
 	"fmt"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -22,7 +23,7 @@ var (
 	staticFileZip = "assets/staticfile.zip"
 )
 
-var _ = CapiExperimentalDescribe("deployment", func() {
+var _ = V3Describe("deployment", func() {
 
 	var (
 		appName              string
@@ -38,6 +39,10 @@ var _ = CapiExperimentalDescribe("deployment", func() {
 	)
 
 	BeforeEach(func() {
+		if !Config.GetIncludeDeployments() {
+			Skip(skip_messages.SkipDeploymentsMessage)
+		}
+
 		appName = random_name.CATSRandomName("APP")
 		spaceName = TestSetup.RegularUserContext().Space
 		spaceGuid = GetSpaceGuidFromName(spaceName)
