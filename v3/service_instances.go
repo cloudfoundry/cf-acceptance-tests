@@ -1,4 +1,4 @@
-package capi_experimental
+package v3
 
 import (
 	"encoding/json"
@@ -6,6 +6,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
@@ -15,7 +16,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = CapiExperimentalDescribe("service instances", func() {
+var _ = V3Describe("service instances", func() {
 	var (
 		broker               services.ServiceBroker
 		serviceInstance1Name string
@@ -50,6 +51,15 @@ var _ = CapiExperimentalDescribe("service instances", func() {
 		By("Creating another service instance")
 		createService2 := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, serviceInstance2Name).Wait()
 		Expect(createService2).To(Exit(0))
+	})
+
+	AfterEach(func() {
+		app_helpers.AppReport(broker.Name)
+
+		Expect(cf.Cf("delete-service", serviceInstance1Name, "-f").Wait()).To(Exit(0))
+		Expect(cf.Cf("delete-service", serviceInstance2Name, "-f").Wait()).To(Exit(0))
+
+		broker.Destroy()
 	})
 
 	It("Lists the service instances", func() {
