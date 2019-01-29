@@ -1,4 +1,4 @@
-package capi_experimental
+package v3
 
 import (
 	"encoding/json"
@@ -15,7 +15,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = CapiExperimentalDescribe("service instances", func() {
+var _ = V3Describe("service instances", func() {
 	var (
 		broker               services.ServiceBroker
 		serviceInstance1Name string
