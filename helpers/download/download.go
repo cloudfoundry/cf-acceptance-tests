@@ -11,6 +11,8 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 )
 
+const maxNumRedirects = 10 // This is the same default Go uses with in its http library: https://godoc.org/net/http#Get
+
 func WithRedirect(url, path string, config config.CatsConfig) error {
 	oauthToken := v3_helpers.GetAuthToken()
 	downloadCurl := helpers.Curl(
@@ -31,26 +33,26 @@ func WithRedirect(url, path string, config config.CatsConfig) error {
 		ioutil.WriteFile(path, downloadCurl.Out.Contents(), 0644)
 		return nil
 	}
+	for i := 0; i < maxNumRedirects; i++ {
+		downloadCurl := helpers.Curl(
+			config,
+			"-v", redirectURI,
+			"-f",
+		).Wait()
+		if downloadCurl.ExitCode() != 0 {
+			return fmt.Errorf("curl exited with code: %d", downloadCurl.ExitCode())
+		}
 
-	downloadCurl = helpers.Curl(
-		config,
-		"-v", redirectURI,
-		"-f",
-	).Wait()
-	if downloadCurl.ExitCode() != 0 {
-		return fmt.Errorf("curl exited with code: %d", downloadCurl.ExitCode())
+		isRedirect, redirectURI, err = CheckRedirect(string(downloadCurl.Err.Contents()))
+		if err != nil {
+			return err
+		}
+		if !isRedirect {
+			ioutil.WriteFile(path, downloadCurl.Out.Contents(), 0644)
+			return nil
+		}
 	}
-
-	isRedirect, _, err = CheckRedirect(string(downloadCurl.Err.Contents()))
-	if err != nil {
-		return err
-	}
-	if !isRedirect {
-		ioutil.WriteFile(path, downloadCurl.Out.Contents(), 0644)
-		return nil
-	}
-
-	return fmt.Errorf("Only 1 redirect allowed to emulate cf CLI behavior")
+	return fmt.Errorf("Only %v redirects allowed", maxNumRedirects)
 }
 
 func CheckRedirect(curlOutput string) (bool, string, error) {
