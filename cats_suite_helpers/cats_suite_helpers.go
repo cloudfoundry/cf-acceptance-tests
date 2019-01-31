@@ -159,7 +159,6 @@ func LoggingIsolationSegmentsDescribe(description string, callback func()) bool 
 	})
 }
 
-
 func ZipkinDescribe(description string, callback func()) bool {
 	return Describe("[routing]", func() {
 		BeforeEach(func() {

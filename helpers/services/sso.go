@@ -83,7 +83,7 @@ func AuthenticateUser(authorizationEndpoint string, username string, password st
 	sessionId := jsessionRegEx.FindString(apiResponse)
 	vcapId := vcapidRegEx.FindString(apiResponse)
 	cookie = fmt.Sprintf("%v;%v", sessionId, vcapId)
-	return
+	return cookie
 }
 
 func RequestScopes(cookie string, config OAuthConfig) (authCode string, httpCode string) {

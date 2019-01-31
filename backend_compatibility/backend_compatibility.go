@@ -50,7 +50,7 @@ var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
 			token := v3_helpers.GetAuthToken()
 			uploadUrl := fmt.Sprintf("%s%s/v2/apps/%s/droplet/upload", Config.Protocol(), Config.GetApiEndpoint(), appGuid)
 			bits := fmt.Sprintf(`droplet=@%s`, dropletPath)
-			curl := helpers.Curl(Config, "-v", uploadUrl, "-X", "PUT", "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).Wait()
+			curl := helpers.CurlRedact(token, Config, uploadUrl, "-X", "PUT", "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).Wait()
 			Expect(curl).To(Exit(0), string(curl.Err.Contents()))
 
 			var job struct {

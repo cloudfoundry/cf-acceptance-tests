@@ -273,13 +273,13 @@ func EntitleOrgToIsolationSegment(orgGuid, isoSegGuid string) {
 func FetchRecentLogs(appGuid, oauthToken string, config config.CatsConfig) *Session {
 	loggregatorEndpoint := getHttpLoggregatorEndpoint()
 	logUrl := fmt.Sprintf("%s/apps/%s/recentlogs", loggregatorEndpoint, appGuid)
-	session := helpers.Curl(Config, logUrl, "-H", fmt.Sprintf("Authorization: %s", oauthToken))
+	session := helpers.CurlRedact(oauthToken, Config, logUrl, "-H", fmt.Sprintf("Authorization: %s", oauthToken))
 	Expect(session.Wait()).To(Exit(0))
 	return session
 }
 
 func GetAuthToken() string {
-	session := cf.Cf("oauth-token")
+	session := cf.CfSilent("oauth-token")
 	bytes := session.Wait().Out.Contents()
 	return strings.TrimSpace(string(bytes))
 }
@@ -465,7 +465,7 @@ func UnsetDefaultIsolationSegment(orgGuid string) {
 
 func UploadPackage(uploadUrl, packageZipPath, token string) {
 	bits := fmt.Sprintf(`bits=@%s`, packageZipPath)
-	curl := helpers.Curl(Config, "-v", "-s", uploadUrl, "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).Wait()
+	curl := helpers.CurlRedact(token, Config, "-s", uploadUrl, "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).Wait()
 	Expect(curl).To(Exit(0))
 }
 
