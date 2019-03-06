@@ -1,8 +1,13 @@
 package apps
 
 import (
+	"code.cloudfoundry.org/go-loggregator"
+	"code.cloudfoundry.org/go-loggregator/rpc/loggregator_v2"
+	"context"
 	"fmt"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
+
+	"net/http"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -120,9 +125,42 @@ var _ = AppsDescribe("loggregator", func() {
 			Eventually(msgChan, 2*Config.DefaultTimeoutDuration(), time.Millisecond).Should(Receive(NonZeroContainerMetricsFor(MetricsApp{AppGuid: appGuid, InstanceId: 1})))
 		})
 	})
+
+	Context("reverse log proxy", func() {
+		It("streams logs", func() {
+			rlpClient := loggregator.NewRLPGatewayClient(
+				getLogStreamEndpoint(),
+				loggregator.WithRLPGatewayHTTPClient(newAuthClient()),
+			)
+
+			ebr := &loggregator_v2.EgressBatchRequest{
+				ShardId: CATSRandomName("SUBSCRIPTION-ID"),
+				Selectors: []*loggregator_v2.Selector{
+					{Message: &loggregator_v2.Selector_Log{Log: &loggregator_v2.LogSelector{}}},
+				},
+			}
+
+			s := rlpClient.Stream(context.Background(), ebr)
+			Eventually(func() string {
+				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
+			}).Should(ContainSubstring("Muahaha"))
+
+			Eventually(func() string {
+				es := s()
+				var messages []string
+				for _, e := range es {
+					log, ok := e.Message.(*loggregator_v2.Envelope_Log)
+					Expect(ok).To(BeTrue())
+					messages = append(messages, string(log.Log.Payload))
+				}
+				return strings.Join(messages, "")
+			}, Config.DefaultTimeoutDuration(), time.Millisecond).Should(ContainSubstring("Muahaha"), "To enable the log-stream feature, please ask your CF administrator to enable the RLP Gateway and to add the 'doppler.firehose' scope to your CF admin user.")
+		})
+	})
 })
 
 type cfHomeConfig struct {
+	Target          string
 	AccessToken     string
 	DopplerEndPoint string
 }
@@ -154,4 +192,27 @@ func getAdminUserAccessToken() string {
 
 func getDopplerEndpoint() string {
 	return getCfHomeConfig().DopplerEndPoint
+}
+
+func getLogStreamEndpoint() string {
+	return strings.Replace(getCfHomeConfig().Target, "api", "log-stream", 1)
+}
+
+type authClient struct {
+	c *http.Client
+}
+
+func newAuthClient() *authClient {
+	return &authClient{
+		c: &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: Config.GetSkipSSLValidation()},
+			},
+		},
+	}
+}
+
+func (a *authClient) Do(r *http.Request) (*http.Response, error) {
+	r.Header.Set("Authorization", getAdminUserAccessToken())
+	return a.c.Do(r)
 }
