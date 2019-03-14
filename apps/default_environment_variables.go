@@ -153,34 +153,36 @@ exit 1
 				)
 			}
 
-			taskName := "get-env"
+			if Config.GetIncludeTasks() {
+				taskName := "get-env"
 
-			Eventually(cf.Cf("run-task", appName, "env", "--name", taskName)).Should(Exit(0))
+				Eventually(cf.Cf("run-task", appName, "env", "--name", taskName)).Should(Exit(0))
 
-			Eventually(func() string {
-				return getTaskState(appName)
-			}).Should(Equal("SUCCEEDED"))
+				Eventually(func() string {
+					return getTaskState(appName)
+				}).Should(Equal("SUCCEEDED"))
 
-			var taskStdout string
-			Eventually(func() string {
-				appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
-				appLogsSession.Wait()
+				var taskStdout string
+				Eventually(func() string {
+					appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
+					appLogsSession.Wait()
 
-				taskStdout = string(appLogsSession.Out.Contents())
+					taskStdout = string(appLogsSession.Out.Contents())
 
-				return taskStdout
-			}).Should(MatchRegexp("TASK.*VCAP_SERVICES=.*"))
+					return taskStdout
+				}).Should(MatchRegexp("TASK.*VCAP_SERVICES=.*"))
 
-			Expect(taskStdout).To(MatchRegexp("TASK.*LANG=en_US\\.UTF-8"))
-			Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_INTERNAL_IP=.*"))
-			Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_IP=.*"))
-			Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_PORTS=.*"))
-			Expect(taskStdout).To(MatchRegexp("TASK.*VCAP_APPLICATION=.*"))
-			Expect(taskStdout).To(MatchRegexp("TASK.*VCAP_SERVICES=.*"))
+				Expect(taskStdout).To(MatchRegexp("TASK.*LANG=en_US\\.UTF-8"))
+				Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_INTERNAL_IP=.*"))
+				Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_IP=.*"))
+				Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_PORTS=.*"))
+				Expect(taskStdout).To(MatchRegexp("TASK.*VCAP_APPLICATION=.*"))
+				Expect(taskStdout).To(MatchRegexp("TASK.*VCAP_SERVICES=.*"))
 
-			// these vars are set to the empty string (use m flag to make $ match eol)
-			Expect(taskStdout).To(MatchRegexp("(?m)TASK.*CF_INSTANCE_ADDR=$"))
-			Expect(taskStdout).To(MatchRegexp("(?m)TASK.*CF_INSTANCE_PORT=$"))
+				// these vars are set to the empty string (use m flag to make $ match eol)
+				Expect(taskStdout).To(MatchRegexp("(?m)TASK.*CF_INSTANCE_ADDR=$"))
+				Expect(taskStdout).To(MatchRegexp("(?m)TASK.*CF_INSTANCE_PORT=$"))
+			}
 		})
 	})
 })
