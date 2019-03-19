@@ -1,0 +1,338 @@
+---
+resources:
+- name: cats-pool
+  type: pool
+  source:
+    uri: git@github.com:cloudfoundry/relint-ci-pools
+    branch: master
+    pool: cats
+    private_key: ((relint_ci_pools_readwrite_deploy_key.private_key))
+
+- name: cats-env-director-state
+  type: git
+  source:
+    branch: master
+    uri: git@github.com:cloudfoundry/cats-env.git
+    private_key: ((cats_env_readwrite_deploy_key.private_key))
+    paths:
+    - bbl-state
+    - ha-proxy-vars.yml
+
+- name: cats-env-integration-configs
+  type: git
+  source:
+    branch: master
+    uri: git@github.com:cloudfoundry/cats-env.git
+    private_key: ((cats_env_readwrite_deploy_key.private_key))
+    paths:
+    - integration_config.json
+    - reporter_config.json
+
+- name: cf-deployment-concourse-tasks
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
+
+- name: runtime-ci
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/cloudfoundry/runtime-ci.git
+
+- name: cf-acceptance-tests-develop
+  type: git
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/cf-acceptance-tests.git
+    private_key: ((cf_acceptance_tests_readwrite_deploy_key.private_key))
+    ignore_paths:
+    - ci/**
+
+- name: cf-acceptance-tests-rc
+  type: git
+  source:
+    branch: release-candidate
+    uri: git@github.com:cloudfoundry/cf-acceptance-tests.git
+    private_key: ((cf_acceptance_tests_readwrite_deploy_key.private_key))
+    ignore_paths:
+    - ci/**
+
+- name: cf-acceptance-tests-master
+  type: git
+  source:
+    branch: master
+    uri: git@github.com:cloudfoundry/cf-acceptance-tests.git
+    private_key: ((cf_acceptance_tests_readwrite_deploy_key.private_key))
+    ignore_paths:
+    - ci/**
+
+- name: cf-deployment-master
+  type: git
+  source:
+    branch: master
+    uri: git@github.com:cloudfoundry/cf-deployment.git
+    private_key: ((cf_deployment_readwrite_deploy_key.private_key))
+    ignore_paths:
+    - ci/**
+
+- name: cf-test-helpers
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/cloudfoundry-incubator/cf-test-helpers
+
+- name: cats-version
+  type: semver
+  source:
+    driver: git
+    uri: git@github.com:cloudfoundry/cf-relint-ci-semver.git
+    branch: master
+    private_key: ((cf_relint_ci_semver_readwrite_deploy_key.private_key))
+    git_user: "CF MEGA BOT <cf-mega@pivotal.io>"
+    file: cats-version
+
+- name: deliver-tracker-story
+  type: tracker
+  source:
+    token: ((cf_relint_tracker_api_token))
+    project_id: "1382120"
+    tracker_url: https://www.pivotaltracker.com
+
+jobs:
+- name: unit-test
+  serial: true
+  public: true
+  build_logs_to_retain: 100
+  plan:
+  - get: cf-acceptance-tests-develop
+    trigger: true
+  - get: cf-test-helpers
+    trigger: true
+  - get: runtime-ci
+  - task: run-cats-unit-tests
+    file: runtime-ci/tasks/run-cats-unit-tests/task.yml
+    input_mapping:
+      cf-acceptance-tests: cf-acceptance-tests-develop
+  - task: run-cf-test-helpers-unit-tests
+    file: runtime-ci/tasks/run-cf-test-helpers-unit-tests/task.yml
+
+- name: acquire-pool-cats
+  public: true
+  serial: true
+  plan:
+  - aggregate:
+    - get: cf-acceptance-tests-develop
+      trigger: true
+      passed: [ unit-test ]
+    - put: cats-pool
+      params: {claim: cats}
+
+- name: acquire-pool
+  public: true
+  serial: true
+  plan:
+  - aggregate:
+    - get: cf-deployment-master
+      trigger: true
+    - put: cats-pool
+      params: {claim: cats}
+
+- name: release-pool-manual
+  public: true
+  plan:
+  - get: cats-pool
+  ensure:
+    try:
+      put: cats-pool
+      params: {release: cats-pool}
+
+- name: deploy
+  serial_groups: [ cats ]
+  public: true
+  build_logs_to_retain: 100
+  plan:
+  - on_success:
+      put: cats-pool
+      params: {release: cats-pool}
+    do:
+    - get: cats-pool
+      trigger: true
+      passed: [ acquire-pool ]
+    - aggregate:
+      - get: runtime-ci
+      - get: cf-deployment-concourse-tasks
+      - get: cf-deployment-master
+      - get: cats-env-director-state
+      - get: cats-env-integration-configs
+    - task: bosh-deploy-cf
+      file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+      input_mapping:
+        bbl-state: cats-env-director-state
+        cf-deployment: cf-deployment-master
+        ops-files: cf-deployment-master
+        vars-files: cats-env-director-state
+      params:
+        SYSTEM_DOMAIN: cats.cf-app.com
+        OPS_FILES: |
+          operations/use-compiled-releases.yml
+    - task: run-bosh-cleanup
+      file: cf-deployment-concourse-tasks/bosh-cleanup/task.yml
+      input_mapping:
+        bbl-state: cats-env-director-state
+    - task: update-integration-configs
+      file: cf-deployment-concourse-tasks/update-integration-configs/task.yml
+      params:
+        CATS_INTEGRATION_CONFIG_FILE: integration_config.json
+      input_mapping:
+        bbl-state: cats-env-director-state
+        integration-configs: cats-env-integration-configs
+      ensure:
+        put: cats-env-integration-configs
+        params:
+          repository: updated-integration-configs
+          rebase: true
+
+- name: run-cats
+  serial_groups: [ cats ]
+  serial: true
+  public: true
+  build_logs_to_retain: 100
+  plan:
+  - timeout: 4h
+    do:
+    - get: cats-pool
+      trigger: true
+      passed: [ acquire-pool-cats ]
+    - aggregate:
+      - get: cf-deployment-concourse-tasks
+      - get: cf-acceptance-tests-develop
+      - get: cats-env-integration-configs
+      - get: cats-env-director-state
+    - task: enable-docker-and-tasks
+      file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
+      attempts: 3
+      input_mapping:
+        bbl-state: cats-env-director-state
+      params:
+        SYSTEM_DOMAIN: cats.cf-app.com
+        ENABLED_FEATURE_FLAGS: |
+          diego_docker
+          task_creation
+          service_instance_sharing
+    - task: run-cats
+      file: cf-deployment-concourse-tasks/run-cats/task.yml
+      input_mapping:
+        integration-config: cats-env-integration-configs
+        cf-acceptance-tests: cf-acceptance-tests-develop
+
+- name: bless-cats
+  public: true
+  serial: true
+  build_logs_to_retain: 100
+  plan:
+  - get: runtime-ci
+  - get: cf-acceptance-tests-develop
+    trigger: true
+    passed:
+    - run-cats
+  - put: cf-acceptance-tests-rc
+    params:
+      repository: cf-acceptance-tests-develop
+  - put: deliver-tracker-story
+    params:
+      repos:
+        - cf-acceptance-tests-develop
+  - task: create-pm-story
+    file: runtime-ci/tasks/create-pm-story/task.yml
+    input_mapping:
+      input-description: version-json
+    params:
+      TRACKER_STORY_NAME: "New CATs Change has been Blessed!!!"
+      TRACKER_STORY_STATE: delivered
+      TRACKER_API_TOKEN: ((cf_relint_tracker_api_token))
+      DESCRIPTION_FILE: version.json
+
+- name: release-pool
+  public: true
+  plan:
+  - get: cats-pool
+    passed: [ run-cats ]
+    trigger: true
+  - put: cats-pool
+    params: {release: cats-pool}
+
+- name: cleanup-cats
+  serial: true
+  public: true
+  build_logs_to_retain: 100
+  plan:
+  - timeout: 4h
+    do:
+    - get: cats-pool
+      trigger: true
+      passed: [ run-cats ]
+    - aggregate:
+      - get: cf-acceptance-tests-develop
+        passed: [ run-cats]
+        trigger: true
+      - get: runtime-ci
+      - get: cats-env-integration-configs
+    - task: cleanup-cats
+      file: runtime-ci/tasks/cleanup-after-cats/task.yml
+      input_mapping:
+        integration-config: cats-env-integration-configs
+
+- name: ship-it-patch
+  public: true
+  build_logs_to_retain: 100
+  plan:
+    - do:
+      - get: cats-version
+        params: {bump: patch}
+      - get: cf-acceptance-tests-develop
+      - get: cf-acceptance-tests-rc
+        passed: [bless-cats]
+      - put: cf-acceptance-tests-master
+        params:
+          repository: cf-acceptance-tests-rc
+          tag: cats-version/version
+          tag_prefix: v
+      - put: cats-version
+        params: {bump: patch}
+
+- name: ship-it-minor
+  public: true
+  build_logs_to_retain: 100
+  plan:
+    - do:
+      - get: cats-version
+        params: {bump: minor}
+      - get: cf-acceptance-tests-develop
+      - get: cf-acceptance-tests-rc
+        passed: [bless-cats]
+      - put: cf-acceptance-tests-master
+        params:
+          repository: cf-acceptance-tests-rc
+          tag: cats-version/version
+          tag_prefix: v
+      - put: cats-version
+        params: {bump: minor}
+
+- name: ship-it-major
+  public: true
+  build_logs_to_retain: 100
+  plan:
+    - do:
+      - get: cats-version
+        params: {bump: major}
+      - get: cf-acceptance-tests-develop
+      - get: cf-acceptance-tests-rc
+        passed: [bless-cats]
+      - put: cf-acceptance-tests-master
+        params:
+          repository: cf-acceptance-tests-rc
+          tag: cats-version/version
+          tag_prefix: v
+      - put: cats-version
+        params: {bump: major}

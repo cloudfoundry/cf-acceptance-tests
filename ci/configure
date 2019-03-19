@@ -1,0 +1,8 @@
+#!/bin/bash
+
+main() {
+  set -ex
+  fly -t relint-ci sp -p cats -c "${PROJECT_DIR}/ci/pipeline.yml"
+}
+
+main "$@"
