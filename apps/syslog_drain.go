@@ -13,7 +13,6 @@ import (
 	logshelper "github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
@@ -89,7 +88,7 @@ var _ = AppsDescribe("Logging", func() {
 			Eventually(cf.Cf("delete-orphaned-routes", "-f"), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to delete orphaned routes")
 		})
 
-		DescribeTable("Forwards app messages to registered syslog drains", func(protoSuffix string) {
+		It("forwards app messages to registered syslog drains", func() {
 			// The syslog drains return two IP addresses: external & internal.
 			// On a vanilla environment, apps can connect through the syslog service
 			// to the external IP (Diego cell address and external port) of the drain
@@ -99,9 +98,9 @@ var _ = AppsDescribe("Logging", func() {
 			for i, address := range getSyslogDrainAddresses(listenerAppName) {
 				var syslogDrainURL string
 				if Config.GetRequireProxiedAppTraffic() {
-					syslogDrainURL = "syslog-tls" + protoSuffix + "://" + address
+					syslogDrainURL = "syslog-tls://" + address
 				} else {
-					syslogDrainURL = "syslog" + protoSuffix + "://" + address
+					syslogDrainURL = "syslog://" + address
 				}
 
 				Eventually(cf.Cf("cups", serviceNames[i], "-l", syslogDrainURL)).Should(Exit(0), "Failed to create syslog drain service")
@@ -120,10 +119,7 @@ var _ = AppsDescribe("Logging", func() {
 
 			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(randomMessage1))
 			Consistently(logs, 10).ShouldNot(Say(randomMessage2))
-		},
-			Entry("V2 Drain", ""),
-			Entry("V3 Drain", "-v3"),
-		)
+		})
 	})
 })
 
