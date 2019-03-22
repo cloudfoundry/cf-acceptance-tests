@@ -105,16 +105,16 @@ func (user *TestUser) Create() {
 	redactingReporter := internal.NewRedactingReporter(ginkgo.GinkgoWriter, redactor)
 
 	session := internal.CfWithCustomReporter(user.cmdStarter, redactingReporter, "create-user", user.username, user.password)
-	EventuallyWithOffset(1, session, user.timeout).Should(Exit())
+	EventuallyWithOffset(1, session, user.timeout).Should(Exit(), "Failed to create user")
 
 	if session.ExitCode() != 0 {
-		ExpectWithOffset(1, combineOutputAndRedact(session, redactor)).Should(Say("scim_resource_already_exists"))
+		ExpectWithOffset(1, combineOutputAndRedact(session, redactor)).Should(Say("scim_resource_already_exists"), "Failed to create user")
 	}
 }
 
 func (user *TestUser) Destroy() {
 	session := internal.Cf(user.cmdStarter, "delete-user", "-f", user.username)
-	EventuallyWithOffset(1, session, user.timeout).Should(Exit(0))
+	EventuallyWithOffset(1, session, user.timeout).Should(Exit(0), "Failed to delete user")
 }
 
 func (user *TestUser) Username() string {

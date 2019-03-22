@@ -14,12 +14,6 @@ func Curl(cfg helpersinternal.CurlConfig, args ...string) *gexec.Session {
 }
 
 func CurlRedact(stringToRedact string, cfg helpersinternal.CurlConfig, args ...string) *gexec.Session {
-	for _, arg := range args {
-		if arg == "-v" {
-			panic("do not use '-v' with curl")
-		}
-	}
-
 	cmdStarter := commandstarter.NewCommandStarter()
 	redactor := internal.NewRedactor(stringToRedact)
 	redactingReporter := internal.NewRedactingReporter(ginkgo.GinkgoWriter, redactor)
