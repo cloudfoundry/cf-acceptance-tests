@@ -8,25 +8,12 @@ resources:
     pool: cats
     private_key: ((relint_ci_pools_readwrite_deploy_key.private_key))
 
-- name: cats-env-director-state
+- name: relint-envs
   type: git
   source:
     branch: master
-    uri: git@github.com:cloudfoundry/cats-env.git
-    private_key: ((cats_env_readwrite_deploy_key.private_key))
-    paths:
-    - bbl-state
-    - ha-proxy-vars.yml
-
-- name: cats-env-integration-configs
-  type: git
-  source:
-    branch: master
-    uri: git@github.com:cloudfoundry/cats-env.git
-    private_key: ((cats_env_readwrite_deploy_key.private_key))
-    paths:
-    - integration_config.json
-    - reporter_config.json
+    uri: git@github.com:cloudfoundry/relint-envs.git
+    private_key: ((hagrid_env_readwrite_deploy_key.private_key))
 
 - name: cf-deployment-concourse-tasks
   type: git
@@ -167,32 +154,35 @@ jobs:
       - get: runtime-ci
       - get: cf-deployment-concourse-tasks
       - get: cf-deployment-master
-      - get: cats-env-director-state
-      - get: cats-env-integration-configs
+      - get: relint-envs
     - task: bosh-deploy-cf
       file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
       input_mapping:
-        bbl-state: cats-env-director-state
+        bbl-state: relint-envs
         cf-deployment: cf-deployment-master
         ops-files: cf-deployment-master
-        vars-files: cats-env-director-state
+        vars-files: relint-envs
       params:
+        BBL_STATE_DIR: environments/test/cats/bbl-state
         SYSTEM_DOMAIN: cats.cf-app.com
         OPS_FILES: |
           operations/use-compiled-releases.yml
     - task: run-bosh-cleanup
       file: cf-deployment-concourse-tasks/bosh-cleanup/task.yml
       input_mapping:
-        bbl-state: cats-env-director-state
+        bbl-state: relint-envs
+      params:
+        BBL_STATE_DIR: environments/test/cats/bbl-state
     - task: update-integration-configs
       file: cf-deployment-concourse-tasks/update-integration-configs/task.yml
       params:
-        CATS_INTEGRATION_CONFIG_FILE: integration_config.json
+        BBL_STATE_DIR: environments/test/cats/bbl-state
+        CATS_INTEGRATION_CONFIG_FILE: environments/test/cats/integration_config.json
       input_mapping:
-        bbl-state: cats-env-director-state
-        integration-configs: cats-env-integration-configs
+        bbl-state: relint-envs
+        integration-configs: relint-envs
       ensure:
-        put: cats-env-integration-configs
+        put: relint-envs
         params:
           repository: updated-integration-configs
           rebase: true
@@ -211,14 +201,14 @@ jobs:
     - aggregate:
       - get: cf-deployment-concourse-tasks
       - get: cf-acceptance-tests-develop
-      - get: cats-env-integration-configs
-      - get: cats-env-director-state
+      - get: relint-envs
     - task: enable-docker-and-tasks
       file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
       attempts: 3
       input_mapping:
-        bbl-state: cats-env-director-state
+        bbl-state: relint-envs
       params:
+        BBL_STATE_DIR: environments/test/cats/bbl-state
         SYSTEM_DOMAIN: cats.cf-app.com
         ENABLED_FEATURE_FLAGS: |
           diego_docker
@@ -227,8 +217,11 @@ jobs:
     - task: run-cats
       file: cf-deployment-concourse-tasks/run-cats/task.yml
       input_mapping:
-        integration-config: cats-env-integration-configs
+        integration-config: relint-envs
         cf-acceptance-tests: cf-acceptance-tests-develop
+      params:
+        CONFIG_FILE_PATH: environments/test/cats/integration_config.json
+        REPORTER_CONFIG_FILE_PATH: environments/test/cats/reporter_config.json
 
 - name: bless-cats
   public: true
@@ -281,11 +274,13 @@ jobs:
         passed: [ run-cats]
         trigger: true
       - get: runtime-ci
-      - get: cats-env-integration-configs
+      - get: relint-envs
     - task: cleanup-cats
       file: runtime-ci/tasks/cleanup-after-cats/task.yml
       input_mapping:
-        integration-config: cats-env-integration-configs
+        integration-config: relint-envs
+      params:
+        CONFIG_FILE_PATH: environments/test/cats/integration_config.json
 
 - name: ship-it-patch
   public: true
