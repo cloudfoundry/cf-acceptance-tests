@@ -53,7 +53,6 @@ type testConfig struct {
 
 	IncludeIsolationSegments        *bool   `json:"include_isolation_segments,omitempty"`
 	IncludeRoutingIsolationSegments *bool   `json:"include_routing_isolation_segments,omitempty"`
-	IncludeLoggingIsolationSegments *bool   `json:"include_logging_isolation_segments,omitempty"`
 	IsolationSegmentName            *string `json:"isolation_segment_name,omitempty"`
 	IsolationSegmentDomain          *string `json:"isolation_segment_domain,omitempty"`
 
@@ -144,7 +143,6 @@ type allConfig struct {
 	IncludeZipkin                   *bool `json:"include_zipkin"`
 	IncludeIsolationSegments        *bool `json:"include_isolation_segments"`
 	IncludeRoutingIsolationSegments *bool `json:"include_routing_isolation_segments"`
-	IncludeLoggingIsolationSegments *bool `json:"include_logging_isolation_segments"`
 	IncludeTCPRouting               *bool `json:"include_tcp_routing"`
 	IncludeServiceDiscovery         *bool `json:"include_service_discovery"`
 
@@ -261,7 +259,6 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeSsh()).To(BeFalse())
 		Expect(config.GetIncludeIsolationSegments()).To(BeFalse())
 		Expect(config.GetIncludeRoutingIsolationSegments()).To(BeFalse())
-		Expect(config.GetIncludeLoggingIsolationSegments()).To(BeFalse())
 		Expect(config.GetIncludePrivateDockerRegistry()).To(BeFalse())
 		Expect(config.GetIncludeZipkin()).To(BeFalse())
 		Expect(config.GetIncludeSSO()).To(BeFalse())
@@ -391,7 +388,6 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_zipkin' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_isolation_segments' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_routing_isolation_segments' must not be null"))
-			Expect(err.Error()).To(ContainSubstring("'include_logging_isolation_segments' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_windows' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_service_discovery' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_image' must not be null"))
@@ -522,36 +518,6 @@ var _ = Describe("Config", func() {
 				config, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(config).To(BeNil())
 				Expect(err).To(MatchError("* Invalid configuration: 'isolation_segment_name' must be provided if 'include_isolation_segments' is true"))
-			})
-		})
-	})
-
-	Context("when including logging isolation tests", func() {
-		Context("when including routing isolation segments", func() {
-			BeforeEach(func() {
-				testCfg.IncludeRoutingIsolationSegments = ptrToBool(true)
-				testCfg.IsolationSegmentName = ptrToString("foo")
-				testCfg.IsolationSegmentDomain = ptrToString("bar.baz")
-				testCfg.IncludeLoggingIsolationSegments = ptrToBool(true)
-			})
-
-			It("returns error", func() {
-				config, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(config).To(BeNil())
-				Expect(err).To(MatchError("* Invalid configuration: 'include_routing_isolation_segments' and 'include_logging_isolation_segments' cannot be both set to true. These tests are currently not compatible and can't be run together."))
-			})
-		})
-
-		Context("when isolation segment name is not provided", func() {
-			BeforeEach(func() {
-				testCfg.IsolationSegmentName = ptrToString("")
-				testCfg.IncludeLoggingIsolationSegments = ptrToBool(true)
-			})
-
-			It("returns error", func() {
-				config, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(config).To(BeNil())
-				Expect(err).To(MatchError("* Invalid configuration: 'isolation_segment_name' must be provided if 'include_logging_isolation_segments' is true"))
 			})
 		})
 	})

@@ -138,7 +138,6 @@ include_capi_no_bridge
 * `include_internet_dependent`: Flag to include tests that require the deployment to have internet access.
 * `include_internetless`: Flag to include tests that require the deployment to not have internet access.
 * `include_isolation_segments`: Flag to include isolation segment tests.
-* `include_logging_isolation_segments`: Flag to include logging isolation segments tests. Cannot be run together with routing isolation segments tests.
 * `include_private_docker_registry`: Flag to run tests that rely on a private docker image. [See below](#private-docker).
 * `include_route_services`: Flag to include the route services tests. Diego must be deployed for these tests to pass.
 * `include_routing`: Flag to include the routing tests.
@@ -359,7 +358,6 @@ Test Group Name| Description
 `internet_dependent`| Tests the feature of being able to specify a buildpack via a Github URL.  As such, this depends on your Cloud Foundry application containers having access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
 `internetless`| Tests that your Cloud Foundry application containers do not have access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
 `isolation_segments` | This test group requires that Diego be deployed with a minimum of 2 cells. One of those cells must have been deployed with a `placement_tag`. If the deployment has been deployed with a routing isolation segment, `isolation_segment_domain` must also be set. For more information, please refer to the [Isolation Segments documentation](https://docs.cloudfoundry.org/adminguide/isolation-segments.html).
-`logging_isolation_segments` | Tests that the logs from an app running on an isolated Diego cell can be retrieved from the isolated logging system. Your CF deployment must been deployed with a logging isolation segment. Requires `isolation_segment_name` to be set.
 `route_services` | Tests the [Route Services](https://docs.cloudfoundry.org/services/route-services.html) feature of Cloud Foundry.
 `routing`| This package contains routing specific acceptance tests (context paths, wildcards, SSL termination, sticky sessions, and zipkin tracing).
 `routing_isolation_segments` | Tests that requests to isolated apps are only routed through isolated routers, and vice versa. It requires all of the setup for the isolation segments test suite. Additionally, a minimum of two Gorouter instances must be deployed. One instance must be configured with the property `routing_table_sharding_mode: shared-and-segments`. The other instance must have the properties `routing_table_sharding_mode: segments` and `isolation_segments: [YOUR_PLACEMENT_TAG_HERE]`. The `isolation_segment_name` in the CATs properties must match the `placement_tag` and `isolation_segment`.`isolation_segment_domain` must be set and traffic to that domain should go to the isolated router.

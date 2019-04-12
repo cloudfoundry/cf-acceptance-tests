@@ -21,7 +21,6 @@ IN DEVELOPMENT
   "include_internet_dependent": true,
   "include_internetless": false,
   "include_isolation_segments": false,
-  "include_logging_isolation_segments": false,
   "include_private_docker_registry": false,
   "include_route_services": true,
   "include_routing": true,
