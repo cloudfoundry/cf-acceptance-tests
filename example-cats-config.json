@@ -36,7 +36,6 @@ IN DEVELOPMENT
   "include_tasks": true,
   "include_v3": true,
   "include_zipkin": true,
-  "include_assisted_credhub": true,
   "include_credhub": true,
   "include_tcp_routing": true,
   "include_volume_services": false,
