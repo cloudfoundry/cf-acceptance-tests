@@ -41,7 +41,6 @@ IN DEVELOPMENT
   "include_tcp_routing": true,
   "include_volume_services": false,
   "stacks": [
-    "cflinuxfs2",
     "cflinuxfs3"
   ]
 }

@@ -319,7 +319,7 @@ var _ = Describe("Config", func() {
 
 		Expect(config.GetRequireProxiedAppTraffic()).To(BeFalse())
 
-		Expect(config.GetStacks()).To(ConsistOf("cflinuxfs2"))
+		Expect(config.GetStacks()).To(ConsistOf("cflinuxfs3"))
 	})
 
 	Context("when all values are null", func() {
@@ -635,10 +635,10 @@ var _ = Describe("Config", func() {
 			testCfg.Stacks = &[]string{"my-custom-stack"}
 		})
 
-		It("returns error if a stack other than cflinuxfs2 or cflinuxfs3 is provided", func() {
+		It("returns error if a stack other than cflinuxfs3 is provided", func() {
 			_, err := cfg.NewCatsConfig(tmpFilePath)
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(MatchError("* Invalid configuration: unknown stack 'my-custom-stack'. Only 'cflinuxfs2' and 'cflinuxfs3 are supported for the 'stacks' property"))
+			Expect(err).To(MatchError("* Invalid configuration: unknown stack 'my-custom-stack'. Only 'cflinuxfs3' is supported for the 'stacks' property"))
 		})
 	})
 

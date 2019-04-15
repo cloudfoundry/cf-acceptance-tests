@@ -238,7 +238,7 @@ func getDefaults() config {
 
 	defaults.NamePrefix = ptrToString("CATS")
 
-	defaults.Stacks = &[]string{"cflinuxfs2"}
+	defaults.Stacks = &[]string{"cflinuxfs3"}
 	return defaults
 }
 
@@ -721,8 +721,8 @@ func validateStacks(config *config) error {
 	}
 
 	for _, stack := range config.GetStacks() {
-		if stack != "cflinuxfs2" && stack != "cflinuxfs3" {
-			return fmt.Errorf("* Invalid configuration: unknown stack '%s'. Only 'cflinuxfs2' and 'cflinuxfs3 are supported for the 'stacks' property", stack)
+		if stack != "cflinuxfs3" {
+			return fmt.Errorf("* Invalid configuration: unknown stack '%s'. Only 'cflinuxfs3' is supported for the 'stacks' property", stack)
 		}
 	}
 
