@@ -94,7 +94,6 @@ jobs:
 - name: unit-test
   serial: true
   public: true
-  build_logs_to_retain: 100
   plan:
   - get: cf-acceptance-tests-develop
     trigger: true
@@ -141,7 +140,6 @@ jobs:
 - name: deploy
   serial_groups: [ cats ]
   public: true
-  build_logs_to_retain: 100
   plan:
   - on_success:
       put: cats-pool
@@ -191,7 +189,6 @@ jobs:
   serial_groups: [ cats ]
   serial: true
   public: true
-  build_logs_to_retain: 100
   plan:
   - timeout: 4h
     do:
@@ -226,7 +223,6 @@ jobs:
 - name: bless-cats
   public: true
   serial: true
-  build_logs_to_retain: 100
   plan:
   - get: runtime-ci
   - get: cf-acceptance-tests-develop
@@ -262,7 +258,6 @@ jobs:
 - name: cleanup-cats
   serial: true
   public: true
-  build_logs_to_retain: 100
   plan:
   - timeout: 4h
     do:
@@ -284,7 +279,6 @@ jobs:
 
 - name: ship-it-patch
   public: true
-  build_logs_to_retain: 100
   plan:
     - do:
       - get: cats-version
@@ -302,7 +296,6 @@ jobs:
 
 - name: ship-it-minor
   public: true
-  build_logs_to_retain: 100
   plan:
     - do:
       - get: cats-version
@@ -320,7 +313,6 @@ jobs:
 
 - name: ship-it-major
   public: true
-  build_logs_to_retain: 100
   plan:
     - do:
       - get: cats-version
