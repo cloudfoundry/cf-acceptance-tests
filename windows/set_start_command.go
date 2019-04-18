@@ -25,7 +25,7 @@ var _ = WindowsDescribe("Setting an app's start command", func() {
 			"--no-route",
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetBinaryBuildpackName(),
-			"-m", DEFAULT_MEMORY_LIMIT,
+			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-c", "loop.bat Hi there!!!",
 			"-u", "none",
 			"-p", assets.NewAssets().BatchScript).Wait(Config.CfPushTimeoutDuration()),

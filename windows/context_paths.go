@@ -38,7 +38,7 @@ var _ = WindowsDescribe("Context Paths", func() {
 			appName1,
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
-			"-m", DEFAULT_MEMORY_LIMIT,
+			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Nora,
 			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
@@ -50,7 +50,7 @@ var _ = WindowsDescribe("Context Paths", func() {
 			"--no-route",
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
-			"-m", DEFAULT_MEMORY_LIMIT,
+			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Nora).Wait()).To(Exit(0))
 
 		// .NET Apps must be pushed with --no-start --no-route before running cf map-route
@@ -61,7 +61,7 @@ var _ = WindowsDescribe("Context Paths", func() {
 			"--no-route",
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
-			"-m", DEFAULT_MEMORY_LIMIT,
+			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Nora).Wait()).To(Exit(0))
 
 		hostname = appName1
