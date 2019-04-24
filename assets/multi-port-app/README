@@ -1,0 +1,15 @@
+# Manual Usage
+
+```
+cf push multi-port -c 'go-online --ports=7777,8888' --no-route
+cf curl /v2/apps/<APP-GUID> -X PUT -d '{"ports": [7777, 8888]}'
+cf create-route test <TCP-DOMAIN> --random-port
+cf curl /v2/route_mappings -X POST -d '{"app_guid": "<APP-GUID>", "route_guid": "<ROUTE-GUID1>", "app_port": 7777}'
+cf create-route test <TCP-DOMAIN> --random-port
+cf curl /v2/route_mappings -X POST -d '{"app_guid": "<APP-GUID>", "route_guid": "<ROUTE-GUID2>", "app_port": 8888}'
+
+curl <TCP-DOMAIN>:<ROUTE-PORT1>
+7777
+curl <TCP-DOMAIN>:<ROUTE-PORT2>
+8888
+```
