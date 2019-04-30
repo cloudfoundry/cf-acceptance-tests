@@ -88,7 +88,7 @@ type config struct {
 	IncludeTasks                    *bool `json:"include_tasks"`
 	IncludeTCPRouting               *bool `json:"include_tcp_routing"`
 	IncludeV3                       *bool `json:"include_v3"`
-	IncludeDeployments *bool `json:"include_deployments"`
+	IncludeDeployments              *bool `json:"include_deployments"`
 	IncludeZipkin                   *bool `json:"include_zipkin"`
 	IncludeIsolationSegments        *bool `json:"include_isolation_segments"`
 	IncludeRoutingIsolationSegments *bool `json:"include_routing_isolation_segments"`
