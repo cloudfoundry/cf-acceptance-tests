@@ -91,6 +91,20 @@ resources:
     tracker_url: https://www.pivotaltracker.com
 
 jobs:
+- name: bump-cf-test-helpers
+  public: true
+  plan:
+  - aggregate:
+    - get: cf-acceptance-tests-develop
+    - get: cf-test-helpers
+      trigger: true
+    - task: run-cf-test-helpers-unit-tests
+      file: runtime-ci/tasks/run-cf-test-helpers-unit-tests/task.yml
+  - do:
+    - task: bump-cf-test-helpers
+      file: runtime-ci/tasks/bump-cf-test-helpers/task.yml
+    - put: cf-acceptance-tests-develop
+
 - name: unit-test
   serial: true
   public: true
@@ -104,8 +118,6 @@ jobs:
     file: runtime-ci/tasks/run-cats-unit-tests/task.yml
     input_mapping:
       cf-acceptance-tests: cf-acceptance-tests-develop
-  - task: run-cf-test-helpers-unit-tests
-    file: runtime-ci/tasks/run-cf-test-helpers-unit-tests/task.yml
 
 - name: acquire-pool-cats
   public: true
