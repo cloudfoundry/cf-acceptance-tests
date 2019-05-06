@@ -32,8 +32,9 @@ type Config struct {
 	UseExistingOrganization bool   `json:"use_existing_organization"`
 	ExistingOrganization    string `json:"existing_organization"`
 
-	UseExistingSpace bool   `json:"use_existing_space"`
-	ExistingSpace    string `json:"existing_space"`
+	AddExistingUserToExistingSpace bool   `json:"add_existing_user_to_existing_space"`
+	UseExistingSpace               bool   `json:"use_existing_space"`
+	ExistingSpace                  string `json:"existing_space"`
 
 	SkipSSLValidation bool   `json:"skip_ssl_validation"`
 	Backend           string `json:"backend"`
@@ -96,17 +97,18 @@ var defaults = Config{
 	PhpBuildpackName:        "php_buildpack",
 	BinaryBuildpackName:     "binary_buildpack",
 
-	IncludeApps:                true,
-	IncludeBackendCompatiblity: true,
-	IncludeDetect:              true,
-	IncludeDocker:              true,
-	IncludeInternetDependent:   true,
-	IncludeRouteServices:       true,
-	IncludeRouting:             true,
-	IncludeSecurityGroups:      true,
-	IncludeServices:            true,
-	IncludeSsh:                 true,
-	IncludeV3:                  true,
+	IncludeApps:                    true,
+	IncludeBackendCompatiblity:     true,
+	IncludeDetect:                  true,
+	IncludeDocker:                  true,
+	IncludeInternetDependent:       true,
+	IncludeRouteServices:           true,
+	IncludeRouting:                 true,
+	IncludeSecurityGroups:          true,
+	IncludeServices:                true,
+	IncludeSsh:                     true,
+	IncludeV3:                      true,
+	AddExistingUserToExistingSpace: true,
 
 	DefaultTimeout:               30,
 	CfPushTimeout:                2,
@@ -238,6 +240,10 @@ func (c *Config) GetNamePrefix() string {
 
 func (c *Config) GetUseExistingUser() bool {
 	return c.UseExistingUser
+}
+
+func (c *Config) GetAddExistingUserToExistingSpace() bool {
+	return c.AddExistingUserToExistingSpace
 }
 
 func (c *Config) GetUseExistingSpace() bool {
