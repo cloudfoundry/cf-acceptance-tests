@@ -96,14 +96,19 @@ jobs:
   plan:
   - aggregate:
     - get: cf-acceptance-tests-develop
+    - get: runtime-ci
     - get: cf-test-helpers
       trigger: true
-    - task: run-cf-test-helpers-unit-tests
-      file: runtime-ci/tasks/run-cf-test-helpers-unit-tests/task.yml
-  - do:
-    - task: bump-cf-test-helpers
-      file: runtime-ci/tasks/bump-cf-test-helpers/task.yml
-    - put: cf-acceptance-tests-develop
+  - task: run-cf-test-helpers-unit-tests
+    file: runtime-ci/tasks/run-cf-test-helpers-unit-tests/task.yml
+  - task: bump-cf-test-helpers
+    file: runtime-ci/tasks/bump-cf-test-helpers/task.yml
+    input_mapping:
+      cf-acceptance-tests: cf-acceptance-tests-develop
+  - put: cf-acceptance-tests-develop
+    params:
+      repository: updated-cf-acceptance-tests
+      rebase: true
 
 - name: unit-test
   serial: true
