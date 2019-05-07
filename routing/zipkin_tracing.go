@@ -90,7 +90,9 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 
 func getID(logRegex, logLines string) string {
 	matches := regexp.MustCompile(logRegex).FindStringSubmatch(logLines)
-	Expect(matches).To(HaveLen(2))
+	if len(matches) != 2 {
+		return ""
+	}
 
 	return matches[1]
 }
