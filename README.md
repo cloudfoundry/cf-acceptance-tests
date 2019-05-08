@@ -374,13 +374,25 @@ Test Group Name| Description
 
 ## Contributing
 
-This repository uses [gvt](https://github.com/FiloSottile/gvt) to manage `go` dependencies.
+This repository uses [go mod](https://golang.org/cmd/go/#hdr-Modules__module_versions__and_more)
+to manage `go` dependencies.
 
 All `go` dependencies required by CATs are vendored in the `vendor` directory.
 
 When making changes to the test suite that bring in additional `go` packages,
-you should use the workflow described in the
-[gvt documentation](https://github.com/FiloSottile/gvt#basic-usage).
+you should use the following workflow:
+
+If you can use the most recent version of a dependency use `go mod tidy`,
+otherwise use `go get <dependency>@<version>`. Both of these require go modules
+to be enabled via the [envrc](.envrc). Finally use `go mod vendor` to add the
+dependencies to the `vendor` directory.
+
+For tools and assets, please use the [helpers/assets/tools.go](helpers/assets/tools.go) via
+the [go mod tool workflow](https://github.com/go-modules-by-example/index/tree/master/010_tools)
+
+For additional information refer to the [official
+wiki](https://github.com/golang/go/wiki/Modules) and the [official examples
+repo](https://github.com/go-modules-by-example/index)
 
 
 Although the default branch for this repository is `master`, we ask that all
