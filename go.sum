@@ -42,6 +42,8 @@ github.com/mholt/archiver v2.0.0+incompatible h1:KGdPVnP9sU8V6bvSr9v3B97yxKskJUm
 github.com/mholt/archiver v2.0.0+incompatible/go.mod h1:Dh2dOXnSdiLxRiPoVfIr/fI1TwETms9B8CTWfeh7ROU=
 github.com/nwaples/rardecode v0.0.0-20171029023500-e06696f847ae h1:UF9xsJn7AeQ72TCus3eRO1lh08Id3AoF37vl+qigL/w=
 github.com/nwaples/rardecode v0.0.0-20171029023500-e06696f847ae/go.mod h1:5DzqNKiOdpKKBH87u8VlvAnPZMXcGRhxWkRpHbbfGS0=
+github.com/onsi/ginkgo v0.0.0-20171221013426-6c46eb8334b3 h1:ZN7kHmC0iunA+4UPmERwsuMQan4lUnntO6WX6H1jOO8=
+github.com/onsi/ginkgo v0.0.0-20171221013426-6c46eb8334b3/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.4.0 h1:n60/4GZK0Sr9O2iuGKq876Aoa0ER2ydgpMOBwzJ8e2c=
 github.com/onsi/ginkgo v1.4.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v0.0.0-20161118205129-f1f0f388b31e h1:LvgsjG0xVufTzEfSK5jwC3vYGHA7A7zzVrr85O+IEHc=

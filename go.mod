@@ -24,7 +24,7 @@ require (
 	github.com/honeycombio/libhoney-go v0.0.0-20180420154957-26d0d7dd8b07
 	github.com/mholt/archiver v2.0.0+incompatible
 	github.com/nwaples/rardecode v0.0.0-20171029023500-e06696f847ae // indirect
-	github.com/onsi/ginkgo v1.4.0
+	github.com/onsi/ginkgo v0.0.0-20171221013426-6c46eb8334b3
 	github.com/onsi/gomega v0.0.0-20161118205129-f1f0f388b31e
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/ulikunitz/xz v0.5.4 // indirect
