@@ -69,22 +69,24 @@ in such a way as to impact other tests.
 All `go` dependencies required by CATs
 are vendored in the `vendor` directory.
 
-Install [gvt](https://github.com/FiloSottile/gvt) and make sure it is available
-in your $PATH. The recommended way to do this is to run:
-```bash
-go get -u github.com/FiloSottile/gvt
-```
+Make sure to have Golang 1.11+
 
 In order to update a current dependency to a specific version,
 do the following:
 
 ```bash
 cd cf-acceptance-tests
-gvt delete <import_path>
-gvt fetch -revision <revision_number> <import_path>
+source .envrc
+go get <import_path>@<revision_number>
+go mod vendor
 ```
 
-If you'd like to add a new dependency just `gvt fetch`.
+If you'd like to add a new dependency just run:
+
+```bash
+go mod tidy
+go mod vendor
+```
 
 ## Test Configuration
 You must set the environment variable `$CONFIG`
