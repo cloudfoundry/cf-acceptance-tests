@@ -15,9 +15,10 @@ import (
 )
 
 const (
-	CF_JAVA_TIMEOUT      = 10 * time.Minute
-	V3_PROCESS_TIMEOUT   = 45 * time.Second
-	DEFAULT_MEMORY_LIMIT = "256M"
+	CF_JAVA_TIMEOUT              = 10 * time.Minute
+	V3_PROCESS_TIMEOUT           = 45 * time.Second
+	DEFAULT_MEMORY_LIMIT         = "256M"
+	DEFAULT_WINDOWS_MEMORY_LIMIT = "1G"
 )
 
 var (

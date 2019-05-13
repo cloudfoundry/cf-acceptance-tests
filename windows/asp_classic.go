@@ -22,7 +22,7 @@ var _ = WindowsDescribe("ASP classic applications", func() {
 			appName,
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
-			"-m", DEFAULT_MEMORY_LIMIT,
+			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-p", assets.NewAssets().AspClassic,
 			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})

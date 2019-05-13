@@ -26,7 +26,7 @@ var _ = WindowsDescribe("Http Healthcheck", func() {
 			"--no-start",
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
-			"-m", DEFAULT_MEMORY_LIMIT,
+			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Nora,
 			"-d", Config.GetAppsDomain()).Wait()).To(Exit(0))
 	})
