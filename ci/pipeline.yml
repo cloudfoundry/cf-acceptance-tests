@@ -182,6 +182,7 @@ jobs:
         SYSTEM_DOMAIN: cats.cf-app.com
         OPS_FILES: |
           operations/use-compiled-releases.yml
+          operations/use-internal-lookup-for-route-services.yml
     - task: run-bosh-cleanup
       file: cf-deployment-concourse-tasks/bosh-cleanup/task.yml
       input_mapping:
