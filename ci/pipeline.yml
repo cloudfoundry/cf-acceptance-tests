@@ -116,8 +116,6 @@ jobs:
   plan:
   - get: cf-acceptance-tests-develop
     trigger: true
-  - get: cf-test-helpers
-    trigger: true
   - get: runtime-ci
   - task: run-cats-unit-tests
     file: runtime-ci/tasks/run-cats-unit-tests/task.yml
