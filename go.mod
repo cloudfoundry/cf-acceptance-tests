@@ -5,7 +5,7 @@ go 1.12
 require (
 	code.cloudfoundry.org/archiver v0.0.0-20150428205605-f598990ddfed
 	code.cloudfoundry.org/cf-networking-release v2.3.0+incompatible
-	github.com/cloudfoundry-incubator/cf-test-helpers v0.0.0-20190322190241-a89c343eccaf
+	github.com/cloudfoundry-incubator/cf-test-helpers v1.0.1-0.20190514000113-53275963d9f7
 	github.com/cloudfoundry/custom-cats-reporters v0.0.0-20180629210428-75213ee79907
 	github.com/cloudfoundry/gosteno v0.0.0-20150423193413-0c8581caea35 // indirect
 	github.com/cloudfoundry/loggregatorlib v0.0.0-20160505035404-03bfd6ee4743 // indirect
@@ -33,5 +33,4 @@ require (
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20161208181325-20d25e280405 // indirect
 	gopkg.in/yaml.v2 v2.0.0-20160928153709-a5b47d31c556 // indirect
-	launchpad.net/gocheck v0.0.0-20140225173054-000000000087 // indirect
 )
