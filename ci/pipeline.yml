@@ -104,10 +104,10 @@ jobs:
   - task: bump-cf-test-helpers
     file: runtime-ci/tasks/bump-cf-test-helpers/task.yml
     input_mapping:
-      cf-acceptance-tests: cf-acceptance-tests-develop
+      repository: cf-acceptance-tests-develop
   - put: cf-acceptance-tests-develop
     params:
-      repository: updated-cf-acceptance-tests
+      repository: updated-repository
       rebase: true
 
 - name: unit-test
