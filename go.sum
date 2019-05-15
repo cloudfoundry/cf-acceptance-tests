@@ -2,8 +2,8 @@ code.cloudfoundry.org/archiver v0.0.0-20150428205605-f598990ddfed h1:FLGwF3Yyi6q
 code.cloudfoundry.org/archiver v0.0.0-20150428205605-f598990ddfed/go.mod h1:EU/KcUvh4qBVN6ffu/b8t9x7SurDot+AO0HqEZ+9QOg=
 code.cloudfoundry.org/cf-networking-release v2.3.0+incompatible h1:Zu/Z+pz4PIwsso+K8Kz4wJSelItZox0Uy/rrbBi8bZA=
 code.cloudfoundry.org/cf-networking-release v2.3.0+incompatible/go.mod h1:WJ/EOYjd9RpBQzcgZLv6YFjNgvIJtOyEHBomNnEhj84=
-github.com/cloudfoundry-incubator/cf-test-helpers v1.0.1-0.20190514000113-53275963d9f7 h1:vv6Y45aawZCsNN5SGtaxSOE+ORsekxglOYTRHQ/wOKw=
-github.com/cloudfoundry-incubator/cf-test-helpers v1.0.1-0.20190514000113-53275963d9f7/go.mod h1:I21tkmFwW9F06eYcQm5GTUzNV+pc1Q5NVZ1qhWOGGx0=
+github.com/cloudfoundry-incubator/cf-test-helpers v1.0.1-0.20190515214722-ff434af77d37 h1:iFBSgldNFzwLLKjao+WhTFoGD2TqmpVuBkXUh1PmJ2E=
+github.com/cloudfoundry-incubator/cf-test-helpers v1.0.1-0.20190515214722-ff434af77d37/go.mod h1:I21tkmFwW9F06eYcQm5GTUzNV+pc1Q5NVZ1qhWOGGx0=
 github.com/cloudfoundry/custom-cats-reporters v0.0.0-20180629210428-75213ee79907 h1:wyYh6Iv81IwgCyIBG7OW34s5GQOGuWPWECF47arkSNQ=
 github.com/cloudfoundry/custom-cats-reporters v0.0.0-20180629210428-75213ee79907/go.mod h1:uxXHu50QB3u67C2PZlaFBlc9yTy9gQ4Nb+nL3J959bU=
 github.com/cloudfoundry/gosteno v0.0.0-20150423193413-0c8581caea35 h1:HdAWGlVEbFxuALqHXYu14XvAbRbyWZLd817ojygGnk0=
