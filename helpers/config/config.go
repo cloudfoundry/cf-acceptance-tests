@@ -40,6 +40,7 @@ type CatsConfig interface {
 	GetSkipSSLValidation() bool
 	GetUseExistingUser() bool
 
+	GetAddExistingUserToExistingSpace() bool
 	GetAdminPassword() string
 	GetAdminUser() string
 	GetAdminClient() string

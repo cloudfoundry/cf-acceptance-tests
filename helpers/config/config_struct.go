@@ -860,6 +860,10 @@ func (c *config) GetShouldKeepUser() bool {
 	return *c.ShouldKeepUser
 }
 
+func (c *config) GetAddExistingUserToExistingSpace() bool {
+	return false
+}
+
 func (c *config) GetAdminUser() string {
 	return *c.AdminUser
 }
