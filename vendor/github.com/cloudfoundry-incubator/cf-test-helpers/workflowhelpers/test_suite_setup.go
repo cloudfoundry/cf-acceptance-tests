@@ -42,8 +42,7 @@ type ReproducibleTestSuiteSetup struct {
 
 	SkipSSLValidation bool
 
-	SkipUserCreation      bool
-	SkipSpaceRoleCreation bool
+	SkipUserCreation bool
 
 	originalCfHomeDir string
 	currentCfHomeDir  string
@@ -108,10 +107,9 @@ func NewBaseTestSuiteSetup(config testSuiteConfig, testSpace internal.Space, tes
 		regularUserContext: regularUserContext,
 		adminUserContext:   adminUserContext,
 
-		SkipUserCreation:      skipUserCreation,
-		SkipSpaceRoleCreation: !config.GetAddExistingUserToExistingSpace() && skipUserCreation,
-		TestSpace:             testSpace,
-		TestUser:              testUser,
+		SkipUserCreation: skipUserCreation,
+		TestSpace:        testSpace,
+		TestUser:         testUser,
 	}
 }
 
@@ -133,7 +131,7 @@ func (testSetup *ReproducibleTestSuiteSetup) Setup() {
 		if !testSetup.SkipUserCreation {
 			testSetup.TestUser.Create()
 		}
-		if !testSetup.SkipSpaceRoleCreation && !testSetup.RegularUserContext().UseClientCredentials {
+		if !testSetup.RegularUserContext().UseClientCredentials {
 			testSetup.regularUserContext.AddUserToSpace()
 		}
 	})
