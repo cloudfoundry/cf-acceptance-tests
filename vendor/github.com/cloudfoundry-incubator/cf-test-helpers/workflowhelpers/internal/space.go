@@ -31,7 +31,6 @@ type TestSpace struct {
 type SpaceAndOrgConfig interface {
 	GetUseExistingOrganization() bool
 	GetUseExistingSpace() bool
-	GetAddExistingUserToExistingSpace() bool
 	GetExistingOrganization() string
 	GetExistingSpace() string
 }
