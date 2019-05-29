@@ -167,8 +167,9 @@ var _ = SshDescribe("SSH", func() {
 			password := sshAccessCode()
 
 			clientConfig := &ssh.ClientConfig{
-				User: fmt.Sprintf("cf:%s/%d", GuidForAppName(appName), 0),
-				Auth: []ssh.AuthMethod{ssh.Password(password)},
+				User:            fmt.Sprintf("cf:%s/%d", GuidForAppName(appName), 0),
+				Auth:            []ssh.AuthMethod{ssh.Password(password)},
+				HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 			}
 
 			client, err := ssh.Dial("tcp", sshProxyAddress(), clientConfig)
@@ -197,8 +198,9 @@ var _ = SshDescribe("SSH", func() {
 
 			password := sshAccessCode()
 			clientConfig := &ssh.ClientConfig{
-				User: fmt.Sprintf("cf:%s/%d", GuidForAppName(appName), 0),
-				Auth: []ssh.AuthMethod{ssh.Password(password)},
+				User:            fmt.Sprintf("cf:%s/%d", GuidForAppName(appName), 0),
+				Auth:            []ssh.AuthMethod{ssh.Password(password)},
+				HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 			}
 
 			_, err := ssh.Dial("tcp", sshProxyAddress(), clientConfig)
