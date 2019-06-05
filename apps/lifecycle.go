@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
@@ -187,6 +188,15 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				}
 				Eventually(func() float64 { m, _ := memdisk(); return m }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
 				Eventually(func() float64 { _, d := memdisk(); return d }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
+			})
+
+			It("is able to restart an instance", func() {
+				idsBefore := app_helpers.ReportedIDs(2, appName)
+				Expect(len(idsBefore)).To(Equal(2))
+				Expect(cf.Cf("restart-app-instance", appName, "1").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				Eventually(func() []string {
+					return app_helpers.DifferentIDsFrom(idsBefore, appName)
+				}, Config.CfPushTimeoutDuration(), 2*time.Second).Should(HaveLen(1))
 			})
 		})
 
