@@ -140,12 +140,15 @@ var _ = AppsDescribe("loggregator", func() {
 				},
 			}
 
-			s := rlpClient.Stream(context.Background(), ebr)
 			Eventually(func() string {
 				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
 			}).Should(ContainSubstring("Muahaha"))
 
 			Eventually(func() string {
+				ctx, cancelFunc := context.WithTimeout(context.Background(), Config.DefaultTimeoutDuration())
+				defer cancelFunc()
+
+				s := rlpClient.Stream(ctx, ebr)
 				es := s()
 				var messages []string
 				for _, e := range es {
