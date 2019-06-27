@@ -94,7 +94,7 @@ jobs:
 - name: bump-cf-test-helpers
   public: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-acceptance-tests-develop
     - get: runtime-ci
     - get: cf-test-helpers
@@ -126,7 +126,7 @@ jobs:
   public: true
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-acceptance-tests-develop
       trigger: true
       passed: [ unit-test ]
@@ -137,7 +137,7 @@ jobs:
   public: true
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-deployment-master
       trigger: true
     - put: cats-pool
@@ -163,7 +163,7 @@ jobs:
     - get: cats-pool
       trigger: true
       passed: [ acquire-pool ]
-    - aggregate:
+    - in_parallel:
       - get: runtime-ci
       - get: cf-deployment-concourse-tasks
       - get: cf-deployment-master
@@ -211,7 +211,7 @@ jobs:
     - get: cats-pool
       trigger: true
       passed: [ acquire-pool-cats ]
-    - aggregate:
+    - in_parallel:
       - get: cf-deployment-concourse-tasks
       - get: cf-acceptance-tests-develop
       - get: relint-envs
@@ -280,7 +280,7 @@ jobs:
     - get: cats-pool
       trigger: true
       passed: [ run-cats ]
-    - aggregate:
+    - in_parallel:
       - get: cf-acceptance-tests-develop
         passed: [ run-cats]
         trigger: true
