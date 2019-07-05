@@ -167,6 +167,7 @@ jobs:
       - get: runtime-ci
       - get: cf-deployment-concourse-tasks
       - get: cf-deployment-master
+        passed: [ acquire-pool ]
       - get: relint-envs
     - task: bosh-deploy-cf
       file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
@@ -214,6 +215,7 @@ jobs:
     - in_parallel:
       - get: cf-deployment-concourse-tasks
       - get: cf-acceptance-tests-develop
+        passed: [ acquire-pool-cats ]
       - get: relint-envs
     - task: enable-docker-and-tasks
       file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
