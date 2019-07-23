@@ -132,7 +132,6 @@ include_capi_no_bridge
 * `credhub_location`: Location of CredHub instance; default is `https://credhub.service.cf.internal:8844`
 * `credhub_client`: UAA client credential for Service Broker write access to CredHub (required for CredHub tests); default is `credhub_admin_client`.
 * `credhub_secret`: UAA client secret for Service Broker write access to CredHub (required for CredHub tests).
-* `include_capi_experimental`: Flag to run experimental tests for the CAPI release. Not stable!
 * `include_capi_no_bridge`: Flag to run tests that require CAPI's (currently optional) bridge consumption features.
 * `include_deployments`: Flag to include tests for the cloud controller rolling deployments. V3 must also be enabled.
 * `include_detect`: Flag to include tests in the detect group.
@@ -354,7 +353,6 @@ Test Group Name| Description
 --- | ---
 `apps`| Tests the core functionalities of Cloud Foundry: staging, running, logging, routing, buildpacks, etc.  This test group should always pass against a sound Cloud Foundry deployment.
 `backend_compatibility` | Tests interoperability of droplets staged on the DEAs running on Diego
-`capi_experimental` | Tests features of Cloud Foundry that are currently under development. If you don't know what these tests are, you probably don't need to run them.
 `credhub`| Tests CredHub-delivered Secure Service credentials in the service binding. [CredHub configuration][credhub-secure-service-credentials] is required to run these tests. In addition to selecting a `credhub_mode`, `credhub_client` and `credhub_secret` values are required for these tests.
 `detect` | Tests the ability of the platform to detect the correct buildpack for compiling an application if no buildpack is explicitly specified.
 `docker`| Tests our ability to run docker containers on Diego and that we handle docker metadata correctly.
