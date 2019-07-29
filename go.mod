@@ -37,4 +37,5 @@ require (
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20161208181325-20d25e280405 // indirect
 	gopkg.in/yaml.v2 v2.0.0-20160928153709-a5b47d31c556 // indirect
+	launchpad.net/gocheck v0.0.0-20140225173054-000000000087 // indirect
 )
