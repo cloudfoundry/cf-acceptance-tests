@@ -347,7 +347,6 @@ exit 1`
 
 				Eventually(func() string {
 					out := logs.Tail(Config.GetUseLogCache(), appName)()
-					Expect(out).To(Exit(0))
 					return string(out.Contents())
 				}, Config.CfPushTimeoutDuration()).Should(MatchRegexp("Connection timed out|No route to host"), "ASG configured to allow connection to the private IP but the app is still refused by private ip")
 

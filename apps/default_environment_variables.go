@@ -160,22 +160,20 @@ exit 1
 					return getTaskState(appName)
 				}).Should(Equal("SUCCEEDED"))
 
-				var taskStdout string
 				Eventually(func() string {
 					appLogsBuffer := logs.Tail(Config.GetUseLogCache(), appName)()
 					return string(appLogsBuffer.Contents())
-				}).Should(MatchRegexp("TASK.*VCAP_SERVICES=.*"))
-
-				Expect(taskStdout).To(MatchRegexp("TASK.*LANG=en_US\\.UTF-8"))
-				Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_INTERNAL_IP=.*"))
-				Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_IP=.*"))
-				Expect(taskStdout).To(MatchRegexp("TASK.*CF_INSTANCE_PORTS=.*"))
-				Expect(taskStdout).To(MatchRegexp("TASK.*VCAP_APPLICATION=.*"))
-				Expect(taskStdout).To(MatchRegexp("TASK.*VCAP_SERVICES=.*"))
-
-				// these vars are set to the empty string (use m flag to make $ match eol)
-				Expect(taskStdout).To(MatchRegexp("(?m)TASK.*CF_INSTANCE_ADDR=$"))
-				Expect(taskStdout).To(MatchRegexp("(?m)TASK.*CF_INSTANCE_PORT=$"))
+				}).Should(And(
+					MatchRegexp("TASK.*VCAP_SERVICES=.*"),
+					MatchRegexp("TASK.*LANG=en_US\\.UTF-8"),
+					MatchRegexp("TASK.*CF_INSTANCE_INTERNAL_IP=.*"),
+					MatchRegexp("TASK.*CF_INSTANCE_IP=.*"),
+					MatchRegexp("TASK.*CF_INSTANCE_PORTS=.*"),
+					MatchRegexp("TASK.*VCAP_APPLICATION=.*"),
+					MatchRegexp("TASK.*VCAP_SERVICES=.*"),
+					MatchRegexp("(?m)TASK.*CF_INSTANCE_ADDR=$"),
+					MatchRegexp("(?m)TASK.*CF_INSTANCE_PORT=$"),
+				))
 			}
 		})
 	})
