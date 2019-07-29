@@ -47,9 +47,7 @@ var _ = WindowsDescribe("app logs", func() {
 		message = "message-from-stdout"
 		helpers.CurlApp(Config, appName, fmt.Sprintf("/print/%s", url.QueryEscape(message)))
 
-		Eventually(func() *Buffer {
-			return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
-		}).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*OUT %s", message)))
+		Eventually(logs.Tail(Config.GetUseLogCache(), appName)).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*OUT %s", message)))
 	})
 
 	It("captures stderr logs with the correct tag", func() {
@@ -59,8 +57,6 @@ var _ = WindowsDescribe("app logs", func() {
 		message = "message-from-stderr"
 		helpers.CurlApp(Config, appName, fmt.Sprintf("/print_err/%s", url.QueryEscape(message)))
 
-		Eventually(func() *Buffer {
-			return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
-		}).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*ERR %s", message)))
+		Eventually(logs.Tail(Config.GetUseLogCache(), appName)).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*ERR %s", message)))
 	})
 })

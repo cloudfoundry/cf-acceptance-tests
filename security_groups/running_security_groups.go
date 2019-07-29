@@ -146,12 +146,8 @@ func deleteBuildpack(buildpack string) {
 	})
 }
 
-func getStagingOutput(appName string) func() *Session {
-	return func() *Session {
-		appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
-		Expect(appLogsSession.Wait()).To(Exit(0))
-		return appLogsSession
-	}
+func getStagingOutput(appName string) func() *Buffer {
+	return logs.Tail(Config.GetUseLogCache(), appName)
 }
 
 func pushServerApp() (serverAppName string, privateHost string, privatePort int) {

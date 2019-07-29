@@ -130,8 +130,8 @@ func getSyslogDrainAddresses(appName string) []string {
 		re, err := regexp.Compile("EXTERNAL ADDRESS: \\|(.*)\\|; INTERNAL ADDRESS: \\|(.*)\\|")
 		Expect(err).NotTo(HaveOccurred())
 
-		logs := logshelper.Tail(Config.GetUseLogCache(), appName).Wait()
-		matched := re.FindSubmatch(logs.Out.Contents())
+		logs := logshelper.Tail(Config.GetUseLogCache(), appName)()
+		matched := re.FindSubmatch(logs.Contents())
 		if len(matched) < 3 {
 			return nil
 		}

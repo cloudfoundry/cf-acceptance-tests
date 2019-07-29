@@ -95,11 +95,9 @@ exit 1
 
 			Eventually(push, Config.CfPushTimeoutDuration()).Should(Exit(1))
 
-			var appStdout string
-			appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
-			appLogsSession.Wait()
+			appLogsBuffer := logs.Tail(Config.GetUseLogCache(), appName)()
 
-			appStdout = string(appLogsSession.Out.Contents())
+			appStdout := string(appLogsBuffer.Contents())
 			Expect(appStdout).To(MatchRegexp("LANG=en_US\\.UTF-8"))
 			Expect(appStdout).To(MatchRegexp("CF_INSTANCE_INTERNAL_IP=.*"))
 			Expect(appStdout).To(MatchRegexp("CF_INSTANCE_IP=.*"))
@@ -164,12 +162,8 @@ exit 1
 
 				var taskStdout string
 				Eventually(func() string {
-					appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
-					appLogsSession.Wait()
-
-					taskStdout = string(appLogsSession.Out.Contents())
-
-					return taskStdout
+					appLogsBuffer := logs.Tail(Config.GetUseLogCache(), appName)()
+					return string(appLogsBuffer.Contents())
 				}).Should(MatchRegexp("TASK.*VCAP_SERVICES=.*"))
 
 				Expect(taskStdout).To(MatchRegexp("TASK.*LANG=en_US\\.UTF-8"))

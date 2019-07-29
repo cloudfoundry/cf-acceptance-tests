@@ -72,9 +72,7 @@ var _ = WindowsDescribe("SSH", func() {
 				Expect(string(stdErr)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 				Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=1"))
 
-				Eventually(func() *gbytes.Buffer {
-					return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
-				}).Should(gbytes.Say("Successful remote access"))
+				Eventually(logs.Tail(Config.GetUseLogCache(), appName)).Should(gbytes.Say("Successful remote access"))
 
 				Eventually(func() string {
 					return string(cf.Cf("events", appName).Wait().Out.Contents())
@@ -95,9 +93,7 @@ var _ = WindowsDescribe("SSH", func() {
 			Expect(string(stdErr)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 			Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
-			Eventually(func() *gbytes.Buffer {
-				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
-			}).Should(gbytes.Say("Successful remote access"))
+			Eventually(logs.Tail(Config.GetUseLogCache(), appName)).Should(gbytes.Say("Successful remote access"))
 
 			Eventually(func() string {
 				return string(cf.Cf("events", appName).Wait().Out.Contents())
@@ -131,9 +127,7 @@ var _ = WindowsDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
-			Eventually(func() *gbytes.Buffer {
-				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
-			}).Should(gbytes.Say("Successful remote access"))
+			Eventually(logs.Tail(Config.GetUseLogCache(), appName)).Should(gbytes.Say("Successful remote access"))
 
 			Eventually(func() string {
 				return string(cf.Cf("events", appName).Wait().Out.Contents())
@@ -182,9 +176,7 @@ var _ = WindowsDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
-			Eventually(func() *gbytes.Buffer {
-				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
-			}).Should(gbytes.Say("Successful remote access"))
+			Eventually(logs.Tail(Config.GetUseLogCache(), appName)).Should(gbytes.Say("Successful remote access"))
 
 			Eventually(func() string {
 				return string(cf.Cf("events", appName).Wait().Out.Contents())
