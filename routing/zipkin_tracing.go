@@ -52,9 +52,9 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 
 				var parentSpanID string
 				Eventually(func() *gbytes.Buffer {
-					appLogsSession := logs.Tail(Config.GetUseLogCache(), app1).Wait()
-					parentSpanID = getID(`x_b3_parentspanid:"([0-9a-fA-F-]*)"`, string(appLogsSession.Out.Contents()))
-					return appLogsSession.Out
+					out := logs.Tail(Config.GetUseLogCache(), app1)()
+					parentSpanID = getID(`x_b3_parentspanid:"([0-9a-fA-F-]*)"`, string(out.Contents()))
+					return out
 				}).Should(gbytes.Say("x_b3_traceid"))
 				Expect(parentSpanID).To(Equal("-"))
 			})
@@ -75,10 +75,10 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 
 				var appLogSpanID string
 				Eventually(func() *gbytes.Buffer {
-					appLogsSession := logs.Tail(Config.GetUseLogCache(), hostname).Wait()
+					out := logs.Tail(Config.GetUseLogCache(), hostname)()
 					spanIDRegex := fmt.Sprintf("x_b3_traceid:\"%s\" x_b3_spanid:\"([0-9a-fA-F]*)\"", traceID)
-					appLogSpanID = getID(spanIDRegex, string(appLogsSession.Out.Contents()))
-					return appLogsSession.Out
+					appLogSpanID = getID(spanIDRegex, string(out.Contents()))
+					return out
 				}).Should(gbytes.Say(fmt.Sprintf(`x_b3_traceid:"%s"`, traceID)))
 
 				Expect(curlOutput).To(ContainSubstring(traceID))

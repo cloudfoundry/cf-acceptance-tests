@@ -78,11 +78,9 @@ var _ = RouteServicesDescribe("Route Services", func() {
 			})
 
 			It("a request to the app is routed through the route service", func() {
-				Eventually(func() *Session {
+				Eventually(func() *Buffer {
 					helpers.CurlAppRoot(Config, appName)
-					logs := logshelper.Tail(Config.GetUseLogCache(), routeServiceName)
-					Expect(logs.Wait()).To(Exit(0))
-					return logs
+					return logshelper.Tail(Config.GetUseLogCache(), routeServiceName)()
 				}).Should(Say("Response Body: go, world"))
 			})
 		})
@@ -179,11 +177,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 			It("passes them to the service broker", func() {
 				bindRouteToServiceWithParams(hostname, serviceInstanceName, "{\"key1\":[\"value1\",\"irynaparam\"],\"key2\":\"value3\"}")
 
-				Eventually(func() *Session {
-					logs := logshelper.Tail(Config.GetUseLogCache(), brokerAppName)
-					Expect(logs.Wait()).To(Exit(0))
-					return logs
-				}).Should(Say("irynaparam"))
+				Eventually(logshelper.Tail(Config.GetUseLogCache(), brokerAppName)).Should(Say("irynaparam"))
 			})
 		})
 	})
