@@ -7,6 +7,7 @@ import (
 
 	. "github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
@@ -98,11 +99,11 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 		})
 
 		By("restarting an instance", func() {
-			idsBefore := reportedIDs(2, appName)
+			idsBefore := app_helpers.ReportedIDs(2, appName)
 			Expect(len(idsBefore)).To(Equal(2))
 			Expect(cf.Cf("restart-app-instance", appName, "1").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			Eventually(func() []string {
-				return differentIDsFrom(idsBefore, appName)
+				return app_helpers.DifferentIDsFrom(idsBefore, appName)
 			}, Config.CfPushTimeoutDuration(), 2*time.Second).Should(HaveLen(1))
 		})
 
@@ -161,34 +162,4 @@ func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
 	}
 
 	return false, AppUsageEvent{}
-}
-
-func reportedIDs(instances int, appName string) map[string]bool {
-	timer := time.NewTimer(time.Second * 120)
-	defer timer.Stop()
-	run := true
-	go func() {
-		<-timer.C
-		run = false
-	}()
-
-	seenIDs := map[string]bool{}
-	for len(seenIDs) != instances && run == true {
-		seenIDs[helpers.CurlApp(Config, appName, "/id")] = true
-		time.Sleep(time.Second)
-	}
-
-	return seenIDs
-}
-
-func differentIDsFrom(idsBefore map[string]bool, appName string) []string {
-	differentIDs := []string{}
-
-	for id := range reportedIDs(len(idsBefore), appName) {
-		if !idsBefore[id] {
-			differentIDs = append(differentIDs, id)
-		}
-	}
-
-	return differentIDs
 }
