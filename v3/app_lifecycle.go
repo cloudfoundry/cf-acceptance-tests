@@ -44,7 +44,6 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 	})
 
 	AfterEach(func() {
-		FetchRecentLogs(appGuid, token, Config)
 		DeleteApp(appGuid)
 	})
 
@@ -201,7 +200,6 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 	})
 
 	AfterEach(func() {
-		FetchRecentLogs(appGuid, token, Config)
 		DeleteApp(appGuid)
 	})
 

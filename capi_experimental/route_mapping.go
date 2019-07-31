@@ -59,7 +59,6 @@ var _ = CapiExperimentalDescribe("route_mapping", func() {
 	})
 
 	AfterEach(func() {
-		FetchRecentLogs(appGuid, token, Config)
 		DeleteApp(appGuid)
 	})
 

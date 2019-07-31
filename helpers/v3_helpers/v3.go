@@ -8,8 +8,6 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
-
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/ginkgo"
@@ -268,14 +266,6 @@ func EntitleOrgToIsolationSegment(orgGuid, isoSegGuid string) {
 		"-d",
 		fmt.Sprintf(`{"data":[{ "guid":"%s" }]}`, orgGuid)),
 	).Should(Exit(0))
-}
-
-func FetchRecentLogs(appGuid, oauthToken string, config config.CatsConfig) *Session {
-	loggregatorEndpoint := getHttpLoggregatorEndpoint()
-	logUrl := fmt.Sprintf("%s/apps/%s/recentlogs", loggregatorEndpoint, appGuid)
-	session := helpers.CurlRedact(oauthToken, Config, logUrl, "-H", fmt.Sprintf("Authorization: %s", oauthToken))
-	Expect(session.Wait()).To(Exit(0))
-	return session
 }
 
 func GetAuthToken() string {

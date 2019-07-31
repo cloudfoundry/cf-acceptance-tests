@@ -3,6 +3,7 @@ package v3
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"io/ioutil"
 	"path"
 	"time"
@@ -65,15 +66,12 @@ var _ = V3Describe("buildpack", func() {
 				Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait()).To(Exit(0))
 			})
 
-			FetchRecentLogs(appGuid, token, Config)
 			DeleteApp(appGuid)
 		})
 
 		It("Stages with a user specified admin buildpack", func() {
 			StageBuildpackPackage(packageGuid, buildpackName)
-			Eventually(func() *Session {
-				return FetchRecentLogs(appGuid, token, Config)
-			}).Should(Say("STAGED WITH CUSTOM BUILDPACK"))
+			Eventually(logs.Tail(Config.GetUseLogCache(), appGuid)).Should(Say("STAGED WITH CUSTOM BUILDPACK"))
 		})
 
 		It("Downloads the correct user specified git buildpack", func() {
@@ -82,9 +80,7 @@ var _ = V3Describe("buildpack", func() {
 			}
 			StageBuildpackPackage(packageGuid, "https://github.com/cloudfoundry/example-git-buildpack")
 
-			Eventually(func() *Session {
-				return FetchRecentLogs(appGuid, token, Config)
-			}).Should(Say("I'm a buildpack!"))
+			Eventually(logs.Tail(Config.GetUseLogCache(), appGuid)).Should(Say("I'm a buildpack!"))
 		})
 
 		It("uses buildpack cache for staging", func() {
@@ -128,7 +124,6 @@ var _ = V3Describe("buildpack", func() {
 		})
 
 		AfterEach(func() {
-			FetchRecentLogs(appGuid, token, Config)
 			DeleteApp(appGuid)
 		})
 

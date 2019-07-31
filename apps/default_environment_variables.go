@@ -85,7 +85,6 @@ exit 1
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait()).To(Exit(0))
 			})
-
 			push := cf.Cf(
 				"push", appName,
 				"-p", assets.NewAssets().HelloWorld,
@@ -95,20 +94,22 @@ exit 1
 
 			Eventually(push, Config.CfPushTimeoutDuration()).Should(Exit(1))
 
-			appLogsBuffer := logs.Tail(Config.GetUseLogCache(), appName)()
+			Eventually(func() string {
+				appLogsBuffer := logs.Tail(Config.GetUseLogCache(), appName)()
+				return string(appLogsBuffer.Contents())
+			}).Should(And(
+				MatchRegexp("LANG=en_US\\.UTF-8"),
+				MatchRegexp("CF_INSTANCE_INTERNAL_IP=.*"),
+				MatchRegexp("CF_INSTANCE_IP=.*"),
+				MatchRegexp("CF_INSTANCE_PORTS=.*"),
+				MatchRegexp("CF_STACK=.*"),
+				MatchRegexp("VCAP_APPLICATION=.*"),
+				MatchRegexp("VCAP_SERVICES=.*"),
 
-			appStdout := string(appLogsBuffer.Contents())
-			Expect(appStdout).To(MatchRegexp("LANG=en_US\\.UTF-8"))
-			Expect(appStdout).To(MatchRegexp("CF_INSTANCE_INTERNAL_IP=.*"))
-			Expect(appStdout).To(MatchRegexp("CF_INSTANCE_IP=.*"))
-			Expect(appStdout).To(MatchRegexp("CF_INSTANCE_PORTS=.*"))
-			Expect(appStdout).To(MatchRegexp("CF_STACK=.*"))
-			Expect(appStdout).To(MatchRegexp("VCAP_APPLICATION=.*"))
-			Expect(appStdout).To(MatchRegexp("VCAP_SERVICES=.*"))
-
-			// these vars are set to the empty string (use m flag to make $ match eol)
-			Expect(appStdout).To(MatchRegexp("(?m)CF_INSTANCE_ADDR=$"))
-			Expect(appStdout).To(MatchRegexp("(?m)CF_INSTANCE_PORT=$"))
+				// these vars are set to the empty string (use m flag to make $ match eol)
+				MatchRegexp("(?m)CF_INSTANCE_ADDR=$"),
+				MatchRegexp("(?m)CF_INSTANCE_PORT=$"),
+			))
 		})
 
 		It("applies default environment variables while running apps and tasks", func() {

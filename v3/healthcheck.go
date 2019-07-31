@@ -43,7 +43,6 @@ var _ = V3Describe("Healthcheck", func() {
 	})
 
 	AfterEach(func() {
-		FetchRecentLogs(appGuid, token, Config)
 		DeleteApp(appGuid)
 	})
 

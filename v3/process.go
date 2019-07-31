@@ -42,7 +42,6 @@ var _ = V3Describe("process", func() {
 	})
 
 	AfterEach(func() {
-		FetchRecentLogs(appGuid, token, Config)
 		DeleteApp(appGuid)
 	})
 
