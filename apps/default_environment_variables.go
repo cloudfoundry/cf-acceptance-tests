@@ -165,13 +165,13 @@ exit 1
 					appLogsBuffer := logs.Tail(Config.GetUseLogCache(), appName)()
 					return string(appLogsBuffer.Contents())
 				}).Should(And(
-					MatchRegexp("TASK.*VCAP_SERVICES=.*"),
 					MatchRegexp("TASK.*LANG=en_US\\.UTF-8"),
 					MatchRegexp("TASK.*CF_INSTANCE_INTERNAL_IP=.*"),
 					MatchRegexp("TASK.*CF_INSTANCE_IP=.*"),
 					MatchRegexp("TASK.*CF_INSTANCE_PORTS=.*"),
 					MatchRegexp("TASK.*VCAP_APPLICATION=.*"),
 					MatchRegexp("TASK.*VCAP_SERVICES=.*"),
+
 					MatchRegexp("(?m)TASK.*CF_INSTANCE_ADDR=$"),
 					MatchRegexp("(?m)TASK.*CF_INSTANCE_PORT=$"),
 				))
