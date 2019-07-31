@@ -69,7 +69,6 @@ type config struct {
 
 	IncludeApps                     *bool `json:"include_apps"`
 	IncludeBackendCompatiblity      *bool `json:"include_backend_compatibility"`
-	IncludeCapiExperimental         *bool `json:"include_capi_experimental"`
 	IncludeCapiNoBridge             *bool `json:"include_capi_no_bridge"`
 	IncludeContainerNetworking      *bool `json:"include_container_networking"`
 	IncludeDetect                   *bool `json:"include_detect"`
@@ -167,7 +166,6 @@ func getDefaults() config {
 	defaults.IncludeDeployments = ptrToBool(false)
 
 	defaults.IncludeBackendCompatiblity = ptrToBool(false)
-	defaults.IncludeCapiExperimental = ptrToBool(false)
 	defaults.IncludeCapiNoBridge = ptrToBool(true)
 	defaults.IncludeContainerNetworking = ptrToBool(false)
 	defaults.CredhubMode = ptrToString("")
@@ -401,10 +399,6 @@ func validateConfig(config *config) Errors {
 	}
 	if config.IncludeBackendCompatiblity == nil {
 		errs.Add(fmt.Errorf("* 'include_backend_compatibility' must not be null"))
-	}
-
-	if config.IncludeCapiExperimental == nil {
-		errs.Add(fmt.Errorf("* 'include_capi_experimental' must not be null"))
 	}
 
 	if config.IncludeCapiNoBridge == nil {
@@ -962,10 +956,6 @@ func (c *config) GetIncludeRoutingIsolationSegments() bool {
 
 func (c *config) GetIncludeLoggingIsolationSegments() bool {
 	return *c.IncludeLoggingIsolationSegments
-}
-
-func (c *config) GetIncludeCapiExperimental() bool {
-	return *c.IncludeCapiExperimental
 }
 
 func (c *config) GetIncludeCapiNoBridge() bool {
