@@ -179,7 +179,6 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 		packageGuid                     string
 		spaceGuid                       string
 		appCreationEnvironmentVariables string
-		token                           string
 		expectedNullResponse            string
 	)
 
@@ -192,7 +191,6 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 		appCreationEnvironmentVariables = `"foo":"bar"`
 		appGuid = CreateDockerApp(appName, spaceGuid, `{"foo":"bar"}`)
 		packageGuid = CreateDockerPackage(appGuid, Config.GetPublicDockerAppImage())
-		token = GetAuthToken()
 
 		appUrl := "https://" + appName + "." + Config.GetAppsDomain()
 		nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait()
