@@ -394,12 +394,10 @@ For additional information refer to the [official
 wiki](https://github.com/golang/go/wiki/Modules) and the [official examples
 repo](https://github.com/go-modules-by-example/index)
 
-
 Although the default branch for this repository is `master`, we ask that all
 pull requests be made against the `develop` branch. Please run the unit tests
 and make sure they are passing before submitting. Use `./bin/run_units` to run
 these unit tests.
-
 
 **Note**: it is necessary to run the tests from the root of the repo.
 
