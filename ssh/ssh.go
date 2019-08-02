@@ -178,7 +178,7 @@ var _ = SshDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp(fmt.Sprintf(`VCAP_APPLICATION=.*"application_name":"%s"`, appName)))
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
-			Eventually(logs.Tail(Config.GetUseLogCache(), appName)).Should(Say("Successful remote access"))
+			Eventually(logs.Tail(Config.GetUseLogCache(), appName), Config.DefaultTimeoutDuration()).Should(Say("Successful remote access"))
 
 			Eventually(func() string {
 				return string(cf.Cf("events", appName).Wait().Out.Contents())
