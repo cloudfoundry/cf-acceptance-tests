@@ -2,6 +2,7 @@ package v3
 
 import (
 	"encoding/json"
+	"fmt"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -68,7 +70,8 @@ var _ = V3Describe("service instances", func() {
 			{Name: serviceInstance2Name},
 		}
 
-		listService := cf.Cf("curl", "/v3/service_instances").Wait()
+		spaceGuid := GetSpaceGuidFromName(TestSetup.RegularUserContext().Space)
+		listService := cf.Cf("curl", fmt.Sprintf("/v3/service_instances?space_guids=%s", spaceGuid)).Wait()
 		Expect(listService).To(Exit(0))
 
 		var res Response
