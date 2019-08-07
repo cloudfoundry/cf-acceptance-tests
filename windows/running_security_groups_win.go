@@ -148,7 +148,7 @@ func assertNetworkingPreconditions(clientAppName string, privateHost string, pri
 }
 
 var _ = WindowsDescribe("WINDOWS: App Instance Networking", func() {
-	Describe("WINDOWS: Using container-networking and running security-groups", func() {
+	SecurityGroupsDescribe("WINDOWS: Using container-networking and running security-groups", func() {
 		var serverAppName, clientAppName, privateHost, orgName, spaceName, securityGroupName string
 		var privatePort int
 
