@@ -17,13 +17,13 @@ type Manifest struct {
 }
 
 type Application struct {
-	Buildpacks []string `yaml:omitempty`
-	Command    string   `yaml:omitempty`
-	Instances  int      `yaml:omitempty`
-	Memory     string   `yaml:omitempty`
+	Buildpacks []string `yaml:",omitempty"`
+	Command    string   `yaml:",omitempty"`
+	Instances  int      `yaml:",omitempty"`
+	Memory     string   `yaml:",omitempty"`
 	Name       string
-	Path       string              `yaml:omitempty`
-	Routes     []map[string]string `yaml:omitempty`
+	Path       string              `yaml:",omitempty"`
+	Routes     []map[string]string `yaml:",omitempty"`
 }
 
 var Push = func(appName string, args ...string) *gexec.Session {
