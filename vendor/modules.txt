@@ -10,7 +10,7 @@ code.cloudfoundry.org/go-loggregator
 code.cloudfoundry.org/go-loggregator/rpc/loggregator_v2
 # code.cloudfoundry.org/rfc5424 v0.0.0-20180905210152-236a6d29298a
 code.cloudfoundry.org/rfc5424
-# github.com/cloudfoundry-incubator/cf-test-helpers v0.0.0-20190322190241-a89c343eccaf
+# github.com/cloudfoundry-incubator/cf-test-helpers v1.0.1-0.20190808212627-17e69b892df5
 github.com/cloudfoundry-incubator/cf-test-helpers/cf
 github.com/cloudfoundry-incubator/cf-test-helpers/helpers
 github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers

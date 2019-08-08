@@ -8,7 +8,7 @@ require (
 	code.cloudfoundry.org/go-diodes v0.0.0-20180905200951-72629b5276e3 // indirect
 	code.cloudfoundry.org/go-loggregator v7.3.0+incompatible
 	code.cloudfoundry.org/rfc5424 v0.0.0-20180905210152-236a6d29298a // indirect
-	github.com/cloudfoundry-incubator/cf-test-helpers v0.0.0-20190322190241-a89c343eccaf
+	github.com/cloudfoundry-incubator/cf-test-helpers v1.0.1-0.20190808212627-17e69b892df5
 	github.com/cloudfoundry/custom-cats-reporters v0.0.0-20180629210428-75213ee79907
 	github.com/cloudfoundry/gosteno v0.0.0-20150423193413-0c8581caea35 // indirect
 	github.com/cloudfoundry/loggregatorlib v0.0.0-20160505035404-03bfd6ee4743 // indirect
@@ -37,5 +37,4 @@ require (
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20161208181325-20d25e280405 // indirect
 	gopkg.in/yaml.v2 v2.0.0-20160928153709-a5b47d31c556 // indirect
-	launchpad.net/gocheck v0.0.0-20140225173054-000000000087 // indirect
 )
