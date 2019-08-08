@@ -73,8 +73,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 	Describe("pushing", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push",
-				appName,
+			Expect(cf.Push(appName,
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
@@ -91,8 +90,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			var appPath = "/imposter_dora"
 
 			BeforeEach(func() {
-				Expect(cf.Cf("push",
-					appName,
+				Expect(cf.Push(appName,
 					"-b", Config.GetBinaryBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", assets.NewAssets().Catnip,
@@ -100,7 +98,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 				app2 = random_name.CATSRandomName("APP")
-				Expect(cf.Cf("push", app2, "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				Expect(cf.Push(app2, "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			})
 
 			AfterEach(func() {
@@ -150,8 +148,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 		Context("multiple instances", func() {
 			BeforeEach(func() {
-				Expect(cf.Cf("push",
-					appName,
+				Expect(cf.Push(appName,
 					"-b", Config.GetBinaryBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", assets.NewAssets().Catnip,
@@ -201,8 +198,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 		})
 
 		It("makes system environment variables available", func() {
-			Expect(cf.Cf("push",
-				appName,
+			Expect(cf.Push(appName,
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
@@ -248,8 +244,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 		})
 
 		It("generates an app usage 'started' event", func() {
-			Expect(cf.Cf("push",
-				appName,
+			Expect(cf.Push(appName,
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
@@ -262,8 +257,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 		})
 
 		It("generates an app usage 'buildpack_set' event", func() {
-			Expect(cf.Cf("push",
-				appName,
+			Expect(cf.Push(appName,
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
@@ -280,8 +274,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 	Describe("stopping", func() {
 		BeforeEach(func() {
-			Expect(cf.Cf("push",
-				appName,
+			Expect(cf.Push(appName,
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
@@ -324,8 +317,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 	Describe("updating", func() {
 		BeforeEach(func() {
-			Expect(cf.Cf("push",
-				appName,
+			Expect(cf.Push(appName,
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
@@ -338,8 +330,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				return helpers.CurlAppRoot(Config, appName)
 			}).Should(ContainSubstring("Catnip?"))
 
-			Expect(cf.Cf("push",
-				appName,
+			Expect(cf.Push(appName,
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().HelloWorld,
@@ -360,8 +351,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait()
 			expectedNullResponse = string(nullSession.Buffer().Contents())
 
-			Expect(cf.Cf("push",
-				appName,
+			Expect(cf.Push(appName,
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
