@@ -396,7 +396,7 @@ unless the test specifically needs to use a buildpack name or URL specific to th
   For example:
 
   ```go
-  Expect(cf.Cf("push", appName,
+  Expect(cf.Push(appName,
       "-b", buildpackName,                  // specify buildpack
       "-m", DEFAULT_MEMORY_LIMIT,           // specify memory limit
       "-d", Config.AppsDomain,              // specify app domain

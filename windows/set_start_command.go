@@ -20,8 +20,7 @@ var _ = WindowsDescribe("Setting an app's start command", func() {
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Cf("push",
-			appName,
+		Expect(cf.Push(appName,
 			"--no-route",
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetBinaryBuildpackName(),

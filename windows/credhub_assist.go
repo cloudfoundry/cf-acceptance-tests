@@ -182,7 +182,7 @@ echo   web: webapp.exe
 				Expect(createBuildpack).Should(Say("Uploading"))
 				Expect(createBuildpack).Should(Say("OK"))
 			})
-			Expect(cf.Cf("push", appName,
+			Expect(cf.Push(appName,
 				"--no-start",
 				"-b", buildpackName,
 				"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
@@ -243,8 +243,7 @@ echo   web: webapp.exe
 
 			WindowsAssistedCredhubDescribe("", func() {
 				BeforeEach(func() {
-					Expect(cf.Cf("push",
-						appName,
+					Expect(cf.Push(appName,
 						"--no-start",
 						"-s", Config.GetWindowsStack(),
 						"-b", Config.GetHwcBuildpackName(),

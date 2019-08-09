@@ -46,8 +46,7 @@ type CatnipCurlResponse struct {
 }
 
 func pushApp(appName, buildpack string) {
-	Expect(cf.Cf("push",
-		appName,
+	Expect(cf.Push(appName,
 		"--no-start",
 		"-b", buildpack,
 		"-m", DEFAULT_MEMORY_LIMIT,

@@ -18,8 +18,7 @@ var _ = AppsDescribe("Encoding", func() {
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
-		Expect(cf.Cf("push",
-			appName,
+		Expect(cf.Push(appName,
 			"--no-start",
 			"-b", Config.GetJavaBuildpackName(),
 			"-p", assets.NewAssets().Java,
