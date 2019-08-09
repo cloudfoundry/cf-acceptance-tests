@@ -122,7 +122,7 @@ EOF
 			_, err = os.Create(path.Join(appPath, "some-file"))
 			Expect(err).ToNot(HaveOccurred())
 
-			createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "0").Wait()
+			createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "1").Wait()
 			Expect(createBuildpack).Should(Exit(0))
 			Expect(createBuildpack).Should(Say("Creating"))
 			Expect(createBuildpack).Should(Say("OK"))
@@ -193,7 +193,7 @@ EOF
 			_, err = os.Create(path.Join(appPath, "some-file"))
 			Expect(err).ToNot(HaveOccurred())
 
-			createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "0").Wait()
+			createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "1").Wait()
 			Expect(createBuildpack).Should(Exit(0))
 			Expect(createBuildpack).Should(Say("Creating"))
 			Expect(createBuildpack).Should(Say("OK"))
@@ -257,7 +257,7 @@ exit 1
 			_, err = os.Create(path.Join(appPath, "some-file"))
 			Expect(err).ToNot(HaveOccurred())
 
-			createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "0").Wait()
+			createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "1").Wait()
 			Expect(createBuildpack).Should(Exit(0))
 			Expect(createBuildpack).Should(Say("Creating"))
 			Expect(createBuildpack).Should(Say("OK"))
