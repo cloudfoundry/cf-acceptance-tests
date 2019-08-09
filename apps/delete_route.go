@@ -27,8 +27,7 @@ var _ = AppsDescribe("Delete Route", func() {
 		nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait()
 		expectedNullResponse = string(nullSession.Buffer().Contents())
 
-		Expect(cf.Cf("push",
-			appName,
+		Expect(cf.Push(appName,
 			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Catnip,
