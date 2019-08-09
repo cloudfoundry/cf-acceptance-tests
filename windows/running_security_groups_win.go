@@ -42,8 +42,7 @@ type NoraCurlResponse struct {
 }
 
 func pushApp(appName, buildpack string) {
-	Expect(cf.Cf("push",
-		appName,
+	Expect(cf.Push(appName,
 		"-s", Config.GetWindowsStack(),
 		"-b", buildpack,
 		"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,

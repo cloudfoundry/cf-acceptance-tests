@@ -28,8 +28,7 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 
 	It("exercises the app through its lifecycle", func() {
 		By("pushing it", func() {
-			Expect(cf.Cf("push",
-				appName,
+			Expect(cf.Push(appName,
 				"-s", Config.GetWindowsStack(),
 				"-b", Config.GetHwcBuildpackName(),
 				"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,

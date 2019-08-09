@@ -92,8 +92,7 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		})
 
 		By("pushing an app")
-		Expect(cf.Cf("push",
-			appName,
+		Expect(cf.Push(appName,
 			"-b", Config.GetGoBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", poraAsset,

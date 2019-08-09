@@ -192,7 +192,7 @@ EOF
 				Expect(createBuildpack).Should(Say("OK"))
 
 			})
-			Expect(cf.Cf("push", appName,
+			Expect(cf.Push(appName,
 				"--no-start",
 				"-b", buildpackName,
 				"-m", DEFAULT_MEMORY_LIMIT,
