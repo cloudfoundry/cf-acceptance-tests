@@ -123,7 +123,7 @@ EOF
 	})
 
 	It("uses the buildpack cache after first staging", func() {
-		Expect(cf.Cf("push", appName,
+		Expect(cf.Push(appName,
 			"-b", BuildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", appPath,

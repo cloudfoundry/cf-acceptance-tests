@@ -45,16 +45,14 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
 
-				Expect(cf.Cf("push",
-					appName,
+				Expect(cf.Push(appName,
 					"-b", Config.GetGoBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", golangAsset,
 					"-f", filepath.Join(golangAsset, "manifest.yml"),
 					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-				Expect(cf.Cf("push",
-					routeServiceName,
+				Expect(cf.Push(routeServiceName,
 					"-b", Config.GetGoBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", loggingRouteServiceAsset,
@@ -106,8 +104,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
 
-				Expect(cf.Cf("push",
-					appName,
+				Expect(cf.Push(appName,
 					"-b", Config.GetGoBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", golangAsset,
@@ -253,8 +250,7 @@ func configureBroker(serviceBrokerAppName, routeServiceName string) {
 
 func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 	serviceBrokerAsset := assets.NewAssets().ServiceBroker
-	Expect(cf.Cf("push",
-		brokerAppName,
+	Expect(cf.Push(brokerAppName,
 		"-b", Config.GetRubyBuildpackName(),
 		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", serviceBrokerAsset,

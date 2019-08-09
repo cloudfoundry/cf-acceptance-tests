@@ -93,7 +93,7 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 		}
 
 		BeforeEach(func() {
-			Expect(cf.Cf("push", appName, "-b", Config.GetNodejsBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().NodeWithProcfile, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			Expect(cf.Push(appName, "-b", Config.GetNodejsBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().NodeWithProcfile, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		It("detects the use of the start command in the 'web' process type", func() {
