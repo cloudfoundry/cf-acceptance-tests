@@ -25,8 +25,7 @@ var _ = WindowsDescribe("Task Lifecycle", func() {
 
 		appName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Cf("push",
-			appName,
+		Expect(cf.Push(appName,
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetBinaryBuildpackName(),
 			"-c", ".\\webapp.exe",

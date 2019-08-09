@@ -41,8 +41,7 @@ var _ = AppsDescribe("loggregator", func() {
 	BeforeEach(func() {
 		appName = CATSRandomName("APP")
 
-		Expect(cf.Cf("push",
-			appName,
+		Expect(cf.Push(appName,
 			"-b", Config.GetRubyBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().LoggregatorLoadGenerator,

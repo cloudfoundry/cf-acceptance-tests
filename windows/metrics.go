@@ -32,8 +32,7 @@ var _ = WindowsDescribe("Metrics", func() {
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Cf("push",
-			appName,
+		Expect(cf.Push(appName,
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
