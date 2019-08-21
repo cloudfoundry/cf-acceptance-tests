@@ -91,7 +91,7 @@ exit 1
 				"-p", assets.NewAssets().HelloWorld,
 				"-b", buildpackName,
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
+			).Wait(Config.CfPushTimeoutDuration())
 
 			Eventually(push, Config.CfPushTimeoutDuration()).Should(Exit(1))
 
@@ -119,7 +119,7 @@ exit 1
 				"-p", assets.NewAssets().Binary,
 				"-b", "binary_buildpack",
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-d", Config.GetAppsDomain()),
+			),
 				Config.CfPushTimeoutDuration(),
 			).Should(Exit(0))
 
