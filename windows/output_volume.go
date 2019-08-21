@@ -18,7 +18,8 @@ var _ = WindowsDescribe("An application printing a bunch of output", func() {
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Push(appName,
+		Expect(cf.Cf("push",
+			appName,
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
 			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,

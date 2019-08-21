@@ -26,7 +26,8 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 
 	BeforeEach(func() {
 		app1 = random_name.CATSRandomName("APP")
-		Expect(cf.Push(app1,
+		Expect(cf.Cf("push",
+			app1,
 			"-b", Config.GetJavaBuildpackName(),
 			"-m", "1024M",
 			"-p", helloRoutingAsset,

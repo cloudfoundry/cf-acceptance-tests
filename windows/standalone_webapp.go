@@ -27,7 +27,8 @@ var _ = WindowsDescribe("A standalone webapp", func() {
 	})
 
 	It("stages and runs the app", func() {
-		Expect(cf.Push(appName,
+		Expect(cf.Cf("push",
+			appName,
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetBinaryBuildpackName(),
 			"-c", ".\\webapp.exe",
