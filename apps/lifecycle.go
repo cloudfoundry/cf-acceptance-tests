@@ -78,7 +78,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
@@ -95,10 +95,10 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", assets.NewAssets().Catnip,
 					"-c", "./catnip",
-					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 				app2 = random_name.CATSRandomName("APP")
-				Expect(cf.Push(app2, "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				Expect(cf.Push(app2, "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			})
 
 			AfterEach(func() {
@@ -154,7 +154,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 					"-p", assets.NewAssets().Catnip,
 					"-c", "./catnip",
 					"-i", "2",
-					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			})
 
 			It("is able to start all instances", func() {
@@ -203,7 +203,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			var envOutput string
 			envOutput = helpers.CurlApp(Config, appName, "/env.json")
@@ -249,7 +249,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration()),
+			).Wait(Config.CfPushTimeoutDuration()),
 			).To(Exit(0))
 
 			found, _ := lastAppUsageEvent(appName, "STARTED")
@@ -263,7 +263,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			found, matchingEvent := lastAppUsageEvent(appName, "BUILDPACK_SET")
 
@@ -280,7 +280,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		It("makes the app unreachable", func() {
@@ -323,7 +323,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		It("is reflected through another push", func() {
@@ -336,7 +336,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().HelloWorld,
 				"-c", "null",
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
@@ -357,7 +357,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		It("removes the application", func() {
