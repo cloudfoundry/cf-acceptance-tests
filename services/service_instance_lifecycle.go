@@ -245,7 +245,8 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 			BeforeEach(func() {
 				appName = random_name.CATSRandomName("APP")
-				createApp := cf.Push(appName,
+				createApp := cf.Cf("push",
+					appName,
 					"-b", Config.GetBinaryBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", assets.NewAssets().Catnip,
@@ -433,7 +434,8 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					var appName string
 					BeforeEach(func() {
 						appName = random_name.CATSRandomName("APP")
-						createApp := cf.Push(appName,
+						createApp := cf.Cf("push",
+							appName,
 							"-b", Config.GetBinaryBuildpackName(),
 							"-m", DEFAULT_MEMORY_LIMIT,
 							"-p", assets.NewAssets().Catnip,
@@ -503,7 +505,8 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 				waitForAsyncOperationToCompleteAndSay(broker, instanceName, "succeeded")
 
 				appName = random_name.CATSRandomName("APP")
-				createApp := cf.Push(appName,
+				createApp := cf.Cf("push",
+					appName,
 					"--no-start",
 					"-b", Config.GetBinaryBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,

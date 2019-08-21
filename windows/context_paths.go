@@ -34,7 +34,8 @@ var _ = WindowsDescribe("Context Paths", func() {
 		domain := Config.GetAppsDomain()
 
 		appName1 = random_name.CATSRandomName("APP")
-		Expect(cf.Push(appName1,
+		Expect(cf.Cf("push",
+			appName1,
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
 			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
@@ -43,7 +44,8 @@ var _ = WindowsDescribe("Context Paths", func() {
 
 		// .NET Apps must be pushed with --no-start --no-route before running cf map-route
 		appName2 = random_name.CATSRandomName("APP")
-		Expect(cf.Push(appName2,
+		Expect(cf.Cf("push",
+			appName2,
 			"--no-start",
 			"--no-route",
 			"-s", Config.GetWindowsStack(),
@@ -53,7 +55,8 @@ var _ = WindowsDescribe("Context Paths", func() {
 
 		// .NET Apps must be pushed with --no-start --no-route before running cf map-route
 		appName3 = random_name.CATSRandomName("APP")
-		Expect(cf.Push(appName3,
+		Expect(cf.Cf("push",
+			appName3,
 			"--no-start",
 			"--no-route",
 			"-s", Config.GetWindowsStack(),

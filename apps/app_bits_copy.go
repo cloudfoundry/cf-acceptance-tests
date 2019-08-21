@@ -21,14 +21,14 @@ var _ = AppsDescribe("Copy app bits", func() {
 		golangAppName = random_name.CATSRandomName("APP")
 		helloWorldAppName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Push(golangAppName,
+		Expect(cf.Cf("push", golangAppName,
 			"--no-start",
 			"-b", Config.GetRubyBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Golang,
 			"-d", Config.GetAppsDomain(),
 		).Wait()).To(Exit(0))
-		Expect(cf.Push(helloWorldAppName,
+		Expect(cf.Cf("push", helloWorldAppName,
 			"--no-start",
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().HelloWorld,

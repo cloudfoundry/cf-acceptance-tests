@@ -136,7 +136,7 @@ EOF
 					expectedLSBRelease = "DISTRIB_CODENAME=bionic"
 				}
 
-				push := cf.Push(appName,
+				push := cf.Cf("push", appName,
 					"-b", buildpackName,
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", appPath,

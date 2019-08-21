@@ -104,7 +104,8 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			By("Asserting User B can bind to the shared service")
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
 				appName = random_name.CATSRandomName("APP")
-				Expect(cf.Push(appName,
+				Expect(cf.Cf("push",
+					appName,
 					"-b", Config.GetBinaryBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", assets.NewAssets().Catnip,
@@ -133,7 +134,8 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
 				By("Asserting the User B can bind to the shared service")
 				appName = random_name.CATSRandomName("APP")
-				Expect(cf.Push(appName,
+				Expect(cf.Cf("push",
+					appName,
 					"-b", Config.GetBinaryBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", assets.NewAssets().Catnip,
@@ -157,7 +159,8 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
 				By("Asserting User B can bind to the shared service")
 				appName = random_name.CATSRandomName("APP")
-				Expect(cf.Push(appName,
+				Expect(cf.Cf("push",
+					appName,
 					"-b", Config.GetBinaryBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", assets.NewAssets().Catnip,
@@ -183,7 +186,8 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			By("Asserting User B can bind to the shared service")
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.DefaultTimeoutDuration(), func() {
 				appName = random_name.CATSRandomName("APP")
-				Expect(cf.Push(appName,
+				Expect(cf.Cf("push",
+					appName,
 					"-b", Config.GetBinaryBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", assets.NewAssets().Catnip,

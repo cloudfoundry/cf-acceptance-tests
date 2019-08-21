@@ -32,7 +32,8 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("ruby", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Push(appName,
+			Expect(cf.Cf("push",
+				appName,
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().HelloWorld,
 				"-d", Config.GetAppsDomain()).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
@@ -45,7 +46,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("node", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Push(appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Node, "-d", Config.GetAppsDomain()).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Node, "-d", Config.GetAppsDomain()).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
@@ -55,7 +56,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("java", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Push(appName, "--no-start", "-p", assets.NewAssets().Java, "-m", "1024M", "-d", Config.GetAppsDomain()).Wait()).To(Exit(0))
+			Expect(cf.Cf("push", appName, "--no-start", "-p", assets.NewAssets().Java, "-m", "1024M", "-d", Config.GetAppsDomain()).Wait()).To(Exit(0))
 			Expect(cf.Cf("set-env", appName, "JAVA_OPTS", "-Djava.security.egd=file:///dev/urandom").Wait()).To(Exit(0))
 			Expect(cf.Cf("start", appName).Wait(CF_JAVA_TIMEOUT)).To(Exit(0))
 
@@ -67,7 +68,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("golang", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Push(appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Golang, "-f", filepath.Join(assets.NewAssets().Golang, "manifest.yml"), "-d", Config.GetAppsDomain()).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Golang, "-f", filepath.Join(assets.NewAssets().Golang, "manifest.yml"), "-d", Config.GetAppsDomain()).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
@@ -77,7 +78,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("python", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Push(appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Python, "-d", Config.GetAppsDomain()).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Python, "-d", Config.GetAppsDomain()).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
@@ -94,7 +95,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 		})
 
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Push(appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Php, "-d", Config.GetAppsDomain()).Wait(phpPushTimeout)).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Php, "-d", Config.GetAppsDomain()).Wait(phpPushTimeout)).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
@@ -107,7 +108,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 		// from the dotnet core buildpack until end of the version's LTS in 2019
 
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Push(appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().DotnetCore, "-d", Config.GetAppsDomain()).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().DotnetCore, "-d", Config.GetAppsDomain()).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
@@ -117,7 +118,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("staticfile", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Push(appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Staticfile, "-d", Config.GetAppsDomain()).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Staticfile, "-d", Config.GetAppsDomain()).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
@@ -127,7 +128,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("binary", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Push(appName, "-b", Config.GetBinaryBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Binary, "-d", Config.GetAppsDomain()).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-b", Config.GetBinaryBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Binary, "-d", Config.GetAppsDomain()).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)

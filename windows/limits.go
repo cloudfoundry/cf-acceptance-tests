@@ -18,7 +18,8 @@ var _ = WindowsDescribe("App Limits", func() {
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Push(appName,
+		Expect(cf.Cf("push",
+			appName,
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
 			"-m", "256m",
