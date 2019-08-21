@@ -295,17 +295,18 @@ exit 1
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 			Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait()).To(Exit(0))
 		})
-		push := cf.Push(appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
+		push := cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath).Wait(Config.CfPushTimeoutDuration())
 		Expect(push).To(Exit(1))
 		Expect(combineOutput(push.Out, push.Err)).To(Say(noAppDetectedErrorRegexp))
 	}
 
 	itRaisesBuildpackCompileFailedError := func() {
-		push := cf.Push(appName,
+		push := cf.Cf("push",
+			appName,
 			"-b", buildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", appPath,
-			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
+		).Wait(Config.CfPushTimeoutDuration())
 		Expect(push).To(Exit(1))
 		Expect(combineOutput(push.Out, push.Err)).To(Say(buildpackCompileFailedRegexp))
 	}
@@ -340,7 +341,7 @@ exit 1
 		It("stages the app using the specified buildpack", func() {
 			setupBadDetectBuildpack(appConfig{Empty: false})
 
-			Expect(cf.Push(appName, "-b", buildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-b", buildpackName, "-m", DEFAULT_MEMORY_LIMIT, "-p", appPath).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			appOutput := cf.Cf("app", appName).Wait()
 			Expect(appOutput).To(Say("buildpacks?:\\s+" + buildpackName))
