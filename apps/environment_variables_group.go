@@ -130,7 +130,7 @@ exit 1
 				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait()).To(Exit(0))
 			})
 
-			Expect(cf.Push(appName, "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
+			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 
 			Eventually(logs.Tail(Config.GetUseLogCache(), appName)).Should(Say(envVarValue))
 		})
@@ -161,7 +161,8 @@ exit 1
 				extendEnv("running", envVarName, envVarValue)
 			})
 
-			Expect(cf.Push(appName,
+			Expect(cf.Cf("push",
+				appName,
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,

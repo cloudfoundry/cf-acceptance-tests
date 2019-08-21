@@ -53,7 +53,8 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 			target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 			Expect(target).To(Exit(0), "failed targeting")
 
-			createApp := cf.Push(appName,
+			createApp := cf.Cf("push",
+				appName,
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,

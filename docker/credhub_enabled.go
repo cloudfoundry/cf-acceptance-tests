@@ -29,7 +29,7 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 
 			chBrokerName = random_name.CATSRandomName("BRKR-CH")
 
-			pushBroker := cf.Push(chBrokerName, "-b", Config.GetGoBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().CredHubServiceBroker, "-f", assets.NewAssets().CredHubServiceBroker+"/manifest.yml", "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
+			pushBroker := cf.Cf("push", chBrokerName, "-b", Config.GetGoBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().CredHubServiceBroker, "-f", assets.NewAssets().CredHubServiceBroker+"/manifest.yml", "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
 			Expect(pushBroker).To(Exit(0), "failed pushing credhub-enabled service broker")
 
 			existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait().Out.Contents())

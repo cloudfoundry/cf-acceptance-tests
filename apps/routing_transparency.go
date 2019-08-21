@@ -19,7 +19,8 @@ var _ = AppsDescribe("Routing Transparency", func() {
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
-		Expect(cf.Push(appName,
+		Expect(cf.Cf("push",
+			appName,
 			"-b", Config.GetGoBuildpackName(),
 			"-p", assets.NewAssets().Golang,
 			"-f", filepath.Join(assets.NewAssets().Golang, "manifest.yml"),
