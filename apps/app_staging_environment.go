@@ -98,7 +98,7 @@ EOF
 			_, err = os.Create(path.Join(appPath, "some-file"))
 			Expect(err).ToNot(HaveOccurred())
 
-			createBuildpack := cf.Cf("create-buildpack", BuildpackName, buildpackArchivePath, "0").Wait()
+			createBuildpack := cf.Cf("create-buildpack", BuildpackName, buildpackArchivePath, "1").Wait()
 			Expect(createBuildpack).Should(Exit(0))
 			Expect(createBuildpack).Should(Say("Creating"))
 			Expect(createBuildpack).Should(Say("OK"))
@@ -124,7 +124,6 @@ EOF
 			"-b", BuildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", appPath,
-			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())
 		Expect(push).To(Exit(0))
 		Expect(push).To(Say("RUBY_LOCATION=/usr/bin/ruby"))
