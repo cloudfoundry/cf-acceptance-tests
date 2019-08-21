@@ -46,7 +46,6 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
-				"-d", Config.GetAppsDomain(),
 				"-c", "FOO=foo ./catnip",
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
@@ -93,7 +92,7 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 		}
 
 		BeforeEach(func() {
-			Expect(cf.Cf("push", appName, "-b", Config.GetNodejsBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().NodeWithProcfile, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-b", Config.GetNodejsBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().NodeWithProcfile).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		It("detects the use of the start command in the 'web' process type", func() {

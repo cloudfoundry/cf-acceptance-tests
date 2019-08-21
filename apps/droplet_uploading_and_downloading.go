@@ -55,7 +55,7 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 	BeforeEach(func() {
 		helloWorldAppName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Cf("push", helloWorldAppName, "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("push", helloWorldAppName, "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {
