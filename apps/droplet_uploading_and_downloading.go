@@ -55,7 +55,7 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 	BeforeEach(func() {
 		helloWorldAppName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Push(helloWorldAppName, "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("push", helloWorldAppName, "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {
@@ -77,7 +77,7 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 		unpackTarball(appDropletPathToCompressedFile)
 
 		By("Pushing a different version of the app")
-		Expect(cf.Push(helloWorldAppName, "-p", assets.NewAssets().RubySimple).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("push", helloWorldAppName, "-p", assets.NewAssets().RubySimple).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, helloWorldAppName)
 		}).Should(ContainSubstring("Healthy"))

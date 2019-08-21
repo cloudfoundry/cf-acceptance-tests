@@ -31,7 +31,8 @@ var _ = RoutingDescribe("Session Affinity", func() {
 		)
 		BeforeEach(func() {
 			appName = random_name.CATSRandomName("APP")
-			Expect(cf.Push(appName,
+			Expect(cf.Cf("push",
+				appName,
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
@@ -83,7 +84,8 @@ var _ = RoutingDescribe("Session Affinity", func() {
 
 		BeforeEach(func() {
 			appName = random_name.CATSRandomName("APP")
-			Expect(cf.Push(appName,
+			Expect(cf.Cf("push",
+				appName,
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", helloWorldAsset,
@@ -135,13 +137,15 @@ var _ = RoutingDescribe("Session Affinity", func() {
 			domain := Config.GetAppsDomain()
 
 			app1 = random_name.CATSRandomName("APP")
-			Expect(cf.Push(app1,
+			Expect(cf.Cf("push",
+				app1,
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
 				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			app2 = random_name.CATSRandomName("APP")
-			Expect(cf.Push(app2,
+			Expect(cf.Cf("push",
+				app2,
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
@@ -214,13 +218,15 @@ var _ = RoutingDescribe("Session Affinity", func() {
 			domain := Config.GetAppsDomain()
 
 			app1 = random_name.CATSRandomName("APP")
-			Expect(cf.Push(app1,
+			Expect(cf.Cf("push",
+				app1,
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
 				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			app2 = random_name.CATSRandomName("APP")
-			Expect(cf.Push(app2,
+			Expect(cf.Cf("push",
+				app2,
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,

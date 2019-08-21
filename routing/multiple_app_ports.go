@@ -8,8 +8,6 @@ import (
 	"path/filepath"
 
 	"encoding/json"
-	"regexp"
-
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
@@ -18,6 +16,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	"regexp"
 )
 
 var _ = RoutingDescribe("Multiple App Ports", func() {
@@ -31,7 +30,8 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 		app = random_name.CATSRandomName("APP")
 		cmd := fmt.Sprintf("go-online --ports=7777,8888,8080")
 
-		Expect(cf.Push(app,
+		Expect(cf.Cf("push",
+			app,
 			"-b", Config.GetGoBuildpackName(),
 			"-c", cmd,
 			"-f", filepath.Join(multiPortAppAsset, "manifest.yml"),

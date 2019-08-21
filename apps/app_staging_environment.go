@@ -120,7 +120,7 @@ EOF
 	})
 
 	It("uses a ruby binary for staging", func() {
-		push := cf.Push(appName,
+		push := cf.Cf("push", appName,
 			"-b", BuildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", appPath,

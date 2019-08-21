@@ -1,21 +1,20 @@
 package tcp_routing
 
 import (
-	"fmt"
-	"net"
-	"path/filepath"
-	"regexp"
-	"time"
-
-	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
-	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
+	"time"
+	"fmt"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"regexp"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
+	"net"
+	"path/filepath"
 )
 
 const DefaultRouterGroupName = "default-tcp"
@@ -51,9 +50,10 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 			appName = random_name.CATSRandomName("APP")
 			cmd := fmt.Sprintf("tcp-listener --serverId=%s", serverId1)
 
-			Expect(cf.Push(appName,
+			Expect(cf.Cf("push",
 				"--no-route",
 				"--no-start",
+				appName,
 				"-p", tcpDropletReceiver,
 				"-b", Config.GetGoBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
@@ -85,9 +85,10 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 				secondAppName = random_name.CATSRandomName("APP")
 				cmd := fmt.Sprintf("tcp-listener --serverId=%s", serverId2)
 
-				Expect(cf.Push(secondAppName,
+				Expect(cf.Cf("push",
 					"--no-route",
 					"--no-start",
+					secondAppName,
 					"-p", tcpDropletReceiver,
 					"-b", Config.GetGoBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,

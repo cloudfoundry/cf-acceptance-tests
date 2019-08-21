@@ -29,7 +29,8 @@ var _ = AppsDescribe("An application being staged", func() {
 	})
 
 	It("has its staging log streamed during a push", func() {
-		push := cf.Push(appName,
+		push := cf.Cf("push",
+			appName,
 			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Catnip,

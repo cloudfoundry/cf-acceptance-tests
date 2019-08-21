@@ -50,7 +50,8 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 
 		It("removes all instances and plans of the service, then removes the service offering", func() {
 			By("Having bound service instances")
-			createApp := cf.Push(appName,
+			createApp := cf.Cf("push",
+				appName,
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
@@ -117,7 +118,8 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 		It("removes all instances and plans of the service, then removes the service offering", func() {
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), TestSetup.ShortTimeout(), func() {
 				By("Having bound service instances")
-				createApp := cf.Push(appName,
+				createApp := cf.Cf("push",
+					appName,
 					"-b", Config.GetBinaryBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", assets.NewAssets().Catnip,

@@ -119,7 +119,8 @@ var _ = TasksDescribe("v3 tasks", func() {
 
 	Context("tasks lifecycle", func() {
 		BeforeEach(func() {
-			Expect(cf.Push(appName,
+			Expect(cf.Cf("push",
+				appName,
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,

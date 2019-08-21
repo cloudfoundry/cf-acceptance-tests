@@ -30,7 +30,7 @@ var _ = WindowsDescribe("apps without a port", func() {
 
 		appName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Push(appName,
+		Expect(cf.Cf("push", appName,
 			"--no-route",
 			"--no-start",
 			"-p", filepath.Dir(workerPath),

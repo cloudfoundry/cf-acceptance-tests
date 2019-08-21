@@ -49,7 +49,8 @@ var _ = ServicesDescribe("Purging service instances", func() {
 
 		It("removes the service instance", func() {
 			By("Having a bound service instance")
-			createApp := cf.Push(appName,
+			createApp := cf.Cf("push",
+				appName,
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
@@ -107,7 +108,8 @@ var _ = ServicesDescribe("Purging service instances", func() {
 		It("removes the service instance", func() {
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), TestSetup.ShortTimeout(), func() {
 				By("Having a bound service instance")
-				createApp := cf.Push(appName,
+				createApp := cf.Cf("push",
+					appName,
 					"-b", Config.GetBinaryBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", assets.NewAssets().Catnip,
