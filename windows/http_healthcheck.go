@@ -21,7 +21,8 @@ var _ = WindowsDescribe("Http Healthcheck", func() {
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Push(appName,
+		Expect(cf.Cf("push",
+			appName,
 			"--no-start",
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),

@@ -20,7 +20,7 @@ var _ = InternetDependentDescribe("GitBuildpack", func() {
 
 	It("uses a buildpack from a git url", func() {
 		appName = random_name.CATSRandomName("APP")
-		Expect(cf.Push(appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Node, "-b", "https://github.com/cloudfoundry/nodejs-buildpack.git#v1.3.1", "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Node, "-b", "https://github.com/cloudfoundry/nodejs-buildpack.git#v1.3.1", "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, appName)

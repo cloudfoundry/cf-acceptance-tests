@@ -20,7 +20,8 @@ var _ = AppsDescribe("An application printing a bunch of output", func() {
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Push(appName,
+		Expect(cf.Cf("push",
+			appName,
 			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Catnip,
