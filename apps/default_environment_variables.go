@@ -91,9 +91,9 @@ exit 1
 				"-p", assets.NewAssets().HelloWorld,
 				"-b", buildpackName,
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
-			Eventually(pushSession, Config.CfPushTimeoutDuration()).Should(Exit(1))
+			).Wait(Config.CfPushTimeoutDuration())
 
+			Eventually(pushSession, Config.CfPushTimeoutDuration()).Should(Exit(1))
 			pushSessionContent := pushSession.Buffer().Contents()
 
 			Expect(string(pushSessionContent)).To(MatchRegexp("LANG=en_US\\.UTF-8"))
@@ -115,7 +115,7 @@ exit 1
 				"-p", assets.NewAssets().Binary,
 				"-b", "binary_buildpack",
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-d", Config.GetAppsDomain()),
+			),
 				Config.CfPushTimeoutDuration(),
 			).Should(Exit(0))
 
