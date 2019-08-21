@@ -130,7 +130,7 @@ exit 1
 				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait()).To(Exit(0))
 			})
 
-			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
+			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 
 			Eventually(logs.Tail(Config.GetUseLogCache(), appName)).Should(Say(envVarValue))
 		})
@@ -167,7 +167,7 @@ exit 1
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			env := helpers.CurlApp(Config, appName, "/env.json")
 
