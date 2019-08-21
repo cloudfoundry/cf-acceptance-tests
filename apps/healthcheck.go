@@ -38,9 +38,8 @@ var _ = AppsDescribe("Healthcheck", func() {
 				"-f", filepath.Join(assets.NewAssets().WorkerApp, "manifest.yml"),
 				"-b", "go_buildpack",
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-d", Config.GetAppsDomain(),
 				"-i", "1",
-				"-u", "none"),
+				"-u", "process"),
 				Config.CfPushTimeoutDuration(),
 			).Should(Exit(0))
 
@@ -62,7 +61,6 @@ var _ = AppsDescribe("Healthcheck", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
-				"-d", Config.GetAppsDomain(),
 				"-i", "1",
 				"-u", "port"),
 				Config.CfPushTimeoutDuration(),
@@ -82,7 +80,6 @@ var _ = AppsDescribe("Healthcheck", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
-				"-d", Config.GetAppsDomain(),
 				"-i", "1",
 				"-u", "port"),
 				Config.CfPushTimeoutDuration(),
