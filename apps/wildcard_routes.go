@@ -19,7 +19,6 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 	var appNameSimple string
 	var domainName string
 	var orgName string
-	var spaceName string
 
 	curlRoute := func(hostName string, path string) string {
 		uri := Config.Protocol() + hostName + "." + domainName + path
@@ -32,7 +31,6 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 
 	BeforeEach(func() {
 		orgName = TestSetup.RegularUserContext().Org
-		spaceName = TestSetup.RegularUserContext().Space
 
 		domainName = random_name.CATSRandomName("DOMAIN") + "." + Config.GetAppsDomain()
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
@@ -48,7 +46,6 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Catnip,
 			"-c", "./catnip",
-			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		Expect(cf.Cf(
@@ -56,7 +53,6 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 			"-b", Config.GetRubyBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().HelloWorld,
-			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
@@ -80,9 +76,9 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				Expect(cf.Cf("target", "-o", orgName).Wait()).To(Exit(0))
-				Expect(cf.Cf("create-route", spaceName, domainName, "-n", wildCardRoute).Wait()).To(Exit(0))
+				Expect(cf.Cf("create-route", domainName, "-n", wildCardRoute).Wait()).To(Exit(0))
 			})
-			Expect(cf.Cf("create-route", spaceName, domainName, "-n", regularRoute).Wait()).To(Exit(0))
+			Expect(cf.Cf("create-route", domainName, "-n", regularRoute).Wait()).To(Exit(0))
 
 			Expect(cf.Cf("map-route", appNameCatnip, domainName, "-n", wildCardRoute).Wait()).To(Exit(0))
 			Expect(cf.Cf("map-route", appNameSimple, domainName, "-n", regularRoute).Wait()).To(Exit(0))
