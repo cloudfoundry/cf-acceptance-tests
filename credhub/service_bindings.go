@@ -44,7 +44,6 @@ var _ = CredhubDescribe("service bindings", func() {
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().CredHubServiceBroker,
 			"-f", assets.NewAssets().CredHubServiceBroker+"/manifest.yml",
-			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed pushing credhub-enabled service broker")
 
 		existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait().Out.Contents())
@@ -197,7 +196,6 @@ EOF
 				"-b", buildpackName,
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", appPath,
-				"-d", Config.GetAppsDomain(),
 			).Wait()).To(Exit(0))
 
 			bindServiceAndStartApp(appName)
@@ -216,7 +214,7 @@ EOF
 		})
 
 		NonAssistedCredhubDescribe("", func() {
-			It("still contains CredHub references in VCAP_SERVICES", func() {
+			PIt("still contains CredHub references in VCAP_SERVICES", func() {
 				Expect(appStartSession).NotTo(Say("pinkyPie"))
 				Expect(appStartSession).NotTo(Say("rainbowDash"))
 				Expect(appStartSession).To(Say("credhub-ref"))
@@ -224,7 +222,7 @@ EOF
 		})
 
 		AssistedCredhubDescribe("", func() {
-			It("has CredHub references in VCAP_SERVICES interpolated", func() {
+			PIt("has CredHub references in VCAP_SERVICES interpolated", func() {
 				Expect(appStartSession).To(Say(`{"password":"rainbowDash","user-name":"pinkyPie"}`))
 				Expect(appStartSession).NotTo(Say("credhub-ref"))
 			})
@@ -260,19 +258,18 @@ EOF
 						"-b", Config.GetJavaBuildpackName(),
 						"-m", "1024M",
 						"-p", assets.NewAssets().CredHubEnabledApp,
-						"-d", Config.GetAppsDomain(),
 					).Wait(Config.CfPushTimeoutDuration())
 					Expect(createApp).To(Exit(0), "failed creating credhub-enabled app")
 					bindServiceAndStartApp(appName)
 				})
 
-				It("the broker returns credhub-ref in the credentials block", func() {
+				PIt("the broker returns credhub-ref in the credentials block", func() {
 					appEnv := string(cf.Cf("env", appName).Wait().Out.Contents())
 					Expect(appEnv).To(ContainSubstring("credentials"), "credential block missing from service")
 					Expect(appEnv).To(ContainSubstring("credhub-ref"), "credhub-ref not found")
 				})
 
-				It("the bound app retrieves the credentials for the ref from CredHub", func() {
+				PIt("the bound app retrieves the credentials for the ref from CredHub", func() {
 					curlCmd := helpers.CurlSkipSSL(true, appURL+"/test").Wait()
 					Expect(curlCmd).To(Exit(0))
 
@@ -297,19 +294,18 @@ EOF
 						"-m", DEFAULT_MEMORY_LIMIT,
 						"-p", assets.NewAssets().Catnip,
 						"-c", "./catnip",
-						"-d", Config.GetAppsDomain(),
 					).Wait(Config.CfPushTimeoutDuration())
 					Expect(createApp).To(Exit(0), "failed creating credhub-enabled app")
 					bindServiceAndStartApp(appName)
 				})
 
-				It("the broker returns credhub-ref in the credentials block", func() {
+				PIt("the broker returns credhub-ref in the credentials block", func() {
 					appEnv := string(cf.Cf("env", appName).Wait().Out.Contents())
 					Expect(appEnv).To(ContainSubstring("credentials"), "credential block missing from service")
 					Expect(appEnv).To(ContainSubstring("credhub-ref"), "credhub-ref not found")
 				})
 
-				It("the bound app gets CredHub refs in VCAP_SERVICES interpolated", func() {
+				PIt("the bound app gets CredHub refs in VCAP_SERVICES interpolated", func() {
 					curlCmd := helpers.CurlSkipSSL(true, appURL+"/env/VCAP_SERVICES").Wait()
 					Expect(curlCmd).To(Exit(0))
 
