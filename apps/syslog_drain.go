@@ -44,7 +44,6 @@ var _ = AppsDescribe("Logging", func() {
 				"-b", Config.GetGoBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().SyslogDrainListener,
-				"-d", Config.GetAppsDomain(),
 				"-f", assets.NewAssets().SyslogDrainListener+"/manifest.yml",
 			), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to push app")
 
@@ -54,7 +53,6 @@ var _ = AppsDescribe("Logging", func() {
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().RubySimple,
-				"-d", Config.GetAppsDomain(),
 			), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to push app")
 
 			Eventually(cf.Cf(
@@ -64,7 +62,6 @@ var _ = AppsDescribe("Logging", func() {
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().RubySimple,
-				"-d", Config.GetAppsDomain(),
 			), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to push app")
 		})
 

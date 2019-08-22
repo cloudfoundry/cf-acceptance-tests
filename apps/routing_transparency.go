@@ -25,7 +25,7 @@ var _ = AppsDescribe("Routing Transparency", func() {
 			"-p", assets.NewAssets().Golang,
 			"-f", filepath.Join(assets.NewAssets().Golang, "manifest.yml"),
 			"-m", DEFAULT_MEMORY_LIMIT,
-			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {
