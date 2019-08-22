@@ -30,7 +30,7 @@ var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
 			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Catnip,
-			"-d", Config.GetAppsDomain()),
+		),
 			Config.CfPushTimeoutDuration()).Should(Exit(0))
 	})
 
@@ -67,7 +67,7 @@ var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
 			}).Should(gbytes.Say("finished"))
 		})
 
-		It("runs on Diego", func() {
+		PIt("runs on Diego", func() {
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
