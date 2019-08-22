@@ -35,7 +35,7 @@ var _ = AppsDescribe("An application being staged", func() {
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Catnip,
 			"-c", "./catnip",
-			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
+		).Wait(Config.CfPushTimeoutDuration())
 		Expect(push).To(Exit(0))
 
 		output := string(push.Out.Contents())
