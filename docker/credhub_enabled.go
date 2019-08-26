@@ -29,7 +29,12 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 
 			chBrokerName = random_name.CATSRandomName("BRKR-CH")
 
-			pushBroker := cf.Cf("push", chBrokerName, "-b", Config.GetGoBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().CredHubServiceBroker, "-f", assets.NewAssets().CredHubServiceBroker+"/manifest.yml", "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
+			pushBroker := cf.Cf("push", chBrokerName,
+				"-b", Config.GetGoBuildpackName(),
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().CredHubServiceBroker,
+				"-f", assets.NewAssets().CredHubServiceBroker+"/manifest.yml",
+			).Wait(Config.CfPushTimeoutDuration())
 			Expect(pushBroker).To(Exit(0), "failed pushing credhub-enabled service broker")
 
 			existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait().Out.Contents())
@@ -83,7 +88,7 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 			})
 		})
 
-		Describe("service bindings", func() {
+		PDescribe("service bindings", func() {
 			var appName, dockerImage string
 
 			JustBeforeEach(func() {
@@ -94,7 +99,6 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 					// app is defined by cloudfoundry-incubator/diego-dockerfiles
 					"-o", dockerImage,
 					"-m", DEFAULT_MEMORY_LIMIT,
-					"-d", Config.GetAppsDomain(),
 					"-i", "1",
 					"-c", fmt.Sprintf("/myapp/dockerapp -name=%s", appName)),
 				).Should(Exit(0))

@@ -81,7 +81,7 @@ var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
 		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
 	})
 
-	Context("when the correct username and password are given", func() {
+	PContext("when the correct username and password are given", func() {
 		BeforeEach(func() {
 			username = Config.GetPrivateDockerRegistryUsername()
 			password = Config.GetPrivateDockerRegistryPassword()
