@@ -22,19 +22,23 @@ require (
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
 	github.com/facebookgo/subset v0.0.0-20150612182917-8dac2c3c4870 // indirect
 	github.com/gogo/protobuf v0.0.0-20160511093445-c18eea6ad611 // indirect
+	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/gorilla/websocket v1.0.0 // indirect
 	github.com/honeycombio/libhoney-go v0.0.0-20180420154957-26d0d7dd8b07
+	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mholt/archiver v2.0.0+incompatible
 	github.com/nwaples/rardecode v0.0.0-20171029023500-e06696f847ae // indirect
-	github.com/onsi/ginkgo v0.0.0-20171221013426-6c46eb8334b3
-	github.com/onsi/gomega v0.0.0-20161118205129-f1f0f388b31e
+	github.com/onsi/ginkgo v1.9.0
+	github.com/onsi/gomega v1.6.0
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/ulikunitz/xz v0.5.4 // indirect
-	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
-	golang.org/x/net v0.0.0-20190509222800-a4d6f7feada5 // indirect
-	golang.org/x/sys v0.0.0-20190507160741-ecd444e8653b // indirect
+	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586
+	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7 // indirect
+	golang.org/x/sys v0.0.0-20190826163724-acd9dae8e8cc // indirect
+	golang.org/x/text v0.3.2 // indirect
 	google.golang.org/grpc v1.20.1 // indirect
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20161208181325-20d25e280405 // indirect
-	gopkg.in/yaml.v2 v2.0.0-20160928153709-a5b47d31c556 // indirect
+	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
+	gopkg.in/yaml.v2 v2.2.2 // indirect
+	launchpad.net/gocheck v0.0.0-20140225173054-000000000087 // indirect
 )
