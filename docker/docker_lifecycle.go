@@ -33,7 +33,7 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
 	})
 
-	Describe("running a docker app with a start command", func() {
+	PDescribe("running a docker app with a start command", func() {
 		var expectedNullResponse string
 
 		BeforeEach(func() {
@@ -47,7 +47,6 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 				// app is defined by cloudfoundry-incubator/diego-dockerfiles
 				"-o", Config.GetPublicDockerAppImage(),
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-d", Config.GetAppsDomain(),
 				"-i", "1",
 				"-c", fmt.Sprintf("/myapp/dockerapp -name=%s", appName)),
 			).Should(Exit(0))
@@ -67,7 +66,7 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 		})
 	})
 
-	Describe("running a docker app without a start command", func() {
+	PDescribe("running a docker app without a start command", func() {
 		BeforeEach(func() {
 			appName = random_name.CATSRandomName("APP")
 			Eventually(cf.Cf(
@@ -76,7 +75,6 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 				// app is defined by cloudfoundry-incubator/diego-dockerfiles
 				"-o", Config.GetPublicDockerAppImage(),
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-d", Config.GetAppsDomain(),
 				"-i", "1"),
 			).Should(Exit(0))
 		})
