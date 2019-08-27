@@ -36,7 +36,7 @@ var _ = RoutingDescribe("Session Affinity", func() {
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
 			Expect(err).ToNot(HaveOccurred())
@@ -89,7 +89,7 @@ var _ = RoutingDescribe("Session Affinity", func() {
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", helloWorldAsset,
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		AfterEach(func() {
@@ -142,14 +142,14 @@ var _ = RoutingDescribe("Session Affinity", func() {
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			app2 = random_name.CATSRandomName("APP")
 			Expect(cf.Cf("push",
 				app2,
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			Expect(cf.Cf("scale", app1, "-i", "3").Wait()).To(Exit(0))
 			Expect(cf.Cf("scale", app2, "-i", "3").Wait()).To(Exit(0))
@@ -223,14 +223,14 @@ var _ = RoutingDescribe("Session Affinity", func() {
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			app2 = random_name.CATSRandomName("APP")
 			Expect(cf.Cf("push",
 				app2,
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			Expect(cf.Cf("scale", app1, "-i", "3").Wait()).To(Exit(0))
 			Expect(cf.Cf("scale", app2, "-i", "3").Wait()).To(Exit(0))
