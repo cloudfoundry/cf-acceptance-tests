@@ -31,7 +31,7 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 			"-b", Config.GetJavaBuildpackName(),
 			"-m", "1024M",
 			"-p", helloRoutingAsset,
-			"-d", Config.GetAppsDomain()).Wait(CF_JAVA_TIMEOUT)).To(Exit(0))
+		).Wait(CF_JAVA_TIMEOUT)).To(Exit(0))
 
 		hostname = app1
 	})
