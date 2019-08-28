@@ -68,7 +68,6 @@ type config struct {
 
 	IncludeApps                     *bool `json:"include_apps"`
 	IncludeBackendCompatiblity      *bool `json:"include_backend_compatibility"`
-	IncludeCapiNoBridge             *bool `json:"include_capi_no_bridge"`
 	IncludeContainerNetworking      *bool `json:"include_container_networking"`
 	IncludeDetect                   *bool `json:"include_detect"`
 	IncludeDocker                   *bool `json:"include_docker"`
@@ -164,7 +163,6 @@ func getDefaults() config {
 	defaults.IncludeDeployments = ptrToBool(false)
 
 	defaults.IncludeBackendCompatiblity = ptrToBool(false)
-	defaults.IncludeCapiNoBridge = ptrToBool(true)
 	defaults.IncludeContainerNetworking = ptrToBool(false)
 	defaults.CredhubMode = ptrToString("")
 	defaults.CredhubLocation = ptrToString("https://credhub.service.cf.internal:8844")
@@ -391,11 +389,6 @@ func validateConfig(config *config) Errors {
 	if config.IncludeBackendCompatiblity == nil {
 		errs.Add(fmt.Errorf("* 'include_backend_compatibility' must not be null"))
 	}
-
-	if config.IncludeCapiNoBridge == nil {
-		errs.Add(fmt.Errorf("* 'include_capi_no_bridge' must not be null"))
-	}
-
 	if config.IncludeContainerNetworking == nil {
 		errs.Add(fmt.Errorf("* 'include_container_networking' must not be null"))
 	}
@@ -917,10 +910,6 @@ func (c *config) GetIncludeIsolationSegments() bool {
 
 func (c *config) GetIncludeRoutingIsolationSegments() bool {
 	return *c.IncludeRoutingIsolationSegments
-}
-
-func (c *config) GetIncludeCapiNoBridge() bool {
-	return *c.IncludeCapiNoBridge
 }
 
 func (c *config) GetIncludeCredhubAssisted() bool {
