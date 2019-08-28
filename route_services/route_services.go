@@ -45,13 +45,12 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
 
-				Expect(cf.Cf("push",
-					appName,
+				Expect(cf.Cf("push", appName,
 					"-b", Config.GetGoBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", golangAsset,
 					"-f", filepath.Join(golangAsset, "manifest.yml"),
-					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 				Expect(cf.Cf("push",
 					routeServiceName,
@@ -60,7 +59,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", loggingRouteServiceAsset,
 					"-f", filepath.Join(loggingRouteServiceAsset, "manifest.yml"),
-					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 				Expect(cf.Cf("set-env", routeServiceName, "SKIP_SSL_VALIDATION", "true").Wait()).To(Exit(0))
 				Expect(cf.Cf("start", routeServiceName).Wait(CF_JAVA_TIMEOUT)).To(Exit(0))
@@ -110,13 +109,12 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
 
-				Expect(cf.Cf("push",
-					appName,
+				Expect(cf.Cf("push", appName,
 					"-b", Config.GetGoBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", golangAsset,
 					"-f", filepath.Join(golangAsset, "manifest.yml"),
-					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 				configureBroker(brokerAppName, "")
 
@@ -257,12 +255,11 @@ func configureBroker(serviceBrokerAppName, routeServiceName string) {
 
 func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 	serviceBrokerAsset := assets.NewAssets().ServiceBroker
-	Expect(cf.Cf("push",
-		brokerAppName,
+	Expect(cf.Cf("push", brokerAppName,
 		"-b", Config.GetRubyBuildpackName(),
 		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", serviceBrokerAsset,
-		"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+	).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 	initiateBrokerConfig(serviceName, brokerAppName)
 
