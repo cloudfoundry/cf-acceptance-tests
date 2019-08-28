@@ -37,7 +37,6 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 			"-b", Config.GetRubyBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().HelloWorld,
-			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		// map internal route to backend app
@@ -49,7 +48,6 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 			"-b", Config.GetGoBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Proxy,
-			"-d", Config.GetAppsDomain(),
 			"-f", assets.NewAssets().Proxy+"/manifest.yml",
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
