@@ -10,6 +10,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -251,7 +252,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", assets.NewAssets().Catnip,
 					"-c", "./catnip",
-					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
+				).Wait(Config.CfPushTimeoutDuration())
 				Expect(createApp).To(Exit(0), "failed creating app")
 
 				checkForAppEvent(appName, "audit.app.create")
@@ -434,14 +435,13 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					var appName string
 					BeforeEach(func() {
 						appName = random_name.CATSRandomName("APP")
-						createApp := cf.Cf("push",
+						Expect(cf.Cf("push",
 							appName,
 							"-b", Config.GetBinaryBuildpackName(),
 							"-m", DEFAULT_MEMORY_LIMIT,
 							"-p", assets.NewAssets().Catnip,
 							"-c", "./catnip",
-							"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
-						Expect(createApp).To(Exit(0), "failed creating app")
+						).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed creating app")
 					})
 
 					AfterEach(func() {
@@ -505,16 +505,13 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 				waitForAsyncOperationToCompleteAndSay(broker, instanceName, "succeeded")
 
 				appName = random_name.CATSRandomName("APP")
-				createApp := cf.Cf("push",
+				Expect(cf.Cf("push",
 					appName,
-					"--no-start",
 					"-b", Config.GetBinaryBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", assets.NewAssets().Catnip,
 					"-c", "./catnip",
-					"-d", Config.GetAppsDomain()).Wait()
-				Expect(createApp).To(Exit(0), "failed creating app")
-				Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed pushing app")
 			})
 
 			AfterEach(func() {
