@@ -7,7 +7,6 @@ import (
 type CatsConfig interface {
 	GetIncludeApps() bool
 	GetIncludeBackendCompatiblity() bool
-	GetIncludeCapiNoBridge() bool
 	GetIncludeContainerNetworking() bool
 	GetIncludeCredhubAssisted() bool
 	GetIncludeCredhubNonAssisted() bool
