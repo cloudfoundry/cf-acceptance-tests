@@ -125,7 +125,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			appGuid = app_helpers.GetAppGuid(appName)
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
@@ -229,15 +229,12 @@ var _ = TasksDescribe("v3 tasks", func() {
 		BeforeEach(func() {
 			Expect(cf.Cf(
 				"push", appName,
-				"--no-start",
 				"-b", Config.GetGoBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Proxy,
-				"-d", Config.GetAppsDomain(),
 				"-f", assets.NewAssets().Proxy+"/manifest.yml",
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			appGuid = app_helpers.GetAppGuid(appName)
-			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		AfterEach(func() {
