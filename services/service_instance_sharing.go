@@ -110,7 +110,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", assets.NewAssets().Catnip,
 					"-c", "./catnip",
-					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait()
 				Expect(bindCmd).To(Exit(0))
@@ -140,7 +140,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", assets.NewAssets().Catnip,
 					"-c", "./catnip",
-					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait()
 				Expect(bindCmd).To(Exit(0))
@@ -165,7 +165,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", assets.NewAssets().Catnip,
 					"-c", "./catnip",
-					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait()
 				Expect(bindCmd).To(Exit(0))
@@ -192,7 +192,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", assets.NewAssets().Catnip,
 					"-c", "./catnip",
-					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 				bindCmd := cf.Cf("bind-service", appName, serviceInstanceName).Wait()
 				Expect(bindCmd).To(Exit(0))
