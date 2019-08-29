@@ -34,7 +34,7 @@ var _ = SshDescribe("SSH", func() {
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Catnip,
 			"-c", "./catnip",
-			"-d", Config.GetAppsDomain()),
+		),
 			Config.CfPushTimeoutDuration(),
 		).Should(Exit(0))
 	})
