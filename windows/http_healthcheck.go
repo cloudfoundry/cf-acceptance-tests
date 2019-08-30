@@ -18,19 +18,6 @@ var _ = WindowsDescribe("Http Healthcheck", func() {
 		appName string
 	)
 
-	BeforeEach(func() {
-		appName = random_name.CATSRandomName("APP")
-
-		Expect(cf.Cf("push",
-			appName,
-			"--no-start",
-			"-s", Config.GetWindowsStack(),
-			"-b", Config.GetHwcBuildpackName(),
-			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
-			"-p", assets.NewAssets().Nora,
-			"-d", Config.GetAppsDomain()).Wait()).To(Exit(0))
-	})
-
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
 
@@ -38,20 +25,44 @@ var _ = WindowsDescribe("Http Healthcheck", func() {
 	})
 
 	Describe("An app staged and running", func() {
-		It("starts with a valid http healthcheck endpoint", func() {
-			Expect(cf.Cf("set-health-check", appName, "http", "--endpoint", "/healthcheck").Wait()).To(Exit(0))
+		Context("when the healthcheck endpoint normal", func() {
+			BeforeEach(func() {
+				appName = random_name.CATSRandomName("APP")
 
-			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("push",
+					appName,
+					"-s", Config.GetWindowsStack(),
+					"-b", Config.GetHwcBuildpackName(),
+					"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
+					"-p", assets.NewAssets().Nora,
+					"--health-check-type", "http",
+					"--endpoint", "/healthcheck",
+				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			})
 
-			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hello i am nora"))
+			It("starts with a valid http healthcheck endpoint", func() {
+				Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hello i am nora"))
+			})
 		})
 
-		It("starts with a http healthcheck endpoint that is a redirect", func() {
-			Expect(cf.Cf("set-health-check", appName, "http", "--endpoint", "/redirect/healthcheck").Wait()).To(Exit(0))
+		Context("when the endpoint is a redirect", func() {
+			BeforeEach(func() {
+				appName = random_name.CATSRandomName("APP")
 
-			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("push",
+					appName,
+					"-s", Config.GetWindowsStack(),
+					"-b", Config.GetHwcBuildpackName(),
+					"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
+					"-p", assets.NewAssets().Nora,
+					"--health-check-type", "http",
+					"--endpoint", "/redirect/healthcheck",
+				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			})
 
-			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hello i am nora"))
+			It("starts with a http healthcheck endpoint that is a redirect", func() {
+				Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hello i am nora"))
+			})
 		})
 	})
 })

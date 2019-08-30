@@ -31,7 +31,7 @@ var _ = WindowsDescribe("Getting instance information", func() {
 			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-p", assets.NewAssets().WindowsWebapp,
 			"-c", ".\\webapp.exe",
-			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {
@@ -48,7 +48,7 @@ var _ = WindowsDescribe("Getting instance information", func() {
 			setTotalMemoryLimit("10G")
 		})
 
-		It("fails when scaled beyond available resources", func() {
+		PIt("fails when scaled beyond available resources", func() {
 			scale := cf.Cf("scale", appName, "-m", EXCEED_CELL_MEMORY, "-f")
 			Eventually(scale, Config.CfPushTimeoutDuration()).Should(Or(Say("insufficient resources"), Say("down")))
 			scale.Kill()
