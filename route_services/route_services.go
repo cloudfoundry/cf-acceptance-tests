@@ -158,7 +158,6 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceInstance(serviceInstanceName, serviceName)
 
 				Expect(cf.Cf("create-route",
-					TestSetup.RegularUserContext().Space,
 					Config.GetAppsDomain(),
 					"--hostname", hostname,
 				).Wait()).To(Exit(0))
