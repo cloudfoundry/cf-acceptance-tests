@@ -40,7 +40,7 @@ var _ = WindowsDescribe("Metrics", func() {
 			"-p", assets.NewAssets().LoggregatorLoadGeneratorGo,
 			"-c", ".\\loggregator-load-generator.exe",
 			"-i", "2",
-			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
+		).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
 	})
 
 	AfterEach(func() {
