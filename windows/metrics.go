@@ -14,6 +14,8 @@ import (
 	"github.com/cloudfoundry/noaa"
 	"github.com/cloudfoundry/noaa/events"
 
+	"time"
+
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
@@ -22,7 +24,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
-	"time"
 )
 
 var _ = WindowsDescribe("Metrics", func() {
@@ -40,7 +41,7 @@ var _ = WindowsDescribe("Metrics", func() {
 			"-p", assets.NewAssets().LoggregatorLoadGeneratorGo,
 			"-c", ".\\loggregator-load-generator.exe",
 			"-i", "2",
-			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
+		).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
 	})
 
 	AfterEach(func() {
