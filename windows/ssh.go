@@ -39,7 +39,7 @@ var _ = WindowsDescribe("SSH", func() {
 			"-b", Config.GetHwcBuildpackName(),
 			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Nora,
-			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hello i am nora"))
 		Expect(cf.Cf("enable-ssh", appName).Wait()).To(Exit(0))
 	})
