@@ -1,0 +1,65 @@
+---
+resources:
+- name: cf-cli-v7
+  type: github-release
+  icon: github-face
+  source:
+    user: cloudfoundry
+    repository: cli
+    access_token: ((release_integration_download_bot_access_token))
+    tag_filter: 'v(7\..*)'
+    pre_release: true
+
+- name: cf-acceptance-tests-v7
+  type: git
+  icon: github-box
+  source:
+    branch: cli-v7-dev-4320018
+    uri: git@github.com:cloudfoundry/cf-acceptance-tests.git
+    private_key: ((cf_acceptance_tests_readwrite_deploy_key.private_key))
+    ignore_paths:
+    - ci/**
+    - .envrc
+
+jobs:
+# - name: deploy-cf
+#   public: true
+#   plan:
+#     - get: cf-cli-v7
+#     - get: cf-acceptance-tests-v7
+
+- name: run-cats
+  plan:
+  - get: cf-cli-v7
+  - get: cf-acceptance-tests-v7
+  - task: install cli and run cats
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: relintdockerhubpushbot/relint-base
+      run:
+        path: sh
+        args:
+        - -c
+        - |
+          #!/bin/bash
+
+          export CLI_VERSION=$(cat cf-cli-v7/version)
+
+          wget -q -O cf.deb "https://cli.run.pivotal.io/stable?release=debian64&version=${CLI_VERSION}&source=github-rel"
+          dpkg -i cf.deb
+          rm cf.deb
+          mv /usr/bin/cf7 /usr/bin/cf
+
+          cf version
+
+          cd cf-acceptance-tests-v7
+          bin/test
+
+      inputs:
+      - name: cf-cli-v7
+      - name: cf-acceptance-tests-v7
+
+# - name: cleanup-after-cats
