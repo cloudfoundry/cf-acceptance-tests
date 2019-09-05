@@ -701,7 +701,7 @@ func validateWindows(config *config) error {
 	}
 
 	switch config.GetWindowsStack() {
-	case "windows2012R2", "windows2016", "windows":
+	case "windows2012R2", "windows":
 	default:
 		return fmt.Errorf("* Invalid configuration: unknown Windows stack %s", config.GetWindowsStack())
 	}

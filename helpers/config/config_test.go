@@ -558,7 +558,7 @@ var _ = Describe("Config", func() {
 			testCfg.IncludeWindows = ptrToBool(true)
 		})
 
-		Context("when the windows stack is not windows2016, windows2012R2, or windows", func() {
+		Context("when the windows stack is not windows2012R2, or windows", func() {
 			BeforeEach(func() {
 				testCfg.WindowsStack = ptrToString("windows98")
 			})
