@@ -1,4 +1,6 @@
 ---
+private: true
+
 resources:
 - name: cf-cli-v7
   type: github-release
@@ -21,6 +23,21 @@ resources:
     - ci/**
     - .envrc
 
+- name: relint-envs
+  type: git
+  icon: github-box
+  source:
+    branch: master
+    uri: git@github.com:cloudfoundry/relint-envs.git
+    private_key: ((hagrid_env_readwrite_deploy_key.private_key))
+
+- name: cf-deployment-concourse-tasks
+  type: git
+  icon: github-box
+  source:
+    branch: master
+    uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
+
 jobs:
 # - name: deploy-cf
 #   public: true
@@ -28,10 +45,14 @@ jobs:
 #     - get: cf-cli-v7
 #     - get: cf-acceptance-tests-v7
 
-- name: run-cats
+- name: run-cats-v7
   plan:
   - get: cf-cli-v7
+    trigger: true
   - get: cf-acceptance-tests-v7
+    trigger: true
+  - get: relint-envs
+  - get: cf-deployment-concourse-tasks
   - task: install cli and run cats
     config:
       platform: linux
@@ -40,26 +61,40 @@ jobs:
         source:
           repository: relintdockerhubpushbot/relint-base
       run:
-        path: sh
+        path: bash
         args:
         - -c
         - |
           #!/bin/bash
 
           export CLI_VERSION=$(cat cf-cli-v7/version)
+          WORKING_DIR=$PWD
 
-          wget -q -O cf.deb "https://cli.run.pivotal.io/stable?release=debian64&version=${CLI_VERSION}&source=github-rel"
-          dpkg -i cf.deb
-          rm cf.deb
-          mv /usr/bin/cf7 /usr/bin/cf
+          pushd /tmp/
+            wget -q -O cf.deb "https://cli.run.pivotal.io/stable?release=debian64&version=${CLI_VERSION}&source=github-rel"
+            dpkg -i cf.deb
+            rm cf.deb
+            mv /usr/bin/cf7 $WORKING_DIR/extracted-cf-cli/cf
+          popd
 
-          cf version
+          sed -e 's/"include_v3": true/"include_v3": false/g' \
+              -e 's/"include_windows": false/"include_windows": true/g' \
+              $WORKING_DIR/relint-envs/environments/pm/acceptance/integration_config.json \
+              > $WORKING_DIR/integration-config/integration_config.json
 
-          cd cf-acceptance-tests-v7
-          bin/test
-
+          extracted-cf-cli/cf version
       inputs:
       - name: cf-cli-v7
       - name: cf-acceptance-tests-v7
+      - name: relint-envs
+      outputs:
+      - name: extracted-cf-cli
+      - name: integration-config
+  - task: run-cats-v7
+    file: cf-deployment-concourse-tasks/run-cats-with-provided-cli/task.yml
+    input_mapping:
+      cf-acceptance-tests: cf-acceptance-tests-v7
+      cf-cli: extracted-cf-cli
+
 
 # - name: cleanup-after-cats
