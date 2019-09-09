@@ -45,8 +45,8 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		})
 
 		By("pushing an nfs server")
-		Expect(cf.Cf("push", "nfs", "--docker-image", "cfpersi/nfs-cats", "--health-check-type", "none", "--no-start").
 			Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("push", "nfs", "--docker-image", "cfpersi/nfs-cats", "--health-check-type", "process", "--no-start").
 
 		tcpDomain := fmt.Sprintf("tcp.%s", Config.GetAppsDomain())
 		session := cf.Cf("create-route", TestSetup.RegularUserContext().Space, tcpDomain, "--port", nfsPort).Wait()
