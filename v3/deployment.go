@@ -2,11 +2,13 @@ package v3
 
 import (
 	"fmt"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	"io/ioutil"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
@@ -74,7 +76,7 @@ var _ = V3Describe("deployment", func() {
 	})
 
 	AfterEach(func() {
-		FetchRecentLogs(appGuid, token, Config)
+		app_helpers.AppReport(appName)
 		DeleteApp(appGuid)
 		os.Remove("assets/staticfile.zip")
 	})
