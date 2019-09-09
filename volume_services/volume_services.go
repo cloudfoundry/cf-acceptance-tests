@@ -3,6 +3,9 @@ package volume_services
 import (
 	"encoding/json"
 	"fmt"
+	"path/filepath"
+	"time"
+
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
@@ -12,8 +15,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
-	"path/filepath"
-	"time"
 )
 
 var _ = VolumeServicesDescribe("Volume Services", func() {
@@ -23,9 +24,9 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		serviceInstanceName string
 		appName             string
 		poraAsset           = assets.NewAssets().Pora
-		routerGroupGuid string
-		reservablePorts string
-		nfsPort = "2049"
+		routerGroupGuid     string
+		reservablePorts     string
+		nfsPort             = "2049"
 	)
 
 	BeforeEach(func() {
@@ -45,12 +46,12 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		})
 
 		By("pushing an nfs server")
-			Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Expect(cf.Cf("push", "nfs", "--docker-image", "cfpersi/nfs-cats", "--health-check-type", "process", "--no-start").
+			Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "cannot push the nfs server app")
 
 		tcpDomain := fmt.Sprintf("tcp.%s", Config.GetAppsDomain())
 		session := cf.Cf("create-route", TestSetup.RegularUserContext().Space, tcpDomain, "--port", nfsPort).Wait()
-		Expect(session).To(Exit(0))
+		Expect(session).To(Exit(0), "cannot create a tcp route for the nfs server app")
 
 		nfsGuid := GuidForAppName("nfs")
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
@@ -68,11 +69,11 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		})
 
 		session = cf.Cf("start", "nfs").Wait()
-		Expect(session).To(Exit(0))
+		Expect(session).To(Exit(0), "cannot start the nfs server app")
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 			session := cf.Cf("enable-service-access", serviceName, "-o", TestSetup.RegularUserContext().Org).Wait()
-			Expect(session).To(Exit(0), "cannot enable service access")
+			Expect(session).To(Exit(0), "cannot enable nfs service access")
 		})
 
 		By("pushing an app")
@@ -84,30 +85,30 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 			"-f", filepath.Join(poraAsset, "manifest.yml"),
 			"-d", Config.GetAppsDomain(),
 			"--no-start",
-		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "cannot push the test app")
 
 		By("creating a service")
 		createServiceSession := cf.Cf("create-service", serviceName, Config.GetVolumeServicePlanName(), serviceInstanceName, "-c", fmt.Sprintf(`{"share": "%s/"}`, tcpDomain))
-		Expect(createServiceSession.Wait(TestSetup.ShortTimeout())).To(Exit(0), "cannot create nfs service")
+		Expect(createServiceSession.Wait(TestSetup.ShortTimeout())).To(Exit(0), "cannot create an nfs service instance")
 
 		By("binding the service")
 		bindSession := cf.Cf("bind-service", appName, serviceInstanceName, "-c", `{"uid": "2000", "gid": "2000"}`, "cannot bind nfs service to app")
-		Expect(bindSession.Wait(TestSetup.ShortTimeout())).To(Exit(0))
+		Expect(bindSession.Wait(TestSetup.ShortTimeout())).To(Exit(0), "cannot bind the nfs service instance to the test app")
 
 		By("starting the app")
-		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "cannot start the test app")
 	})
 
 	AfterEach(func() {
-		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
-		Eventually(cf.Cf("delete-service", serviceInstanceName, "-f")).Should(Exit(0))
+		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0), "cannot delete the test app")
+		Eventually(cf.Cf("delete-service", serviceInstanceName, "-f")).Should(Exit(0), "cannot delete the nfs service instance")
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 			session := cf.Cf("disable-service-access", serviceName, "-o", TestSetup.RegularUserContext().Org).Wait()
-			Expect(session).To(Exit(0), "cannot disable service access")
+			Expect(session).To(Exit(0), "cannot disable nfs service access")
 		})
 
-		Eventually(cf.Cf("delete", "nfs", "-f")).Should(Exit(0))
+		Eventually(cf.Cf("delete", "nfs", "-f")).Should(Exit(0), "cannot delete the nfs server app")
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 			payload := fmt.Sprintf(`{ "reservable_ports":"%s", "name":"default-tcp", "type": "tcp"}`, reservablePorts)
