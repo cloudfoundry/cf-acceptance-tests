@@ -195,16 +195,9 @@ include_capi_no_bridge
 * `include_service_discovery`: Flag to include test for the service discovery. These tests use `apps.internal` domain, which is the default in `cf-networking-release`. The internal domain is currently not configurable.
 * `stacks`: An array of stacks to test against. Currently only `cflinuxfs3` stack is supported. Default is `[cflinuxfs3]`.
 
-* `include_volume_services`: Flag to include the tests for volume services. Diego must be deployed for these tests to pass and volume service broker should be registered in platform.
+* `include_volume_services`: Flag to include the tests for volume services. The following requirements must be met to run this suite: Diego must be deployed. Docker support must be enabled. tcp-routing must be deployed. 
 * `volume_service_name`: The name of the volume service provided by the volume service broker.
 * `volume_service_plan_name`: The name of the plan of the service provided by the volume service broker.
-* `volume_service_create_config`: The JSON configuration that is used when volume service is created.
-* `volume_service_bind_config`: The JSON configuration that is used when volume service is bound to the test application.
-
-* `include_volume_services`: Flag to include the tests for volume services. Diego must be deployed for these tests to pass and volume service broker should be registered in platform.
-* `volume_service_name`: The name of the volume service provided by the volume service broker.
-* `volume_service_plan_name`: The name of the plan of the service provided by the volume service broker.
-* `volume_service_create_config`: The JSON configuration that is used when volume service is created.
 * `volume_service_bind_config`: The JSON configuration that is used when volume service is bound to the test application.
 
 #### Buildpack Names

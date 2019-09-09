@@ -64,8 +64,6 @@ type config struct {
 
 	VolumeServiceName         *string `json:"volume_service_name"`
 	VolumeServicePlanName     *string `json:"volume_service_plan_name"`
-	VolumeServiceCreateConfig *string `json:"volume_service_create_config"`
-	VolumeServiceBindConfig   *string `json:"volume_service_bind_config"`
 
 	IncludeApps                     *bool `json:"include_apps"`
 	IncludeBackendCompatiblity      *bool `json:"include_backend_compatibility"`
@@ -200,8 +198,6 @@ func getDefaults() config {
 
 	defaults.VolumeServiceName = ptrToString("")
 	defaults.VolumeServicePlanName = ptrToString("")
-	defaults.VolumeServiceCreateConfig = ptrToString("")
-	defaults.VolumeServiceBindConfig = ptrToString("")
 
 	defaults.ReporterConfig = &reporterConfig{}
 
@@ -681,12 +677,6 @@ func validateVolumeServices(config *config) error {
 	if config.GetVolumeServicePlanName() == "" {
 		return fmt.Errorf("* Invalid configuration: 'volume_service_plan_name' must be provided if 'include_volume_services' is true")
 	}
-	if config.GetVolumeServiceCreateConfig() == "" {
-		return fmt.Errorf("* Invalid configuration: 'volume_service_create_config' must be provided if 'include_volume_services' is true")
-	}
-	if config.GetVolumeServiceBindConfig() == "" {
-		return fmt.Errorf("* Invalid configuration: 'volume_service_bind_config' must be provided if 'include_volume_services' is true")
-	}
 
 	return nil
 }
@@ -1076,14 +1066,6 @@ func (c *config) GetVolumeServiceName() string {
 
 func (c *config) GetVolumeServicePlanName() string {
 	return *c.VolumeServicePlanName
-}
-
-func (c *config) GetVolumeServiceCreateConfig() string {
-	return *c.VolumeServiceCreateConfig
-}
-
-func (c *config) GetVolumeServiceBindConfig() string {
-	return *c.VolumeServiceBindConfig
 }
 
 func (c *config) GetAdminClient() string {
