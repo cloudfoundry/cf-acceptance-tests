@@ -79,6 +79,7 @@ jobs:
 
           sed -e 's/"include_v3": true/"include_v3": false/g' \
               -e 's/"include_windows": false/"include_windows": true/g' \
+              -e 's/"include_service_discovery": false/"include_service_discovery": true/g' \
               $WORKING_DIR/relint-envs/environments/pm/acceptance/integration_config.json \
               > $WORKING_DIR/integration-config/integration_config.json
 
