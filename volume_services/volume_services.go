@@ -88,11 +88,21 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "cannot push the test app")
 
 		By("creating a service")
-		createServiceSession := cf.Cf("create-service", serviceName, Config.GetVolumeServicePlanName(), serviceInstanceName, "-c", fmt.Sprintf(`{"share": "%s/"}`, tcpDomain))
+		var createServiceSession *Session
+		if Config.GetVolumeServiceCreateConfig() != "" {
+			createServiceSession = cf.Cf("create-service", serviceName, Config.GetVolumeServicePlanName(), serviceInstanceName, "-c", fmt.Sprintf(`%s`, Config.GetVolumeServiceCreateConfig()))
+		} else {
+			createServiceSession = cf.Cf("create-service", serviceName, Config.GetVolumeServicePlanName(), serviceInstanceName, "-c", fmt.Sprintf(`{"share": "%s/"}`, tcpDomain))
+		}
 		Expect(createServiceSession.Wait(TestSetup.ShortTimeout())).To(Exit(0), "cannot create an nfs service instance")
 
 		By("binding the service")
-		bindSession := cf.Cf("bind-service", appName, serviceInstanceName, "-c", `{"uid": "2000", "gid": "2000"}`, "cannot bind nfs service to app")
+		var bindSession *Session
+		if Config.GetVolumeServiceCreateConfig() != "" {
+			bindSession = cf.Cf("bind-service", appName, serviceInstanceName, "cannot bind service to app")
+		} else {
+			bindSession = cf.Cf("bind-service", appName, serviceInstanceName, "-c", `{"uid": "2000", "gid": "2000"}`, "cannot bind nfs service to app")
+		}
 		Expect(bindSession.Wait(TestSetup.ShortTimeout())).To(Exit(0), "cannot bind the nfs service instance to the test app")
 
 		By("starting the app")
