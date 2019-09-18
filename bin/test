@@ -2,6 +2,8 @@
 
 set -e -x
 
+export GO111MODULE=on
+
 if [ ! -f "${CONFIG}" ]; then
   echo "FAIL: \$CONFIG must be set to the path of an integration config JSON file"
   exit 1
