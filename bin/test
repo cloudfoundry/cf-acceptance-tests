@@ -27,4 +27,4 @@ go build -v -o bin/ginkgo github.com/cloudfoundry/cf-acceptance-tests/vendor/git
 export PATH=$PWD/bin:$PATH
 
 echo "Using $(ginkgo version)" > /dev/null
-ginkgo "$@"
+ginkgo -mod=vendor "$@"
