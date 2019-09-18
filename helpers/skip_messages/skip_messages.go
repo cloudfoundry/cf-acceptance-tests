@@ -42,7 +42,6 @@ const SkipWindowsContextPathsMessage = `Skipping this test because config.UseWin
 NOTE: Ensure that your deployment includes at least one Windows cell before enabling this test.`
 const SkipIsolationSegmentsMessage = `Skipping this test because config.IncludeIsolationSegments is set to 'false'`
 const SkipRoutingIsolationSegmentsMessage = `Skipping this test because Config.IncludeRoutingIsolationSegments is set to 'false'.`
-const SkipLoggingIsolationSegmentsMessage = `Skipping this test because Config.IncludeLoggingIsolationSegments is set to 'false'.`
 const SkipZipkinMessage = `Skipping this test because config.IncludeZipkin is set to 'false'`
 const SkipServiceDiscoveryMessage = `Skipping this test because config.IncludeServiceDiscovery is set to 'false'.`
 const SkipServiceInstanceSharingMessage = `Skipping this test because config.IncludeServiceInstanceSharing is set to 'false'.`
