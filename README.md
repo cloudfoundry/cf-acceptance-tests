@@ -39,22 +39,12 @@ in such a way as to impact other tests.
 
 ## Test Setup
 ### Prerequisites for running CATS
-- Install golang >= `1.7`. Set up your golang development environment, per
+- Install golang >= `1.11`. Set up your golang development environment, per
   [golang.org](http://golang.org/doc/install).
 - Install the [`cf CLI`](https://github.com/cloudfoundry/cli).
   Make sure that it is accessible in your `$PATH`.
 - Install [curl](http://curl.haxx.se/)
-- Check out a copy of `cf-acceptance-tests`
-  and make sure that it is added to your `$GOPATH`.
-  The recommended way to do this is to run:
-
-  ```bash
-  go get -d github.com/cloudfoundry/cf-acceptance-tests
-  ```
-
-  You will receive a warning:
-  `no buildable Go source files`.
-  This can be ignored, as there is only test code in the package.
+- Check out a copy of `cf-acceptance-tests`. It uses Go modules, so there is no need to put it in `$GOPATH`.
 - Ensure all submodules are checked out to the correct SHA.
   The easiest way to do this is by running:
 
