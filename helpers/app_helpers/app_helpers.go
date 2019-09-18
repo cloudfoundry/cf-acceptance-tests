@@ -3,8 +3,10 @@ package app_helpers
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/onsi/ginkgo"
@@ -33,6 +35,36 @@ func AppReport(appName string) {
 	Eventually(logs.Tail(Config.GetUseLogCache(), appName)).Should(Exit())
 
 	printEndAppReport(appName)
+}
+
+func ReportedIDs(instances int, appName string) map[string]bool {
+	timer := time.NewTimer(time.Second * 120)
+	defer timer.Stop()
+	run := true
+	go func() {
+		<-timer.C
+		run = false
+	}()
+
+	seenIDs := map[string]bool{}
+	for len(seenIDs) != instances && run == true {
+		seenIDs[helpers.CurlApp(Config, appName, "/id")] = true
+		time.Sleep(time.Second)
+	}
+
+	return seenIDs
+}
+
+func DifferentIDsFrom(idsBefore map[string]bool, appName string) []string {
+	differentIDs := []string{}
+
+	for id := range ReportedIDs(len(idsBefore), appName) {
+		if !idsBefore[id] {
+			differentIDs = append(differentIDs, id)
+		}
+	}
+
+	return differentIDs
 }
 
 func printStartAppReport(appName string) {

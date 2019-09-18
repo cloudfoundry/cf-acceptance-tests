@@ -17,6 +17,7 @@ import (
 	"github.com/onsi/ginkgo/ginkgo/testsuite"
 	"github.com/onsi/ginkgo/internal/remote"
 	"github.com/onsi/ginkgo/reporters/stenographer"
+	colorable "github.com/onsi/ginkgo/reporters/stenographer/support/go-colorable"
 	"github.com/onsi/ginkgo/types"
 )
 
@@ -63,7 +64,9 @@ func (t *TestRunner) Compile() error {
 }
 
 func (t *TestRunner) BuildArgs(path string) []string {
-	args := []string{"test", "-c", "-i", "-o", path, t.Suite.Path}
+	args := make([]string, len(buildArgs), len(buildArgs)+3)
+	copy(args, buildArgs)
+	args = append(args, "-o", path, t.Suite.Path)
 
 	if t.getCoverMode() != "" {
 		args = append(args, "-cover", fmt.Sprintf("-covermode=%s", t.getCoverMode()))
@@ -116,6 +119,8 @@ func (t *TestRunner) BuildArgs(path string) []string {
 		"coverpkg",
 		"tags",
 		"gcflags",
+		"vet",
+		"mod",
 	}
 
 	for _, opt := range stringOpts {
@@ -151,7 +156,7 @@ func (t *TestRunner) CompileTo(path string) error {
 		fmt.Println(string(output))
 	}
 
-	if fileExists(path) == false {
+	if !fileExists(path) {
 		compiledFile := t.Suite.PackageName + ".test"
 		if fileExists(compiledFile) {
 			// seems like we are on an old go version that does not support the -o flag on go test
@@ -177,7 +182,7 @@ func (t *TestRunner) CompileTo(path string) error {
 
 func fileExists(path string) bool {
 	_, err := os.Stat(path)
-	return err == nil || os.IsNotExist(err) == false
+	return err == nil || !os.IsNotExist(err)
 }
 
 // copyFile copies the contents of the file named src to the file named
@@ -313,7 +318,7 @@ func (t *TestRunner) runParallelGinkgoSuite() RunResult {
 	writers := make([]*logWriter, t.numCPU)
 	reports := make([]*bytes.Buffer, t.numCPU)
 
-	stenographer := stenographer.New(!config.DefaultReporterConfig.NoColor, config.GinkgoConfig.FlakeAttempts > 1)
+	stenographer := stenographer.New(!config.DefaultReporterConfig.NoColor, config.GinkgoConfig.FlakeAttempts > 1, colorable.NewColorableStdout())
 	aggregator := remote.NewAggregator(t.numCPU, result, config.DefaultReporterConfig, stenographer)
 
 	server, err := remote.NewServer(t.numCPU)
@@ -366,9 +371,8 @@ func (t *TestRunner) runParallelGinkgoSuite() RunResult {
 	|                                                                   |
 	|  Ginkgo timed out waiting for all parallel nodes to report back!  |
 	|                                                                   |
-	 -------------------------------------------------------------------
-`)
-		fmt.Println(t.Suite.PackageName, "timed out. path:", t.Suite.Path)
+	 -------------------------------------------------------------------`)
+		fmt.Println("\n", t.Suite.PackageName, "timed out. path:", t.Suite.Path)
 		os.Stdout.Sync()
 
 		for _, writer := range writers {
@@ -519,7 +523,7 @@ func (t *TestRunner) combineCoverprofiles() {
 	lines := map[string]int{}
 	lineOrder := []string{}
 	for i, coverProfile := range profiles {
-		for _, line := range strings.Split(string(coverProfile), "\n")[1:] {
+		for _, line := range strings.Split(coverProfile, "\n")[1:] {
 			if len(line) == 0 {
 				continue
 			}

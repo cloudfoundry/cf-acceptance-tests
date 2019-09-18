@@ -37,7 +37,7 @@ var _ = WindowsDescribe("SSH", func() {
 			appName,
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
-			"-m", DEFAULT_MEMORY_LIMIT,
+			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Nora,
 			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hello i am nora"))
@@ -165,8 +165,9 @@ var _ = WindowsDescribe("SSH", func() {
 			password := sshAccessCode()
 
 			clientConfig := &ssh.ClientConfig{
-				User: fmt.Sprintf("cf:%s/%d", GuidForAppName(appName), 0),
-				Auth: []ssh.AuthMethod{ssh.Password(password)},
+				User:            fmt.Sprintf("cf:%s/%d", GuidForAppName(appName), 0),
+				Auth:            []ssh.AuthMethod{ssh.Password(password)},
+				HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 			}
 
 			client, err := ssh.Dial("tcp", sshProxyAddress(), clientConfig)
@@ -195,8 +196,9 @@ var _ = WindowsDescribe("SSH", func() {
 
 			password := sshAccessCode()
 			clientConfig := &ssh.ClientConfig{
-				User: fmt.Sprintf("cf:%s/%d", GuidForAppName(appName), 0),
-				Auth: []ssh.AuthMethod{ssh.Password(password)},
+				User:            fmt.Sprintf("cf:%s/%d", GuidForAppName(appName), 0),
+				Auth:            []ssh.AuthMethod{ssh.Password(password)},
+				HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 			}
 
 			_, err := ssh.Dial("tcp", sshProxyAddress(), clientConfig)

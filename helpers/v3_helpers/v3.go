@@ -54,7 +54,7 @@ func CreateDeploymentForDroplet(appGuid, dropletGuid string) string {
 func CancelDeployment(deploymentGuid string) {
 	deploymentPath := fmt.Sprintf("/v3/deployments/%s/actions/cancel", deploymentGuid)
 	session := cf.Cf("curl", deploymentPath, "-X", "POST", "-i").Wait()
-	Expect(session.Out.Contents()).To(ContainSubstring("200 OK"))
+	Expect(string(session.Out.Contents())).To(ContainSubstring("200 OK"))
 	Expect(session).To(Exit(0))
 }
 

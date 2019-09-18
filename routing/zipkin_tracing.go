@@ -14,7 +14,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
-	"github.com/onsi/gomega/gexec"
 	. "github.com/onsi/gomega/gexec"
 )
 
@@ -45,42 +44,42 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 	Context("when zipkin tracing is enabled", func() {
 		Context("when zipkin headers are not in the request", func() {
 			It("the sleuth error response has no error", func() {
-				var curlOutput string
 				// when req does not have headers
 				Eventually(func() string {
-					curlOutput = cf_helpers.CurlAppRoot(Config, hostname)
+					curlOutput := cf_helpers.CurlAppRoot(Config, hostname)
 					return curlOutput
 				}).Should(ContainSubstring("parents:"))
 
-				appLogsSession := logs.Tail(Config.GetUseLogCache(), app1)
-
-				Eventually(appLogsSession).Should(gexec.Exit(0))
-
-				Eventually(appLogsSession.Out).Should(gbytes.Say("x_b3_traceid"))
-				parentSpanID := getID(`x_b3_parentspanid:"([0-9a-fA-F-]*)"`, string(appLogsSession.Out.Contents()))
-
+				var parentSpanID string
+				Eventually(func() *gbytes.Buffer {
+					appLogsSession := logs.Tail(Config.GetUseLogCache(), app1).Wait()
+					parentSpanID = getID(`x_b3_parentspanid:"([0-9a-fA-F-]*)"`, string(appLogsSession.Out.Contents()))
+					return appLogsSession.Out
+				}).Should(gbytes.Say("x_b3_traceid"))
 				Expect(parentSpanID).To(Equal("-"))
+			})
+		})
 
-				By("when request has zipkin trace headers")
-
+		Context("when zipkin headers are in the request", func() {
+			It("the sleuth error response has no error", func() {
 				traceID := "fee1f7ba6aeec41c"
 
 				header1 := fmt.Sprintf(`X-B3-TraceId: %s `, traceID)
 				header2 := `X-B3-SpanId: 579b36fd31cd8714`
+
+				var curlOutput string
 				Eventually(func() string {
 					curlOutput = cf_helpers.CurlApp(Config, hostname, "/", "-H", header1, "-H", header2)
 					return curlOutput
 				}).Should(ContainSubstring("parents:"))
 
-				appLogsSession = logs.Tail(Config.GetUseLogCache(), hostname)
-
-				Eventually(appLogsSession).Should(gexec.Exit(0))
-
-				Expect(appLogsSession.Out).To(gbytes.Say(`x_b3_traceid:"fee1f7ba6aeec41c"`))
-
-				spanIDRegex := fmt.Sprintf("x_b3_traceid:\"%s\" x_b3_spanid:\"([0-9a-fA-F]*)\"", traceID)
-
-				appLogSpanID := getID(spanIDRegex, string(appLogsSession.Out.Contents()))
+				var appLogSpanID string
+				Eventually(func() *gbytes.Buffer {
+					appLogsSession := logs.Tail(Config.GetUseLogCache(), hostname).Wait()
+					spanIDRegex := fmt.Sprintf("x_b3_traceid:\"%s\" x_b3_spanid:\"([0-9a-fA-F]*)\"", traceID)
+					appLogSpanID = getID(spanIDRegex, string(appLogsSession.Out.Contents()))
+					return appLogsSession.Out
+				}).Should(gbytes.Say(fmt.Sprintf(`x_b3_traceid:"%s"`, traceID)))
 
 				Expect(curlOutput).To(ContainSubstring(traceID))
 				Expect(curlOutput).To(ContainSubstring(fmt.Sprintf("parents: [%s]", appLogSpanID)))
@@ -91,7 +90,9 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 
 func getID(logRegex, logLines string) string {
 	matches := regexp.MustCompile(logRegex).FindStringSubmatch(logLines)
-	Expect(matches).To(HaveLen(2))
+	if len(matches) != 2 {
+		return ""
+	}
 
 	return matches[1]
 }

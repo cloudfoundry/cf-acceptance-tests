@@ -64,12 +64,9 @@ type config struct {
 
 	VolumeServiceName         *string `json:"volume_service_name"`
 	VolumeServicePlanName     *string `json:"volume_service_plan_name"`
-	VolumeServiceCreateConfig *string `json:"volume_service_create_config"`
-	VolumeServiceBindConfig   *string `json:"volume_service_bind_config"`
 
 	IncludeApps                     *bool `json:"include_apps"`
 	IncludeBackendCompatiblity      *bool `json:"include_backend_compatibility"`
-	IncludeCapiExperimental         *bool `json:"include_capi_experimental"`
 	IncludeCapiNoBridge             *bool `json:"include_capi_no_bridge"`
 	IncludeContainerNetworking      *bool `json:"include_container_networking"`
 	IncludeDetect                   *bool `json:"include_detect"`
@@ -88,7 +85,7 @@ type config struct {
 	IncludeTasks                    *bool `json:"include_tasks"`
 	IncludeTCPRouting               *bool `json:"include_tcp_routing"`
 	IncludeV3                       *bool `json:"include_v3"`
-	IncludeDeployments *bool `json:"include_deployments"`
+	IncludeDeployments              *bool `json:"include_deployments"`
 	IncludeZipkin                   *bool `json:"include_zipkin"`
 	IncludeIsolationSegments        *bool `json:"include_isolation_segments"`
 	IncludeRoutingIsolationSegments *bool `json:"include_routing_isolation_segments"`
@@ -166,7 +163,6 @@ func getDefaults() config {
 	defaults.IncludeDeployments = ptrToBool(false)
 
 	defaults.IncludeBackendCompatiblity = ptrToBool(false)
-	defaults.IncludeCapiExperimental = ptrToBool(false)
 	defaults.IncludeCapiNoBridge = ptrToBool(true)
 	defaults.IncludeContainerNetworking = ptrToBool(false)
 	defaults.CredhubMode = ptrToString("")
@@ -200,8 +196,6 @@ func getDefaults() config {
 
 	defaults.VolumeServiceName = ptrToString("")
 	defaults.VolumeServicePlanName = ptrToString("")
-	defaults.VolumeServiceCreateConfig = ptrToString("")
-	defaults.VolumeServiceBindConfig = ptrToString("")
 
 	defaults.ReporterConfig = &reporterConfig{}
 
@@ -236,7 +230,7 @@ func getDefaults() config {
 
 	defaults.NamePrefix = ptrToString("CATS")
 
-	defaults.Stacks = &[]string{"cflinuxfs2"}
+	defaults.Stacks = &[]string{"cflinuxfs3"}
 	return defaults
 }
 
@@ -394,10 +388,6 @@ func validateConfig(config *config) Errors {
 	}
 	if config.IncludeBackendCompatiblity == nil {
 		errs.Add(fmt.Errorf("* 'include_backend_compatibility' must not be null"))
-	}
-
-	if config.IncludeCapiExperimental == nil {
-		errs.Add(fmt.Errorf("* 'include_capi_experimental' must not be null"))
 	}
 
 	if config.IncludeCapiNoBridge == nil {
@@ -660,12 +650,6 @@ func validateVolumeServices(config *config) error {
 	if config.GetVolumeServicePlanName() == "" {
 		return fmt.Errorf("* Invalid configuration: 'volume_service_plan_name' must be provided if 'include_volume_services' is true")
 	}
-	if config.GetVolumeServiceCreateConfig() == "" {
-		return fmt.Errorf("* Invalid configuration: 'volume_service_create_config' must be provided if 'include_volume_services' is true")
-	}
-	if config.GetVolumeServiceBindConfig() == "" {
-		return fmt.Errorf("* Invalid configuration: 'volume_service_bind_config' must be provided if 'include_volume_services' is true")
-	}
 
 	return nil
 }
@@ -680,7 +664,7 @@ func validateWindows(config *config) error {
 	}
 
 	switch config.GetWindowsStack() {
-	case "windows2012R2", "windows2016", "windows":
+	case "windows2012R2", "windows":
 	default:
 		return fmt.Errorf("* Invalid configuration: unknown Windows stack %s", config.GetWindowsStack())
 	}
@@ -694,8 +678,8 @@ func validateStacks(config *config) error {
 	}
 
 	for _, stack := range config.GetStacks() {
-		if stack != "cflinuxfs2" && stack != "cflinuxfs3" {
-			return fmt.Errorf("* Invalid configuration: unknown stack '%s'. Only 'cflinuxfs2' and 'cflinuxfs3 are supported for the 'stacks' property", stack)
+		if stack != "cflinuxfs3" {
+			return fmt.Errorf("* Invalid configuration: unknown stack '%s'. Only 'cflinuxfs3' is supported for the 'stacks' property", stack)
 		}
 	}
 
@@ -833,6 +817,10 @@ func (c *config) GetShouldKeepUser() bool {
 	return *c.ShouldKeepUser
 }
 
+func (c *config) GetAddExistingUserToExistingSpace() bool {
+	return false
+}
+
 func (c *config) GetAdminUser() string {
 	return *c.AdminUser
 }
@@ -927,10 +915,6 @@ func (c *config) GetIncludeIsolationSegments() bool {
 
 func (c *config) GetIncludeRoutingIsolationSegments() bool {
 	return *c.IncludeRoutingIsolationSegments
-}
-
-func (c *config) GetIncludeCapiExperimental() bool {
-	return *c.IncludeCapiExperimental
 }
 
 func (c *config) GetIncludeCapiNoBridge() bool {
@@ -1051,14 +1035,6 @@ func (c *config) GetVolumeServiceName() string {
 
 func (c *config) GetVolumeServicePlanName() string {
 	return *c.VolumeServicePlanName
-}
-
-func (c *config) GetVolumeServiceCreateConfig() string {
-	return *c.VolumeServiceCreateConfig
-}
-
-func (c *config) GetVolumeServiceBindConfig() string {
-	return *c.VolumeServiceBindConfig
 }
 
 func (c *config) GetAdminClient() string {

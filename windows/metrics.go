@@ -36,7 +36,7 @@ var _ = WindowsDescribe("Metrics", func() {
 			appName,
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetBinaryBuildpackName(),
-			"-m", DEFAULT_MEMORY_LIMIT,
+			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-p", assets.NewAssets().LoggregatorLoadGeneratorGo,
 			"-c", ".\\loggregator-load-generator.exe",
 			"-i", "2",

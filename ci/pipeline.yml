@@ -2,6 +2,7 @@
 resources:
 - name: cats-pool
   type: pool
+  icon: pool
   source:
     uri: git@github.com:cloudfoundry/relint-ci-pools
     branch: master
@@ -10,6 +11,7 @@ resources:
 
 - name: relint-envs
   type: git
+  icon: github-box
   source:
     branch: master
     uri: git@github.com:cloudfoundry/relint-envs.git
@@ -17,18 +19,21 @@ resources:
 
 - name: cf-deployment-concourse-tasks
   type: git
+  icon: github-box
   source:
     branch: master
     uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
 
 - name: runtime-ci
   type: git
+  icon: github-box
   source:
     branch: master
     uri: https://github.com/cloudfoundry/runtime-ci.git
 
 - name: cf-acceptance-tests-develop
   type: git
+  icon: github-box
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/cf-acceptance-tests.git
@@ -39,6 +44,7 @@ resources:
 
 - name: cf-acceptance-tests-rc
   type: git
+  icon: github-box
   source:
     branch: release-candidate
     uri: git@github.com:cloudfoundry/cf-acceptance-tests.git
@@ -49,6 +55,7 @@ resources:
 
 - name: cf-acceptance-tests-master
   type: git
+  icon: github-box
   source:
     branch: master
     uri: git@github.com:cloudfoundry/cf-acceptance-tests.git
@@ -59,6 +66,7 @@ resources:
 
 - name: cf-deployment-master
   type: git
+  icon: github-box
   source:
     branch: master
     uri: git@github.com:cloudfoundry/cf-deployment.git
@@ -69,6 +77,7 @@ resources:
 
 - name: cf-test-helpers
   type: git
+  icon: github-box
   source:
     branch: master
     uri: https://github.com/cloudfoundry-incubator/cf-test-helpers
@@ -91,28 +100,42 @@ resources:
     tracker_url: https://www.pivotaltracker.com
 
 jobs:
+- name: bump-cf-test-helpers
+  public: true
+  plan:
+  - in_parallel:
+    - get: cf-acceptance-tests-develop
+    - get: runtime-ci
+    - get: cf-test-helpers
+      trigger: true
+  - task: run-cf-test-helpers-unit-tests
+    file: runtime-ci/tasks/run-cf-test-helpers-unit-tests/task.yml
+  - task: bump-cf-test-helpers
+    file: runtime-ci/tasks/bump-cf-test-helpers/task.yml
+    input_mapping:
+      repository: cf-acceptance-tests-develop
+  - put: cf-acceptance-tests-develop
+    params:
+      repository: updated-repository
+      rebase: true
+
 - name: unit-test
   serial: true
   public: true
-  build_logs_to_retain: 100
   plan:
   - get: cf-acceptance-tests-develop
-    trigger: true
-  - get: cf-test-helpers
     trigger: true
   - get: runtime-ci
   - task: run-cats-unit-tests
     file: runtime-ci/tasks/run-cats-unit-tests/task.yml
     input_mapping:
       cf-acceptance-tests: cf-acceptance-tests-develop
-  - task: run-cf-test-helpers-unit-tests
-    file: runtime-ci/tasks/run-cf-test-helpers-unit-tests/task.yml
 
 - name: acquire-pool-cats
   public: true
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-acceptance-tests-develop
       trigger: true
       passed: [ unit-test ]
@@ -123,7 +146,7 @@ jobs:
   public: true
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-deployment-master
       trigger: true
     - put: cats-pool
@@ -141,7 +164,6 @@ jobs:
 - name: deploy
   serial_groups: [ cats ]
   public: true
-  build_logs_to_retain: 100
   plan:
   - on_success:
       put: cats-pool
@@ -150,10 +172,11 @@ jobs:
     - get: cats-pool
       trigger: true
       passed: [ acquire-pool ]
-    - aggregate:
+    - in_parallel:
       - get: runtime-ci
       - get: cf-deployment-concourse-tasks
       - get: cf-deployment-master
+        passed: [ acquire-pool ]
       - get: relint-envs
     - task: bosh-deploy-cf
       file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
@@ -167,6 +190,7 @@ jobs:
         SYSTEM_DOMAIN: cats.cf-app.com
         OPS_FILES: |
           operations/use-compiled-releases.yml
+          operations/use-internal-lookup-for-route-services.yml
     - task: run-bosh-cleanup
       file: cf-deployment-concourse-tasks/bosh-cleanup/task.yml
       input_mapping:
@@ -191,16 +215,16 @@ jobs:
   serial_groups: [ cats ]
   serial: true
   public: true
-  build_logs_to_retain: 100
   plan:
   - timeout: 4h
     do:
     - get: cats-pool
       trigger: true
       passed: [ acquire-pool-cats ]
-    - aggregate:
+    - in_parallel:
       - get: cf-deployment-concourse-tasks
       - get: cf-acceptance-tests-develop
+        passed: [ acquire-pool-cats ]
       - get: relint-envs
     - task: enable-docker-and-tasks
       file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
@@ -226,7 +250,6 @@ jobs:
 - name: bless-cats
   public: true
   serial: true
-  build_logs_to_retain: 100
   plan:
   - get: runtime-ci
   - get: cf-acceptance-tests-develop
@@ -262,14 +285,13 @@ jobs:
 - name: cleanup-cats
   serial: true
   public: true
-  build_logs_to_retain: 100
   plan:
   - timeout: 4h
     do:
     - get: cats-pool
       trigger: true
       passed: [ run-cats ]
-    - aggregate:
+    - in_parallel:
       - get: cf-acceptance-tests-develop
         passed: [ run-cats]
         trigger: true
@@ -284,7 +306,6 @@ jobs:
 
 - name: ship-it-patch
   public: true
-  build_logs_to_retain: 100
   plan:
     - do:
       - get: cats-version
@@ -302,7 +323,6 @@ jobs:
 
 - name: ship-it-minor
   public: true
-  build_logs_to_retain: 100
   plan:
     - do:
       - get: cats-version
@@ -320,7 +340,6 @@ jobs:
 
 - name: ship-it-major
   public: true
-  build_logs_to_retain: 100
   plan:
     - do:
       - get: cats-version

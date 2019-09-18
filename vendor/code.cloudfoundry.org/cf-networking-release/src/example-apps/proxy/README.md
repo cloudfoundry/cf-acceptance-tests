@@ -2,7 +2,7 @@
 
 Push two differently named instances of the app
 ```bash
-cd assets/proxy
+cd ~/workspace/cf-networking-release/src/example-apps/proxy
 cf push appA
 cf push appB
 ```

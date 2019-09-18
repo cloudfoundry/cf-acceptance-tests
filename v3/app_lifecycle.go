@@ -7,6 +7,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -44,7 +45,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 	})
 
 	AfterEach(func() {
-		FetchRecentLogs(appGuid, token, Config)
+		app_helpers.AppReport(appName)
 		DeleteApp(appGuid)
 	})
 
@@ -180,7 +181,6 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 		packageGuid                     string
 		spaceGuid                       string
 		appCreationEnvironmentVariables string
-		token                           string
 		expectedNullResponse            string
 	)
 
@@ -193,7 +193,6 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 		appCreationEnvironmentVariables = `"foo":"bar"`
 		appGuid = CreateDockerApp(appName, spaceGuid, `{"foo":"bar"}`)
 		packageGuid = CreateDockerPackage(appGuid, Config.GetPublicDockerAppImage())
-		token = GetAuthToken()
 
 		appUrl := "https://" + appName + "." + Config.GetAppsDomain()
 		nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait()
@@ -201,7 +200,7 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 	})
 
 	AfterEach(func() {
-		FetchRecentLogs(appGuid, token, Config)
+		app_helpers.AppReport(appName)
 		DeleteApp(appGuid)
 	})
 

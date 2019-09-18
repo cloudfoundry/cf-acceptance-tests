@@ -7,7 +7,6 @@ import (
 type CatsConfig interface {
 	GetIncludeApps() bool
 	GetIncludeBackendCompatiblity() bool
-	GetIncludeCapiExperimental() bool
 	GetIncludeCapiNoBridge() bool
 	GetIncludeContainerNetworking() bool
 	GetIncludeCredhubAssisted() bool
@@ -39,6 +38,7 @@ type CatsConfig interface {
 	GetSkipSSLValidation() bool
 	GetUseExistingUser() bool
 
+	GetAddExistingUserToExistingSpace() bool
 	GetAdminPassword() string
 	GetAdminUser() string
 	GetAdminClient() string
@@ -83,8 +83,6 @@ type CatsConfig interface {
 
 	GetVolumeServiceName() string
 	GetVolumeServicePlanName() string
-	GetVolumeServiceCreateConfig() string
-	GetVolumeServiceBindConfig() string
 
 	GetReporterConfig() reporterConfig
 

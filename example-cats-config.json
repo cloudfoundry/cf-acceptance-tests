@@ -11,7 +11,6 @@ IN DEVELOPMENT
   "use_log_cache": false,
   "include_apps": true,
   "include_backend_compatibility": true,
-  "include_capi_experimental": false,
   "include_capi_no_bridge": true,
   "include_container_networking": true,
   "credhub_mode" : "assisted",
@@ -35,12 +34,10 @@ IN DEVELOPMENT
   "include_tasks": true,
   "include_v3": true,
   "include_zipkin": true,
-  "include_assisted_credhub": true,
   "include_credhub": true,
   "include_tcp_routing": true,
   "include_volume_services": false,
   "stacks": [
-    "cflinuxfs2",
     "cflinuxfs3"
   ]
 }

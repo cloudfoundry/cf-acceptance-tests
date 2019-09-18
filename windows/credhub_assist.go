@@ -38,7 +38,7 @@ var _ = WindowsCredhubDescribe("CredHub Integration", func() {
 		Expect(cf.Cf(
 			"push", chBrokerAppName,
 			"-b", Config.GetGoBuildpackName(),
-			"-m", DEFAULT_MEMORY_LIMIT,
+			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-p", assets.NewAssets().CredHubServiceBroker,
 			"-f", assets.NewAssets().CredHubServiceBroker+"/manifest.yml",
 			"-d", Config.GetAppsDomain(),
@@ -185,7 +185,7 @@ echo   web: webapp.exe
 			Expect(cf.Cf("push", appName,
 				"--no-start",
 				"-b", buildpackName,
-				"-m", DEFAULT_MEMORY_LIMIT,
+				"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 				"-p", assets.NewAssets().WindowsWebapp,
 				"-d", Config.GetAppsDomain(),
 				"-s", Config.GetWindowsStack(),
@@ -248,7 +248,7 @@ echo   web: webapp.exe
 						"--no-start",
 						"-s", Config.GetWindowsStack(),
 						"-b", Config.GetHwcBuildpackName(),
-						"-m", DEFAULT_MEMORY_LIMIT,
+						"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 						"-p", assets.NewAssets().Nora,
 						"-d", Config.GetAppsDomain()).Wait()).To(Exit(0))
 					bindServiceAndStartApp(appName)

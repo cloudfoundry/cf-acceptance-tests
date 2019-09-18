@@ -46,7 +46,7 @@ func pushApp(appName, buildpack string) {
 		appName,
 		"-s", Config.GetWindowsStack(),
 		"-b", buildpack,
-		"-m", DEFAULT_MEMORY_LIMIT,
+		"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 		"-p", assets.NewAssets().Nora,
 		"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
@@ -148,7 +148,7 @@ func assertNetworkingPreconditions(clientAppName string, privateHost string, pri
 }
 
 var _ = WindowsDescribe("WINDOWS: App Instance Networking", func() {
-	Describe("WINDOWS: Using container-networking and running security-groups", func() {
+	SecurityGroupsDescribe("WINDOWS: Using container-networking and running security-groups", func() {
 		var serverAppName, clientAppName, privateHost, orgName, spaceName, securityGroupName string
 		var privatePort int
 
@@ -158,7 +158,7 @@ var _ = WindowsDescribe("WINDOWS: App Instance Networking", func() {
 			serverAppName, privateHost, privatePort = pushServerApp()
 			clientAppName = pushClientApp()
 
-			if Config.GetWindowsStack() == "windows2016" || Config.GetWindowsStack() == "windows" {
+			if Config.GetWindowsStack() == "windows" {
 				assertNetworkingPreconditions(clientAppName, privateHost, privatePort)
 			}
 		})

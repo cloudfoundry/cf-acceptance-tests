@@ -15,9 +15,10 @@ import (
 )
 
 const (
-	CF_JAVA_TIMEOUT      = 10 * time.Minute
-	V3_PROCESS_TIMEOUT   = 45 * time.Second
-	DEFAULT_MEMORY_LIMIT = "256M"
+	CF_JAVA_TIMEOUT              = 10 * time.Minute
+	V3_PROCESS_TIMEOUT           = 45 * time.Second
+	DEFAULT_MEMORY_LIMIT         = "256M"
+	DEFAULT_WINDOWS_MEMORY_LIMIT = "1G"
 )
 
 var (
@@ -223,17 +224,6 @@ func V3Describe(description string, callback func()) bool {
 		BeforeEach(func() {
 			if !Config.GetIncludeV3() {
 				Skip(skip_messages.SkipV3Message)
-			}
-		})
-		Describe(description, callback)
-	})
-}
-
-func CapiExperimentalDescribe(description string, callback func()) bool {
-	return Describe("[capi_experimental]", func() {
-		BeforeEach(func() {
-			if !Config.GetIncludeCapiExperimental() {
-				Skip(skip_messages.SkipCapiExperimentalMessage)
 			}
 		})
 		Describe(description, callback)

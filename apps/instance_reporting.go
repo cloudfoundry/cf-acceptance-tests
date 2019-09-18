@@ -51,4 +51,36 @@ var _ = AppsDescribe("Getting instance information", func() {
 			Expect(app.Out).NotTo(Say("instances: 1/1"))
 		})
 	})
+
+	Describe("Scaling instances", func() {
+		var appName string
+
+		BeforeEach(func() {
+			appName = random_name.CATSRandomName("APP")
+
+			Expect(cf.Cf("push",
+				appName,
+				"-b", Config.GetBinaryBuildpackName(),
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().Catnip,
+				"-c", "./catnip",
+				"-i", "1",
+				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		})
+
+		AfterEach(func() {
+			app_helpers.AppReport(appName)
+
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
+		})
+
+		It("can be queried for state by instance", func() {
+			Expect(cf.Cf("scale", appName, "-i", "2").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+			app := cf.Cf("app", appName).Wait()
+			Expect(app).To(Exit(0))
+			Expect(app).To(Say("#0"))
+			Expect(app).To(Say("#1"))
+		})
+	})
 })

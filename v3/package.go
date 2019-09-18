@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/download"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -44,7 +45,7 @@ var _ = V3Describe("package features", func() {
 	})
 
 	AfterEach(func() {
-		FetchRecentLogs(appGuid, token, Config)
+		app_helpers.AppReport(appName)
 		DeleteApp(appGuid)
 	})
 

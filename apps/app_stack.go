@@ -134,8 +134,6 @@ EOF
 				switch stackName {
 				case "cflinuxfs3":
 					expectedLSBRelease = "DISTRIB_CODENAME=bionic"
-				case "cflinuxfs2":
-					expectedLSBRelease = "DISTRIB_CODENAME=trusty"
 				}
 
 				push := cf.Cf("push", appName,

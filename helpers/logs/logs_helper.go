@@ -7,7 +7,7 @@ import (
 
 func Tail(useLogCache bool, appName string) *gexec.Session {
 	if useLogCache {
-		return cf.Cf("tail", appName, "--lines", "125")
+		return cf.Cf("tail", "--envelope-class=logs", appName, "--lines", "125")
 	}
 
 	return cf.Cf("logs", "--recent", appName)
@@ -15,7 +15,7 @@ func Tail(useLogCache bool, appName string) *gexec.Session {
 
 func TailFollow(useLogCache bool, appName string) *gexec.Session {
 	if useLogCache {
-		return cf.Cf("tail", "--follow", appName)
+		return cf.Cf("tail", "--envelope-class=logs", "--follow", appName)
 	}
 
 	return cf.Cf("logs", appName)

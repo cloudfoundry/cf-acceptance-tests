@@ -69,22 +69,24 @@ in such a way as to impact other tests.
 All `go` dependencies required by CATs
 are vendored in the `vendor` directory.
 
-Install [gvt](https://github.com/FiloSottile/gvt) and make sure it is available
-in your $PATH. The recommended way to do this is to run:
-```bash
-go get -u github.com/FiloSottile/gvt
-```
+Make sure to have Golang 1.11+
 
 In order to update a current dependency to a specific version,
 do the following:
 
 ```bash
 cd cf-acceptance-tests
-gvt delete <import_path>
-gvt fetch -revision <revision_number> <import_path>
+source .envrc
+go get <import_path>@<revision_number>
+go mod vendor
 ```
 
-If you'd like to add a new dependency just `gvt fetch`.
+If you'd like to add a new dependency just run:
+
+```bash
+go mod tidy
+go mod vendor
+```
 
 ## Test Configuration
 You must set the environment variable `$CONFIG`
@@ -130,7 +132,6 @@ include_capi_no_bridge
 * `credhub_location`: Location of CredHub instance; default is `https://credhub.service.cf.internal:8844`
 * `credhub_client`: UAA client credential for Service Broker write access to CredHub (required for CredHub tests); default is `credhub_admin_client`.
 * `credhub_secret`: UAA client secret for Service Broker write access to CredHub (required for CredHub tests).
-* `include_capi_experimental`: Flag to run experimental tests for the CAPI release. Not stable!
 * `include_capi_no_bridge`: Flag to run tests that require CAPI's (currently optional) bridge consumption features.
 * `include_deployments`: Flag to include tests for the cloud controller rolling deployments. V3 must also be enabled.
 * `include_detect`: Flag to include tests in the detect group.
@@ -188,22 +189,14 @@ include_capi_no_bridge
 * `include_windows`: Flag to include the tests that run against Windows cells.
 * `use_windows_test_task`: Flag to include the tasks tests on Windows cells. Default is `false`.
 * `use_windows_context_path`: Flag to include the Windows context path routing tests. Default is `false`.
-* `windows_stack`: Windows stack to run tests against. Must be either `windows2012R2`, `windows2016`, or `windows`. Defaults to `windows2012R2`.
+* `windows_stack`: Windows stack to run tests against. Must be either `windows2012R2`, or `windows`. Defaults to `windows2012R2`.
 
 * `include_service_discovery`: Flag to include test for the service discovery. These tests use `apps.internal` domain, which is the default in `cf-networking-release`. The internal domain is currently not configurable.
-* `stacks`: An array of stacks to test against. Currently only `cflinuxfs3` and `cflinuxfs2` stacks are supported. Default is `[cflinuxfs2]`.
+* `stacks`: An array of stacks to test against. Currently only `cflinuxfs3` stack is supported. Default is `[cflinuxfs3]`.
 
-* `include_volume_services`: Flag to include the tests for volume services. Diego must be deployed for these tests to pass and volume service broker should be registered in platform.
+* `include_volume_services`: Flag to include the tests for volume services. The following requirements must be met to run this suite: Diego must be deployed. Docker support must be enabled. tcp-routing must be deployed. 
 * `volume_service_name`: The name of the volume service provided by the volume service broker.
 * `volume_service_plan_name`: The name of the plan of the service provided by the volume service broker.
-* `volume_service_create_config`: The JSON configuration that is used when volume service is created.
-* `volume_service_bind_config`: The JSON configuration that is used when volume service is bound to the test application.
-
-* `include_volume_services`: Flag to include the tests for volume services. Diego must be deployed for these tests to pass and volume service broker should be registered in platform.
-* `volume_service_name`: The name of the volume service provided by the volume service broker.
-* `volume_service_plan_name`: The name of the plan of the service provided by the volume service broker.
-* `volume_service_create_config`: The JSON configuration that is used when volume service is created.
-* `volume_service_bind_config`: The JSON configuration that is used when volume service is bound to the test application.
 
 #### Buildpack Names
 Many tests specify a buildpack when pushing an app, so that on diego the app staging process completes in less time. The default names for the buildpacks are as follows; if you have buildpacks with different names, you can override them by setting different names:
@@ -351,7 +344,6 @@ Test Group Name| Description
 --- | ---
 `apps`| Tests the core functionalities of Cloud Foundry: staging, running, logging, routing, buildpacks, etc.  This test group should always pass against a sound Cloud Foundry deployment.
 `backend_compatibility` | Tests interoperability of droplets staged on the DEAs running on Diego
-`capi_experimental` | Tests features of Cloud Foundry that are currently under development. If you don't know what these tests are, you probably don't need to run them.
 `credhub`| Tests CredHub-delivered Secure Service credentials in the service binding. [CredHub configuration][credhub-secure-service-credentials] is required to run these tests. In addition to selecting a `credhub_mode`, `credhub_client` and `credhub_secret` values are required for these tests.
 `detect` | Tests the ability of the platform to detect the correct buildpack for compiling an application if no buildpack is explicitly specified.
 `docker`| Tests our ability to run docker containers on Diego and that we handle docker metadata correctly.
@@ -372,20 +364,30 @@ Test Group Name| Description
 
 ## Contributing
 
-This repository uses [gvt](https://github.com/FiloSottile/gvt) to manage `go` dependencies.
+This repository uses [go mod](https://golang.org/cmd/go/#hdr-Modules__module_versions__and_more)
+to manage `go` dependencies.
 
 All `go` dependencies required by CATs are vendored in the `vendor` directory.
 
 When making changes to the test suite that bring in additional `go` packages,
-you should use the workflow described in the
-[gvt documentation](https://github.com/FiloSottile/gvt#basic-usage).
+you should use the following workflow:
 
+If you can use the most recent version of a dependency use `go mod tidy`,
+otherwise use `go get <dependency>@<version>`. Both of these require go modules
+to be enabled via the [envrc](.envrc). Finally use `go mod vendor` to add the
+dependencies to the `vendor` directory.
+
+For tools and assets, please use the [helpers/assets/tools.go](helpers/assets/tools.go) via
+the [go mod tool workflow](https://github.com/go-modules-by-example/index/tree/master/010_tools)
+
+For additional information refer to the [official
+wiki](https://github.com/golang/go/wiki/Modules) and the [official examples
+repo](https://github.com/go-modules-by-example/index)
 
 Although the default branch for this repository is `master`, we ask that all
 pull requests be made against the `develop` branch. Please run the unit tests
 and make sure they are passing before submitting. Use `./bin/run_units` to run
 these unit tests.
-
 
 **Note**: it is necessary to run the tests from the root of the repo.
 
@@ -395,7 +397,7 @@ There are a number of conventions we recommend developers of CF acceptance tests
 adopt:
 
 1. When pushing an app:
-  * set the **memory** requirement, and use the suite's `DEFAULT_MEMORY_LIMIT` unless the test specifically needs to test a different value,
+  * set the **memory** requirement, and use the suite's `DEFAULT_MEMORY_LIMIT` (`DEFAULT_WINDOWS_MEMORY_LIMIT` for tests in the `windows` directory) unless the test specifically needs to test a different value,
   * set the **buildpack** unless the test specifically needs to test the case where a buildpack is unspecified, and use one of `config.RubyBuildpack`, `config.JavaBuildpack`, etc.
 unless the test specifically needs to use a buildpack name or URL specific to the test,
   * set the **domain**, and use the `Config.AppsDomain` unless the test specifically needs to test a different app domain.

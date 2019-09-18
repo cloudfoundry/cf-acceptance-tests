@@ -122,7 +122,6 @@ type allConfig struct {
 
 	IncludeApps                     *bool `json:"include_apps"`
 	IncludeBackendCompatiblity      *bool `json:"include_backend_compatibility"`
-	IncludeCapiExperimental         *bool `json:"include_capi_experimental"`
 	IncludeCapiNoBridge             *bool `json:"include_capi_no_bridge"`
 	IncludeContainerNetworking      *bool `json:"include_container_networking"`
 	IncludeDetect                   *bool `json:"include_detect"`
@@ -247,7 +246,6 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeV3()).To(BeTrue())
 
 		Expect(config.GetIncludeBackendCompatiblity()).To(BeFalse())
-		Expect(config.GetIncludeCapiExperimental()).To(BeFalse())
 		Expect(config.GetIncludeCapiNoBridge()).To(BeTrue())
 		Expect(config.GetIncludeDocker()).To(BeFalse())
 		Expect(config.GetIncludeInternetDependent()).To(BeFalse())
@@ -316,7 +314,7 @@ var _ = Describe("Config", func() {
 
 		Expect(config.GetRequireProxiedAppTraffic()).To(BeFalse())
 
-		Expect(config.GetStacks()).To(ConsistOf("cflinuxfs2"))
+		Expect(config.GetStacks()).To(ConsistOf("cflinuxfs3"))
 	})
 
 	Context("when all values are null", func() {
@@ -368,7 +366,6 @@ var _ = Describe("Config", func() {
 
 			Expect(err.Error()).To(ContainSubstring("'include_apps' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_backend_compatibility' must not be null"))
-			Expect(err.Error()).To(ContainSubstring("'include_capi_experimental' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_capi_no_bridge' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_detect' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_docker' must not be null"))
@@ -527,7 +524,7 @@ var _ = Describe("Config", func() {
 			testCfg.IncludeWindows = ptrToBool(true)
 		})
 
-		Context("when the windows stack is not windows2016, windows2012R2, or windows", func() {
+		Context("when the windows stack is not windows2012R2, or windows", func() {
 			BeforeEach(func() {
 				testCfg.WindowsStack = ptrToString("windows98")
 			})
@@ -601,10 +598,10 @@ var _ = Describe("Config", func() {
 			testCfg.Stacks = &[]string{"my-custom-stack"}
 		})
 
-		It("returns error if a stack other than cflinuxfs2 or cflinuxfs3 is provided", func() {
+		It("returns error if a stack other than cflinuxfs3 is provided", func() {
 			_, err := cfg.NewCatsConfig(tmpFilePath)
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(MatchError("* Invalid configuration: unknown stack 'my-custom-stack'. Only 'cflinuxfs2' and 'cflinuxfs3 are supported for the 'stacks' property"))
+			Expect(err).To(MatchError("* Invalid configuration: unknown stack 'my-custom-stack'. Only 'cflinuxfs3' is supported for the 'stacks' property"))
 		})
 	})
 
