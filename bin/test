@@ -2,8 +2,6 @@
 
 set -e -x
 
-export GO111MODULE=on
-
 if [ ! -f "${CONFIG}" ]; then
   echo "FAIL: \$CONFIG must be set to the path of an integration config JSON file"
   exit 1
@@ -25,8 +23,8 @@ export RUN_ID=$(openssl rand -hex 16)
 
 export CF_PLUGIN_HOME=$HOME
 
-go build -mod=vendor -v -o bin/ginkgo github.com/cloudfoundry/cf-acceptance-tests/vendor/github.com/onsi/ginkgo/ginkgo
+go build -v -o bin/ginkgo github.com/cloudfoundry/cf-acceptance-tests/vendor/github.com/onsi/ginkgo/ginkgo
 export PATH=$PWD/bin:$PATH
 
 echo "Using $(ginkgo version)" > /dev/null
-ginkgo -mod=vendor "$@"
+ginkgo "$@"
