@@ -31,6 +31,12 @@ resources:
     uri: git@github.com:cloudfoundry/relint-envs.git
     private_key: ((hagrid_env_readwrite_deploy_key.private_key))
 
+- name: cf-deployment-release-candidate
+  type: git
+  source:
+    branch: release-candidate
+    uri: https://github.com/cloudfoundry/cf-deployment
+
 - name: cf-deployment-concourse-tasks
   type: git
   icon: github-box
@@ -38,7 +44,92 @@ resources:
     branch: master
     uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
 
+- name: runtime-ci
+  type: git
+  source:
+    branch: master
+    uri: https://github.com/cloudfoundry/runtime-ci
+
 jobs:
+- name: deploy-cf
+  serial: true
+  public: true
+  build_logs_to_retain: 100
+  plan:
+  - in_parallel:
+    - get: relint-envs
+    - get: cf-deployment-release-candidate
+      trigger: true
+    - get: cf-deployment-concourse-tasks
+    - get: runtime-ci
+  - task: upload-latest-capi-rc
+    file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
+  - task: bosh-deploy
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    params:
+      BBL_STATE_DIR: environments/dev/maxime/bbl-state
+      AVAILABLE_PORT: 1033
+      OPS_FILES: |
+        operations/use-compiled-releases.yml
+        operations/experimental/fast-deploy-with-downtime-and-danger.yml
+        operations/windows1803-cell.yml
+        operations/experimental/use-compiled-releases-windows.yml
+        operations/enable-service-discovery.yml
+        operations/use-internal-lookup-for-route-services.yml
+        ../relint-envs/environments/dev/maxime/use-latest-capi.yml
+      SYSTEM_DOMAIN: maxime.cf-app.com
+    input_mapping:
+      bbl-state: relint-envs
+      cf-deployment: cf-deployment-release-candidate
+      ops-files: cf-deployment-release-candidate
+      vars-files: relint-envs
+  - task: update-integration-configs
+    file: cf-deployment-concourse-tasks/update-integration-configs/task.yml
+    params:
+      BBL_STATE_DIR: environments/dev/maxime/bbl-state
+      CATS_INTEGRATION_CONFIG_FILE: environments/dev/maxime/integration_config.json
+    input_mapping:
+      bbl-state: relint-envs
+      integration-configs: relint-envs
+    ensure:
+      put: relint-envs
+      params:
+        rebase: true
+        repository: updated-integration-configs
+  - in_parallel:
+    - task: open-asgs-for-credhub
+      file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+      input_mapping:
+        bbl-state: relint-envs
+      params:
+        BBL_STATE_DIR: environments/dev/maxime/bbl-state
+        INSTANCE_GROUP_NAME: credhub
+        SYSTEM_DOMAIN: maxime.cf-app.com
+        SECURITY_GROUP_NAME: credhub
+    - task: open-asgs-for-uaa
+      file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+      input_mapping:
+        bbl-state: relint-envs
+      params:
+        BBL_STATE_DIR: environments/dev/maxime/bbl-state
+        INSTANCE_GROUP_NAME: uaa
+        SYSTEM_DOMAIN: maxime.cf-app.com
+        SECURITY_GROUP_NAME: uaa
+    - task: enable-feature-flags-for-cats
+      file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
+      input_mapping:
+        bbl-state: relint-envs
+      params:
+        BBL_STATE_DIR: environments/dev/maxime/bbl-state
+        SYSTEM_DOMAIN: maxime.cf-app.com
+        ENABLED_FEATURE_FLAGS: |
+          service_instance_sharing
+    - task: bosh-cleanup
+      file: cf-deployment-concourse-tasks/bosh-cleanup/task.yml
+      params:
+        BBL_STATE_DIR: environments/dev/maxime/bbl-state
+      input_mapping:
+        bbl-state: relint-envs
 # - name: deploy-cf
 #   public: true
 #   plan:
