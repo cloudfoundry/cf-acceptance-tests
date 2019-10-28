@@ -27,6 +27,7 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		routerGroupGuid     string
 		reservablePorts     string
 		nfsPort             = "2049"
+		tcpDomain           string
 	)
 
 	BeforeEach(func() {
@@ -43,13 +44,17 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 			payload := `{ "reservable_ports":"1024-2049", "name":"default-tcp", "type": "tcp"}`
 			session = cf.Cf("curl", fmt.Sprintf("/routing/v1/router_groups/%s", routerGroupGuid), "-X", "PUT", "-d", payload).Wait()
 			Expect(session).To(Exit(0), "cannot update tcp router group to allow nfs traffic")
+
+			tcpDomain = fmt.Sprintf("tcp.%s", Config.GetAppsDomain())
+
+			session = cf.Cf("create-shared-domain", tcpDomain, "--router-group", "default-tcp").Wait()
+			Expect(session).To(Exit(0), "can not create shared tcp domain")
 		})
 
 		By("pushing an nfs server")
 		Expect(cf.Cf("push", "nfs", "--docker-image", "cfpersi/nfs-cats", "--health-check-type", "process", "--no-start").
 			Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "cannot push the nfs server app")
 
-		tcpDomain := fmt.Sprintf("tcp.%s", Config.GetAppsDomain())
 		session := cf.Cf("create-route", TestSetup.RegularUserContext().Space, tcpDomain, "--port", nfsPort).Wait()
 		Expect(session).To(Exit(0), "cannot create a tcp route for the nfs server app")
 
@@ -124,6 +129,10 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 			payload := fmt.Sprintf(`{ "reservable_ports":"%s", "name":"default-tcp", "type": "tcp"}`, reservablePorts)
 			session := cf.Cf("curl", fmt.Sprintf("/routing/v1/router_groups/%s", routerGroupGuid), "-X", "PUT", "-d", payload).Wait()
 			Expect(session).To(Exit(0), "cannot retrieve current router groups")
+			session = cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space).Wait()
+			Expect(session).To(Exit(0), "can not target space")
+			session = cf.Cf("delete-shared-domain", "-f", tcpDomain).Wait()
+			Expect(session).To(Exit(0), "can not delete shared tcp domain")
 		})
 	})
 
