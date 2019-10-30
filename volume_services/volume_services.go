@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -45,7 +46,9 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 			session = cf.Cf("curl", fmt.Sprintf("/routing/v1/router_groups/%s", routerGroupGuid), "-X", "PUT", "-d", payload).Wait()
 			Expect(session).To(Exit(0), "cannot update tcp router group to allow nfs traffic")
 
-			tcpDomain = fmt.Sprintf("tcp.%s", Config.GetAppsDomain())
+			randomDomain := strings.ReplaceAll(random_name.CATSRandomName("SHARED_DOMAIN"), "_", "-")
+
+			tcpDomain = fmt.Sprintf("%s.%s", randomDomain, Config.GetAppsDomain())
 
 			session = cf.Cf("create-shared-domain", tcpDomain, "--router-group", "default-tcp").Wait()
 			Expect(session).To(Exit(0), "can not create shared tcp domain")
@@ -73,7 +76,7 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 			Expect(session).To(Exit(0), "cannot create a tcp route mapping to the nfs server app")
 		})
 
-		session = cf.Cf("start", "nfs").Wait()
+		session = cf.Cf("start", "nfs").Wait(Config.CfPushTimeoutDuration())
 		Expect(session).To(Exit(0), "cannot start the nfs server app")
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
@@ -115,22 +118,14 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 	})
 
 	AfterEach(func() {
-		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0), "cannot delete the test app")
-		Eventually(cf.Cf("delete-service", serviceInstanceName, "-f")).Should(Exit(0), "cannot delete the nfs service instance")
-
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
-			session := cf.Cf("disable-service-access", serviceName, "-o", TestSetup.RegularUserContext().Org).Wait()
-			Expect(session).To(Exit(0), "cannot disable nfs service access")
-		})
-
-		Eventually(cf.Cf("delete", "nfs", "-f")).Should(Exit(0), "cannot delete the nfs server app")
-
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 			payload := fmt.Sprintf(`{ "reservable_ports":"%s", "name":"default-tcp", "type": "tcp"}`, reservablePorts)
 			session := cf.Cf("curl", fmt.Sprintf("/routing/v1/router_groups/%s", routerGroupGuid), "-X", "PUT", "-d", payload).Wait()
 			Expect(session).To(Exit(0), "cannot retrieve current router groups")
+
 			session = cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space).Wait()
 			Expect(session).To(Exit(0), "can not target space")
+
 			session = cf.Cf("delete-shared-domain", "-f", tcpDomain).Wait()
 			Expect(session).To(Exit(0), "can not delete shared tcp domain")
 		})
