@@ -115,22 +115,14 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 	})
 
 	AfterEach(func() {
-		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0), "cannot delete the test app")
-		Eventually(cf.Cf("delete-service", serviceInstanceName, "-f")).Should(Exit(0), "cannot delete the nfs service instance")
-
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
-			session := cf.Cf("disable-service-access", serviceName, "-o", TestSetup.RegularUserContext().Org).Wait()
-			Expect(session).To(Exit(0), "cannot disable nfs service access")
-		})
-
-		Eventually(cf.Cf("delete", "nfs", "-f")).Should(Exit(0), "cannot delete the nfs server app")
-
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 			payload := fmt.Sprintf(`{ "reservable_ports":"%s", "name":"default-tcp", "type": "tcp"}`, reservablePorts)
 			session := cf.Cf("curl", fmt.Sprintf("/routing/v1/router_groups/%s", routerGroupGuid), "-X", "PUT", "-d", payload).Wait()
 			Expect(session).To(Exit(0), "cannot retrieve current router groups")
+
 			session = cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space).Wait()
 			Expect(session).To(Exit(0), "can not target space")
+
 			session = cf.Cf("delete-shared-domain", "-f", tcpDomain).Wait()
 			Expect(session).To(Exit(0), "can not delete shared tcp domain")
 		})
