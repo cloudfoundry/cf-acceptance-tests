@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -45,7 +46,9 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 			session = cf.Cf("curl", fmt.Sprintf("/routing/v1/router_groups/%s", routerGroupGuid), "-X", "PUT", "-d", payload).Wait()
 			Expect(session).To(Exit(0), "cannot update tcp router group to allow nfs traffic")
 
-			tcpDomain = fmt.Sprintf("tcp.%s", Config.GetAppsDomain())
+			randomDomain := strings.ReplaceAll(random_name.CATSRandomName("SHARED_DOMAIN"), "_", "-")
+
+			tcpDomain = fmt.Sprintf("%s.%s", randomDomain, Config.GetAppsDomain())
 
 			session = cf.Cf("create-shared-domain", tcpDomain, "--router-group", "default-tcp").Wait()
 			Expect(session).To(Exit(0), "can not create shared tcp domain")
