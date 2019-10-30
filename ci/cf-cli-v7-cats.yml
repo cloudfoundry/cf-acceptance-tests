@@ -1,6 +1,4 @@
 ---
-private: true
-
 resources:
 - name: cf-cli-v7
   type: github-release
@@ -50,11 +48,46 @@ resources:
     branch: master
     uri: https://github.com/cloudfoundry/runtime-ci
 
+- name: bosh-bootloader
+  type: git
+  icon: github-box
+  source:
+    branch: master
+    uri: https://github.com/cloudfoundry/bosh-bootloader
+
 jobs:
-- name: deploy-cf
+# Setup infrastructure
+- name: setup-infrastructure
   serial: true
-  public: true
-  build_logs_to_retain: 100
+  plan:
+  - in_parallel:
+    - get: relint-envs
+    - get: cf-deployment-concourse-tasks
+    - get: bosh-bootloader
+  - task: setup-infrastructure
+    file: cf-deployment-concourse-tasks/bbl-up/task.yml
+    params:
+      BBL_STATE_DIR: environments/dev/maxime/bbl-state
+      BBL_IAAS: gcp
+      BBL_ENV_NAME: maxime
+      BBL_CONFIG_DIR: plan-patches/iso-segs-gcp
+      BBL_GCP_SERVICE_ACCOUNT_KEY: environments/dev/maxime/google_account_creds.json
+      # This is us-west1 because the bbl isoseg patch has us-west1 hardcoded
+      BBL_GCP_REGION: us-west1
+      BBL_LB_CERT: ((maxime_cf_lb_cert.certificate))
+      BBL_LB_KEY: ((maxime_cf_lb_cert.private_key))
+      LB_DOMAIN: maxime.cf-app.com
+    input_mapping:
+      bbl-state: relint-envs
+      bbl-config: bosh-bootloader
+    ensure:
+      put: relint-envs
+      params:
+        repository: updated-bbl-state
+        rebase: true
+
+- name: deploy-cf-with-latest-capi-rc
+  serial: true
   plan:
   - in_parallel:
     - get: relint-envs
@@ -62,26 +95,36 @@ jobs:
       trigger: true
     - get: cf-deployment-concourse-tasks
     - get: runtime-ci
-  - task: upload-latest-capi-rc
-    file: cf-deployment-concourse-tasks/bosh-deploy-with-created-release/task.yml
-  - task: bosh-deploy
+    - get: cf-cli-v7
+      trigger: true
+  - task: create-capi-rc-ops-file
+    file: runtime-ci/tasks/create-capi-rc-ops-file/task.yml
+  - task: collect-ops-files
+    file: cf-deployment-concourse-tasks/collect-ops-files/task.yml
+    input_mapping:
+      base-ops-files: cf-deployment-release-candidate
+      new-ops-files: capi-rc-ops-file
+    params:
+      BASE_OPS_FILE_DIR: operations
+      NEW_OPS_FILES: |
+        use-capi-rc.yml
+  - task: deploy-cf
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
     params:
-      BBL_STATE_DIR: environments/dev/maxime/bbl-state
       AVAILABLE_PORT: 1033
+      BBL_STATE_DIR: environments/dev/maxime/bbl-state
       OPS_FILES: |
         operations/use-compiled-releases.yml
-        operations/experimental/fast-deploy-with-downtime-and-danger.yml
         operations/windows1803-cell.yml
         operations/experimental/use-compiled-releases-windows.yml
         operations/enable-service-discovery.yml
         operations/use-internal-lookup-for-route-services.yml
-        ../relint-envs/environments/dev/maxime/use-latest-capi.yml
+        operations/use-capi-rc.yml
       SYSTEM_DOMAIN: maxime.cf-app.com
     input_mapping:
       bbl-state: relint-envs
       cf-deployment: cf-deployment-release-candidate
-      ops-files: cf-deployment-release-candidate
+      ops-files: collected-ops-files
       vars-files: relint-envs
   - task: update-integration-configs
     file: cf-deployment-concourse-tasks/update-integration-configs/task.yml
@@ -130,21 +173,19 @@ jobs:
         BBL_STATE_DIR: environments/dev/maxime/bbl-state
       input_mapping:
         bbl-state: relint-envs
-# - name: deploy-cf
-#   public: true
-#   plan:
-#     - get: cf-cli-v7
-#     - get: cf-acceptance-tests-v7
 
 - name: run-cats-v7
+  serial: true
   plan:
   - get: cf-cli-v7
+    passed:
+    - deploy-cf-with-latest-capi-rc
     trigger: true
   - get: cf-acceptance-tests-v7
     trigger: true
   - get: relint-envs
   - get: cf-deployment-concourse-tasks
-  - task: install cli and run cats
+  - task: install-cli-v7
     config:
       platform: linux
       image_resource:
@@ -183,10 +224,9 @@ jobs:
       - name: extracted-cf-cli
       - name: integration-config
   - task: run-cats-v7
-    file: cf-deployment-concourse-tasks/run-cats-with-provided-cli/task.yml
+    file: cf-deployment-concourse-tasks/run-cats/task.yml
     input_mapping:
       cf-acceptance-tests: cf-acceptance-tests-v7
       cf-cli: extracted-cf-cli
-
 
 # - name: cleanup-after-cats
