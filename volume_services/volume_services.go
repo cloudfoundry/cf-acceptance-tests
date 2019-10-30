@@ -73,7 +73,7 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 			Expect(session).To(Exit(0), "cannot create a tcp route mapping to the nfs server app")
 		})
 
-		session = cf.Cf("start", "nfs").Wait()
+		session = cf.Cf("start", "nfs").Wait(Config.CfPushTimeoutDuration())
 		Expect(session).To(Exit(0), "cannot start the nfs server app")
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
