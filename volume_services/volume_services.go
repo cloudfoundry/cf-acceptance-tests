@@ -118,7 +118,12 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		Expect(bindSession.Wait(TestSetup.ShortTimeout())).To(Exit(0), "cannot bind the nfs service instance to the test app")
 
 		By("starting the app")
-		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "cannot start the test app")
+		session = cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
+		Eventually(session).Should(Exit())
+		if session.ExitCode() != 0 {
+			cf.Cf("logs", appName, "--recent")
+		}
+		Expect(session.ExitCode()).To(Equal(0))
 	})
 
 	AfterEach(func() {
