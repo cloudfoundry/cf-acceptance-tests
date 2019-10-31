@@ -48,7 +48,14 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 			tcpDomain = fmt.Sprintf("tcp.%s", Config.GetAppsDomain())
 
 			session = cf.Cf("create-shared-domain", tcpDomain, "--router-group", "default-tcp").Wait()
-			Expect(session).To(Exit(0), "can not create shared tcp domain")
+			Eventually(session).Should(Exit())
+			contents := string(session.Out.Contents()) + string(session.Err.Contents())
+			Expect(contents).Should(
+				SatisfyAny(
+					ContainSubstring(fmt.Sprintf("The domain name is taken: %s", tcpDomain)),
+					ContainSubstring("OK"),
+				), "can not create shared tcp domain >>>" + contents)
+
 		})
 
 		By("pushing an nfs server")
@@ -119,12 +126,6 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 			payload := fmt.Sprintf(`{ "reservable_ports":"%s", "name":"default-tcp", "type": "tcp"}`, reservablePorts)
 			session := cf.Cf("curl", fmt.Sprintf("/routing/v1/router_groups/%s", routerGroupGuid), "-X", "PUT", "-d", payload).Wait()
 			Expect(session).To(Exit(0), "cannot retrieve current router groups")
-
-			session = cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space).Wait()
-			Expect(session).To(Exit(0), "can not target space")
-
-			session = cf.Cf("delete-shared-domain", "-f", tcpDomain).Wait()
-			Expect(session).To(Exit(0), "can not delete shared tcp domain")
 		})
 	})
 
