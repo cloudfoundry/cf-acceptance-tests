@@ -59,6 +59,8 @@ jobs:
 # Setup infrastructure
 - name: setup-infrastructure
   serial: true
+  serial_groups:
+  - cli-v7
   plan:
   - in_parallel:
     - get: relint-envs
@@ -88,6 +90,8 @@ jobs:
 
 - name: deploy-cf-with-latest-capi-rc
   serial: true
+  serial_groups:
+  - cli-v7
   plan:
   - in_parallel:
     - get: relint-envs
@@ -176,15 +180,18 @@ jobs:
 
 - name: run-cats-v7
   serial: true
+  serial_groups:
+  - cli-v7
   plan:
-  - get: cf-cli-v7
-    passed:
-    - deploy-cf-with-latest-capi-rc
-    trigger: true
-  - get: cf-acceptance-tests-v7
-    trigger: true
-  - get: relint-envs
-  - get: cf-deployment-concourse-tasks
+  - in_parallel:
+    - get: cf-cli-v7
+      passed:
+      - deploy-cf-with-latest-capi-rc
+      trigger: true
+    - get: cf-acceptance-tests-v7
+      trigger: true
+    - get: relint-envs
+    - get: cf-deployment-concourse-tasks
   - task: install-cli-v7
     config:
       platform: linux
@@ -209,12 +216,6 @@ jobs:
             mv /usr/bin/cf7 $WORKING_DIR/extracted-cf-cli/cf
           popd
 
-          sed -e 's/"include_v3": true/"include_v3": false/g' \
-              -e 's/"include_windows": false/"include_windows": true/g' \
-              -e 's/"include_service_discovery": false/"include_service_discovery": true/g' \
-              $WORKING_DIR/relint-envs/environments/pm/acceptance/integration_config.json \
-              > $WORKING_DIR/integration-config/integration_config.json
-
           extracted-cf-cli/cf version
       inputs:
       - name: cf-cli-v7
@@ -222,11 +223,11 @@ jobs:
       - name: relint-envs
       outputs:
       - name: extracted-cf-cli
-      - name: integration-config
   - task: run-cats-v7
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     input_mapping:
       cf-acceptance-tests: cf-acceptance-tests-v7
       cf-cli: extracted-cf-cli
-
-# - name: cleanup-after-cats
+      integration-config: relint-envs
+    params:
+      CONFIG_FILE_PATH: environments/dev/maxime/integration_config.json
