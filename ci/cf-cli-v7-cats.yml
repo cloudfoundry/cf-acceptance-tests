@@ -18,7 +18,7 @@ resources:
     uri: git@github.com:cloudfoundry/cf-acceptance-tests.git
     private_key: ((cf_acceptance_tests_readwrite_deploy_key.private_key))
     ignore_paths:
-    - ci/**
+    - ci/*.yml
     - .envrc
 
 - name: relint-envs
@@ -41,12 +41,6 @@ resources:
   source:
     branch: master
     uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
-
-- name: runtime-ci
-  type: git
-  source:
-    branch: master
-    uri: https://github.com/cloudfoundry/runtime-ci
 
 - name: bosh-bootloader
   type: git
@@ -98,11 +92,13 @@ jobs:
     - get: cf-deployment-release-candidate
       trigger: true
     - get: cf-deployment-concourse-tasks
-    - get: runtime-ci
+    - get: cf-acceptance-tests-v7
     - get: cf-cli-v7
       trigger: true
   - task: create-capi-rc-ops-file
-    file: runtime-ci/tasks/create-capi-rc-ops-file/task.yml
+    file: cf-acceptance-tests-v7/ci/tasks/create-capi-rc-ops-file/task.yml
+    input_mapping:
+      cf-acceptance-tests: cf-acceptance-tests-v7
   - task: collect-ops-files
     file: cf-deployment-concourse-tasks/collect-ops-files/task.yml
     input_mapping:
