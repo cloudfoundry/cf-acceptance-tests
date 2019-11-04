@@ -52,7 +52,9 @@ Building Nora
 
 #### Build
 
-* Make sure you have `msbuild.exe` on your `$PATH`.
+##### Method 1
+
+* Make sure you have `msbuild.exe` on your `$PATH`. (If you're using a VM created using a [BOSH Stemcell for Windows](https://bosh.io/stemcells), it will available at `$env:WINDIR\Microsoft.NET\Framework64\v*\MSBuild.exe`)
 
 * Make your code changes in the `Nora/` directory
 
@@ -60,7 +62,7 @@ Building Nora
 
 * This is will build the app in the `Nora/` directory and you'll see it has a new `bin/` directory.
 
-#### An easier way to build nora
+##### Method 2
 
 You can also use the dotnet-framework docker image which has `msbuild` preinstalled to easily build nora.
 
