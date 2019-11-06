@@ -1,8 +1,6 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 code.cloudfoundry.org/archiver v0.0.0-20150428205605-f598990ddfed h1:FLGwF3Yyi6q9TFXLe8xT7zxJrJLN6v/SX4bSwjmo3H0=
 code.cloudfoundry.org/archiver v0.0.0-20150428205605-f598990ddfed/go.mod h1:EU/KcUvh4qBVN6ffu/b8t9x7SurDot+AO0HqEZ+9QOg=
-code.cloudfoundry.org/cf-networking-release v2.3.0+incompatible h1:Zu/Z+pz4PIwsso+K8Kz4wJSelItZox0Uy/rrbBi8bZA=
-code.cloudfoundry.org/cf-networking-release v2.3.0+incompatible/go.mod h1:WJ/EOYjd9RpBQzcgZLv6YFjNgvIJtOyEHBomNnEhj84=
 code.cloudfoundry.org/go-diodes v0.0.0-20180905200951-72629b5276e3 h1:oHsfl5AaineZubAUOXg2Vxcdu/TzgN/Q+/65lN70LZk=
 code.cloudfoundry.org/go-diodes v0.0.0-20180905200951-72629b5276e3/go.mod h1:Jzi+ccHgo/V/PLQUaQ6hnZcC1c4BS790gx21LRRui4g=
 code.cloudfoundry.org/go-loggregator v7.3.0+incompatible h1:ch3kkOrAG71Lw80vAn0M/Vh2BygLceM6O9Sb79N8c3k=

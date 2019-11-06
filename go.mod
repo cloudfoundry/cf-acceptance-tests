@@ -4,7 +4,6 @@ go 1.12
 
 require (
 	code.cloudfoundry.org/archiver v0.0.0-20150428205605-f598990ddfed
-	code.cloudfoundry.org/cf-networking-release v2.3.0+incompatible
 	code.cloudfoundry.org/go-diodes v0.0.0-20180905200951-72629b5276e3 // indirect
 	code.cloudfoundry.org/go-loggregator v7.3.0+incompatible
 	code.cloudfoundry.org/rfc5424 v0.0.0-20180905210152-236a6d29298a // indirect
