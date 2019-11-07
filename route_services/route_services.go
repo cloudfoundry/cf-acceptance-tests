@@ -55,11 +55,15 @@ var _ = RouteServicesDescribe("Route Services", func() {
 
 				Expect(cf.Cf("push",
 					routeServiceName,
+					"--no-start",
 					"-b", Config.GetGoBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", loggingRouteServiceAsset,
 					"-f", filepath.Join(loggingRouteServiceAsset, "manifest.yml"),
 					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+				Expect(cf.Cf("set-env", routeServiceName, "SKIP_SSL_VALIDATION", "true").Wait()).To(Exit(0))
+				Expect(cf.Cf("start", routeServiceName).Wait(CF_JAVA_TIMEOUT)).To(Exit(0))
 
 				configureBroker(brokerAppName, routeServiceName)
 				bindRouteToService(appName, serviceInstanceName)
