@@ -86,31 +86,27 @@ exit 1
 				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait()).To(Exit(0))
 			})
 
-			push := cf.Cf(
+			pushSession := cf.Cf(
 				"push", appName,
 				"-p", assets.NewAssets().HelloWorld,
 				"-b", buildpackName,
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
+			Eventually(pushSession, Config.CfPushTimeoutDuration()).Should(Exit(1))
 
-			Eventually(push, Config.CfPushTimeoutDuration()).Should(Exit(1))
+			pushSessionContent := pushSession.Buffer().Contents()
 
-			var appStdout string
-			appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
-			appLogsSession.Wait()
-
-			appStdout = string(appLogsSession.Out.Contents())
-			Expect(appStdout).To(MatchRegexp("LANG=en_US\\.UTF-8"))
-			Expect(appStdout).To(MatchRegexp("CF_INSTANCE_INTERNAL_IP=.*"))
-			Expect(appStdout).To(MatchRegexp("CF_INSTANCE_IP=.*"))
-			Expect(appStdout).To(MatchRegexp("CF_INSTANCE_PORTS=.*"))
-			Expect(appStdout).To(MatchRegexp("CF_STACK=.*"))
-			Expect(appStdout).To(MatchRegexp("VCAP_APPLICATION=.*"))
-			Expect(appStdout).To(MatchRegexp("VCAP_SERVICES=.*"))
+			Expect(pushSessionContent).To(MatchRegexp("LANG=en_US\\.UTF-8"))
+			Expect(pushSessionContent).To(MatchRegexp("CF_INSTANCE_INTERNAL_IP=.*"))
+			Expect(pushSessionContent).To(MatchRegexp("CF_INSTANCE_IP=.*"))
+			Expect(pushSessionContent).To(MatchRegexp("CF_INSTANCE_PORTS=.*"))
+			Expect(pushSessionContent).To(MatchRegexp("CF_STACK=.*"))
+			Expect(pushSessionContent).To(MatchRegexp("VCAP_APPLICATION=.*"))
+			Expect(pushSessionContent).To(MatchRegexp("VCAP_SERVICES=.*"))
 
 			// these vars are set to the empty string (use m flag to make $ match eol)
-			Expect(appStdout).To(MatchRegexp("(?m)CF_INSTANCE_ADDR=$"))
-			Expect(appStdout).To(MatchRegexp("(?m)CF_INSTANCE_PORT=$"))
+			Expect(pushSessionContent).To(MatchRegexp("(?m)CF_INSTANCE_ADDR=$"))
+			Expect(pushSessionContent).To(MatchRegexp("(?m)CF_INSTANCE_PORT=$"))
 		})
 
 		It("applies default environment variables while running apps and tasks", func() {
