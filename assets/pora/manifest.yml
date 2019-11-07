@@ -1,6 +1,7 @@
 ---
 applications:
 - name: pora
-  buildpack: go_buildpack
+  buildpacks:
+  - go_buildpack
   env:
     GOPACKAGENAME: pora

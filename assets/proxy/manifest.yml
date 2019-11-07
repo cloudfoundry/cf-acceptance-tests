@@ -3,6 +3,7 @@ applications:
   - name: proxy
     memory: 32M
     disk_quota: 32M
-    buildpack: go_buildpack
+    buildpacks:
+    - go_buildpack
     env:
       GOPACKAGENAME: example-apps/proxy
