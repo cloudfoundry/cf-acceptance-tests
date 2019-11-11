@@ -43,7 +43,7 @@ var _ = WindowsDescribe("Task Lifecycle", func() {
 	})
 
 	It("exercises the task lifecycle on windows", func() {
-		session := cf.Cf("run-task", appName, "cmd /c echo 'hello world'")
+		session := cf.Cf("run-task", appName, "--command", "cmd /c echo 'hello world'")
 		Eventually(session).Should(Exit(0))
 
 		Eventually(func() *Session {

@@ -152,7 +152,7 @@ exit 1
 			if Config.GetIncludeTasks() {
 				taskName := "get-env"
 
-				Eventually(cf.Cf("run-task", appName, "env", "--name", taskName)).Should(Exit(0))
+				Eventually(cf.Cf("run-task", appName, "--command", "env", "--name", taskName)).Should(Exit(0))
 
 				Eventually(func() string {
 					return getTaskState(appName)
