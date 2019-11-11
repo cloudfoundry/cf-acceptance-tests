@@ -88,7 +88,7 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 			})
 		})
 
-		PDescribe("service bindings", func() {
+		Describe("service bindings", func() {
 			var appName, dockerImage string
 
 			JustBeforeEach(func() {
