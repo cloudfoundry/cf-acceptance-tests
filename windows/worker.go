@@ -48,8 +48,7 @@ var _ = WindowsDescribe("apps without a port", func() {
 		CleanupBuildArtifacts()
 	})
 
-	// Relies on start to stage, so pending until that exists
-	PIt("runs the app (and doesn't run healthcheck)", func() {
+	It("runs the app (and doesn't run healthcheck)", func() {
 		// check that the app keeps running
 		// by checking we see incrementing integers in the logs
 		Eventually(logs.Out).Should(Say(`Running Worker \d`))
