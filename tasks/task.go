@@ -145,7 +145,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 			sleepTime := math.Min(float64(2), float64(Config.DefaultTimeoutDuration().Seconds()))
 			command := fmt.Sprintf("sleep %f", sleepTime)
 			lastUsageEventGuid := app_helpers.LastAppUsageEventGuid(TestSetup)
-			createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait()
+			createCommand := cf.Cf("run-task", appName, "--command", command, "--name", taskName).Wait()
 			Expect(createCommand).To(Exit(0))
 
 			taskDetails := getTaskDetails(appName)
@@ -189,7 +189,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 			BeforeEach(func() {
 				command := "sleep 100;"
 				taskName = "mreow"
-				createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait()
+				createCommand := cf.Cf("run-task", appName, "--command", command, "--name", taskName).Wait()
 				Expect(createCommand).To(Exit(0))
 
 				taskDetails := getTaskDetails(appName)
@@ -276,7 +276,7 @@ if curl --fail "` + containerIP + `:` + strconv.Itoa(proxyResponse.Port) + `" ; 
 fi
 done;
 exit 1`
-				createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait()
+				createCommand := cf.Cf("run-task", appName, "--command", command, "--name", taskName).Wait()
 				Expect(createCommand).To(Exit(0))
 
 				By("successfully running")
@@ -329,7 +329,7 @@ exit 1`
 				By("creating the task")
 				taskName := "woof"
 				command := `curl --fail --connect-timeout 10 ` + Config.GetUnallocatedIPForSecurityGroup() + `:80`
-				createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait()
+				createCommand := cf.Cf("run-task", appName, "--command", command, "--name", taskName).Wait()
 				Expect(createCommand).To(Exit(0))
 
 				By("testing that external connectivity to a private ip is not refused (but may be unreachable for other reasons)")
