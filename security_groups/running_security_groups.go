@@ -211,8 +211,7 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 			deleteSecurityGroup(securityGroupName)
 		})
 
-		// App is no-start'ed so cf restart will fail
-		PIt("correctly configures asgs and c2c policy independent of each other", func() {
+		It("correctly configures asgs and c2c policy independent of each other", func() {
 			By("creating a wide-open ASG")
 			dest := Destination{
 				IP:       "0.0.0.0/0", // some random IP that isn't covered by an existing Security Group rule
@@ -311,8 +310,7 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 			deleteBuildpack(buildpack)
 		})
 
-		// App is no-start'ed so will fail on cf restart
-		PIt("allows external and denies internal traffic during staging based on default staging security rules", func() {
+		It("allows external and denies internal traffic during staging based on default staging security rules", func() {
 			Expect(cf.Cf("set-env", testAppName, "TESTURI", "www.google.com").Wait()).To(Exit(0))
 			Expect(cf.Cf("restart", testAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 			Eventually(getStagingOutput(testAppName), 5).Should(Say("CURL_EXIT=0"))

@@ -214,7 +214,7 @@ EOF
 		})
 
 		NonAssistedCredhubDescribe("", func() {
-			PIt("still contains CredHub references in VCAP_SERVICES", func() {
+			It("still contains CredHub references in VCAP_SERVICES", func() {
 				Expect(appStartSession).NotTo(Say("pinkyPie"))
 				Expect(appStartSession).NotTo(Say("rainbowDash"))
 				Expect(appStartSession).To(Say("credhub-ref"))
@@ -222,7 +222,7 @@ EOF
 		})
 
 		AssistedCredhubDescribe("", func() {
-			PIt("has CredHub references in VCAP_SERVICES interpolated", func() {
+			It("has CredHub references in VCAP_SERVICES interpolated", func() {
 				Expect(appStartSession).To(Say(`{"password":"rainbowDash","user-name":"pinkyPie"}`))
 				Expect(appStartSession).NotTo(Say("credhub-ref"))
 			})
@@ -263,13 +263,13 @@ EOF
 					bindServiceAndStartApp(appName)
 				})
 
-				PIt("the broker returns credhub-ref in the credentials block", func() {
+				It("the broker returns credhub-ref in the credentials block", func() {
 					appEnv := string(cf.Cf("env", appName).Wait().Out.Contents())
 					Expect(appEnv).To(ContainSubstring("credentials"), "credential block missing from service")
 					Expect(appEnv).To(ContainSubstring("credhub-ref"), "credhub-ref not found")
 				})
 
-				PIt("the bound app retrieves the credentials for the ref from CredHub", func() {
+				It("the bound app retrieves the credentials for the ref from CredHub", func() {
 					curlCmd := helpers.CurlSkipSSL(true, appURL+"/test").Wait()
 					Expect(curlCmd).To(Exit(0))
 
@@ -299,13 +299,13 @@ EOF
 					bindServiceAndStartApp(appName)
 				})
 
-				PIt("the broker returns credhub-ref in the credentials block", func() {
+				It("the broker returns credhub-ref in the credentials block", func() {
 					appEnv := string(cf.Cf("env", appName).Wait().Out.Contents())
 					Expect(appEnv).To(ContainSubstring("credentials"), "credential block missing from service")
 					Expect(appEnv).To(ContainSubstring("credhub-ref"), "credhub-ref not found")
 				})
 
-				PIt("the bound app gets CredHub refs in VCAP_SERVICES interpolated", func() {
+				It("the bound app gets CredHub refs in VCAP_SERVICES interpolated", func() {
 					curlCmd := helpers.CurlSkipSSL(true, appURL+"/env/VCAP_SERVICES").Wait()
 					Expect(curlCmd).To(Exit(0))
 

@@ -33,7 +33,7 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
 	})
 
-	PDescribe("running a docker app with a start command", func() {
+	Describe("running a docker app with a start command", func() {
 		var expectedNullResponse string
 
 		BeforeEach(func() {
@@ -66,7 +66,7 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 		})
 	})
 
-	PDescribe("running a docker app without a start command", func() {
+	Describe("running a docker app without a start command", func() {
 		BeforeEach(func() {
 			appName = random_name.CATSRandomName("APP")
 			Eventually(cf.Cf(
