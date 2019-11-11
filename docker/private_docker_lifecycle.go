@@ -99,7 +99,7 @@ var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
 		It("can run a task", func() {
 			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
 			taskName := appName + "-task"
-			createCommand := cf.Cf("run-task", appName, "exit 0", "--name", taskName).Wait()
+			createCommand := cf.Cf("run-task", appName, "--command", "exit 0", "--name", taskName).Wait()
 			Expect(createCommand).To(Exit(0))
 			Eventually(func() string {
 				listCommand := cf.Cf("tasks", appName).Wait()
