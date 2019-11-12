@@ -176,6 +176,7 @@ jobs:
         bbl-state: relint-envs
 
 - name: run-cats-v7
+  public: true
   serial: true
   serial_groups:
   - cli-v7
