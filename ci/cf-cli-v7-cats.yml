@@ -167,6 +167,7 @@ jobs:
         SYSTEM_DOMAIN: maxime.cf-app.com
         ENABLED_FEATURE_FLAGS: |
           service_instance_sharing
+          diego_docker
     - task: bosh-cleanup
       file: cf-deployment-concourse-tasks/bosh-cleanup/task.yml
       params:
