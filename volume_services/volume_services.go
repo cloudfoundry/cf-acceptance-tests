@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
@@ -46,12 +45,17 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 			session = cf.Cf("curl", fmt.Sprintf("/routing/v1/router_groups/%s", routerGroupGuid), "-X", "PUT", "-d", payload).Wait()
 			Expect(session).To(Exit(0), "cannot update tcp router group to allow nfs traffic")
 
-			randomDomain := strings.ReplaceAll(random_name.CATSRandomName("SHARED_DOMAIN"), "_", "-")
-
-			tcpDomain = fmt.Sprintf("%s.%s", randomDomain, Config.GetAppsDomain())
+			tcpDomain = fmt.Sprintf("tcp.%s", Config.GetAppsDomain())
 
 			session = cf.Cf("create-shared-domain", tcpDomain, "--router-group", "default-tcp").Wait()
-			Expect(session).To(Exit(0), "can not create shared tcp domain")
+			Eventually(session).Should(Exit())
+			contents := string(session.Out.Contents()) + string(session.Err.Contents())
+			Expect(contents).Should(
+				SatisfyAny(
+					ContainSubstring(fmt.Sprintf("The domain name is taken: %s", tcpDomain)),
+					ContainSubstring("OK"),
+				), "can not create shared tcp domain >>>" + contents)
+
 		})
 
 		By("pushing an nfs server")
@@ -114,7 +118,12 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		Expect(bindSession.Wait(TestSetup.ShortTimeout())).To(Exit(0), "cannot bind the nfs service instance to the test app")
 
 		By("starting the app")
-		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "cannot start the test app")
+		session = cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
+		Eventually(session).Should(Exit())
+		if session.ExitCode() != 0 {
+			cf.Cf("logs", appName, "--recent")
+		}
+		Expect(session.ExitCode()).To(Equal(0))
 	})
 
 	AfterEach(func() {
@@ -122,12 +131,6 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 			payload := fmt.Sprintf(`{ "reservable_ports":"%s", "name":"default-tcp", "type": "tcp"}`, reservablePorts)
 			session := cf.Cf("curl", fmt.Sprintf("/routing/v1/router_groups/%s", routerGroupGuid), "-X", "PUT", "-d", payload).Wait()
 			Expect(session).To(Exit(0), "cannot retrieve current router groups")
-
-			session = cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space).Wait()
-			Expect(session).To(Exit(0), "can not target space")
-
-			session = cf.Cf("delete-shared-domain", "-f", tcpDomain).Wait()
-			Expect(session).To(Exit(0), "can not delete shared tcp domain")
 		})
 	})
 
