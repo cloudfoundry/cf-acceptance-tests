@@ -22,7 +22,7 @@ import (
 )
 
 var _ = RouteServicesDescribe("Route Services", func() {
-	PContext("when a route binds to a service", func() {
+	Context("when a route binds to a service", func() {
 		Context("when service broker returns a route service url", func() {
 			var (
 				serviceInstanceName      string
