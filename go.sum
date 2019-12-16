@@ -9,8 +9,8 @@ code.cloudfoundry.org/rfc5424 v0.0.0-20180905210152-236a6d29298a h1:8rqv2w8xEceN
 code.cloudfoundry.org/rfc5424 v0.0.0-20180905210152-236a6d29298a/go.mod h1:tkZo8GtzBjySJ7USvxm4E36lNQw1D3xM6oKHGqdaAJ4=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
-github.com/cloudfoundry-incubator/cf-test-helpers v1.0.1-0.20190819181953-621a86920bf4 h1:gkOZVJxmicnV8y/IDOfmy/dLVY9UYSxWzBd3jUrOqws=
-github.com/cloudfoundry-incubator/cf-test-helpers v1.0.1-0.20190819181953-621a86920bf4/go.mod h1:I21tkmFwW9F06eYcQm5GTUzNV+pc1Q5NVZ1qhWOGGx0=
+github.com/cloudfoundry-incubator/cf-test-helpers v1.0.1-0.20191216200933-cf8305784c93 h1:pR151JVQERQPe1+8qeWVr+9FAQ5iJQfUIiCYNJi+tcg=
+github.com/cloudfoundry-incubator/cf-test-helpers v1.0.1-0.20191216200933-cf8305784c93/go.mod h1:I21tkmFwW9F06eYcQm5GTUzNV+pc1Q5NVZ1qhWOGGx0=
 github.com/cloudfoundry/custom-cats-reporters v0.0.0-20180629210428-75213ee79907 h1:wyYh6Iv81IwgCyIBG7OW34s5GQOGuWPWECF47arkSNQ=
 github.com/cloudfoundry/custom-cats-reporters v0.0.0-20180629210428-75213ee79907/go.mod h1:uxXHu50QB3u67C2PZlaFBlc9yTy9gQ4Nb+nL3J959bU=
 github.com/cloudfoundry/gosteno v0.0.0-20150423193413-0c8581caea35 h1:HdAWGlVEbFxuALqHXYu14XvAbRbyWZLd817ojygGnk0=
