@@ -35,7 +35,6 @@ IN DEVELOPMENT
   "include_v3": true,
   "include_zipkin": true,
   "include_credhub": true,
-  "include_tcp_routing": true,
   "include_volume_services": false,
   "stacks": [
     "cflinuxfs3"
