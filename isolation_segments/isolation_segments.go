@@ -124,10 +124,8 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 					"-c", "./app"),
 					Config.CfPushTimeoutDuration()).Should(Exit(0))
 
-				hostHeader := fmt.Sprintf("Host: %s.%s", appName, isoSegDomain)
-				host := fmt.Sprintf("http://wildcard-path.%s", isoSegDomain)
-
-				curlSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), host, "-H", hostHeader)
+				curlArgs := Config.Protocol() + appName + "." + isoSegDomain
+				curlSession := helpers.Curl(Config, curlArgs)
 				Eventually(curlSession).Should(Exit(0))
 				Expect(curlSession.Out).To(Say(binaryHi))
 			})
@@ -220,10 +218,8 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 					"-c", "./app"),
 					Config.CfPushTimeoutDuration()).Should(Exit(0))
 
-				hostHeader := fmt.Sprintf("Host: %s.%s", appName, isoSegDomain)
-				host := fmt.Sprintf("http://wildcard-path.%s", isoSegDomain)
-
-				curlSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), host, "-H", hostHeader)
+				curlArgs := Config.Protocol() + appName + "." + isoSegDomain
+				curlSession := helpers.Curl(Config, curlArgs)
 				Eventually(curlSession).Should(Exit(0))
 				Expect(curlSession.Out).To(Say(binaryHi))
 			})
