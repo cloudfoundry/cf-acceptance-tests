@@ -41,7 +41,7 @@ var _ = V3Describe("Healthcheck", func() {
 		AssignDropletToApp(appGuid, dropletGuid)
 		processes := GetProcesses(appGuid, appName)
 		webProcess = GetProcessByType(processes, "web")
-		CreateAndMapRoute(appGuid, spaceName, Config.GetAppsDomain(), appName)
+		CreateAndMapRoute(appGuid, Config.GetAppsDomain(), appName)
 	})
 
 	AfterEach(func() {
