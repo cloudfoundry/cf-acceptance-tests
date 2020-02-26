@@ -163,7 +163,7 @@ var _ = V3Describe("buildpack", func() {
 
 			Expect(webProcess.Guid).ToNot(BeEmpty())
 
-			CreateAndMapRoute(appGuid, TestSetup.RegularUserContext().Space, Config.GetAppsDomain(), webProcess.Name)
+			CreateAndMapRoute(appGuid, Config.GetAppsDomain(), webProcess.Name)
 
 			StartApp(appGuid)
 
