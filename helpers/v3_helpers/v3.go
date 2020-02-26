@@ -129,8 +129,8 @@ func AssignIsolationSegmentToSpace(spaceGuid, isoSegGuid string) {
 	).Should(Exit(0))
 }
 
-func CreateAndMapRoute(appGuid, space, domain, host string) {
-	CreateRoute(space, domain, host)
+func CreateAndMapRoute(appGuid, domain, host string) {
+	CreateRoute(domain, host)
 	getRoutePath := fmt.Sprintf("/v2/routes?q=host:%s", host)
 	routeBody := cf.Cf("curl", getRoutePath).Wait().Out.Contents()
 	routeJSON := struct {
@@ -226,8 +226,8 @@ func CreatePackage(appGuid string) string {
 	return pac.Guid
 }
 
-func CreateRoute(space, domain, host string) {
-	Expect(cf.Cf("create-route", space, domain, "-n", host).Wait()).To(Exit(0))
+func CreateRoute(domain, host string) {
+	Expect(cf.Cf("create-route", domain, "-n", host).Wait()).To(Exit(0))
 }
 
 func HandleAsyncRequest(path string, method string) {
