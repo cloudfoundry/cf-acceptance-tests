@@ -256,7 +256,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			Expect(found).To(BeTrue())
 		})
 
-		// TODO: Does not currently work with cli v7
+		// TODO: Does not currently work with cli v7 because v7 push does not create a BUILDPACK_SET usage event
 		PIt("generates an app usage 'buildpack_set' event", func() {
 			Expect(cf.Push(appName,
 				"-b", Config.GetBinaryBuildpackName(),
