@@ -42,7 +42,7 @@ var _ = FDescribe("Setting an app's start command", func() {
 	PIt("uses the given start command", func() {
 		// OUT... to make sure we don't match the Launcher line: Running `loop.bat Hi there!!!'
 		Eventually(func() *Buffer {
-			return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
+			return logs.Recent(appName).Wait().Out
 		}).Should(Say("OUT Hi there!!!"))
 	})
 })

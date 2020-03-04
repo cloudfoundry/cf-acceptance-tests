@@ -91,8 +91,6 @@ type config struct {
 	IncludeRoutingIsolationSegments *bool `json:"include_routing_isolation_segments"`
 	IncludeVolumeServices           *bool `json:"include_volume_services"`
 
-	UseLogCache *bool `json:"use_log_cache"`
-
 	CredhubMode         *string `json:"credhub_mode"`
 	CredhubLocation     *string `json:"credhub_location"`
 	CredhubClientName   *string `json:"credhub_client"`
@@ -185,8 +183,6 @@ func getDefaults() config {
 	defaults.IncludeServiceInstanceSharing = ptrToBool(false)
 	defaults.IncludeTCPRouting = ptrToBool(false)
 	defaults.IncludeVolumeServices = ptrToBool(false)
-
-	defaults.UseLogCache = ptrToBool(true)
 
 	defaults.IncludeWindows = ptrToBool(false)
 	defaults.UseWindowsContextPath = ptrToBool(false)
@@ -946,10 +942,6 @@ func (c *config) GetIncludeServiceDiscovery() bool {
 
 func (c *config) GetIncludeVolumeServices() bool {
 	return *c.IncludeVolumeServices
-}
-
-func (c *config) GetUseLogCache() bool {
-	return *c.UseLogCache
 }
 
 func (c *config) GetRubyBuildpackName() string {

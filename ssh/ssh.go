@@ -70,7 +70,7 @@ var _ = SshDescribe("SSH", func() {
 				Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=1"))
 
 				Eventually(func() *Buffer {
-					return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
+					return logs.Recent(appName).Wait().Out
 				}).Should(Say("Successful remote access"))
 
 				Eventually(func() string {
@@ -93,7 +93,7 @@ var _ = SshDescribe("SSH", func() {
 			Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
 			Eventually(func() *Buffer {
-				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
+				return logs.Recent(appName).Wait().Out
 			}).Should(Say("Successful remote access"))
 			Eventually(func() string {
 				return string(cf.Cf("events", appName).Wait().Out.Contents())
@@ -134,7 +134,7 @@ var _ = SshDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
 			Eventually(func() *Buffer {
-				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
+				return logs.Recent(appName).Wait().Out
 			}).Should(Say("Successful remote access"))
 
 			Eventually(func() string {
@@ -185,7 +185,7 @@ var _ = SshDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
 			Eventually(func() *Buffer {
-				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
+				return logs.Recent(appName).Wait().Out
 			}).Should(Say("Successful remote access"))
 
 			Eventually(func() string {

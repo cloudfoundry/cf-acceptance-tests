@@ -132,7 +132,7 @@ exit 1
 
 			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 
-			Eventually(logs.Tail(Config.GetUseLogCache(), appName)).Should(Say(envVarValue))
+			Eventually(logs.Recent(appName)).Should(Say(envVarValue))
 		})
 	})
 

@@ -108,7 +108,7 @@ var _ = AppsDescribe("Logging", func() {
 			randomMessage1 := random_name.CATSRandomName("RANDOM-MESSAGE-A")
 			randomMessage2 := random_name.CATSRandomName("RANDOM-MESSAGE-B")
 
-			logs = logshelper.TailFollow(Config.GetUseLogCache(), listenerAppName)
+			logs = logshelper.Follow(listenerAppName)
 
 			// Have apps emit logs.
 			go writeLogsUntilInterrupted(interrupt, randomMessage1, logWriterAppName1)
@@ -127,7 +127,7 @@ func getSyslogDrainAddresses(appName string) []string {
 		re, err := regexp.Compile("EXTERNAL ADDRESS: \\|(.*)\\|; INTERNAL ADDRESS: \\|(.*)\\|")
 		Expect(err).NotTo(HaveOccurred())
 
-		logs := logshelper.Tail(Config.GetUseLogCache(), appName).Wait()
+		logs := logshelper.Recent(appName).Wait()
 		matched := re.FindSubmatch(logs.Out.Contents())
 		if len(matched) < 3 {
 			return nil

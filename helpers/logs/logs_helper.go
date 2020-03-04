@@ -5,18 +5,10 @@ import (
 	"github.com/onsi/gomega/gexec"
 )
 
-func Tail(useLogCache bool, appName string) *gexec.Session {
-	if useLogCache {
-		return cf.Cf("tail", "--envelope-class=logs", appName, "--lines", "125")
-	}
-
+func Recent(appName string) *gexec.Session {
 	return cf.Cf("logs", "--recent", appName)
 }
 
-func TailFollow(useLogCache bool, appName string) *gexec.Session {
-	if useLogCache {
-		return cf.Cf("tail", "--envelope-class=logs", "--follow", appName)
-	}
-
+func Follow(appName string) *gexec.Session {
 	return cf.Cf("logs", appName)
 }
