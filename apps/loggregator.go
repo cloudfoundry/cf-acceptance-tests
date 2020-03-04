@@ -61,7 +61,7 @@ var _ = AppsDescribe("loggregator", func() {
 		var logs *Session
 
 		BeforeEach(func() {
-			logs = logshelper.TailFollow(Config.GetUseLogCache(), appName)
+			logs = logshelper.Follow(appName)
 		})
 
 		AfterEach(func() {
@@ -72,11 +72,6 @@ var _ = AppsDescribe("loggregator", func() {
 		})
 
 		It("exercises basic loggregator behavior", func() {
-			if !Config.GetUseLogCache() {
-				// log cache cli will not emit header unless being run in terminal
-				Eventually(logs).Should(Say("(Connected, tailing|Retrieving) logs for app"))
-			}
-
 			Eventually(func() string {
 				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
 			}).Should(ContainSubstring("Muahaha"))
@@ -91,7 +86,7 @@ var _ = AppsDescribe("loggregator", func() {
 				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
 			}).Should(ContainSubstring("Muahaha"))
 
-			Eventually(logshelper.Tail(Config.GetUseLogCache(), appName)).Should(Say("Muahaha"))
+			Eventually(logshelper.Recent(appName)).Should(Say("Muahaha"))
 		})
 	})
 

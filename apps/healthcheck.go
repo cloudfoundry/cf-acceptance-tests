@@ -45,7 +45,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 
 			By("verifying it's up")
 			Eventually(func() *Session {
-				appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
+				appLogsSession := logs.Recent(appName)
 				Expect(appLogsSession.Wait()).To(Exit(0))
 				return appLogsSession
 			}).Should(gbytes.Say("I am working at"))
