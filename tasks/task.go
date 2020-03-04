@@ -58,7 +58,7 @@ func getTaskDetails(appName string) []string {
 	Expect(listCommand).To(Exit(0))
 	listOutput := string(listCommand.Out.Contents())
 	lines := strings.Split(listOutput, "\n")
-	return strings.Fields(lines[4])
+	return strings.Fields(lines[3])
 }
 
 func getGuid(appGuid string, sequenceId string) string {
