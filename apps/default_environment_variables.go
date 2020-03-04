@@ -160,7 +160,7 @@ exit 1
 
 				var taskStdout string
 				Eventually(func() string {
-					appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
+					appLogsSession := logs.Recent(appName)
 					appLogsSession.Wait()
 
 					taskStdout = string(appLogsSession.Out.Contents())

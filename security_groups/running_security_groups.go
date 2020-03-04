@@ -148,7 +148,7 @@ func deleteBuildpack(buildpack string) {
 
 func getStagingOutput(appName string) func() *Session {
 	return func() *Session {
-		appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
+		appLogsSession := logs.Recent(appName)
 		Expect(appLogsSession.Wait()).To(Exit(0))
 		return appLogsSession
 	}
