@@ -40,6 +40,7 @@ var _ = AppsDescribe("Getting instance information", func() {
 			runawayTestSetup.Teardown()
 		})
 
+		// TODO: does not work with v7 because we do not show output ("down") when polling for the app to start
 		PIt("fails with insufficient resources", func() {
 			scale := cf.Cf("scale", appName, "-m", workflowhelpers.RUNAWAY_QUOTA_MEM_LIMIT, "-f")
 			Eventually(scale).Should(Or(Say("insufficient"), Say("down")))
