@@ -458,7 +458,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 						restageApp := cf.Cf("restage", appName).Wait(Config.CfPushTimeoutDuration())
 						Expect(restageApp).To(Exit(0), "failed restaging app")
 
-						checkForAppEvent(appName, "audit.app.restage")
+						checkForAppEvent(appName, "audit.app.build.create")
 
 						appEnv := cf.Cf("env", appName).Wait()
 						Expect(appEnv).To(Exit(0), "failed get env for app")
