@@ -210,5 +210,5 @@ func getTaskState(appName string) string {
 	Expect(listCommand).To(Exit(0))
 	listOutput := string(listCommand.Out.Contents())
 	lines := strings.Split(listOutput, "\n")
-	return strings.Fields(lines[4])[2]
+	return strings.Fields(lines[3])[2]
 }
