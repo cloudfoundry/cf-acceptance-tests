@@ -96,17 +96,17 @@ exit 1
 
 			pushSessionContent := pushSession.Buffer().Contents()
 
-			Expect(pushSessionContent).To(MatchRegexp("LANG=en_US\\.UTF-8"))
-			Expect(pushSessionContent).To(MatchRegexp("CF_INSTANCE_INTERNAL_IP=.*"))
-			Expect(pushSessionContent).To(MatchRegexp("CF_INSTANCE_IP=.*"))
-			Expect(pushSessionContent).To(MatchRegexp("CF_INSTANCE_PORTS=.*"))
-			Expect(pushSessionContent).To(MatchRegexp("CF_STACK=.*"))
-			Expect(pushSessionContent).To(MatchRegexp("VCAP_APPLICATION=.*"))
-			Expect(pushSessionContent).To(MatchRegexp("VCAP_SERVICES=.*"))
+			Expect(string(pushSessionContent)).To(MatchRegexp("LANG=en_US\\.UTF-8"))
+			Expect(string(pushSessionContent)).To(MatchRegexp("CF_INSTANCE_INTERNAL_IP=.*"))
+			Expect(string(pushSessionContent)).To(MatchRegexp("CF_INSTANCE_IP=.*"))
+			Expect(string(pushSessionContent)).To(MatchRegexp("CF_INSTANCE_PORTS=.*"))
+			Expect(string(pushSessionContent)).To(MatchRegexp("CF_STACK=.*"))
+			Expect(string(pushSessionContent)).To(MatchRegexp("VCAP_APPLICATION=.*"))
+			Expect(string(pushSessionContent)).To(MatchRegexp("VCAP_SERVICES=.*"))
 
 			// these vars are set to the empty string (use m flag to make $ match eol)
-			Expect(pushSessionContent).To(MatchRegexp("(?m)CF_INSTANCE_ADDR=$"))
-			Expect(pushSessionContent).To(MatchRegexp("(?m)CF_INSTANCE_PORT=$"))
+			Expect(string(pushSessionContent)).To(MatchRegexp("(?m)CF_INSTANCE_ADDR=$"))
+			Expect(string(pushSessionContent)).To(MatchRegexp("(?m)CF_INSTANCE_PORT=$"))
 		})
 
 		It("applies default environment variables while running apps and tasks", func() {
