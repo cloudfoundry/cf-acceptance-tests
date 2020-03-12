@@ -29,6 +29,7 @@ type AppUsageEvent struct {
 		State         string `json:"state"`
 		BuildpackName string `json:"buildpack_name"`
 		BuildpackGuid string `json:"buildpack_guid"`
+		ParentAppName string `json:"parent_app_name"`
 	} `json:"entity"`
 }
 
@@ -44,6 +45,21 @@ func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
 
 	for _, event := range response.Resources {
 		if event.Entity.AppName == appName && event.Entity.State == state {
+			return true, event
+		}
+	}
+
+	return false, AppUsageEvent{}
+}
+
+func lastAppUsageEventWithParentAppName(parentAppName string, state string) (bool, AppUsageEvent) {
+	var response AppUsageEvents
+	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+		workflowhelpers.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1&results-per-page=150", &response, Config.DefaultTimeoutDuration())
+	})
+
+	for _, event := range response.Resources {
+		if event.Entity.ParentAppName == parentAppName && event.Entity.State == state {
 			return true, event
 		}
 	}
@@ -256,8 +272,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			Expect(found).To(BeTrue())
 		})
 
-		// TODO: Does not currently work with cli v7 because v7 push does not create a BUILDPACK_SET usage event
-		PIt("generates an app usage 'buildpack_set' event", func() {
+		It("generates an app usage 'buildpack_set' event", func() {
 			Expect(cf.Push(appName,
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
@@ -265,7 +280,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				"-c", "./catnip",
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-			found, matchingEvent := lastAppUsageEvent(appName, "BUILDPACK_SET")
+			found, matchingEvent := lastAppUsageEventWithParentAppName(appName, "BUILDPACK_SET")
 
 			Expect(found).To(BeTrue())
 			Expect(matchingEvent.Entity.BuildpackName).To(Equal("binary_buildpack"))
