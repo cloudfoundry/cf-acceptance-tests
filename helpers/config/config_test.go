@@ -121,7 +121,6 @@ type allConfig struct {
 	ReporterConfig *testReporterConfig `json:"reporter_config"`
 
 	IncludeApps                     *bool `json:"include_apps"`
-	IncludeBackendCompatiblity      *bool `json:"include_backend_compatibility"`
 	IncludeCapiNoBridge             *bool `json:"include_capi_no_bridge"`
 	IncludeContainerNetworking      *bool `json:"include_container_networking"`
 	IncludeDetect                   *bool `json:"include_detect"`
@@ -365,7 +364,6 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'staticfile_buildpack_name' must not be null"))
 
 			Expect(err.Error()).To(ContainSubstring("'include_apps' must not be null"))
-			Expect(err.Error()).To(ContainSubstring("'include_backend_compatibility' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_capi_no_bridge' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_detect' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_docker' must not be null"))

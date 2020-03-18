@@ -115,7 +115,6 @@ include_capi_no_bridge
 ##### Optional parameters:
 `include_*` parameters are used to specify whether to skip tests based on how a deployment is configured.
 * `include_apps`: Flag to include the apps test group.
-* `include_backend_compatibility`: Flag to include whether we check DEA/Diego interoperability.
 * `include_container_networking`: Flag to include tests related to container networking.
   `include_security_groups` must also be set for tests to run. [See below](#container-networking-and-application-security-groups)
 * `credhub_mode`: Valid values are `assisted` or `non-assisted`. [See below](#credhub-modes).
@@ -309,7 +308,7 @@ If you are already familiar with CATs you probably know that there are many test
 
 To execute tests in a single file use an `FDescribe` block around the tests in that file:
 ```go
-var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
+var _ = AppsDescribe("Apps", func() {
   FDescribe("Focused tests", func() { // Add this line here
   // ... rest of file
   }) // Close here
@@ -333,7 +332,6 @@ You can of course combine the `-v` flag with the `-nodes=N` flag.
 Test Group Name| Description
 --- | ---
 `apps`| Tests the core functionalities of Cloud Foundry: staging, running, logging, routing, buildpacks, etc.  This test group should always pass against a sound Cloud Foundry deployment.
-`backend_compatibility` | Tests interoperability of droplets staged on the DEAs running on Diego
 `credhub`| Tests CredHub-delivered Secure Service credentials in the service binding. [CredHub configuration][credhub-secure-service-credentials] is required to run these tests. In addition to selecting a `credhub_mode`, `credhub_client` and `credhub_secret` values are required for these tests.
 `detect` | Tests the ability of the platform to detect the correct buildpack for compiling an application if no buildpack is explicitly specified.
 `docker`| Tests our ability to run docker containers on Diego and that we handle docker metadata correctly.

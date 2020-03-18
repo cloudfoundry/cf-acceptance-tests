@@ -67,7 +67,6 @@ type config struct {
 	VolumeServiceCreateConfig *string `json:"volume_service_create_config"`
 
 	IncludeApps                     *bool `json:"include_apps"`
-	IncludeBackendCompatiblity      *bool `json:"include_backend_compatibility"`
 	IncludeContainerNetworking      *bool `json:"include_container_networking"`
 	IncludeDetect                   *bool `json:"include_detect"`
 	IncludeDocker                   *bool `json:"include_docker"`
@@ -381,9 +380,6 @@ func validateConfig(config *config) Errors {
 	}
 	if config.IncludeApps == nil {
 		errs.Add(fmt.Errorf("* 'include_apps' must not be null"))
-	}
-	if config.IncludeBackendCompatiblity == nil {
-		errs.Add(fmt.Errorf("* 'include_backend_compatibility' must not be null"))
 	}
 	if config.IncludeContainerNetworking == nil {
 		errs.Add(fmt.Errorf("* 'include_container_networking' must not be null"))
