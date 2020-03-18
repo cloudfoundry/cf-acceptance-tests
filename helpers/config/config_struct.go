@@ -159,7 +159,6 @@ func getDefaults() config {
 	defaults.IncludeV3 = ptrToBool(true)
 	defaults.IncludeDeployments = ptrToBool(false)
 
-	defaults.IncludeBackendCompatiblity = ptrToBool(false)
 	defaults.IncludeContainerNetworking = ptrToBool(false)
 	defaults.CredhubMode = ptrToString("")
 	defaults.CredhubLocation = ptrToString("https://credhub.service.cf.internal:8844")
@@ -826,10 +825,6 @@ func (c *config) GetIncludeSsh() bool {
 
 func (c *config) GetIncludeApps() bool {
 	return *c.IncludeApps
-}
-
-func (c *config) GetIncludeBackendCompatiblity() bool {
-	return *c.IncludeBackendCompatiblity
 }
 
 func (c *config) GetIncludeContainerNetworking() bool {
