@@ -104,7 +104,7 @@ func createSecurityGroup(allowedDestinations ...Destination) string {
 func bindSecurityGroup(securityGroupName, orgName, spaceName string) {
 	By("Applying security group")
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("bind-security-group", securityGroupName, orgName, spaceName).Wait()).To(Exit(0))
+		Expect(cf.Cf("bind-security-group", securityGroupName, orgName, "--space", spaceName).Wait()).To(Exit(0))
 	})
 }
 
