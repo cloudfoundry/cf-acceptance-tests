@@ -320,7 +320,7 @@ exit 1`
 
 				By("binding the ASG to the space")
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-					Expect(cf.Cf("bind-security-group", securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space).Wait()).To(Exit(0))
+					Expect(cf.Cf("bind-security-group", securityGroupName, TestSetup.RegularUserContext().Org, "--space", TestSetup.RegularUserContext().Space).Wait()).To(Exit(0))
 				})
 
 				By("restarting the app to apply the ASG")
