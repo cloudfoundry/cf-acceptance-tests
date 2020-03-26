@@ -72,7 +72,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 	})
 
 	Describe("pushing", func() {
-		It("makes the app reachable via its bound route", func() {
+		FIt("makes the app reachable via its bound route", func() {
 			Expect(cf.Cf("push",
 				appName,
 				"-b", Config.GetBinaryBuildpackName(),
