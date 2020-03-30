@@ -6,13 +6,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/noaa"
 	"github.com/cloudfoundry/noaa/events"
+
+	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
@@ -22,7 +23,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
-	"time"
 )
 
 var _ = WindowsDescribe("Metrics", func() {
@@ -63,20 +63,6 @@ var _ = WindowsDescribe("Metrics", func() {
 		}).Should(ContainSubstring("Muahaha"))
 
 		Eventually(msgChan, Config.DefaultTimeoutDuration(), time.Millisecond).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
-	})
-
-	It("shows container metrics", func() {
-		appGuid := strings.TrimSpace(string(cf.Cf("app", appName, "--guid").Wait().Out.Contents()))
-
-		noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.GetSkipSSLValidation()}, nil)
-		msgChan := make(chan *events.Envelope, 100000)
-		errorChan := make(chan error)
-		stopchan := make(chan struct{})
-		go noaaConnection.Firehose(random_name.CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
-		defer close(stopchan)
-
-		Eventually(msgChan, 2*Config.DefaultTimeoutDuration(), time.Millisecond).Should(Receive(NonZeroContainerMetricsFor(MetricsApp{AppGuid: appGuid, InstanceId: 0})))
-		Eventually(msgChan, 2*Config.DefaultTimeoutDuration(), time.Millisecond).Should(Receive(NonZeroContainerMetricsFor(MetricsApp{AppGuid: appGuid, InstanceId: 1})))
 	})
 })
 
