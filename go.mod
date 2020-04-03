@@ -31,7 +31,7 @@ require (
 	github.com/onsi/gomega v1.6.0
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/ulikunitz/xz v0.5.4 // indirect
-	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586
+	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59
 	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7 // indirect
 	golang.org/x/sys v0.0.0-20190826163724-acd9dae8e8cc // indirect
 	golang.org/x/text v0.3.2 // indirect
