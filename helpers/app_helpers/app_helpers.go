@@ -25,14 +25,14 @@ func GetAppGuid(appName string) string {
 }
 
 func AppReport(appName string) {
-	if appName == "" {
+	if appName == "" || !ginkgo.CurrentGinkgoTestDescription().Failed {
 		return
 	}
 
 	printStartAppReport(appName)
 
-	Eventually(cf.Cf("app", appName, "--guid")).Should(Exit())
-	Eventually(logs.Tail(Config.GetUseLogCache(), appName)).Should(Exit())
+	Eventually(cf.Cf("app", appName, "--guid"), time.Second*60).Should(Exit())
+	Eventually(logs.Tail(Config.GetUseLogCache(), appName), time.Second*60).Should(Exit())
 
 	printEndAppReport(appName)
 }
