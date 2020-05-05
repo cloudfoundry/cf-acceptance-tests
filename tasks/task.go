@@ -255,7 +255,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 					Expect(cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space).Wait()).To(Exit(0))
 					Expect(string(cf.Cf("network-policies").Wait().Out.Contents())).ToNot(ContainSubstring(appName))
-					Expect(cf.Cf("add-network-policy", appName, "--destination-app", appName, "--port", "8080", "--protocol", "tcp").Wait()).To(Exit(0))
+					Expect(cf.Cf("add-network-policy", appName, appName, "--port", "8080", "--protocol", "tcp").Wait()).To(Exit(0))
 					Expect(string(cf.Cf("network-policies").Wait().Out.Contents())).To(ContainSubstring(appName))
 				})
 

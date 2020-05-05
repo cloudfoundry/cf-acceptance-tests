@@ -54,7 +54,7 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 				SatisfyAny(
 					ContainSubstring(fmt.Sprintf("The domain name is taken: %s", tcpDomain)),
 					ContainSubstring("OK"),
-				), "can not create shared tcp domain >>>" + contents)
+				), "can not create shared tcp domain >>>"+contents)
 
 		})
 
