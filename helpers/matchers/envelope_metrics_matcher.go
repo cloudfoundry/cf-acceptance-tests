@@ -1,9 +1,10 @@
 package matchers
 
 import (
-	"github.com/onsi/gomega/types"
-	"github.com/cloudfoundry/noaa/events"
 	"fmt"
+
+	"github.com/cloudfoundry/noaa/events"
+	"github.com/onsi/gomega/types"
 )
 
 type MetricsApp struct {
