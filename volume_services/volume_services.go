@@ -36,7 +36,10 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		appName = random_name.CATSRandomName("APP")
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
-			session := cf.Cf("curl", "/routing/v1/router_groups").Wait()
+			session := cf.Cf("enable-feature-flag", "diego_docker").Wait()
+			Expect(session).To(Exit(0), "cannot enable diego_docker feature flag")
+
+			session = cf.Cf("curl", "/routing/v1/router_groups").Wait()
 			Expect(session).To(Exit(0), "cannot retrieve current router groups")
 
 			routerGroupGuid, reservablePorts = routerGroupIdAndPorts(session.Out.Contents())
@@ -131,6 +134,9 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 			payload := fmt.Sprintf(`{ "reservable_ports":"%s", "name":"default-tcp", "type": "tcp"}`, reservablePorts)
 			session := cf.Cf("curl", fmt.Sprintf("/routing/v1/router_groups/%s", routerGroupGuid), "-X", "PUT", "-d", payload).Wait()
 			Expect(session).To(Exit(0), "cannot retrieve current router groups")
+
+			session = cf.Cf("disable-feature-flag", "diego_docker").Wait()
+			Expect(session).To(Exit(0), "cannot disable diego_docker feature flag")
 		})
 	})
 
