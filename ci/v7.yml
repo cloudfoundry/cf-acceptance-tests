@@ -1,0 +1,551 @@
+---
+groups:
+- name: cf-deployment
+  jobs:
+  - v7-acquire-pool
+  - v7-release-pool-manual
+  - v7-deploy
+  - v7-smoke-tests
+  - v7-cats
+  - v7-cats-windows
+  - v7-delete-deployment
+- name: infrastructure
+  jobs:
+  - add-claimed-lock-v7
+  - setup-infrastructure-v7
+  - update-infrastructure-v7
+  - destroy-infrastructure-v7
+  - remove-claimed-lock-v7
+
+resources:
+# Pools
+- name: v7-pool
+  type: pool
+  icon: pool
+  source:
+    uri: git@github.com:cloudfoundry/relint-ci-pools
+    branch: master
+    pool: cf-deployment/v7
+    private_key: ((relint_ci_pools_readwrite_deploy_key.private_key))
+
+# Code repos
+- name: cf-deployment-concourse-tasks
+  type: git
+  icon: github-box
+  source:
+    branch: master
+    uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
+
+- name: runtime-ci
+  type: git
+  icon: github-box
+  source:
+    branch: master
+    uri: https://github.com/cloudfoundry/runtime-ci.git
+
+- name: relint-envs
+  type: git
+  icon: github-box
+  source:
+    branch: master
+    uri: git@github.com:cloudfoundry/relint-envs.git
+    private_key: ((hagrid_env_readwrite_deploy_key.private_key))
+
+- name: cf-deployment-develop
+  type: git
+  icon: github-box
+  source:
+    branch: develop
+    uri: git@github.com:cloudfoundry/cf-deployment.git
+    private_key: ((cf_deployment_readwrite_deploy_key.private_key))
+    ignore_paths:
+    - .envrc
+    - .overcommit.yml
+    - ISSUE_TEMPLATE.md
+    - PULL_REQUEST_TEMPLATE.md
+    - ci/**
+    - texts/**
+
+- name: cf-acceptance-tests-v7
+  type: git
+  icon: github-box
+  source:
+    branch: cli-v7-cats-new-features
+    uri: git@github.com:cloudfoundry/cf-acceptance-tests.git
+    private_key: ((cf_acceptance_tests_readwrite_deploy_key.private_key))
+
+# - name: cf-smoke-tests
+#   type: git
+#   icon: github-box
+#   source:
+#     branch: master
+#     uri: https://github.com/cloudfoundry/cf-smoke-tests
+
+- name: cf-cli-v7
+  type: github-release
+  icon: github-face
+  source:
+    user: cloudfoundry
+    repository: cli
+    access_token: ((release_integration_download_bot_access_token))
+    tag_filter: 'v(7\..*)'
+    pre_release: true
+
+jobs:
+- name: add-claimed-lock-v7
+  serial: true
+  public: true
+  plan:
+  - get: runtime-ci
+  - task: prepare-to-modify-pool-resource
+    file: runtime-ci/tasks/prepare-to-modify-pool-resource/task.yml
+    params:
+      NAME: v7oldemort
+    output_mapping:
+      pool-resource: v7-pool
+  - put: v7-pool
+    params: {add_claimed: v7-pool}
+
+# Setup infrastructure for v7 fresh copy
+- name: setup-infrastructure-v7
+  serial: true
+  public: true
+  plan:
+  - get: v7-pool
+    trigger: true
+    passed: [add-claimed-lock-v7]
+  - in_parallel:
+    - get: relint-envs
+    - get: cf-deployment-concourse-tasks
+  - task: setup-infrastructure
+    file: cf-deployment-concourse-tasks/bbl-up/task.yml
+    params:
+      BBL_STATE_DIR: environments/test/v7oldemort/bbl-state
+      BBL_IAAS: gcp
+      BBL_ENV_NAME: v7oldemort
+      BBL_CONFIG_DIR: environments/test/v7oldemort/bbl-config/iso-segs-gcp
+      BBL_GCP_SERVICE_ACCOUNT_KEY: environments/test/v7oldemort/google_account_creds.json
+      # This requires a weird BBL_CONFIG_DIR because the bbl isoseg patch has us-west1 hardcoded
+      BBL_GCP_REGION: us-central1
+      BBL_LB_CERT: ((v7oldemort_cf_lb_cert.certificate))
+      BBL_LB_KEY: ((v7oldemort_cf_lb_cert.private_key))
+      LB_DOMAIN: v7oldemort.cf-app.com
+    input_mapping:
+      bbl-state: relint-envs
+      bbl-config: relint-envs
+    ensure:
+      put: relint-envs
+      params:
+        repository: updated-bbl-state
+        rebase: true
+  - put: v7-pool
+    params: {release: v7-pool}
+
+# Update infrastructure
+- name: update-infrastructure-v7
+  serial: true
+  public: true
+  plan:
+  - timeout: 12h
+    do:
+    - in_parallel:
+      - put: v7-pool
+        params: {acquire: true}
+      - get: relint-envs
+      - get: cf-deployment-concourse-tasks
+    - task: update-infrastructure
+      file: cf-deployment-concourse-tasks/bbl-up/task.yml
+      params:
+        BBL_STATE_DIR: environments/test/v7oldemort/bbl-state
+        BBL_IAAS: gcp
+        BBL_ENV_NAME: v7oldemort
+        BBL_CONFIG_DIR: environments/test/v7oldemort/bbl-config/iso-segs-gcp
+        BBL_GCP_SERVICE_ACCOUNT_KEY: environments/test/v7oldemort/google_account_creds.json
+        # This requires a weird BBL_CONFIG_DIR because the bbl isoseg patch has us-west1 hardcoded
+        BBL_GCP_REGION: us-central1
+        BBL_LB_CERT: ((v7oldemort_cf_lb_cert.certificate))
+        BBL_LB_KEY: ((v7oldemort_cf_lb_cert.private_key))
+        LB_DOMAIN: v7oldemort.cf-app.com
+      input_mapping:
+        bbl-state: relint-envs
+        bbl-config: relint-envs
+      ensure:
+        put: relint-envs
+        params:
+          repository: updated-bbl-state
+          rebase: true
+    - put: v7-pool
+      params: {release: v7-pool}
+
+# Destroy infrastructure
+- name: destroy-infrastructure-v7
+  serial: true
+  public: true
+  plan:
+  - in_parallel:
+    - put: v7-pool
+      params: {claim: v7oldemort}
+    - get: relint-envs
+    - get: cf-deployment-concourse-tasks
+  - task: guarantee-no-existing-cf-deployment
+    file: cf-deployment-concourse-tasks/bosh-delete-deployment/task.yml
+    input_mapping:
+      bbl-state: relint-envs
+    params:
+      BBL_STATE_DIR: environments/test/v7oldemort/bbl-state
+  - task: destroy-infrastructure
+    file: cf-deployment-concourse-tasks/bbl-destroy/task.yml
+    input_mapping:
+      bbl-state: relint-envs
+    params:
+      BBL_GCP_SERVICE_ACCOUNT_KEY: environments/test/v7oldemort/google_account_creds.json
+      BBL_STATE_DIR: environments/test/v7oldemort/bbl-state
+    ensure:
+      put: relint-envs
+      params:
+        repository: updated-bbl-state
+        rebase: true
+
+# Remove claimed locks
+- name: remove-claimed-lock-v7
+  serial: true
+  public: true
+  plan:
+  - get: runtime-ci
+  - get: v7-pool
+    passed: [destroy-infrastructure-v7]
+    trigger: true
+  - task: prepare-to-modify-pool-resource
+    file: runtime-ci/tasks/prepare-to-modify-pool-resource/task.yml
+    params:
+      NAME: v7oldemort
+    output_mapping:
+      pool-resource: v7-pool
+  - put: v7-pool
+    params: {remove: v7-pool}
+
+# Pool lock management
+- name: v7-acquire-pool
+  serial: true
+  public: true
+  plan:
+  - in_parallel:
+    - get: cf-deployment-develop
+    - put: v7-pool
+      params: {acquire: true}
+    timeout: 4h
+
+- name: v7-release-pool-manual
+  public: true
+  plan:
+  - get: v7-pool
+  ensure:
+    try:
+      put: v7-pool
+      params: {release: v7-pool}
+
+# CF-D deployment and validation
+- name: v7-deploy
+  serial_groups: [v7oldemort-smokes]
+  public: true
+  plan:
+  - get: v7-pool
+    trigger: true
+    passed: [v7-acquire-pool]
+  - in_parallel:
+    - get: cf-deployment-develop
+      passed: [v7-acquire-pool]
+    - get: cf-deployment-concourse-tasks
+    - get: runtime-ci
+    - get: relint-envs
+    # - get: cf-smoke-tests
+    - get: cf-cli-v7
+    - get: cf-acceptance-tests-v7
+  - task: guarantee-no-existing-cf-deployment
+    file: cf-deployment-concourse-tasks/bosh-delete-deployment/task.yml
+    input_mapping:
+      bbl-state: relint-envs
+    params:
+      BBL_STATE_DIR: environments/test/v7oldemort/bbl-state
+      DEPLOYMENT_NAME: v7oldemort-cf
+      IGNORE_ERRORS: true
+  - task: create-capi-rc-ops-file
+    file: cf-acceptance-tests-v7/ci/tasks/create-capi-rc-ops-file/task.yml
+    input_mapping:
+      cf-acceptance-tests: cf-acceptance-tests-v7
+
+  - task: collect-ops-files
+    file: cf-deployment-concourse-tasks/collect-ops-files/task.yml
+    input_mapping:
+      base-ops-files: cf-deployment-develop
+      new-ops-files: relint-envs
+    params:
+      BASE_OPS_FILE_DIR: operations
+      NEW_OPS_FILES: |
+        environments/test/v7oldemort/rename-isolation-segment-network.yml
+        environments/test/v7oldemort/change-postgres-max-connections.yml
+
+  - task: collect-ops-files
+    file: cf-deployment-concourse-tasks/collect-ops-files/task.yml
+    input_mapping:
+      base-ops-files: collected-ops-files
+      new-ops-files: capi-rc-ops-file
+    params:
+      BASE_OPS_FILE_DIR: operations
+      NEW_OPS_FILES: |
+        use-capi-rc.yml
+
+  - task: bosh-deploy-cf
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    input_mapping:
+      bbl-state: relint-envs
+      cf-deployment: cf-deployment-develop
+      ops-files: collected-ops-files
+      vars-files: relint-envs
+    params:
+      BBL_STATE_DIR: environments/test/v7oldemort/bbl-state
+      SYSTEM_DOMAIN: v7oldemort.cf-app.com
+      OPS_FILES: |
+        operations/experimental/fast-deploy-with-downtime-and-danger.yml
+        operations/use-compiled-releases.yml
+        operations/rename-network-and-deployment.yml
+        operations/set-bbs-active-key.yml
+        operations/test/add-persistent-isolation-segment-diego-cell.yml
+        operations/test/add-persistent-isolation-segment-router.yml
+        operations/rename-isolation-segment-network.yml
+        operations/addons/enable-component-syslog.yml
+        operations/use-postgres.yml
+        operations/experimental/enable-tls-cloud-controller-postgres.yml
+        operations/change-postgres-max-connections.yml
+        operations/use-internal-lookup-for-route-services.yml
+        operations/enable-tls-on-file-server.yml
+        operations/windows2019-cell.yml
+        operations/use-online-windows2019fs.yml
+        operations/experimental/use-compiled-releases-windows.yml
+        operations/use-capi-rc.yml
+      VARS_FILES: |
+        environments/test/v7oldemort/deployment-name.yml
+        environments/test/v7oldemort/network-name.yml
+        environments/test/v7oldemort/bbs-key-label.yml
+        environments/test/v7oldemort/syslog-vars.yml
+      REGENERATE_CREDENTIALS: true
+  - task: ensure-gcloud-backend-service-healthy
+    file: runtime-ci/tasks/ensure-gcloud-backend-service-healthy/task.yml
+    input_mapping:
+      google-creds-dir: relint-envs
+    params:
+      GCP_PROJECT_ID: ((luna_gcp_project))
+      GCP_BACKEND_SERVICE: ((v7oldemort_router_backend_service))
+      GOOGLE_ACCOUNT_CREDS_PATH: environments/test/v7oldemort/google_account_creds.json
+  - task: update-integration-configs
+    file: cf-deployment-concourse-tasks/update-integration-configs/task.yml
+    params:
+      BBL_STATE_DIR: environments/test/v7oldemort/bbl-state
+      CATS_INTEGRATION_CONFIG_FILE: environments/test/v7oldemort/integration_config.json
+    input_mapping:
+      bbl-state: relint-envs
+      integration-configs: relint-envs
+  - in_parallel:
+    - task: ensure-api-healthy
+      file: runtime-ci/tasks/ensure-api-healthy/task.yml
+      input_mapping:
+        cats-integration-config: relint-envs
+      params:
+        CONFIG_FILE_PATH: environments/test/v7oldemort/integration_config.json
+    - task: ensure-isolation-segment-healthy
+      file: runtime-ci/tasks/ensure-api-healthy/task.yml
+      input_mapping:
+        cats-integration-config: updated-integration-configs
+      params:
+        CHECK_ISOLATION_SEGMENT: true
+        CONFIG_FILE_PATH: environments/test/v7oldemort/integration_config.json
+  - in_parallel:
+    - task: open-asgs-for-credhub
+      file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+      input_mapping:
+        bbl-state: relint-envs
+      params:
+        BBL_STATE_DIR: environments/test/v7oldemort/bbl-state
+        BOSH_DEPLOYMENT: v7oldemort-cf
+        INSTANCE_GROUP_NAME: credhub
+        SYSTEM_DOMAIN: v7oldemort.cf-app.com
+        SECURITY_GROUP_NAME: credhub
+    - task: open-asgs-for-uaa
+      file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
+      input_mapping:
+        bbl-state: relint-envs
+      params:
+        BBL_STATE_DIR: environments/test/v7oldemort/bbl-state
+        BOSH_DEPLOYMENT: v7oldemort-cf
+        INSTANCE_GROUP_NAME: uaa
+        SYSTEM_DOMAIN: v7oldemort.cf-app.com
+        SECURITY_GROUP_NAME: uaa
+    - task: enable-docker-and-tasks
+      attempts: 2
+      file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
+      input_mapping:
+        bbl-state: relint-envs
+      params:
+        BBL_STATE_DIR: environments/test/v7oldemort/bbl-state
+        SYSTEM_DOMAIN: v7oldemort.cf-app.com
+        ENABLED_FEATURE_FLAGS: |
+          diego_docker
+          task_creation
+
+- name: v7-smoke-tests
+  public: true
+  serial_groups: [v7oldemort-smokes]
+  plan:
+  - do:
+    - get: v7-pool
+      passed: [v7-deploy]
+      trigger: true
+    - in_parallel:
+      - get: relint-envs
+      - get: cf-deployment-develop
+        passed: [v7-deploy]
+      - get: cf-deployment-concourse-tasks
+    timeout: 1h
+  - task: bosh-run-errand-smoke-tests
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    params:
+      BBL_STATE_DIR: environments/test/v7oldemort/bbl-state
+      ERRAND_NAME: smoke_tests
+      DEPLOYMENT_NAME: v7oldemort-cf
+    input_mapping:
+      bbl-state: relint-envs
+
+- name: v7-cats
+  serial: true
+  public: true
+  plan:
+  - timeout: 4h
+    do:
+    - get: v7-pool
+      trigger: true
+      passed: [v7-deploy]
+    - in_parallel:
+      - get: cf-cli-v7
+        passed: [v7-deploy]
+      - get: cf-deployment-concourse-tasks
+      - get: cf-acceptance-tests-v7
+      - get: relint-envs
+      - get: cf-deployment-develop
+        passed: [v7-deploy]
+    - task: install-cli-v7
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: relintdockerhubpushbot/relint-base
+        run:
+          path: bash
+          args:
+          - -c
+          - |
+            #!/bin/bash
+
+            export CLI_VERSION=$(cat cf-cli-v7/version)
+            WORKING_DIR=$PWD
+
+            pushd /tmp/
+              wget -q -O cf.deb "https://cli.run.pivotal.io/stable?release=debian64&version=${CLI_VERSION}&source=github-rel"
+              dpkg -i cf.deb
+              rm cf.deb
+              mv /usr/bin/cf7 $WORKING_DIR/extracted-cf-cli/cf
+            popd
+
+            extracted-cf-cli/cf version
+        inputs:
+        - name: cf-cli-v7
+        - name: cf-acceptance-tests-v7
+        - name: relint-envs
+        outputs:
+        - name: extracted-cf-cli
+    - task: update-integration-configs
+      file: cf-deployment-concourse-tasks/update-integration-configs/task.yml
+      params:
+        BBL_STATE_DIR: environments/test/v7oldemort/bbl-state
+        CATS_INTEGRATION_CONFIG_FILE: environments/test/v7oldemort/integration_config.json
+      input_mapping:
+        bbl-state: relint-envs
+        integration-configs: relint-envs
+    - task: run-cats
+      file: cf-deployment-concourse-tasks/run-cats/task.yml
+      input_mapping:
+        cf-cli: extracted-cf-cli
+        integration-config: updated-integration-configs
+        cf-acceptance-tests: cf-acceptance-tests-v7
+      params:
+        CONFIG_FILE_PATH: environments/test/v7oldemort/integration_config.json
+        REPORTER_CONFIG_FILE_PATH: environments/test/v7oldemort/reporter_config.json
+        CAPTURE_LOGS: true
+        RELINT_VERBOSE_AUTH: "true"
+
+- name: v7-cats-windows
+  serial: true
+  public: true
+  plan:
+  - timeout: 4h
+    do:
+    - get: v7-pool
+      # trigger: true
+      passed: [v7-deploy]
+    - in_parallel:
+      - get: cf-deployment-concourse-tasks
+      - get: cf-acceptance-tests-v7
+      - get: relint-envs
+      - get: cf-deployment-develop
+        passed: [v7-deploy]
+    - task: update-cats-windows-integration-config
+      file: cf-deployment-concourse-tasks/update-integration-configs/task.yml
+      params:
+        BBL_STATE_DIR: environments/test/v7oldemort/bbl-state
+        CATS_INTEGRATION_CONFIG_FILE: environments/test/v7oldemort/cats_windows_integration_config.json
+      input_mapping:
+        bbl-state: relint-envs
+        integration-configs: relint-envs
+    - task: run-cats
+      file: cf-deployment-concourse-tasks/run-cats/task.yml
+      input_mapping:
+        integration-config: updated-integration-configs
+        cf-acceptance-tests: cf-acceptance-tests-v7
+      params:
+        CAPTURE_LOGS: true
+        CONFIG_FILE_PATH: environments/test/v7oldemort/cats_windows_integration_config.json
+        REPORTER_CONFIG_FILE_PATH: environments/test/v7oldemort/reporter_config.json
+        NODES: 8
+        RELINT_VERBOSE_AUTH: "true"
+
+- name: v7-delete-deployment
+  serial: true
+  public: true
+  plan:
+  - timeout: 4h
+    do:
+    - get: v7-pool
+      # trigger: true
+      passed:
+      - v7-cats
+      - v7-cats-windows
+      - v7-smoke-tests
+    - in_parallel:
+      - get: cf-deployment-concourse-tasks
+      - get: relint-envs
+    - task: delete-deployment-cf
+      file: cf-deployment-concourse-tasks/bosh-delete-deployment/task.yml
+      input_mapping:
+        bbl-state: relint-envs
+      params:
+        BBL_STATE_DIR: environments/test/v7oldemort/bbl-state
+        DEPLOYMENT_NAME: v7oldemort
+        IGNORE_ERRORS: true
+    - task: run-bosh-cleanup
+      file: cf-deployment-concourse-tasks/bosh-cleanup/task.yml
+      input_mapping:
+        bbl-state: relint-envs
+      params:
+        BBL_STATE_DIR: environments/test/v7oldemort/bbl-state
+    - put: v7-pool
+      params: {release: v7-pool}
