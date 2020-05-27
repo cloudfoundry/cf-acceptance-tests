@@ -193,6 +193,7 @@ jobs:
       bbl-state: relint-envs
     params:
       BBL_STATE_DIR: environments/test/v7oldemort/bbl-state
+      DEPLOYMENT_NAME: v7oldemort-cf
   - task: destroy-infrastructure
     file: cf-deployment-concourse-tasks/bbl-destroy/task.yml
     input_mapping:
@@ -539,8 +540,7 @@ jobs:
         bbl-state: relint-envs
       params:
         BBL_STATE_DIR: environments/test/v7oldemort/bbl-state
-        DEPLOYMENT_NAME: v7oldemort
-        IGNORE_ERRORS: true
+        DEPLOYMENT_NAME: v7oldemort-cf
     - task: run-bosh-cleanup
       file: cf-deployment-concourse-tasks/bosh-cleanup/task.yml
       input_mapping:
