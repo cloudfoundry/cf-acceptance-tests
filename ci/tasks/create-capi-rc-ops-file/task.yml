@@ -8,7 +8,6 @@ image_resource:
 
 inputs:
 - name: cf-acceptance-tests
-- name: cf-cli-v7
 
 outputs:
 - name: capi-rc-ops-file
