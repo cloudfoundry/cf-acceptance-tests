@@ -446,17 +446,9 @@ jobs:
           - -c
           - |
             #!/bin/bash
-
-            export CLI_VERSION=$(cat cf-cli-v7/version)
-            WORKING_DIR=$PWD
-
-            pushd /tmp/
-              wget -q -O cf.deb "https://cli.run.pivotal.io/stable?release=debian64&version=${CLI_VERSION}&source=github-rel"
-              dpkg -i cf.deb
-              rm cf.deb
-              mv /usr/bin/cf7 $WORKING_DIR/extracted-cf-cli/cf
-            popd
-
+            wget -q -O cf.tgz "https://cli.run.pivotal.io/edge?arch=linux64&source=github&version=v7"
+            tar xf cf.tgz
+            mv cf7-cli_edge_linux_x86-64/cf7 $WORKING_DIR/extracted-cf-cli/cf
             extracted-cf-cli/cf version
         inputs:
         - name: cf-cli-v7
