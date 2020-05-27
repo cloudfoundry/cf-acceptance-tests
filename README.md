@@ -236,11 +236,11 @@ To run tests that exercise the use of credentials to access a private docker reg
 * `private_docker_registry_username`
 * `private_docker_registry_password`
 
-These tests assume that the specified private docker image is a private version of the cloudfoundry/diego-docker-app-custom:latest. To upload a private version to your DockerHub account, first create a private repository on DockerHub and log in to docker on the command line. Then run the following commands:
+These tests assume that the specified private docker image is a private version of the cloudfoundry/diego-docker-app:latest. To upload a private version to your DockerHub account, first create a private repository on DockerHub and log in to docker on the command line. Then run the following commands:
 
 ```bash
-docker pull cloudfoundry/diego-docker-app-custom:latest
-docker tag cloudfoundry/diego-docker-app-custom:latest <your-private-repo>:<some-tag>
+docker pull cloudfoundry/diego-docker-app:latest
+docker tag cloudfoundry/diego-docker-app:latest <your-private-repo>:<some-tag>
 docker push <your-private-repo>:<some-tag>
 ```
 

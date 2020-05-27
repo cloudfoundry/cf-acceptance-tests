@@ -49,7 +49,7 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-d", Config.GetAppsDomain(),
 				"-i", "1",
-				"-c", fmt.Sprintf("/myapp/dockerapp -name=%s", appName)),
+				"-c", fmt.Sprintf("/myapp/bin/dockerapp -name=%s", appName)),
 			).Should(Exit(0))
 		})
 
@@ -98,7 +98,7 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 			Expect(env_vars).NotTo(HaveKey("TMPDIR"))
 
 			// docker image values should remain
-			Expect(env_vars).To(HaveKeyWithValue("HOME", "/home/dockeruser"))
+			Expect(env_vars).To(HaveKeyWithValue("HOME", "/home/some_docker_user"))
 			Expect(env_vars).To(HaveKeyWithValue("SOME_VAR", "some_docker_value"))
 			Expect(env_vars).To(HaveKeyWithValue("BAD_QUOTE", "'"))
 			Expect(env_vars).To(HaveKeyWithValue("BAD_SHELL", "$1"))

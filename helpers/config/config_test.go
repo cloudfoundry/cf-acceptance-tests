@@ -306,7 +306,7 @@ var _ = Describe("Config", func() {
 		Expect(config.DetectTimeoutDuration()).To(Equal(10 * time.Minute))
 		Expect(config.SleepTimeoutDuration()).To(Equal(60 * time.Second))
 
-		Expect(config.GetPublicDockerAppImage()).To(Equal("cloudfoundry/diego-docker-app-custom:latest"))
+		Expect(config.GetPublicDockerAppImage()).To(Equal("cloudfoundry/diego-docker-app:latest"))
 		Expect(config.GetUnallocatedIPForSecurityGroup()).To(Equal("10.0.244.255"))
 
 		Expect(config.GetCredHubBrokerClientCredential()).To(Equal("credhub_admin_client"))
