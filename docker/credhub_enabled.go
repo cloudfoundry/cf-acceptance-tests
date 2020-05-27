@@ -96,7 +96,7 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-d", Config.GetAppsDomain(),
 					"-i", "1",
-					"-c", fmt.Sprintf("/myapp/dockerapp -name=%s", appName)),
+					"-c", fmt.Sprintf("/myapp/bin/dockerapp -name=%s", appName)),
 				).Should(Exit(0))
 
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {

@@ -225,7 +225,7 @@ func getDefaults() config {
 	defaults.PrivateDockerRegistryImage = ptrToString("")
 	defaults.PrivateDockerRegistryUsername = ptrToString("")
 	defaults.PrivateDockerRegistryPassword = ptrToString("")
-	defaults.PublicDockerAppImage = ptrToString("cloudfoundry/diego-docker-app-custom:latest")
+	defaults.PublicDockerAppImage = ptrToString("cloudfoundry/diego-docker-app:latest")
 
 	defaults.UnallocatedIPForSecurityGroup = ptrToString("10.0.244.255")
 	defaults.RequireProxiedAppTraffic = ptrToBool(false)
