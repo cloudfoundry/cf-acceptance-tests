@@ -52,3 +52,4 @@ const SkipWindowsTasksMessage = `Skipping Windows tasks tests (requires diego-re
 const SkipNoAlternateStacksMessage = `Skipping this test because config.Stacks is empty.`
 const SkipVolumeServicesMessage = `Skipping this test because config.IncludeVolumeServices is set to 'false'.
 NOTE: Ensure that volume services are enabled on your platform and volume service broker is registered before running this test.`
+const SkipVolumeServicesDockerEnabledMessage = `Skipping this test because config.IncludeDocker is set to 'true'`
