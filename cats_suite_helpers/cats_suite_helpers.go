@@ -336,6 +336,9 @@ func VolumeServicesDescribe(description string, callback func()) bool {
 			if !Config.GetIncludeVolumeServices() {
 				Skip(skip_messages.SkipVolumeServicesMessage)
 			}
+			if Config.GetIncludeDocker() {
+				Skip(skip_messages.SkipVolumeServicesDockerEnabledMessage)
+			}
 		})
 		Describe(description, callback)
 	})
