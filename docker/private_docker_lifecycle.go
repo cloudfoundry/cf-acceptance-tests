@@ -106,11 +106,11 @@ var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
 				Expect(listCommand).To(Exit(0))
 				listOutput := string(listCommand.Out.Contents())
 				lines := strings.Split(listOutput, "\n")
-				if len(lines) != 6 {
+				if len(lines) != 5 {
 					return ""
 				}
 
-				fields := strings.Fields(lines[4])
+				fields := strings.Fields(lines[3])
 				Expect(fields[1]).To(Equal(taskName))
 				return fields[2]
 			}).Should(Equal("SUCCEEDED"))
