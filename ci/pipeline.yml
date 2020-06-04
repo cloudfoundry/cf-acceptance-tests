@@ -493,11 +493,11 @@ jobs:
   - timeout: 4h
     do:
     - get: v7-pool
-      # trigger: true
-      passed:
-      - v7-cats
-      - v7-cats-windows
-      - v7-smoke-tests
+      trigger: true
+      ## passed:
+      ## - v7-cats
+      ## - v7-cats-windows
+      ## - v7-smoke-tests
     - in_parallel:
       - get: cf-deployment-concourse-tasks
       - get: relint-envs
