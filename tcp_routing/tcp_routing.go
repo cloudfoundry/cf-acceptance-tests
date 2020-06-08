@@ -105,7 +105,9 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 
 			AfterEach(func() {
 				app_helpers.AppReport(secondAppName)
+				Eventually(cf.Cf("delete-route", domainName, "--port", externalPort1)).Should(Exit(0))
 				Eventually(cf.Cf("delete", appName, "-f", "-r")).Should(Exit(0))
+				Eventually(cf.Cf("delete", secondAppName, "-f", "-r")).Should(Exit(0))
 			})
 
 			It("maps single external port to both applications", func() {
@@ -152,7 +154,7 @@ func getNServerResponses(n int, domainName, externalPort1 string) ([]string, err
 }
 
 func mapTCPRoute(appName, domainName string) string {
-	createRouteSession := cf.Cf("map-route", appName, domainName, "--random-port").Wait()
+	createRouteSession := cf.Cf("map-route", appName, domainName).Wait()
 	Expect(createRouteSession).To(Exit(0))
 
 	r := regexp.MustCompile(fmt.Sprintf(`.+%s:(\d+).+`, domainName))
