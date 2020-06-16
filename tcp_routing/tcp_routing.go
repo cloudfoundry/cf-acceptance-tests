@@ -105,7 +105,7 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 
 			AfterEach(func() {
 				app_helpers.AppReport(secondAppName)
-				Eventually(cf.Cf("delete-route", domainName, "--port", externalPort1)).Should(Exit(0))
+				Eventually(cf.Cf("delete-route", domainName, "--port", externalPort1, "-f")).Should(Exit(0))
 				Eventually(cf.Cf("delete", appName, "-f", "-r")).Should(Exit(0))
 				Eventually(cf.Cf("delete", secondAppName, "-f", "-r")).Should(Exit(0))
 			})
