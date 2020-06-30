@@ -97,7 +97,7 @@ var _ = RoutingDescribe("Session Affinity", func() {
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 		})
 
-		Context("when an app has multiple instances", func() {
+		XContext("when an app has multiple instances", func() {
 			BeforeEach(func() {
 				Expect(cf.Cf("scale", appName, "-i", "3").Wait()).To(Exit(0))
 			})

@@ -32,7 +32,7 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 	})
 
-	Context("by using the command flag", func() {
+	XContext("by using the command flag", func() {
 		var expectedNullResponse string
 
 		BeforeEach(func() {

@@ -3,8 +3,6 @@ package apps
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"path"
 	"strconv"
 	"time"
 
@@ -22,42 +20,9 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
-
-	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
 )
 
 var _ = AppsDescribe("Environment Variables Groups", func() {
-	var createBuildpack = func(envVarName string) string {
-		tmpPath, err := ioutil.TempDir("", "env-group-staging")
-		Expect(err).ToNot(HaveOccurred())
-
-		buildpackArchivePath := path.Join(tmpPath, "buildpack.zip")
-
-		archive_helpers.CreateZipArchive(buildpackArchivePath, []archive_helpers.ArchiveFile{
-			{
-				Name: "bin/compile",
-				Body: fmt.Sprintf(`#!/usr/bin/env bash
-sleep 5
-echo $%s
-exit 1
-`, envVarName),
-			},
-			{
-				Name: "bin/detect",
-				Body: `#!/bin/bash
-exit 1
-`,
-			},
-			{
-				Name: "bin/release",
-				Body: `#!/usr/bin/env bash
-exit 1
-`,
-			},
-		})
-
-		return buildpackArchivePath
-	}
 
 	var fetchEnvironmentVariables = func(groupType string) map[string]string {
 		var session *Session
@@ -112,9 +77,6 @@ exit 1
 
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				revertExtendedEnv("staging", envVarName)
-				if buildpackName != "" {
-					Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait()).To(Exit(0))
-				}
 			})
 
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -122,12 +84,10 @@ exit 1
 
 		It("Applies environment variables while staging apps", func() {
 			buildpackName = random_name.CATSRandomName("BPK")
-			buildpackZip := createBuildpack(envVarName)
 			envVarValue := fmt.Sprintf("staging_env_value_%s", strconv.Itoa(int(time.Now().UnixNano())))
 
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				extendEnv("staging", envVarName, envVarValue)
-				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait()).To(Exit(0))
 			})
 
 			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld, "-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))

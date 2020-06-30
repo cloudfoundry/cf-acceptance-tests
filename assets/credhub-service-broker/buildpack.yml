@@ -1,0 +1,5 @@
+go:
+  # this allows you to specify a version constaint for the Go dependency
+  # any valid semver constaints (e.g. 1.* and 1.14.*) are also acceptable
+  version: 1.*
+  import-path: github.com/cloudfoundry/cf-acceptance-tests/assets/credhub-service-broker 

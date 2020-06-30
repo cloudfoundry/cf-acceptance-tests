@@ -47,7 +47,7 @@ func NewAssets() Assets {
 	return Assets{
 		AspClassic:                 "assets/asp-classic",
 		BatchScript:                "assets/batch-script",
-		Catnip:                     "assets/catnip/bin",
+		Catnip:                     "assets/catnip",
 		CredHubEnabledApp:          "assets/credhub-enabled-app/credhub-enabled-app.jar",
 		CredHubServiceBroker:       "assets/credhub-service-broker",
 		Dora:                       "assets/dora",

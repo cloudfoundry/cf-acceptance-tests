@@ -81,7 +81,7 @@ var _ = V3Describe("deployment", func() {
 		os.Remove("assets/staticfile.zip")
 	})
 
-	Describe("Deployment", func() {
+	XDescribe("Deployment", func() {
 		BeforeEach(func() {
 			By("Assigning a second droplet for the app")
 			AssignDropletToApp(appGuid, dropletGuid)
@@ -150,7 +150,7 @@ var _ = V3Describe("deployment", func() {
 		})
 	})
 
-	Describe("cancelling deployments", func() {
+	XDescribe("cancelling deployments", func() {
 		It("rolls back to the previous droplet", func() {
 			By("creating a deployment with the second droplet")
 			originalProcessGuid := GetProcessGuidsForType(appGuid, "web")[0]

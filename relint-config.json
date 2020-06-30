@@ -1,0 +1,9 @@
+{
+  "api": "api.hypercritical-knowledge.k8s-dev.relint.rocks",
+  "apps_domain": "apps.hypercritical-knowledge.k8s-dev.relint.rocks",
+  "admin_user": "admin",
+  "admin_password": "hnpefcqrrbnkm7n5tftf",
+  "artifacts_directory": "logs",
+  "skip_ssl_validation": true,
+  "include_v3": false
+}

@@ -1,21 +1,15 @@
 package credhub
 
 import (
-	"io/ioutil"
-	"os"
-	"path"
-
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 
 	"encoding/json"
 
 	"strings"
 
-	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
@@ -123,113 +117,6 @@ var _ = CredhubDescribe("service bindings", func() {
 		appStartSession = cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
 		Expect(appStartSession).To(Exit(0))
 	}
-
-	Context("during staging", func() {
-		var (
-			buildpackName string
-			appName       string
-			appPath       string
-
-			buildpackPath        string
-			buildpackArchivePath string
-
-			tmpdir string
-		)
-		BeforeEach(func() {
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				buildpackName = random_name.CATSRandomName("BPK")
-				appName = random_name.CATSRandomName("APP")
-
-				var err error
-				tmpdir, err = ioutil.TempDir("", "buildpack_env")
-				Expect(err).ToNot(HaveOccurred())
-				appPath, err = ioutil.TempDir(tmpdir, "matching-app")
-				Expect(err).ToNot(HaveOccurred())
-
-				buildpackPath, err = ioutil.TempDir(tmpdir, "matching-buildpack")
-				Expect(err).ToNot(HaveOccurred())
-
-				buildpackArchivePath = path.Join(buildpackPath, "buildpack.zip")
-
-				archive_helpers.CreateZipArchive(buildpackArchivePath, []archive_helpers.ArchiveFile{
-					{
-						Name: "bin/compile",
-						Body: `#!/usr/bin/env bash
-echo COMPILING... really just dumping env...
-env
-`,
-					},
-					{
-						Name: "bin/detect",
-						Body: `#!/bin/bash
-
-exit 1
-`,
-					},
-					{
-						Name: "bin/release",
-						Body: `#!/usr/bin/env bash
-
-cat <<EOF
----
-config_vars:
-  PATH: bin:/usr/local/bin:/usr/bin:/bin
-  FROM_BUILD_PACK: "yes"
-default_process_types:
-  web: while true; do { echo -e 'HTTP/1.1 200 OK\r\n'; echo "hi from a simple admin buildpack"; } | nc -l \$PORT; done
-EOF
-`,
-					},
-				})
-				_, err = os.Create(path.Join(appPath, "some-file"))
-				Expect(err).ToNot(HaveOccurred())
-
-				createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "100").Wait()
-				Expect(createBuildpack).Should(Exit(0))
-				Expect(createBuildpack).Should(Say("Creating"))
-				Expect(createBuildpack).Should(Say("OK"))
-				Expect(createBuildpack).Should(Say("Uploading"))
-				Expect(createBuildpack).Should(Say("OK"))
-
-			})
-			Expect(cf.Cf("push", appName,
-				"--no-start",
-				"-b", buildpackName,
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", appPath,
-				"-d", Config.GetAppsDomain(),
-			).Wait()).To(Exit(0))
-
-			bindServiceAndStartApp(appName)
-		})
-
-		AfterEach(func() {
-			app_helpers.AppReport(appName)
-
-			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
-
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait()).To(Exit(0))
-			})
-
-			os.RemoveAll(tmpdir)
-		})
-
-		NonAssistedCredhubDescribe("", func() {
-			It("still contains CredHub references in VCAP_SERVICES", func() {
-				Expect(appStartSession).NotTo(Say("pinkyPie"))
-				Expect(appStartSession).NotTo(Say("rainbowDash"))
-				Expect(appStartSession).To(Say("credhub-ref"))
-			})
-		})
-
-		AssistedCredhubDescribe("", func() {
-			It("has CredHub references in VCAP_SERVICES interpolated", func() {
-				Expect(appStartSession).To(Say(`{"password":"rainbowDash","user-name":"pinkyPie"}`))
-				Expect(appStartSession).NotTo(Say("credhub-ref"))
-			})
-		})
-	})
 
 	Context("during runtime", func() {
 		Describe("service bindings to credhub enabled broker", func() {

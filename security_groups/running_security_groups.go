@@ -142,7 +142,6 @@ func createDummyBuildpack() string {
 
 func deleteBuildpack(buildpack string) {
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("delete-buildpack", buildpack, "-f").Wait()).To(Exit(0))
 	})
 }
 

@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path"
-	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -20,18 +18,15 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
-	. "github.com/onsi/gomega/gexec"
 )
 
 var _ = V3Describe("buildpack", func() {
 	var (
-		appName       string
-		appGuid       string
-		buildpackName string
-		packageGuid   string
-		spaceGuid     string
-		token         string
+		appName     string
+		appGuid     string
+		packageGuid string
+		spaceGuid   string
+		token       string
 	)
 
 	type buildpack struct {
@@ -40,76 +35,6 @@ var _ = V3Describe("buildpack", func() {
 		BuildpackName string `json:"buildpack_name"`
 		Version       string `json:"version"`
 	}
-
-	Context("With a single buildpack app", func() {
-		BeforeEach(func() {
-			appName = random_name.CATSRandomName("APP")
-			spaceGuid = GetSpaceGuidFromName(TestSetup.RegularUserContext().Space)
-			appGuid = CreateApp(appName, spaceGuid, "{}")
-			packageGuid = CreatePackage(appGuid)
-
-			token = GetAuthToken()
-			uploadUrl := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.GetApiEndpoint(), packageGuid)
-			UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
-			WaitForPackageToBeReady(packageGuid)
-
-			buildpackName = random_name.CATSRandomName("BPK")
-			buildpackZip := createBuildpack()
-
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("create-buildpack", buildpackName, buildpackZip, "999").Wait()).To(Exit(0))
-			})
-		})
-
-		AfterEach(func() {
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait()).To(Exit(0))
-			})
-
-			app_helpers.AppReport(appName)
-			DeleteApp(appGuid)
-		})
-
-		It("Stages with a user specified admin buildpack", func() {
-			StageBuildpackPackage(packageGuid, buildpackName)
-			Eventually(func() *Session {
-				return FetchRecentLogs(appGuid, token, Config)
-			}).Should(Say("STAGED WITH CUSTOM BUILDPACK"))
-		})
-
-		It("Downloads the correct user specified git buildpack", func() {
-			if !Config.GetIncludeInternetDependent() {
-				Skip(skip_messages.SkipInternetDependentMessage)
-			}
-			StageBuildpackPackage(packageGuid, "https://github.com/cloudfoundry/example-git-buildpack")
-
-			Eventually(func() *Session {
-				return FetchRecentLogs(appGuid, token, Config)
-			}).Should(Say("I'm a buildpack!"))
-		})
-
-		It("uses buildpack cache for staging", func() {
-			firstBuildGuid := StageBuildpackPackage(packageGuid, buildpackName)
-			WaitForBuildToStage(firstBuildGuid)
-			dropletGuid := GetDropletFromBuild(firstBuildGuid)
-			dropletPath := fmt.Sprintf("/v3/droplets/%s", dropletGuid)
-
-			result := cf.Cf("curl", dropletPath).Wait()
-			Expect(result).To(Say("custom buildpack contents - cache not found"))
-
-			// Wait for buildpack cache to be uploaded to blobstore.
-			time.Sleep(Config.SleepTimeoutDuration())
-
-			secondBuildGuid := StageBuildpackPackage(packageGuid, buildpackName)
-			WaitForBuildToStage(secondBuildGuid)
-			dropletGuid = GetDropletFromBuild(secondBuildGuid)
-			dropletPath = fmt.Sprintf("/v3/droplets/%s", dropletGuid)
-			result = cf.Cf("curl", dropletPath).Wait()
-			Expect(result).To(Say("custom buildpack contents - here's a cache"))
-
-			Expect(secondBuildGuid).NotTo(Equal(firstBuildGuid))
-		})
-	})
 
 	Context("With a multi buildpack app", func() {
 		BeforeEach(func() {

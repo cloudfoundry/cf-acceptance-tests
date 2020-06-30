@@ -29,7 +29,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
 	})
 
-	Describe("when the healthcheck is set to none", func() {
+	XDescribe("when the healthcheck is set to none", func() {
 		It("starts up successfully", func() {
 			By("pushing it")
 			Eventually(cf.Cf(

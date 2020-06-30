@@ -26,7 +26,7 @@ var _ = AppsDescribe("Crashing", func() {
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 	})
 
-	Describe("a continuously crashing app", func() {
+	XDescribe("a continuously crashing app", func() {
 		It("emits crash events and reports as 'crashed' after enough crashes", func() {
 			Expect(cf.Cf(
 				"push",
@@ -46,7 +46,7 @@ var _ = AppsDescribe("Crashing", func() {
 		})
 	})
 
-	Context("the app crashes", func() {
+	XContext("the app crashes", func() {
 		BeforeEach(func() {
 			Expect(cf.Cf(
 				"push",
