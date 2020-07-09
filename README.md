@@ -108,7 +108,6 @@ include_apps
 include_detect
 include_routing
 include_v3
-include_capi_no_bridge
 ```
 
 #### The full set of config parameters is explained below:
@@ -128,7 +127,6 @@ include_capi_no_bridge
 * `credhub_location`: Location of CredHub instance; default is `https://credhub.service.cf.internal:8844`
 * `credhub_client`: UAA client credential for Service Broker write access to CredHub (required for CredHub tests); default is `credhub_admin_client`.
 * `credhub_secret`: UAA client secret for Service Broker write access to CredHub (required for CredHub tests).
-* `include_capi_no_bridge`: Flag to run tests that require CAPI's (currently optional) bridge consumption features.
 * `include_deployments`: Flag to include tests for the cloud controller rolling deployments. V3 must also be enabled.
 * `include_detect`: Flag to include tests in the detect group.
 * `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
