@@ -6,5 +6,6 @@ import (
 )
 
 func KillHandler(res http.ResponseWriter, req *http.Request) {
-	os.Exit(1)
+	currentProcess, _ := os.FindProcess(os.Getpid())
+	currentProcess.Kill()
 }

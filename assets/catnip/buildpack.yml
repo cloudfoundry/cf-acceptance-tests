@@ -1,3 +1,0 @@
-go:
-  # this sets the go import-path (required)
-  import-path: github.com/cloudfoundry/cf-acceptance-tests/assets/catnip
