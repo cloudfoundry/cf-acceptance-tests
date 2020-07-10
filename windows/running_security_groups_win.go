@@ -48,7 +48,7 @@ func pushApp(appName, buildpack string) {
 		"-b", buildpack,
 		"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 		"-p", assets.NewAssets().Nora,
-		"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+	).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 	warmUpRequest(appName)
 }
@@ -104,7 +104,7 @@ func createSecurityGroup(allowedDestinations ...Destination) string {
 func bindSecurityGroup(securityGroupName, orgName, spaceName string) {
 	By("Applying security group")
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("bind-security-group", securityGroupName, orgName, spaceName).Wait()).To(Exit(0))
+		Expect(cf.Cf("bind-security-group", securityGroupName, orgName, "--space", spaceName).Wait()).To(Exit(0))
 	})
 }
 

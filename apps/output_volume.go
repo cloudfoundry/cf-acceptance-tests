@@ -26,7 +26,7 @@ var _ = AppsDescribe("An application printing a bunch of output", func() {
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Catnip,
 			"-c", "./catnip",
-			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {

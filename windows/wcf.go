@@ -29,7 +29,7 @@ var _ = WindowsDescribe("WCF", func() {
 			"-b", Config.GetHwcBuildpackName(),
 			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Wcf,
-			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {

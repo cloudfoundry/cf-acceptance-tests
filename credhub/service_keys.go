@@ -36,7 +36,6 @@ var _ = CredhubDescribe("service keys", func() {
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().CredHubServiceBroker,
 			"-f", assets.NewAssets().CredHubServiceBroker+"/manifest.yml",
-			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed pushing credhub-enabled service broker")
 
 		existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait().Out.Contents())

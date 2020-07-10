@@ -31,7 +31,7 @@ var _ = AppsDescribe("Large_payload", func() {
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Catnip,
 			"-c", "./catnip",
-			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		Eventually(func() int {
 			curlResponse := helpers.CurlApp(Config, appName, fmt.Sprintf("/largetext/%d", payloadSize))

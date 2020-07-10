@@ -6,8 +6,6 @@ import (
 
 type CatsConfig interface {
 	GetIncludeApps() bool
-	GetIncludeBackendCompatiblity() bool
-	GetIncludeCapiNoBridge() bool
 	GetIncludeContainerNetworking() bool
 	GetIncludeCredhubAssisted() bool
 	GetIncludeCredhubNonAssisted() bool
@@ -33,7 +31,6 @@ type CatsConfig interface {
 	GetIncludeTCPRouting() bool
 	GetIncludeWindows() bool
 	GetIncludeVolumeServices() bool
-	GetUseLogCache() bool
 	GetShouldKeepUser() bool
 	GetSkipSSLValidation() bool
 	GetUseExistingUser() bool

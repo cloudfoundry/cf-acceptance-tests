@@ -37,7 +37,6 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 			"-b", Config.GetRubyBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().HelloWorld,
-			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		// map internal route to backend app
@@ -49,7 +48,6 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 			"-b", Config.GetGoBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Proxy,
-			"-d", Config.GetAppsDomain(),
 			"-f", assets.NewAssets().Proxy+"/manifest.yml",
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
@@ -74,7 +72,7 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()).To(Exit(0))
 				Expect(string(cf.Cf("network-policies").Wait().Out.Contents())).ToNot(ContainSubstring(appNameBackend))
-				Expect(cf.Cf("add-network-policy", appNameFrontend, "--destination-app", appNameBackend, "--protocol", "tcp", "--port", "8080").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("add-network-policy", appNameFrontend, appNameBackend, "--protocol", "tcp", "--port", "8080").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 				Expect(string(cf.Cf("network-policies").Wait().Out.Contents())).To(ContainSubstring(appNameBackend))
 			})
 

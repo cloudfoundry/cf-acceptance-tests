@@ -2,7 +2,7 @@
 
 main() {
   set -ex
-  fly -t relint-ci sp -p cats -c "${PROJECT_DIR}/ci/pipeline.yml"
+  fly -t relint-ci sp -p v7oldemort -c "${PROJECT_DIR}/ci/pipeline.yml"
 }
 
 main "$@"

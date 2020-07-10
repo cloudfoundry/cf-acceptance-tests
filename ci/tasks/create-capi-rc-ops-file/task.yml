@@ -1,0 +1,16 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: relintdockerhubpushbot/cf-deployment-concourse-tasks
+
+inputs:
+- name: cf-acceptance-tests
+
+outputs:
+- name: capi-rc-ops-file
+
+run:
+  path: cf-acceptance-tests/ci/tasks/create-capi-rc-ops-file/task

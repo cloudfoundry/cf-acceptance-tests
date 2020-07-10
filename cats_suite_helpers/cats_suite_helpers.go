@@ -50,17 +50,6 @@ func IsolationSegmentsDescribe(description string, callback func()) bool {
 	})
 }
 
-func BackendCompatibilityDescribe(description string, callback func()) bool {
-	return Describe("[backend_compatibility]", func() {
-		BeforeEach(func() {
-			if !Config.GetIncludeBackendCompatiblity() {
-				Skip(skip_messages.SkipBackendCompatibilityMessage)
-			}
-		})
-		Describe(description, callback)
-	})
-}
-
 func DetectDescribe(description string, callback func()) bool {
 	return Describe("[detect]", func() {
 		BeforeEach(func() {

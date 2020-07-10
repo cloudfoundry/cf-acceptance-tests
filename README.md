@@ -108,7 +108,6 @@ include_apps
 include_detect
 include_routing
 include_v3
-include_capi_no_bridge
 ```
 
 #### The full set of config parameters is explained below:
@@ -122,14 +121,12 @@ include_capi_no_bridge
 ##### Optional parameters:
 `include_*` parameters are used to specify whether to skip tests based on how a deployment is configured.
 * `include_apps`: Flag to include the apps test group.
-* `include_backend_compatibility`: Flag to include whether we check DEA/Diego interoperability.
 * `include_container_networking`: Flag to include tests related to container networking.
   `include_security_groups` must also be set for tests to run. [See below](#container-networking-and-application-security-groups)
 * `credhub_mode`: Valid values are `assisted` or `non-assisted`. [See below](#credhub-modes).
 * `credhub_location`: Location of CredHub instance; default is `https://credhub.service.cf.internal:8844`
 * `credhub_client`: UAA client credential for Service Broker write access to CredHub (required for CredHub tests); default is `credhub_admin_client`.
 * `credhub_secret`: UAA client secret for Service Broker write access to CredHub (required for CredHub tests).
-* `include_capi_no_bridge`: Flag to run tests that require CAPI's (currently optional) bridge consumption features.
 * `include_deployments`: Flag to include tests for the cloud controller rolling deployments. V3 must also be enabled.
 * `include_detect`: Flag to include tests in the detect group.
 * `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
@@ -150,7 +147,6 @@ include_capi_no_bridge
 * `include_v3`: Flag to include tests for the v3 API.
 * `include_zipkin`: Flag to include tests for Zipkin tracing. `include_routing` must also be set for tests to run. CF must be deployed with `router.tracing.enable_zipkin` set for tests to pass.
 * `use_http`: Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
-* `use_log_cache`: Set to false if you don't want CF Acceptance Tests to use Log Cache for reading application logs. (default is true)
 * `use_existing_organization`: Set to true when you need to specify an existing organization to use rather than creating a new organization.
 * `existing_organization`: Name of the existing organization to use.
 * `use_existing_user`: The admin user configured above will normally be used to create a temporary user (with lesser permissions) to perform actions (such as push applications) during tests, and then delete said user after the tests have run; set this to `true` if you want to use an existing user, configured via the following properties.
@@ -317,7 +313,7 @@ If you are already familiar with CATs you probably know that there are many test
 
 To execute tests in a single file use an `FDescribe` block around the tests in that file:
 ```go
-var _ = BackendCompatibilityDescribe("Backend Compatibility", func() {
+var _ = AppsDescribe("Apps", func() {
   FDescribe("Focused tests", func() { // Add this line here
   // ... rest of file
   }) // Close here
@@ -341,7 +337,6 @@ You can of course combine the `-v` flag with the `-nodes=N` flag.
 Test Group Name| Description
 --- | ---
 `apps`| Tests the core functionalities of Cloud Foundry: staging, running, logging, routing, buildpacks, etc.  This test group should always pass against a sound Cloud Foundry deployment.
-`backend_compatibility` | Tests interoperability of droplets staged on the DEAs running on Diego
 `credhub`| Tests CredHub-delivered Secure Service credentials in the service binding. [CredHub configuration][credhub-secure-service-credentials] is required to run these tests. In addition to selecting a `credhub_mode`, `credhub_client` and `credhub_secret` values are required for these tests.
 `detect` | Tests the ability of the platform to detect the correct buildpack for compiling an application if no buildpack is explicitly specified.
 `docker`| Tests our ability to run docker containers on Diego and that we handle docker metadata correctly.

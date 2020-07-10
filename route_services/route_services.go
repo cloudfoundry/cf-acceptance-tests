@@ -45,13 +45,12 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
 
-				Expect(cf.Cf("push",
-					appName,
+				Expect(cf.Cf("push", appName,
 					"-b", Config.GetGoBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", golangAsset,
 					"-f", filepath.Join(golangAsset, "manifest.yml"),
-					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 				Expect(cf.Cf("push",
 					routeServiceName,
@@ -60,7 +59,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", loggingRouteServiceAsset,
 					"-f", filepath.Join(loggingRouteServiceAsset, "manifest.yml"),
-					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 				Expect(cf.Cf("set-env", routeServiceName, "SKIP_SSL_VALIDATION", "true").Wait()).To(Exit(0))
 				Expect(cf.Cf("start", routeServiceName).Wait(CF_JAVA_TIMEOUT)).To(Exit(0))
@@ -84,7 +83,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 			It("a request to the app is routed through the route service", func() {
 				Eventually(func() *Session {
 					helpers.CurlAppRoot(Config, appName)
-					logs := logshelper.Tail(Config.GetUseLogCache(), routeServiceName)
+					logs := logshelper.Recent(routeServiceName)
 					Expect(logs.Wait()).To(Exit(0))
 					return logs
 				}).Should(Say("Response Body: go, world"))
@@ -110,13 +109,12 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceBroker(brokerName, brokerAppName, serviceName)
 				createServiceInstance(serviceInstanceName, serviceName)
 
-				Expect(cf.Cf("push",
-					appName,
+				Expect(cf.Cf("push", appName,
 					"-b", Config.GetGoBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", golangAsset,
 					"-f", filepath.Join(golangAsset, "manifest.yml"),
-					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 				configureBroker(brokerAppName, "")
 
@@ -160,7 +158,6 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				createServiceInstance(serviceInstanceName, serviceName)
 
 				Expect(cf.Cf("create-route",
-					TestSetup.RegularUserContext().Space,
 					Config.GetAppsDomain(),
 					"--hostname", hostname,
 				).Wait()).To(Exit(0))
@@ -184,7 +181,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 				bindRouteToServiceWithParams(hostname, serviceInstanceName, "{\"key1\":[\"value1\",\"irynaparam\"],\"key2\":\"value3\"}")
 
 				Eventually(func() *Session {
-					logs := logshelper.Tail(Config.GetUseLogCache(), brokerAppName)
+					logs := logshelper.Recent(brokerAppName)
 					Expect(logs.Wait()).To(Exit(0))
 					return logs
 				}).Should(Say("irynaparam"))
@@ -257,12 +254,11 @@ func configureBroker(serviceBrokerAppName, routeServiceName string) {
 
 func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 	serviceBrokerAsset := assets.NewAssets().ServiceBroker
-	Expect(cf.Cf("push",
-		brokerAppName,
+	Expect(cf.Cf("push", brokerAppName,
 		"-b", Config.GetRubyBuildpackName(),
 		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", serviceBrokerAsset,
-		"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+	).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 	initiateBrokerConfig(serviceName, brokerAppName)
 
