@@ -39,7 +39,7 @@ var _ = WindowsDescribe("SSH", func() {
 			"-b", Config.GetHwcBuildpackName(),
 			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Nora,
-		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hello i am nora"))
 		Expect(cf.Cf("enable-ssh", appName).Wait()).To(Exit(0))
 	})
@@ -73,7 +73,7 @@ var _ = WindowsDescribe("SSH", func() {
 				Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=1"))
 
 				Eventually(func() *gbytes.Buffer {
-					return logs.Recent(appName).Wait().Out
+					return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 				}).Should(gbytes.Say("Successful remote access"))
 
 				Eventually(func() string {
@@ -96,7 +96,7 @@ var _ = WindowsDescribe("SSH", func() {
 			Expect(string(stdErr)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
 			Eventually(func() *gbytes.Buffer {
-				return logs.Recent(appName).Wait().Out
+				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 			}).Should(gbytes.Say("Successful remote access"))
 
 			Eventually(func() string {
@@ -132,7 +132,7 @@ var _ = WindowsDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
 			Eventually(func() *gbytes.Buffer {
-				return logs.Recent(appName).Wait().Out
+				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 			}).Should(gbytes.Say("Successful remote access"))
 
 			Eventually(func() string {
@@ -183,7 +183,7 @@ var _ = WindowsDescribe("SSH", func() {
 			Expect(string(output)).To(MatchRegexp("INSTANCE_INDEX=0"))
 
 			Eventually(func() *gbytes.Buffer {
-				return logs.Recent(appName).Wait().Out
+				return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 			}).Should(gbytes.Say("Successful remote access"))
 
 			Eventually(func() string {

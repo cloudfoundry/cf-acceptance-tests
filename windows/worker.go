@@ -35,10 +35,10 @@ var _ = WindowsDescribe("apps without a port", func() {
 			"--no-start",
 			"-p", filepath.Dir(workerPath),
 			"-c", fmt.Sprintf(".\\%s", filepath.Base(workerPath)),
-			"-u", "process",
+			"-u", "none",
 			"-b", Config.GetBinaryBuildpackName(),
 			"-s", Config.GetWindowsStack()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-		logs = logshelper.Follow(appName)
+		logs = logshelper.TailFollow(Config.GetUseLogCache(), appName)
 		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 

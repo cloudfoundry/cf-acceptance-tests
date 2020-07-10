@@ -1,21 +1,20 @@
 package tcp_routing
 
 import (
-	"fmt"
-	"net"
-	"path/filepath"
-	"regexp"
-	"time"
-
-	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
-	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
+	"time"
+	"fmt"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
+	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"regexp"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
+	"net"
+	"path/filepath"
 )
 
 const DefaultRouterGroupName = "default-tcp"
@@ -105,9 +104,7 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 
 			AfterEach(func() {
 				app_helpers.AppReport(secondAppName)
-				Eventually(cf.Cf("delete-route", domainName, "--port", externalPort1, "-f")).Should(Exit(0))
 				Eventually(cf.Cf("delete", appName, "-f", "-r")).Should(Exit(0))
-				Eventually(cf.Cf("delete", secondAppName, "-f", "-r")).Should(Exit(0))
 			})
 
 			It("maps single external port to both applications", func() {
@@ -154,7 +151,7 @@ func getNServerResponses(n int, domainName, externalPort1 string) ([]string, err
 }
 
 func mapTCPRoute(appName, domainName string) string {
-	createRouteSession := cf.Cf("map-route", appName, domainName).Wait()
+	createRouteSession := cf.Cf("map-route", appName, domainName, "--random-port").Wait()
 	Expect(createRouteSession).To(Exit(0))
 
 	r := regexp.MustCompile(fmt.Sprintf(`.+%s:(\d+).+`, domainName))

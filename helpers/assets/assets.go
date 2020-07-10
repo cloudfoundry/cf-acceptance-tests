@@ -7,6 +7,7 @@ type Assets struct {
 	CredHubEnabledApp          string
 	CredHubServiceBroker       string
 	Dora                       string
+	DoraDroplet                string
 	DoraZip                    string
 	DotnetCore                 string
 	Fuse                       string
@@ -50,6 +51,7 @@ func NewAssets() Assets {
 		CredHubEnabledApp:          "assets/credhub-enabled-app/credhub-enabled-app.jar",
 		CredHubServiceBroker:       "assets/credhub-service-broker",
 		Dora:                       "assets/dora",
+		DoraDroplet:                "assets/dora-droplet.tar.gz",
 		DoraZip:                    "assets/dora.zip",
 		DotnetCore:                 "assets/dotnet-core",
 		Fuse:                       "assets/fuse-mount",

@@ -58,7 +58,7 @@ func getTaskDetails(appName string) []string {
 	Expect(listCommand).To(Exit(0))
 	listOutput := string(listCommand.Out.Contents())
 	lines := strings.Split(listOutput, "\n")
-	return strings.Fields(lines[3])
+	return strings.Fields(lines[4])
 }
 
 func getGuid(appGuid string, sequenceId string) string {
@@ -125,7 +125,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
-			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			appGuid = app_helpers.GetAppGuid(appName)
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
@@ -145,7 +145,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 			sleepTime := math.Min(float64(2), float64(Config.DefaultTimeoutDuration().Seconds()))
 			command := fmt.Sprintf("sleep %f", sleepTime)
 			lastUsageEventGuid := app_helpers.LastAppUsageEventGuid(TestSetup)
-			createCommand := cf.Cf("run-task", appName, "--command", command, "--name", taskName).Wait()
+			createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait()
 			Expect(createCommand).To(Exit(0))
 
 			taskDetails := getTaskDetails(appName)
@@ -189,7 +189,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 			BeforeEach(func() {
 				command := "sleep 100;"
 				taskName = "mreow"
-				createCommand := cf.Cf("run-task", appName, "--command", command, "--name", taskName).Wait()
+				createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait()
 				Expect(createCommand).To(Exit(0))
 
 				taskDetails := getTaskDetails(appName)
@@ -229,12 +229,15 @@ var _ = TasksDescribe("v3 tasks", func() {
 		BeforeEach(func() {
 			Expect(cf.Cf(
 				"push", appName,
+				"--no-start",
 				"-b", Config.GetGoBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Proxy,
+				"-d", Config.GetAppsDomain(),
 				"-f", assets.NewAssets().Proxy+"/manifest.yml",
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			appGuid = app_helpers.GetAppGuid(appName)
+			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		AfterEach(func() {
@@ -255,7 +258,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 					Expect(cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space).Wait()).To(Exit(0))
 					Expect(string(cf.Cf("network-policies").Wait().Out.Contents())).ToNot(ContainSubstring(appName))
-					Expect(cf.Cf("add-network-policy", appName, appName, "--port", "8080", "--protocol", "tcp").Wait()).To(Exit(0))
+					Expect(cf.Cf("add-network-policy", appName, "--destination-app", appName, "--port", "8080", "--protocol", "tcp").Wait()).To(Exit(0))
 					Expect(string(cf.Cf("network-policies").Wait().Out.Contents())).To(ContainSubstring(appName))
 				})
 
@@ -276,7 +279,7 @@ if curl --fail "` + containerIP + `:` + strconv.Itoa(proxyResponse.Port) + `" ; 
 fi
 done;
 exit 1`
-				createCommand := cf.Cf("run-task", appName, "--command", command, "--name", taskName).Wait()
+				createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait()
 				Expect(createCommand).To(Exit(0))
 
 				By("successfully running")
@@ -320,7 +323,7 @@ exit 1`
 
 				By("binding the ASG to the space")
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-					Expect(cf.Cf("bind-security-group", securityGroupName, TestSetup.RegularUserContext().Org, "--space", TestSetup.RegularUserContext().Space).Wait()).To(Exit(0))
+					Expect(cf.Cf("bind-security-group", securityGroupName, TestSetup.RegularUserContext().Org, TestSetup.RegularUserContext().Space).Wait()).To(Exit(0))
 				})
 
 				By("restarting the app to apply the ASG")
@@ -329,7 +332,7 @@ exit 1`
 				By("creating the task")
 				taskName := "woof"
 				command := `curl --fail --connect-timeout 10 ` + Config.GetUnallocatedIPForSecurityGroup() + `:80`
-				createCommand := cf.Cf("run-task", appName, "--command", command, "--name", taskName).Wait()
+				createCommand := cf.Cf("run-task", appName, command, "--name", taskName).Wait()
 				Expect(createCommand).To(Exit(0))
 
 				By("testing that external connectivity to a private ip is not refused (but may be unreachable for other reasons)")
@@ -343,7 +346,7 @@ exit 1`
 				Expect(outputName).To(Equal(taskName))
 
 				Eventually(func() string {
-					appLogs := logs.Recent(appName).Wait()
+					appLogs := logs.Tail(Config.GetUseLogCache(), appName).Wait()
 					Expect(appLogs).To(Exit(0))
 					return string(appLogs.Out.Contents())
 				}, Config.CfPushTimeoutDuration()).Should(MatchRegexp("Connection timed out|No route to host"), "ASG configured to allow connection to the private IP but the app is still refused by private ip")

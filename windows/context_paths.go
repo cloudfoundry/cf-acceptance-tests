@@ -16,7 +16,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = PDescribe("Context Paths", func() {
+var _ = WindowsDescribe("Context Paths", func() {
 	var (
 		appName1 string
 
@@ -40,7 +40,7 @@ var _ = PDescribe("Context Paths", func() {
 			"-b", Config.GetHwcBuildpackName(),
 			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Nora,
-		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		// .NET Apps must be pushed with --no-start --no-route before running cf map-route
 		appName2 = random_name.CATSRandomName("APP")

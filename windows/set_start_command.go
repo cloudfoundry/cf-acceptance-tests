@@ -14,7 +14,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 )
 
-var _ = FDescribe("Setting an app's start command", func() {
+var _ = WindowsDescribe("Setting an app's start command", func() {
 	var appName string
 
 	BeforeEach(func() {
@@ -38,11 +38,10 @@ var _ = FDescribe("Setting an app's start command", func() {
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).Should(Exit(0))
 	})
 
-	// Couldn't find app, placing into pending for now
-	PIt("uses the given start command", func() {
+	It("uses the given start command", func() {
 		// OUT... to make sure we don't match the Launcher line: Running `loop.bat Hi there!!!'
 		Eventually(func() *Buffer {
-			return logs.Recent(appName).Wait().Out
+			return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
 		}).Should(Say("OUT Hi there!!!"))
 	})
 })

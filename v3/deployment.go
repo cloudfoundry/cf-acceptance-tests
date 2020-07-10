@@ -56,7 +56,7 @@ var _ = V3Describe("deployment", func() {
 		processes := GetProcesses(appGuid, appName)
 		webProcess = GetProcessByType(processes, "web")
 
-		CreateAndMapRoute(appGuid, Config.GetAppsDomain(), appName)
+		CreateAndMapRoute(appGuid, spaceName, Config.GetAppsDomain(), appName)
 		instances = 2
 		ScaleApp(appGuid, instances)
 

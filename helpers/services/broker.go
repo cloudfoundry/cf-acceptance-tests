@@ -130,24 +130,28 @@ func NewServiceBroker(name string, path string, TestSetup *workflowhelpers.Repro
 func (b ServiceBroker) Push(config cats_config.CatsConfig) {
 	Expect(cf.Cf(
 		"push", b.Name,
+		"--no-start",
 		"-b", config.GetRubyBuildpackName(),
 		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", b.Path,
-		"--health-check-type", "http",
-		"--endpoint", "/v2/catalog",
+		"-d", config.GetAppsDomain(),
 	).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
+	Expect(cf.Cf("set-health-check", b.Name, "http", "--endpoint", "/v2/catalog").Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
+	Expect(cf.Cf("start", b.Name).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
 }
 
 func (b ServiceBroker) PushWithBuildpackAndManifest(config cats_config.CatsConfig, buildpackName string) {
 	Expect(cf.Cf(
 		"push", b.Name,
+		"--no-start",
 		"-b", buildpackName,
 		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", b.Path,
 		"-f", b.Path+"/manifest.yml",
-		"--health-check-type", "http",
-		"--endpoint", "/v2/catalog",
+		"-d", config.GetAppsDomain(),
 	).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
+	Expect(cf.Cf("set-health-check", b.Name, "http", "--endpoint", "/v2/catalog").Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
+	Expect(cf.Cf("start", b.Name).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
 }
 
 func (b ServiceBroker) Configure() {

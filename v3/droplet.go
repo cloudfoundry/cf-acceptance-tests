@@ -78,7 +78,7 @@ var _ = V3Describe("droplet features", func() {
 			Expect(webProcess.Guid).ToNot(BeEmpty())
 			Expect(workerProcess.Guid).ToNot(BeEmpty())
 
-			CreateAndMapRoute(destinationAppGuid, Config.GetAppsDomain(), webProcess.Name)
+			CreateAndMapRoute(destinationAppGuid, TestSetup.RegularUserContext().Space, Config.GetAppsDomain(), webProcess.Name)
 			StartApp(destinationAppGuid)
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, webProcess.Name)

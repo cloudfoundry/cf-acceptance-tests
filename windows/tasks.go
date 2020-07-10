@@ -32,7 +32,7 @@ var _ = WindowsDescribe("Task Lifecycle", func() {
 			"-c", ".\\webapp.exe",
 			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-p", assets.NewAssets().WindowsWebapp,
-		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hi i am a standalone webapp"))
 	})
 
@@ -43,7 +43,7 @@ var _ = WindowsDescribe("Task Lifecycle", func() {
 	})
 
 	It("exercises the task lifecycle on windows", func() {
-		session := cf.Cf("run-task", appName, "--command", "cmd /c echo 'hello world'")
+		session := cf.Cf("run-task", appName, "cmd /c echo 'hello world'")
 		Eventually(session).Should(Exit(0))
 
 		Eventually(func() *Session {

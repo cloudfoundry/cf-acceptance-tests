@@ -55,7 +55,7 @@ var _ = ServicesDescribe("Purging service instances", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
-			).Wait(Config.CfPushTimeoutDuration())
+				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
 			Expect(createApp).To(Exit(0), "failed creating app")
 
 			broker.CreateServiceInstance(instanceName)
@@ -114,7 +114,7 @@ var _ = ServicesDescribe("Purging service instances", func() {
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", assets.NewAssets().Catnip,
 					"-c", "./catnip",
-				).Wait(Config.CfPushTimeoutDuration())
+					"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
 				Expect(createApp).To(Exit(0), "failed creating app")
 
 				broker.CreateServiceInstance(instanceName)

@@ -26,7 +26,7 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 		appName = random_name.CATSRandomName("APP")
 	})
 
-	PIt("exercises the app through its lifecycle", func() {
+	It("exercises the app through its lifecycle", func() {
 		By("pushing it", func() {
 			Expect(cf.Cf("push",
 				appName,
@@ -34,7 +34,7 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 				"-b", Config.GetHwcBuildpackName(),
 				"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Nora,
-			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		By("checking the 'started' event", func() {

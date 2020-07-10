@@ -121,6 +121,8 @@ type allConfig struct {
 	ReporterConfig *testReporterConfig `json:"reporter_config"`
 
 	IncludeApps                     *bool `json:"include_apps"`
+	IncludeBackendCompatiblity      *bool `json:"include_backend_compatibility"`
+	IncludeCapiNoBridge             *bool `json:"include_capi_no_bridge"`
 	IncludeContainerNetworking      *bool `json:"include_container_networking"`
 	IncludeDetect                   *bool `json:"include_detect"`
 	IncludeDocker                   *bool `json:"include_docker"`
@@ -243,6 +245,8 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeRouting()).To(BeTrue())
 		Expect(config.GetIncludeV3()).To(BeTrue())
 
+		Expect(config.GetIncludeBackendCompatiblity()).To(BeFalse())
+		Expect(config.GetIncludeCapiNoBridge()).To(BeTrue())
 		Expect(config.GetIncludeDocker()).To(BeFalse())
 		Expect(config.GetIncludeInternetDependent()).To(BeFalse())
 		Expect(config.GetIncludeInternetless()).To(BeFalse())
@@ -361,6 +365,8 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'staticfile_buildpack_name' must not be null"))
 
 			Expect(err.Error()).To(ContainSubstring("'include_apps' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_backend_compatibility' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_capi_no_bridge' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_detect' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_docker' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_internet_dependent' must not be null"))

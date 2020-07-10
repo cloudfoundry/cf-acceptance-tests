@@ -113,6 +113,10 @@ var _ = V3Describe("buildpack", func() {
 
 	Context("With a multi buildpack app", func() {
 		BeforeEach(func() {
+			if !Config.GetIncludeCapiNoBridge() {
+				Skip(skip_messages.SkipCapiNoBridgeMessage)
+			}
+
 			appName = random_name.CATSRandomName("APP")
 			spaceGuid = GetSpaceGuidFromName(TestSetup.RegularUserContext().Space)
 			appGuid = CreateApp(appName, spaceGuid, `{"GOPACKAGENAME": "go-online"}`)
@@ -163,7 +167,7 @@ var _ = V3Describe("buildpack", func() {
 
 			Expect(webProcess.Guid).ToNot(BeEmpty())
 
-			CreateAndMapRoute(appGuid, Config.GetAppsDomain(), webProcess.Name)
+			CreateAndMapRoute(appGuid, TestSetup.RegularUserContext().Space, Config.GetAppsDomain(), webProcess.Name)
 
 			StartApp(appGuid)
 

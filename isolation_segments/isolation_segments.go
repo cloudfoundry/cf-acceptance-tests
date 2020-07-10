@@ -2,7 +2,6 @@ package isolation_segments
 
 import (
 	"fmt"
-
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -93,6 +92,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 					"-p", assets.NewAssets().Binary,
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-b", "binary_buildpack",
+					"-d", appsDomain,
 					"-c", "./app"),
 					Config.CfPushTimeoutDuration()).Should(Exit(0))
 
@@ -115,8 +115,8 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 				Expect(target).To(Exit(0), "failed targeting")
 
 				appName := random_name.CATSRandomName("APP")
-				Eventually(cf.Push(
-					appName,
+				Eventually(cf.Cf(
+					"push", appName,
 					"-p", assets.NewAssets().Binary,
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-b", "binary_buildpack",
@@ -161,8 +161,8 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 				Expect(target).To(Exit(0), "failed targeting")
 
 				appName := random_name.CATSRandomName("APP")
-				Eventually(cf.Push(
-					appName,
+				Eventually(cf.Cf(
+					"push", appName,
 					"-p", assets.NewAssets().Binary,
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-b", "binary_buildpack",
@@ -211,8 +211,8 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 				Expect(target).To(Exit(0), "failed targeting")
 
 				appName := random_name.CATSRandomName("APP")
-				Eventually(cf.Push(
-					appName,
+				Eventually(cf.Cf(
+					"push", appName,
 					"-p", assets.NewAssets().Binary,
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-b", "binary_buildpack",

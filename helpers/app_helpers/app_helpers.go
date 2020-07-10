@@ -32,7 +32,7 @@ func AppReport(appName string) {
 	printStartAppReport(appName)
 
 	Eventually(cf.Cf("app", appName, "--guid"), time.Second*60).Should(Exit())
-	Eventually(logs.Recent(appName), time.Second*60).Should(Exit())
+	Eventually(logs.Tail(Config.GetUseLogCache(), appName), time.Second*60).Should(Exit())
 
 	printEndAppReport(appName)
 }

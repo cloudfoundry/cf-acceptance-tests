@@ -84,6 +84,7 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 					"-p", assets.NewAssets().Binary,
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-b", "binary_buildpack",
+					"-d", appsDomain,
 					"-c", "./app"),
 					Config.CfPushTimeoutDuration()).Should(Exit(0))
 			})
@@ -124,8 +125,8 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 				Expect(target).To(Exit(0), "failed targeting")
 				appName = random_name.CATSRandomName("APP")
-				Eventually(cf.Push(
-					appName,
+				Eventually(cf.Cf(
+					"push", appName,
 					"-p", assets.NewAssets().Binary,
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-b", "binary_buildpack",

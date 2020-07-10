@@ -35,6 +35,7 @@ var _ = AppsDescribe("Crashing", func() {
 				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
+				"-d", Config.GetAppsDomain(),
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 
 			Eventually(func() string {
@@ -54,6 +55,7 @@ var _ = AppsDescribe("Crashing", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
+				"-d", Config.GetAppsDomain(),
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 

@@ -29,6 +29,7 @@ var _ = AppsDescribe("Getting instance information", func() {
 				"-p", assets.NewAssets().Binary,
 				"-b", "binary_buildpack",
 				"-m", DEFAULT_MEMORY_LIMIT,
+				"-d", Config.GetAppsDomain(),
 				"-c", "./app"),
 				Config.CfPushTimeoutDuration()).Should(Exit(0))
 		})
@@ -64,7 +65,7 @@ var _ = AppsDescribe("Getting instance information", func() {
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
 				"-i", "1",
-			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		AfterEach(func() {

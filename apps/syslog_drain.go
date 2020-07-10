@@ -44,6 +44,7 @@ var _ = AppsDescribe("Logging", func() {
 				"-b", Config.GetGoBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().SyslogDrainListener,
+				"-d", Config.GetAppsDomain(),
 				"-f", assets.NewAssets().SyslogDrainListener+"/manifest.yml",
 			), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to push app")
 
@@ -53,6 +54,7 @@ var _ = AppsDescribe("Logging", func() {
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().RubySimple,
+				"-d", Config.GetAppsDomain(),
 			), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to push app")
 
 			Eventually(cf.Cf(
@@ -62,6 +64,7 @@ var _ = AppsDescribe("Logging", func() {
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().RubySimple,
+				"-d", Config.GetAppsDomain(),
 			), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to push app")
 		})
 
@@ -108,7 +111,7 @@ var _ = AppsDescribe("Logging", func() {
 			randomMessage1 := random_name.CATSRandomName("RANDOM-MESSAGE-A")
 			randomMessage2 := random_name.CATSRandomName("RANDOM-MESSAGE-B")
 
-			logs = logshelper.Follow(listenerAppName)
+			logs = logshelper.TailFollow(Config.GetUseLogCache(), listenerAppName)
 
 			// Have apps emit logs.
 			go writeLogsUntilInterrupted(interrupt, randomMessage1, logWriterAppName1)
@@ -127,7 +130,7 @@ func getSyslogDrainAddresses(appName string) []string {
 		re, err := regexp.Compile("EXTERNAL ADDRESS: \\|(.*)\\|; INTERNAL ADDRESS: \\|(.*)\\|")
 		Expect(err).NotTo(HaveOccurred())
 
-		logs := logshelper.Recent(appName).Wait()
+		logs := logshelper.Tail(Config.GetUseLogCache(), appName).Wait()
 		matched := re.FindSubmatch(logs.Out.Contents())
 		if len(matched) < 3 {
 			return nil

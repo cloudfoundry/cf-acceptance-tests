@@ -91,9 +91,9 @@ exit 1
 				"-p", assets.NewAssets().HelloWorld,
 				"-b", buildpackName,
 				"-m", DEFAULT_MEMORY_LIMIT,
-			).Wait(Config.CfPushTimeoutDuration())
-
+				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
 			Eventually(pushSession, Config.CfPushTimeoutDuration()).Should(Exit(1))
+
 			pushSessionContent := pushSession.Buffer().Contents()
 
 			Expect(string(pushSessionContent)).To(MatchRegexp("LANG=en_US\\.UTF-8"))
@@ -115,7 +115,7 @@ exit 1
 				"-p", assets.NewAssets().Binary,
 				"-b", "binary_buildpack",
 				"-m", DEFAULT_MEMORY_LIMIT,
-			),
+				"-d", Config.GetAppsDomain()),
 				Config.CfPushTimeoutDuration(),
 			).Should(Exit(0))
 
@@ -152,7 +152,7 @@ exit 1
 			if Config.GetIncludeTasks() {
 				taskName := "get-env"
 
-				Eventually(cf.Cf("run-task", appName, "--command", "env", "--name", taskName)).Should(Exit(0))
+				Eventually(cf.Cf("run-task", appName, "env", "--name", taskName)).Should(Exit(0))
 
 				Eventually(func() string {
 					return getTaskState(appName)
@@ -160,7 +160,7 @@ exit 1
 
 				var taskStdout string
 				Eventually(func() string {
-					appLogsSession := logs.Recent(appName)
+					appLogsSession := logs.Tail(Config.GetUseLogCache(), appName)
 					appLogsSession.Wait()
 
 					taskStdout = string(appLogsSession.Out.Contents())
@@ -210,5 +210,5 @@ func getTaskState(appName string) string {
 	Expect(listCommand).To(Exit(0))
 	listOutput := string(listCommand.Out.Contents())
 	lines := strings.Split(listOutput, "\n")
-	return strings.Fields(lines[3])[2]
+	return strings.Fields(lines[4])[2]
 }
