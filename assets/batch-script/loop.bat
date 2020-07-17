@@ -1,5 +1,0 @@
-:loop
-
-echo %*
-
-goto loop

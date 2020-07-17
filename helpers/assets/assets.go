@@ -2,7 +2,6 @@ package assets
 
 type Assets struct {
 	AspClassic                 string
-	BatchScript                string
 	Catnip                     string
 	CredHubEnabledApp          string
 	CredHubServiceBroker       string
@@ -45,7 +44,6 @@ type Assets struct {
 func NewAssets() Assets {
 	return Assets{
 		AspClassic:                 "assets/asp-classic",
-		BatchScript:                "assets/batch-script",
 		Catnip:                     "assets/catnip/bin",
 		CredHubEnabledApp:          "assets/credhub-enabled-app/credhub-enabled-app.jar",
 		CredHubServiceBroker:       "assets/credhub-service-broker",

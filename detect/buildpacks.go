@@ -120,7 +120,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 		// from the dotnet core buildpack until end of the version's LTS in 2019
 
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().DotnetCore, "-d", Config.GetAppsDomain()).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().DotnetCore).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)

@@ -26,7 +26,7 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 		appName = random_name.CATSRandomName("APP")
 	})
 
-	PIt("exercises the app through its lifecycle", func() {
+	It("exercises the app through its lifecycle", func() {
 		By("pushing it", func() {
 			Expect(cf.Cf("push",
 				appName,
