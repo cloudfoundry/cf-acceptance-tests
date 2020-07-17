@@ -21,7 +21,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-var _ = PDescribe("CredHub Integration", func() {
+var _ = Describe("CredHub Integration", func() {
 	var (
 		chBrokerAppName string
 		chServiceName   string
@@ -174,7 +174,7 @@ echo   web: webapp.exe
 					},
 				})
 
-				createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "0").Wait()
+				createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "1").Wait()
 				Expect(createBuildpack).Should(Exit(0))
 				Expect(createBuildpack).Should(Say("Creating"))
 				Expect(createBuildpack).Should(Say("OK"))
