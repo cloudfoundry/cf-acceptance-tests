@@ -21,7 +21,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-var _ = Describe("CredHub Integration", func() {
+var _ = WindowsCredhubDescribe("CredHub Integration", func() {
 	var (
 		chBrokerAppName string
 		chServiceName   string
