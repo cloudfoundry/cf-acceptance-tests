@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 
 	"encoding/json"
+	"regexp"
+
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
@@ -16,7 +18,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
-	"regexp"
 )
 
 var _ = RoutingDescribe("Multiple App Ports", func() {
@@ -37,7 +38,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 			"-f", filepath.Join(multiPortAppAsset, "manifest.yml"),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", multiPortAppAsset,
-			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {
@@ -65,9 +66,8 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 			).Wait()).To(Exit(0))
 
 			// create 2nd route
-			spacename := TestSetup.RegularUserContext().Space
 			secondRoute = fmt.Sprintf("%s-two", app)
-			Expect(cf.Cf("create-route", spacename, Config.GetAppsDomain(),
+			Expect(cf.Cf("create-route", Config.GetAppsDomain(),
 				"--hostname", secondRoute,
 			).Wait()).To(Exit(0))
 			// map app route to other port

@@ -30,7 +30,7 @@ var _ = WindowsDescribe("app logs", func() {
 			"-b", Config.GetHwcBuildpackName(),
 			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Nora,
-			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hello i am nora"))
 	})
 
@@ -48,7 +48,7 @@ var _ = WindowsDescribe("app logs", func() {
 		helpers.CurlApp(Config, appName, fmt.Sprintf("/print/%s", url.QueryEscape(message)))
 
 		Eventually(func() *Buffer {
-			return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
+			return logs.Recent(appName).Wait().Out
 		}).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*OUT %s", message)))
 	})
 
@@ -60,7 +60,7 @@ var _ = WindowsDescribe("app logs", func() {
 		helpers.CurlApp(Config, appName, fmt.Sprintf("/print_err/%s", url.QueryEscape(message)))
 
 		Eventually(func() *Buffer {
-			return logs.Tail(Config.GetUseLogCache(), appName).Wait().Out
+			return logs.Recent(appName).Wait().Out
 		}).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*ERR %s", message)))
 	})
 })

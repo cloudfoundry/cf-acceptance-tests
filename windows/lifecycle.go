@@ -34,7 +34,7 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 				"-b", Config.GetHwcBuildpackName(),
 				"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Nora,
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		By("checking the 'started' event", func() {
@@ -94,6 +94,7 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 
 		By("scaling it", func() {
 			Expect(cf.Cf("scale", appName, "-i", "2").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			time.Sleep(5 * time.Second)
 			Eventually(cf.Cf("apps")).Should(gbytes.Say("2/2"))
 			Expect(cf.Cf("app", appName).Wait()).ToNot(gbytes.Say("insufficient resources"))
 		})

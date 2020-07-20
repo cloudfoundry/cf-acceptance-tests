@@ -31,7 +31,7 @@ func pushApp(appName, buildpack string) {
 		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", assets.NewAssets().Catnip,
 		"-c", "./catnip",
-		"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+	).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 }
 
 func testAppConnectivity(clientAppName string, privateHost string, privatePort int) CatnipCurlResponse {

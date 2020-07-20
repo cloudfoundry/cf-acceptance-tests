@@ -1,6 +1,8 @@
 package apps
 
 import (
+	"path/filepath"
+
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -20,13 +22,11 @@ var _ = AppsDescribe("Encoding", func() {
 		appName = random_name.CATSRandomName("APP")
 		Expect(cf.Cf("push",
 			appName,
-			"--no-start",
 			"-b", Config.GetJavaBuildpackName(),
 			"-p", assets.NewAssets().Java,
 			"-m", "1024M",
-			"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-		Expect(cf.Cf("set-env", appName, "JAVA_OPTS", "-Djava.security.egd=file:///dev/urandom").Wait()).To(Exit(0))
-		Expect(cf.Cf("start", appName).Wait(CF_JAVA_TIMEOUT)).To(Exit(0))
+			"-f", filepath.Join(assets.NewAssets().Java, "manifest.yml"),
+		).Wait(CF_JAVA_TIMEOUT)).To(Exit(0))
 	})
 
 	AfterEach(func() {

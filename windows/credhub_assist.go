@@ -41,7 +41,6 @@ var _ = WindowsCredhubDescribe("CredHub Integration", func() {
 			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-p", assets.NewAssets().CredHubServiceBroker,
 			"-f", assets.NewAssets().CredHubServiceBroker+"/manifest.yml",
-			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed pushing credhub-enabled service broker")
 
 		existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait().Out.Contents())
@@ -175,7 +174,7 @@ echo   web: webapp.exe
 					},
 				})
 
-				createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "0").Wait()
+				createBuildpack := cf.Cf("create-buildpack", buildpackName, buildpackArchivePath, "1").Wait()
 				Expect(createBuildpack).Should(Exit(0))
 				Expect(createBuildpack).Should(Say("Creating"))
 				Expect(createBuildpack).Should(Say("OK"))
@@ -187,7 +186,6 @@ echo   web: webapp.exe
 				"-b", buildpackName,
 				"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 				"-p", assets.NewAssets().WindowsWebapp,
-				"-d", Config.GetAppsDomain(),
 				"-s", Config.GetWindowsStack(),
 			).Wait()).To(Exit(0))
 
@@ -250,7 +248,7 @@ echo   web: webapp.exe
 						"-b", Config.GetHwcBuildpackName(),
 						"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 						"-p", assets.NewAssets().Nora,
-						"-d", Config.GetAppsDomain()).Wait()).To(Exit(0))
+					).Wait()).To(Exit(0))
 					bindServiceAndStartApp(appName)
 				})
 

@@ -44,7 +44,6 @@ var _ = CredhubDescribe("service bindings", func() {
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().CredHubServiceBroker,
 			"-f", assets.NewAssets().CredHubServiceBroker+"/manifest.yml",
-			"-d", Config.GetAppsDomain(),
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed pushing credhub-enabled service broker")
 
 		existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait().Out.Contents())
@@ -197,7 +196,6 @@ EOF
 				"-b", buildpackName,
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", appPath,
-				"-d", Config.GetAppsDomain(),
 			).Wait()).To(Exit(0))
 
 			bindServiceAndStartApp(appName)
@@ -260,7 +258,6 @@ EOF
 						"-b", Config.GetJavaBuildpackName(),
 						"-m", "1024M",
 						"-p", assets.NewAssets().CredHubEnabledApp,
-						"-d", Config.GetAppsDomain(),
 					).Wait(Config.CfPushTimeoutDuration())
 					Expect(createApp).To(Exit(0), "failed creating credhub-enabled app")
 					bindServiceAndStartApp(appName)
@@ -297,7 +294,6 @@ EOF
 						"-m", DEFAULT_MEMORY_LIMIT,
 						"-p", assets.NewAssets().Catnip,
 						"-c", "./catnip",
-						"-d", Config.GetAppsDomain(),
 					).Wait(Config.CfPushTimeoutDuration())
 					Expect(createApp).To(Exit(0), "failed creating credhub-enabled app")
 					bindServiceAndStartApp(appName)

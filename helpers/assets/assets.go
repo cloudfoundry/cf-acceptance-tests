@@ -2,12 +2,10 @@ package assets
 
 type Assets struct {
 	AspClassic                 string
-	BatchScript                string
 	Catnip                     string
 	CredHubEnabledApp          string
 	CredHubServiceBroker       string
 	Dora                       string
-	DoraDroplet                string
 	DoraZip                    string
 	DotnetCore                 string
 	Fuse                       string
@@ -46,12 +44,10 @@ type Assets struct {
 func NewAssets() Assets {
 	return Assets{
 		AspClassic:                 "assets/asp-classic",
-		BatchScript:                "assets/batch-script",
 		Catnip:                     "assets/catnip/bin",
 		CredHubEnabledApp:          "assets/credhub-enabled-app/credhub-enabled-app.jar",
 		CredHubServiceBroker:       "assets/credhub-service-broker",
 		Dora:                       "assets/dora",
-		DoraDroplet:                "assets/dora-droplet.tar.gz",
 		DoraZip:                    "assets/dora.zip",
 		DotnetCore:                 "assets/dotnet-core",
 		Fuse:                       "assets/fuse-mount",

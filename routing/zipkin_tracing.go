@@ -31,7 +31,7 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 			"-b", Config.GetJavaBuildpackName(),
 			"-m", "1024M",
 			"-p", helloRoutingAsset,
-			"-d", Config.GetAppsDomain()).Wait(CF_JAVA_TIMEOUT)).To(Exit(0))
+		).Wait(CF_JAVA_TIMEOUT)).To(Exit(0))
 
 		hostname = app1
 	})
@@ -52,7 +52,7 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 
 				var parentSpanID string
 				Eventually(func() *gbytes.Buffer {
-					appLogsSession := logs.Tail(Config.GetUseLogCache(), app1).Wait()
+					appLogsSession := logs.Recent(app1).Wait()
 					parentSpanID = getID(`x_b3_parentspanid:"([0-9a-fA-F-]*)"`, string(appLogsSession.Out.Contents()))
 					return appLogsSession.Out
 				}).Should(gbytes.Say("x_b3_traceid"))
@@ -75,7 +75,7 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 
 				var appLogSpanID string
 				Eventually(func() *gbytes.Buffer {
-					appLogsSession := logs.Tail(Config.GetUseLogCache(), hostname).Wait()
+					appLogsSession := logs.Recent(hostname).Wait()
 					spanIDRegex := fmt.Sprintf("x_b3_traceid:\"%s\" x_b3_spanid:\"([0-9a-fA-F]*)\"", traceID)
 					appLogSpanID = getID(spanIDRegex, string(appLogsSession.Out.Contents()))
 					return appLogsSession.Out

@@ -81,7 +81,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 			Expect(webProcess.Guid).ToNot(BeEmpty())
 			Expect(workerProcess.Guid).ToNot(BeEmpty())
 
-			CreateAndMapRoute(appGuid, TestSetup.RegularUserContext().Space, Config.GetAppsDomain(), webProcess.Name)
+			CreateAndMapRoute(appGuid, Config.GetAppsDomain(), webProcess.Name)
 
 			lastUsageEventGuid = LastAppUsageEventGuid(TestSetup)
 
@@ -141,7 +141,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 			Expect(webProcess.Guid).ToNot(BeEmpty())
 			ScaleProcess(appGuid, webProcess.Type, V3_JAVA_MEMORY_LIMIT)
 
-			CreateAndMapRoute(appGuid, TestSetup.RegularUserContext().Space, Config.GetAppsDomain(), webProcess.Name)
+			CreateAndMapRoute(appGuid, Config.GetAppsDomain(), webProcess.Name)
 
 			lastUsageEventGuid := LastAppUsageEventGuid(TestSetup)
 			StartApp(appGuid)
@@ -216,7 +216,7 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 
 		Expect(webProcess.Guid).ToNot(BeEmpty())
 
-		CreateAndMapRoute(appGuid, TestSetup.RegularUserContext().Space, Config.GetAppsDomain(), webProcess.Name)
+		CreateAndMapRoute(appGuid, Config.GetAppsDomain(), webProcess.Name)
 
 		lastUsageEventGuid := LastAppUsageEventGuid(TestSetup)
 		StartApp(appGuid)

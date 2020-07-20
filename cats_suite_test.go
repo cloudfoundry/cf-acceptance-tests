@@ -13,7 +13,6 @@ import (
 	"github.com/mholt/archiver"
 
 	_ "github.com/cloudfoundry/cf-acceptance-tests/apps"
-	_ "github.com/cloudfoundry/cf-acceptance-tests/backend_compatibility"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/credhub"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/detect"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/docker"

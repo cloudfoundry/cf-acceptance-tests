@@ -59,7 +59,7 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().Catnip,
 				"-c", "./catnip",
-				"-d", Config.GetAppsDomain()).Wait(Config.CfPushTimeoutDuration())
+			).Wait(Config.CfPushTimeoutDuration())
 			Expect(createApp).To(Exit(0), "failed creating app")
 
 			createService := cf.Cf("create-service", broker.Service.Name, broker.SyncPlans[0].Name, instanceName).Wait()

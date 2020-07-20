@@ -47,7 +47,6 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 				// app is defined by cloudfoundry-incubator/diego-dockerfiles
 				"-o", Config.GetPublicDockerAppImage(),
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-d", Config.GetAppsDomain(),
 				"-i", "1",
 				"-c", fmt.Sprintf("/myapp/bin/dockerapp -name=%s", appName)),
 			).Should(Exit(0))
@@ -76,7 +75,6 @@ var _ = DockerDescribe("Docker Application Lifecycle", func() {
 				// app is defined by cloudfoundry-incubator/diego-dockerfiles
 				"-o", Config.GetPublicDockerAppImage(),
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-d", Config.GetAppsDomain(),
 				"-i", "1"),
 			).Should(Exit(0))
 		})
