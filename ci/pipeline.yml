@@ -112,7 +112,7 @@ resources:
     user: cloudfoundry
     repository: cli
     access_token: ((release_integration_download_bot_access_token))
-    tag_filter: 'v(6\.[^v].*)'
+    tag_filter: 'v(7\.[^v].*)'
 
 jobs:
 - name: bump-cf-test-helpers
