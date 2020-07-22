@@ -23,7 +23,7 @@ var _ = InternetDependentDescribe("GitBuildpack", func() {
 		Expect(cf.Cf("push", appName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().Node,
-			"-b", "https://github.com/cloudfoundry/nodejs-buildpack.git#v1.3.1",
+			"-b", "https://github.com/cloudfoundry/nodejs-buildpack.git#v1.7.24",
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		Eventually(func() string {
