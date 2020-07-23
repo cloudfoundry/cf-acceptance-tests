@@ -97,10 +97,9 @@ type config struct {
 
 	Stacks *[]string `json:"stacks,omitempty"`
 
-	IncludeWindows        *bool   `json:"include_windows"`
-	UseWindowsTestTask    *bool   `json:"use_windows_test_task"`
-	UseWindowsContextPath *bool   `json:"use_windows_context_path"`
-	WindowsStack          *string `json:"windows_stack"`
+	IncludeWindows        *bool `json:"include_windows"`
+	UseWindowsTestTask    *bool `json:"use_windows_test_task"`
+	UseWindowsContextPath *bool `json:"use_windows_context_path"`
 
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image"`
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username"`
@@ -184,7 +183,6 @@ func getDefaults() config {
 
 	defaults.IncludeWindows = ptrToBool(false)
 	defaults.UseWindowsContextPath = ptrToBool(false)
-	defaults.WindowsStack = ptrToString("windows")
 	defaults.UseWindowsTestTask = ptrToBool(false)
 
 	defaults.VolumeServiceName = ptrToString("")
@@ -649,12 +647,6 @@ func validateWindows(config *config) error {
 		return nil
 	}
 
-	switch config.GetWindowsStack() {
-	case "windows":
-	default:
-		return fmt.Errorf("* Invalid configuration: unknown Windows stack %s", config.GetWindowsStack())
-	}
-
 	return nil
 }
 
@@ -1000,7 +992,7 @@ func (c *config) GetUseWindowsContextPath() bool {
 }
 
 func (c *config) GetWindowsStack() string {
-	return *c.WindowsStack
+	return "windows"
 }
 
 func (c *config) GetVolumeServiceName() string {
