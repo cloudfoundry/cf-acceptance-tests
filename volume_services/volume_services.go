@@ -55,7 +55,7 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 			contents := string(session.Out.Contents()) + string(session.Err.Contents())
 			Expect(contents).Should(
 				SatisfyAny(
-					ContainSubstring(fmt.Sprintf("The domain name is taken: %s", tcpDomain)),
+					ContainSubstring(fmt.Sprintf("The domain name %q is already in use", tcpDomain)),
 					ContainSubstring("OK"),
 				), "can not create shared tcp domain >>>"+contents)
 
@@ -65,7 +65,7 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		Expect(cf.Cf("push", "nfs", "--docker-image", "cfpersi/nfs-cats", "--health-check-type", "process", "--no-start").
 			Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "cannot push the nfs server app")
 
-		session := cf.Cf("create-route", TestSetup.RegularUserContext().Space, tcpDomain, "--port", nfsPort).Wait()
+		session := cf.Cf("create-route", tcpDomain, "--port", nfsPort).Wait()
 		Expect(session).To(Exit(0), "cannot create a tcp route for the nfs server app")
 
 		nfsGuid := GuidForAppName("nfs")
@@ -98,7 +98,6 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", poraAsset,
 			"-f", filepath.Join(poraAsset, "manifest.yml"),
-			"-d", Config.GetAppsDomain(),
 			"--no-start",
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "cannot push the test app")
 
@@ -114,9 +113,9 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		By("binding the service")
 		var bindSession *Session
 		if Config.GetVolumeServiceCreateConfig() != "" {
-			bindSession = cf.Cf("bind-service", appName, serviceInstanceName, "cannot bind service to app")
+			bindSession = cf.Cf("bind-service", appName, serviceInstanceName)
 		} else {
-			bindSession = cf.Cf("bind-service", appName, serviceInstanceName, "-c", `{"uid": "2000", "gid": "2000"}`, "cannot bind nfs service to app")
+			bindSession = cf.Cf("bind-service", appName, serviceInstanceName, "-c", `{"uid": "2000", "gid": "2000"}`)
 		}
 		Expect(bindSession.Wait(TestSetup.ShortTimeout())).To(Exit(0), "cannot bind the nfs service instance to the test app")
 
