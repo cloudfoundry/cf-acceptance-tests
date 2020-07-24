@@ -265,7 +265,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeWindows()).To(BeFalse())
 		Expect(config.GetUseWindowsTestTask()).To(BeFalse())
 		Expect(config.GetUseWindowsContextPath()).To(BeFalse())
-		Expect(config.GetWindowsStack()).To(Equal("windows2012R2"))
+		Expect(config.GetWindowsStack()).To(Equal("windows"))
 
 		Expect(config.GetIncludeServiceDiscovery()).To(BeFalse())
 
@@ -518,7 +518,7 @@ var _ = Describe("Config", func() {
 			testCfg.IncludeWindows = ptrToBool(true)
 		})
 
-		Context("when the windows stack is not windows2012R2, or windows", func() {
+		Context("when the windows stack is not windows", func() {
 			BeforeEach(func() {
 				testCfg.WindowsStack = ptrToString("windows98")
 			})
@@ -534,10 +534,10 @@ var _ = Describe("Config", func() {
 					testCfg.WindowsStack = nil
 				})
 
-				It("defaults to windows2012R2", func() {
+				It("defaults to windows", func() {
 					config, err := cfg.NewCatsConfig(tmpFilePath)
 					Expect(err).ToNot(HaveOccurred())
-					Expect(config.GetWindowsStack()).To(Equal("windows2012R2"))
+					Expect(config.GetWindowsStack()).To(Equal("windows"))
 				})
 			})
 		})

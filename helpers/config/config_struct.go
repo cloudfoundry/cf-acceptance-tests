@@ -184,7 +184,7 @@ func getDefaults() config {
 
 	defaults.IncludeWindows = ptrToBool(false)
 	defaults.UseWindowsContextPath = ptrToBool(false)
-	defaults.WindowsStack = ptrToString("windows2012R2")
+	defaults.WindowsStack = ptrToString("windows")
 	defaults.UseWindowsTestTask = ptrToBool(false)
 
 	defaults.VolumeServiceName = ptrToString("")
@@ -650,7 +650,7 @@ func validateWindows(config *config) error {
 	}
 
 	switch config.GetWindowsStack() {
-	case "windows2012R2", "windows":
+	case "windows":
 	default:
 		return fmt.Errorf("* Invalid configuration: unknown Windows stack %s", config.GetWindowsStack())
 	}

@@ -45,7 +45,6 @@ const SkipZipkinMessage = `Skipping this test because config.IncludeZipkin is se
 const SkipServiceDiscoveryMessage = `Skipping this test because config.IncludeServiceDiscovery is set to 'false'.`
 const SkipServiceInstanceSharingMessage = `Skipping this test because config.IncludeServiceInstanceSharing is set to 'false'.`
 const SkipCapiExperimentalMessage = `Skipping this test because config.IncludeCapiExperimental is set to 'false'.`
-const SkipSSHOnWindows2012R2Message = `cf ssh does not work on windows2012R2`
 const SkipWindowsTasksMessage = `Skipping Windows tasks tests (requires diego-release v1.20.0 and above)`
 const SkipNoAlternateStacksMessage = `Skipping this test because config.Stacks is empty.`
 const SkipVolumeServicesMessage = `Skipping this test because config.IncludeVolumeServices is set to 'false'.

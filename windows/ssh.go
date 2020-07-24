@@ -16,7 +16,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
@@ -27,10 +26,6 @@ var _ = WindowsDescribe("SSH", func() {
 	var appName string
 
 	BeforeEach(func() {
-		if Config.GetWindowsStack() == "windows2012R2" {
-			Skip(skip_messages.SkipSSHOnWindows2012R2Message)
-		}
-
 		appName = random_name.CATSRandomName("APP")
 
 		Expect(cf.Cf("push",
