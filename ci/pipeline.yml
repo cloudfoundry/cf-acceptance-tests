@@ -105,15 +105,6 @@ resources:
   tags:
   - vsphere-cf-release-integration
 
-- name: cf-cli-github-release
-  type: github-release
-  icon: github-face
-  source:
-    user: cloudfoundry
-    repository: cli
-    access_token: ((release_integration_download_bot_access_token))
-    tag_filter: 'v(6\.[^v].*)'
-
 jobs:
 - name: bump-cf-test-helpers
   public: true
@@ -224,7 +215,6 @@ jobs:
       passed:
       - deploy-cf
     - get: relint-envs
-    - get: cf-cli-github-release
 
   - task: enable-docker-and-tasks
     file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
@@ -246,38 +236,11 @@ jobs:
     input_mapping:
       integration-configs: relint-envs
 
-  - task: install-cli
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: relintdockerhubpushbot/relint-base
-      inputs:
-      - name: cf-cli-github-release
-      outputs:
-      - name: extracted-cf-cli
-      run:
-        path: bash
-        args:
-        - -c
-        - |
-          #!/bin/bash
-          export CLI_VERSION=$(cat cf-cli-github-release/version)
-          WORKING_DIR=$PWD
-          pushd /tmp/
-            wget -q -O cf.tgz "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=${CLI_VERSION}&source=github-rel"
-            tar xf cf.tgz
-            mv cf $WORKING_DIR/extracted-cf-cli/cf
-          popd
-          extracted-cf-cli/cf version
-
   - task: run-cats
     file: cf-deployment-concourse-tasks/run-cats/task.yml
     input_mapping:
       integration-config: updated-integration-configs
       cf-acceptance-tests: cf-acceptance-tests-develop
-      cf-cli: extracted-cf-cli
     params:
       CONFIG_FILE_PATH: environments/test/cats/integration_config.json
       REPORTER_CONFIG_FILE_PATH: environments/test/cats/reporter_config.json
