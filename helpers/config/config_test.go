@@ -518,30 +518,6 @@ var _ = Describe("Config", func() {
 			testCfg.IncludeWindows = ptrToBool(true)
 		})
 
-		Context("when the windows stack is not windows", func() {
-			BeforeEach(func() {
-				testCfg.WindowsStack = ptrToString("windows98")
-			})
-
-			It("errors", func() {
-				config, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(config).To(BeNil())
-				Expect(err).To(MatchError("* Invalid configuration: unknown Windows stack windows98"))
-			})
-
-			Context("when the windows stack is not specified", func() {
-				BeforeEach(func() {
-					testCfg.WindowsStack = nil
-				})
-
-				It("defaults to windows", func() {
-					config, err := cfg.NewCatsConfig(tmpFilePath)
-					Expect(err).ToNot(HaveOccurred())
-					Expect(config.GetWindowsStack()).To(Equal("windows"))
-				})
-			})
-		})
-
 		Context("when use_windows_context_path is set", func() {
 			BeforeEach(func() {
 				testCfg.UseWindowsContextPath = ptrToBool(true)
