@@ -24,13 +24,22 @@ import (
 )
 
 type AppUsageEvent struct {
-	Entity struct {
-		AppName       string `json:"app_name"`
-		State         string `json:"state"`
-		BuildpackName string `json:"buildpack_name"`
-		BuildpackGuid string `json:"buildpack_guid"`
-		ParentAppName string `json:"parent_app_name"`
-	} `json:"entity"`
+	App struct {
+		Name string
+		Guid string
+	}
+	State struct {
+		Current string
+		Previous string
+	}
+	Buildpack struct {
+		Guid string
+		Name string
+	}
+	Process struct{
+		Guid string
+		Name string
+	}
 }
 
 type AppUsageEvents struct {
@@ -40,11 +49,11 @@ type AppUsageEvents struct {
 func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
 	var response AppUsageEvents
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		workflowhelpers.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1&results-per-page=150", &response, Config.DefaultTimeoutDuration())
+		workflowhelpers.ApiRequest("GET", "/v3/app_usage_events?order_by=-created_at&page=1&per_page=150", &response, Config.DefaultTimeoutDuration())
 	})
 
 	for _, event := range response.Resources {
-		if event.Entity.AppName == appName && event.Entity.State == state {
+		if event.App.Name == appName && event.State.Current == state {
 			return true, event
 		}
 	}
@@ -55,11 +64,11 @@ func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
 func lastAppUsageEventWithParentAppName(parentAppName string, state string) (bool, AppUsageEvent) {
 	var response AppUsageEvents
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		workflowhelpers.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1&results-per-page=150", &response, Config.DefaultTimeoutDuration())
+		workflowhelpers.ApiRequest("GET", "/v3/app_usage_events?order_by=-created_at&page=1&per_page=150", &response, Config.DefaultTimeoutDuration())
 	})
 
 	for _, event := range response.Resources {
-		if event.Entity.ParentAppName == parentAppName && event.Entity.State == state {
+		if event.App.Name == parentAppName && event.State.Current == state {
 			return true, event
 		}
 	}
@@ -122,35 +131,77 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			})
 
 			It("makes another app available via same host and domain, but different path", func() {
-				getRoutePath := fmt.Sprintf("/v2/routes?q=host:%s", appName)
+				getRoutePath := fmt.Sprintf("/v3/routes?hosts=%s", appName)
 				routeBody := cf.Cf("curl", getRoutePath).Wait().Out.Contents()
 				var routeJSON struct {
 					Resources []struct {
-						Entity struct {
-							SpaceGuid  string `json:"space_guid"`
-							DomainGuid string `json:"domain_guid"`
-						} `json:"entity"`
+						Relationships struct {
+							Space struct {
+								Data struct {
+									Guid string `json:"guid"`
+								} `json:"data"`
+							} `json:"space"`
+							Domain struct {
+								Data struct {
+									Guid string `json:"guid"`
+								} `json:"data"`
+							} `json:"domain"`
+						} `json:"relationships"`
 					} `json:"resources"`
 				}
+
 				Expect(json.Unmarshal([]byte(routeBody), &routeJSON)).To(Succeed())
 
 				Expect(len(routeJSON.Resources)).To(BeNumerically(">=", 1))
-				spaceGuid := routeJSON.Resources[0].Entity.SpaceGuid
-				domainGuid := routeJSON.Resources[0].Entity.DomainGuid
+				spaceGuid := routeJSON.Resources[0].Relationships.Space.Data.Guid
+				domainGuid := routeJSON.Resources[0].Relationships.Domain.Data.Guid
 				appGuid := cf.Cf("app", app2, "--guid").Wait().Out.Contents()
 
-				jsonBody := "{\"host\":\"" + appName + "\", \"path\":\"" + appPath + "\", \"domain_guid\":\"" + domainGuid + "\",\"space_guid\":\"" + spaceGuid + "\"}"
-				routePostResponseBody := cf.Cf("curl", "/v2/routes", "-X", "POST", "-d", jsonBody).Wait(Config.CfPushTimeoutDuration()).Out.Contents()
+				var createRouteBody struct {
+					Host string `json:"host"`
+					Path string `json:"path"`
+					Relationships struct {
+						Space struct {
+							Data struct {
+								Guid string `json:"guid"`
+							} `json:"data"`
+						} `json:"space"`
+						Domain struct {
+							Data struct {
+								Guid string `json:"guid"`
+							} `json:"data"`
+						} `json:"domain"`
+					} `json:"relationships"`
+				}
+				createRouteBody.Host = appName
+				createRouteBody.Path = appPath
+				createRouteBody.Relationships.Space.Data.Guid = spaceGuid
+				createRouteBody.Relationships.Domain.Data.Guid = domainGuid
 
+				jsonBody, err := json.Marshal(createRouteBody)
+				Expect(err).NotTo(HaveOccurred())
+
+				routePostResponseBody := cf.Cf("curl", "/v3/routes", "-X", "POST", "-d", string(jsonBody)).Wait(Config.CfPushTimeoutDuration()).Out.Contents()
 				var routeResponseJSON struct {
-					Metadata struct {
-						Guid string `json:"guid"`
-					} `json:"metadata"`
+					Guid string `json:"guid"`
 				}
 				json.Unmarshal([]byte(routePostResponseBody), &routeResponseJSON)
-				routeGuid := routeResponseJSON.Metadata.Guid
+				routeGuid := routeResponseJSON.Guid
 
-				Expect(cf.Cf("curl", "/v2/apps/"+strings.TrimSpace(string(appGuid))+"/routes/"+string(routeGuid), "-X", "PUT").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				type Destination struct {
+					App struct {
+						Guid string `json:"guid"`
+					} `json:"app"`
+				}
+
+				var destinationBody struct{
+					Destinations []Destination `json:"destinations"`
+				}
+				destinationBody.Destinations = []Destination{{}}
+				destinationBody.Destinations[0].App.Guid = strings.TrimSpace(string(appGuid))
+
+				jsonBody, err = json.Marshal(destinationBody)
+				Expect(cf.Cf("curl", "/v3/routes/"+string(routeGuid)+"/destinations", "-X", "POST", "-d", string(jsonBody)).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 				Eventually(func() string {
 					return helpers.CurlAppRoot(Config, appName)
@@ -283,8 +334,8 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			found, matchingEvent := lastAppUsageEventWithParentAppName(appName, "BUILDPACK_SET")
 
 			Expect(found).To(BeTrue())
-			Expect(matchingEvent.Entity.BuildpackName).To(Equal("binary_buildpack"))
-			Expect(matchingEvent.Entity.BuildpackGuid).ToNot(BeZero())
+			Expect(matchingEvent.Buildpack.Name).To(Equal("binary_buildpack"))
+			Expect(matchingEvent.Buildpack.Guid).ToNot(BeZero())
 		})
 	})
 
