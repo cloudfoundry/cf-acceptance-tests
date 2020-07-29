@@ -76,7 +76,7 @@ func lastAppUsageEventWithParentAppName(parentAppName string, state string) (boo
 	return false, AppUsageEvent{}
 }
 
-var _ = AppsDescribe("Application Lifecycle", func() {
+var _ = Describe("Application Lifecycle", func() {
 	var (
 		appName              string
 		expectedNullResponse string

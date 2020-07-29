@@ -12,14 +12,13 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-var _ = AppsDescribe("Changing an app's start command", func() {
+var _ = FDescribe("Changing an app's start command", func() {
 	var appName string
 
 	BeforeEach(func() {
@@ -33,14 +32,8 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 	})
 
 	Context("by using the command flag", func() {
-		var expectedNullResponse string
-
 		BeforeEach(func() {
-
-			appUrl := "https://" + appName + "." + Config.GetAppsDomain()
-			nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait()
-			expectedNullResponse = string(nullSession.Buffer().Contents())
-
+			
 			Expect(cf.Cf(
 				"push", appName,
 				"-b", Config.GetBinaryBuildpackName(),
@@ -51,32 +44,51 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 		})
 
 		It("takes effect after a restart, not requiring a push", func() {
-			Eventually(func() string {
-				return helpers.CurlApp(Config, appName, "/env/FOO")
-			}).Should(ContainSubstring("foo"))
+			//Eventually(func() string {
+			//	return helpers.CurlApp(Config, appName, "/env/FOO")
+			//}).Should(ContainSubstring("foo"))
+
+
 
 			guid := cf.Cf("app", appName, "--guid").Wait().Out.Contents()
 			appGuid := strings.TrimSpace(string(guid))
 
+			type Response struct{
+				Resources []struct {
+					Command string
+					Guid string
+				}
+			}
+			var appProcessResponse = Response{}
+
 			workflowhelpers.ApiRequest(
-				"PUT",
-				"/v2/apps/"+appGuid,
+				"GET",
+				"/v3/apps/"+appGuid+"/processes?type=web",
+				&appProcessResponse,
+				Config.DefaultTimeoutDuration(),
+			)
+
+			Expect(appProcessResponse.Resources[0].Command).To(Equal("FOO=foo ./catnip"))
+
+			processGuid := appProcessResponse.Resources[0].Guid
+			workflowhelpers.ApiRequest(
+				"PATCH",
+				"/v3/processes/"+processGuid,
 				nil,
 				Config.DefaultTimeoutDuration(),
 				`{"command":"FOO=bar ./catnip"}`,
 			)
 
 			Expect(cf.Cf("stop", appName).Wait()).To(Exit(0))
-
-			Eventually(func() string {
-				return helpers.CurlApp(Config, appName, "/env/FOO")
-			}).Should(ContainSubstring(expectedNullResponse))
-
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-			Eventually(func() string {
-				return helpers.CurlApp(Config, appName, "/env/FOO")
-			}).Should(ContainSubstring("bar"))
+			workflowhelpers.ApiRequest(
+				"GET",
+				"/v3/apps/"+appGuid+"/processes?type=web",
+				&appProcessResponse,
+				Config.DefaultTimeoutDuration(),
+			)
+			Expect(appProcessResponse.Resources[0].Command).To(Equal("FOO=bar ./catnip"))
 		})
 	})
 
