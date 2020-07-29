@@ -1,8 +1,6 @@
 package apps
 
 import (
-	"encoding/json"
-	"fmt"
 	"strings"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -18,7 +16,17 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-var _ = FDescribe("Changing an app's start command", func() {
+var _ = Describe("Changing an app's start command", func() {
+	type AppProcessResponse struct{
+		Resources []struct {
+			Command string
+			Guid string
+		}
+	}
+	type ProcessResponse struct{
+		Command string
+		Guid string
+	}
 	var appName string
 
 	BeforeEach(func() {
@@ -33,7 +41,6 @@ var _ = FDescribe("Changing an app's start command", func() {
 
 	Context("by using the command flag", func() {
 		BeforeEach(func() {
-			
 			Expect(cf.Cf(
 				"push", appName,
 				"-b", Config.GetBinaryBuildpackName(),
@@ -44,33 +51,27 @@ var _ = FDescribe("Changing an app's start command", func() {
 		})
 
 		It("takes effect after a restart, not requiring a push", func() {
-			//Eventually(func() string {
-			//	return helpers.CurlApp(Config, appName, "/env/FOO")
-			//}).Should(ContainSubstring("foo"))
-
-
-
 			guid := cf.Cf("app", appName, "--guid").Wait().Out.Contents()
 			appGuid := strings.TrimSpace(string(guid))
 
-			type Response struct{
-				Resources []struct {
-					Command string
-					Guid string
-				}
-			}
-			var appProcessResponse = Response{}
-
+			var appProcessResponse = AppProcessResponse{}
 			workflowhelpers.ApiRequest(
 				"GET",
-				"/v3/apps/"+appGuid+"/processes?type=web",
+				"/v3/apps/"+appGuid+"/processes?types=web",
 				&appProcessResponse,
 				Config.DefaultTimeoutDuration(),
 			)
-
-			Expect(appProcessResponse.Resources[0].Command).To(Equal("FOO=foo ./catnip"))
-
 			processGuid := appProcessResponse.Resources[0].Guid
+
+			processResponse := ProcessResponse{}
+			workflowhelpers.ApiRequest(
+				"GET",
+				"/v3/processes/"+ processGuid,
+				&processResponse,
+				Config.DefaultTimeoutDuration(),
+				)
+
+			Expect(processResponse.Command).To(Equal("FOO=foo ./catnip"))
 			workflowhelpers.ApiRequest(
 				"PATCH",
 				"/v3/processes/"+processGuid,
@@ -84,11 +85,11 @@ var _ = FDescribe("Changing an app's start command", func() {
 
 			workflowhelpers.ApiRequest(
 				"GET",
-				"/v3/apps/"+appGuid+"/processes?type=web",
-				&appProcessResponse,
+				"/v3/processes/"+processGuid,
+				&processResponse,
 				Config.DefaultTimeoutDuration(),
 			)
-			Expect(appProcessResponse.Resources[0].Command).To(Equal("FOO=bar ./catnip"))
+			Expect(processResponse.Command).To(Equal("FOO=bar ./catnip"))
 		})
 	})
 
@@ -108,11 +109,26 @@ var _ = FDescribe("Changing an app's start command", func() {
 		})
 
 		It("detects the use of the start command in the 'web' process type", func() {
-			var appsResponse AppsResponse
-			cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/apps?q=name:%s", appName)).Wait().Out.Contents()
-			json.Unmarshal(cfResponse, &appsResponse)
+			guid := cf.Cf("app", appName, "--guid").Wait().Out.Contents()
+			appGuid := strings.TrimSpace(string(guid))
 
-			Expect(appsResponse.Resources[0].Entity.DetectedStartCommand).To(Equal("node app.js"))
+			var appProcessResponse = AppProcessResponse{}
+			workflowhelpers.ApiRequest(
+				"GET",
+				"/v3/apps/"+appGuid+"/processes?types=web",
+				&appProcessResponse,
+				Config.DefaultTimeoutDuration(),
+			)
+			processGuid := appProcessResponse.Resources[0].Guid
+
+			processResponse := ProcessResponse{}
+			workflowhelpers.ApiRequest(
+				"GET",
+				"/v3/processes/"+ processGuid,
+				&processResponse,
+				Config.DefaultTimeoutDuration(),
+			)
+			Expect(processResponse.Command).To(Equal("node app.js"))
 		})
 	})
 })
