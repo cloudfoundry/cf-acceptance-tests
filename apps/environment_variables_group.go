@@ -27,6 +27,10 @@ import (
 )
 
 var _ = AppsDescribe("Environment Variables Groups", func() {
+	type EnvVarResponse struct{
+		Vars map[string]string `json:"var"`
+	}
+
 	var createBuildpack = func(envVarName string) string {
 		tmpPath, err := ioutil.TempDir("", "env-group-staging")
 		Expect(err).ToNot(HaveOccurred())
@@ -62,15 +66,18 @@ exit 1
 	var fetchEnvironmentVariables = func(groupType string) map[string]string {
 		var session *Session
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-			session = cf.Cf("curl", fmt.Sprintf("/v2/config/environment_variable_groups/%s", groupType)).Wait()
+			session = cf.Cf("curl", fmt.Sprintf("/v3/environment_variable_groups/%s", groupType)).Wait()
 			Expect(session).To(Exit(0))
 		})
 
-		var envMap map[string]string
-		err := json.Unmarshal(session.Out.Contents(), &envMap)
+		var envVarGroupResponse = EnvVarResponse{}
+		err := json.Unmarshal(session.Out.Contents(), &envVarGroupResponse)
 		Expect(err).NotTo(HaveOccurred())
 
-		return envMap
+		if envVarGroupResponse.Vars == nil {
+			envVarGroupResponse.Vars = make(map[string]string)
+		}
+		return envVarGroupResponse.Vars
 	}
 
 	var marshalUpdatedEnv = func(envMap map[string]string) []byte {
@@ -90,11 +97,10 @@ exit 1
 
 	var revertExtendedEnv = func(groupType, envVarName string) {
 		envMap := fetchEnvironmentVariables(groupType)
-		delete(envMap, envVarName)
 		jsonObj := marshalUpdatedEnv(envMap)
 
-		apiUrl := fmt.Sprintf("/v2/config/environment_variable_groups/%s", groupType)
-		Expect(cf.Cf("curl", apiUrl, "-X", "PUT", "-d", string(jsonObj)).Wait()).To(Exit(0))
+		apiUrl := fmt.Sprintf("/v3/environment_variable_groups/%s", groupType)
+		Expect(cf.Cf("curl", apiUrl, "-X", "PATCH", "-d", string(jsonObj)).Wait()).To(Exit(0))
 	}
 
 	Context("Staging environment variable groups", func() {
@@ -131,7 +137,6 @@ exit 1
 			})
 
 			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-b", buildpackName, "-p", assets.NewAssets().HelloWorld).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
-
 			Eventually(logs.Recent(appName)).Should(Say(envVarValue))
 		})
 	})
@@ -147,7 +152,6 @@ exit 1
 
 		AfterEach(func() {
 			app_helpers.AppReport(appName)
-
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				revertExtendedEnv("running", envVarName)
 			})
@@ -170,7 +174,6 @@ exit 1
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			env := helpers.CurlApp(Config, appName, "/env.json")
-
 			Expect(env).To(ContainSubstring(envVarValue))
 		})
 	})
