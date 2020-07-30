@@ -110,6 +110,21 @@ func GetProcessGuidsForType(appGuid string, processType string) []string {
 	return guids
 }
 
+
+func GetCurrentDropletGuidFromApp(appGuid string) string {
+	session := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/droplets/current", appGuid))
+	bytes := session.Wait().Out.Contents()
+
+	type Droplet struct {
+		Guid string `json:"guid"`
+	}
+	var droplet Droplet
+	err := json.Unmarshal(bytes, &droplet)
+	Expect(err).ToNot(HaveOccurred())
+
+	return droplet.Guid
+}
+
 func AssignDropletToApp(appGuid, dropletGuid string) {
 	appUpdatePath := fmt.Sprintf("/v3/apps/%s/relationships/current_droplet", appGuid)
 	appUpdateBody := fmt.Sprintf(`{"data": {"guid":"%s"}}`, dropletGuid)
@@ -279,7 +294,7 @@ func FetchRecentLogs(appGuid, oauthToken string, config config.CatsConfig) *Sess
 }
 
 func GetAuthToken() string {
-	session := cf.CfSilent("oauth-token")
+	session := cf.Cf("oauth-token") // TODO replace with CfSilent
 	bytes := session.Wait().Out.Contents()
 	return strings.TrimSpace(string(bytes))
 }
