@@ -112,6 +112,8 @@ type config struct {
 	NamePrefix *string `json:"name_prefix"`
 
 	ReporterConfig *reporterConfig `json:"reporter_config"`
+
+	Infrastructure *string `json:"infrastructure"`
 }
 
 type reporterConfig struct {
@@ -223,6 +225,8 @@ func getDefaults() config {
 	defaults.NamePrefix = ptrToString("CATS")
 
 	defaults.Stacks = &[]string{"cflinuxfs3"}
+
+	defaults.Infrastructure = ptrToString("vms")
 	return defaults
 }
 
@@ -446,6 +450,9 @@ func validateConfig(config *config) Errors {
 	}
 	if config.NamePrefix == nil {
 		errs.Add(fmt.Errorf("* 'name_prefix' must not be null"))
+	}
+	if config.Infrastructure == nil {
+		errs.Add(fmt.Errorf("* 'infrastructure' must not be null"))
 	}
 
 	return errs
@@ -1031,4 +1038,8 @@ func (c *config) GetReporterConfig() reporterConfig {
 	}
 
 	return reporterConfig{}
+}
+
+func (c *config) RunningOnK8s() bool {
+	return *c.Infrastructure == "kubernetes"
 }

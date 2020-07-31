@@ -71,6 +71,8 @@ type testConfig struct {
 	ReporterConfig *testReporterConfig `json:"reporter_config"`
 
 	Stacks *[]string `json:"stacks,omitempty"`
+
+	Infrastructure *string `json:"infrastructure"`
 }
 
 type allConfig struct {
@@ -156,6 +158,8 @@ type allConfig struct {
 	NamePrefix *string `json:"name_prefix"`
 
 	Stacks *[]string `json:"stacks"`
+
+	Infrastructure *string `json:"infrastructure"`
 }
 
 type testReporterConfig struct {
@@ -210,6 +214,7 @@ var _ = Describe("Config", func() {
 		testCfg.AdminPassword = ptrToString("admin")
 		testCfg.SkipSSLValidation = ptrToBool(true)
 		testCfg.AppsDomain = ptrToString("cf-app.bosh-lite.com")
+		testCfg.Infrastructure = ptrToString("vms")
 	})
 
 	JustBeforeEach(func() {
@@ -311,6 +316,8 @@ var _ = Describe("Config", func() {
 		Expect(config.GetRequireProxiedAppTraffic()).To(BeFalse())
 
 		Expect(config.GetStacks()).To(ConsistOf("cflinuxfs3"))
+
+		Expect(config.RunningOnK8s()).To(BeFalse(), "RunningOnK8s should be false")
 	})
 
 	Context("when all values are null", func() {
@@ -388,6 +395,8 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'name_prefix' must not be null"))
 
 			Expect(err.Error()).To(ContainSubstring("'stacks' must not be null"))
+
+			Expect(err.Error()).To(ContainSubstring("'infrastructure' must not be null"))
 		})
 	})
 
@@ -403,6 +412,7 @@ var _ = Describe("Config", func() {
 			testCfg.TimeoutScale = ptrToFloat(1.0)
 			testCfg.UnallocatedIPForSecurityGroup = ptrToString("192.168.0.1")
 			testCfg.RequireProxiedAppTraffic = ptrToBool(true)
+			testCfg.Infrastructure = ptrToString("kubernetes")
 		})
 
 		It("respects the overriden values", func() {
@@ -419,6 +429,7 @@ var _ = Describe("Config", func() {
 			Expect(config.SleepTimeoutDuration()).To(Equal(101 * time.Second))
 			Expect(config.GetUnallocatedIPForSecurityGroup()).To(Equal("192.168.0.1"))
 			Expect(config.GetRequireProxiedAppTraffic()).To(BeTrue())
+			Expect(config.RunningOnK8s()).To(BeTrue(), "RunningOnK8s should be true")
 		})
 	})
 

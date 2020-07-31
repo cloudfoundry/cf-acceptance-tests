@@ -28,6 +28,14 @@ var (
 	SftpPath  string
 )
 
+func SkipOnK8s() {
+	BeforeEach(func() {
+		if Config.RunningOnK8s() {
+			Skip(skip_messages.SkipK8sMessage)
+		}
+	})
+}
+
 func AppsDescribe(description string, callback func()) bool {
 	return Describe("[apps]", func() {
 		BeforeEach(func() {
