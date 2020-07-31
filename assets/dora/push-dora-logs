@@ -1,0 +1,486 @@
+{cf 7.0.0-beta.31+2e2f11478.2020-04-29 10m0s 1s [0xc000285160 0xc0002fef00 0xc0002851a0]}
+[1mREQUEST: [2020-04-29T16:48:29-07:00][0m
+GET / HTTP/1.1
+Host: api.jelly-ferret.lite.cli.fun
+Accept: application/json
+User-Agent: cf/7.0.0-beta.31+2e2f11478.2020-04-29 (go1.14.2; amd64 darwin)
+
+[1mRESPONSE: [2020-04-29T16:48:29-07:00][0m
+HTTP/1.1 200 OK
+Content-Length: 1367
+Content-Type: application/json;charset=utf-8
+Date: Wed, 29 Apr 2020 23:48:29 GMT
+Server: nginx
+X-Content-Type-Options: nosniff
+X-Vcap-Request-Id: f312473d-dc4d-4f3f-74f6-f8ad676dd718::eaa00a09-f639-4959-8a57-76a998ef04b8
+{
+  "links": {
+    "app_ssh": {
+      "href": "ssh.jelly-ferret.lite.cli.fun:2222",
+      "meta": {
+        "host_key_fingerprint": "4yEamnQKLCqG91PEzOHMT7rLoRq/cjsQW693AOBrGQ0",
+        "oauth_client": "ssh-proxy"
+      }
+    },
+    "bits_service": null,
+    "cloud_controller_v2": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v2",
+      "meta": {
+        "version": "2.148.0"
+      }
+    },
+    "cloud_controller_v3": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3",
+      "meta": {
+        "version": "3.83.0"
+      }
+    },
+    "credhub": null,
+    "log_cache": {
+      "href": "https://log-cache.jelly-ferret.lite.cli.fun"
+    },
+    "log_stream": {
+      "href": "https://log-stream.jelly-ferret.lite.cli.fun"
+    },
+    "logging": {
+      "href": "wss://doppler.jelly-ferret.lite.cli.fun:443"
+    },
+    "login": {
+      "href": "https://login.jelly-ferret.lite.cli.fun"
+    },
+    "network_policy_v0": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/networking/v0/external"
+    },
+    "network_policy_v1": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/networking/v1/external"
+    },
+    "routing": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/routing"
+    },
+    "self": {
+      "href": "https://api.jelly-ferret.lite.cli.fun"
+    },
+    "uaa": {
+      "href": "https://uaa.jelly-ferret.lite.cli.fun"
+    }
+  }
+}
+
+
+[1mREQUEST: [2020-04-29T16:48:29-07:00][0m
+GET /v3 HTTP/1.1
+Host: api.jelly-ferret.lite.cli.fun
+Accept: application/json
+User-Agent: cf/7.0.0-beta.31+2e2f11478.2020-04-29 (go1.14.2; amd64 darwin)
+
+[1mRESPONSE: [2020-04-29T16:48:29-07:00][0m
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Date: Wed, 29 Apr 2020 23:48:29 GMT
+Referrer-Policy: strict-origin-when-cross-origin
+Server: nginx
+X-Content-Type-Options: nosniff
+X-Download-Options: noopen
+X-Frame-Options: SAMEORIGIN
+X-Permitted-Cross-Domain-Policies: none
+X-Runtime: 0.006725
+X-Vcap-Request-Id: 1f40e007-29c0-41c9-4604-b65bb4e268ad::814b1a58-4f3e-4d58-a4db-048c853d50b5
+X-Xss-Protection: 1; mode=block
+{
+  "links": {
+    "apps": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/apps"
+    },
+    "audit_events": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/audit_events"
+    },
+    "buildpacks": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/buildpacks"
+    },
+    "builds": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/builds"
+    },
+    "deployments": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/deployments"
+    },
+    "domains": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/domains"
+    },
+    "droplets": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/droplets"
+    },
+    "environment_variable_groups": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/environment_variable_groups"
+    },
+    "feature_flags": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/feature_flags"
+    },
+    "info": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/info"
+    },
+    "isolation_segments": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/isolation_segments"
+    },
+    "organization_quotas": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/organization_quotas"
+    },
+    "organizations": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/organizations"
+    },
+    "packages": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/packages"
+    },
+    "processes": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/processes"
+    },
+    "resource_matches": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/resource_matches"
+    },
+    "roles": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/roles"
+    },
+    "routes": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/routes"
+    },
+    "security_groups": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/security_groups"
+    },
+    "self": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3"
+    },
+    "service_brokers": {
+      "experimental": true,
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/service_brokers"
+    },
+    "service_instances": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/service_instances"
+    },
+    "service_offerings": {
+      "experimental": true,
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/service_offerings"
+    },
+    "service_plans": {
+      "experimental": true,
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/service_plans"
+    },
+    "space_quotas": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/space_quotas"
+    },
+    "spaces": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/spaces"
+    },
+    "stacks": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/stacks"
+    },
+    "tasks": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/tasks"
+    },
+    "users": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/users"
+    }
+  }
+}
+
+
+[1mREQUEST: [2020-04-29T16:48:29-07:00][0m
+GET /login HTTP/1.1
+Host: uaa.jelly-ferret.lite.cli.fun
+Accept: application/json
+Authorization: [PRIVATE DATA HIDDEN]
+Connection: close
+User-Agent: cf/7.0.0-beta.31+2e2f11478.2020-04-29 (go1.14.2; amd64 darwin)
+
+[1mRESPONSE: [2020-04-29T16:48:29-07:00][0m
+HTTP/1.1 200 OK
+Cache-Control: no-store
+Content-Language: en-US
+Content-Length: 553
+Content-Type: application/json;charset=UTF-8
+Date: Wed, 29 Apr 2020 23:48:29 GMT
+Set-Cookie: X-Uaa-Csrf=lXbtqM7zfJMmaqFEXosUx2; Max-Age=86400; Expires=Thu, 30-Apr-2020 23:48:29 GMT; Path=/; Secure; HttpOnly
+Strict-Transport-Security: max-age=31536000
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-Vcap-Request-Id: 0b439106-4ba6-43b4-73b5-139171b9695c
+X-Xss-Protection: 1; mode=block
+{
+  "app": {
+    "version": "74.16.0"
+  },
+  "commit_id": "20d4f7b",
+  "entityID": "login.jelly-ferret.lite.cli.fun",
+  "idpDefinitions": {},
+  "links": {
+    "login": "https://login.jelly-ferret.lite.cli.fun",
+    "passwd": "/forgot_password",
+    "register": "/create_account",
+    "uaa": "https://uaa.jelly-ferret.lite.cli.fun"
+  },
+  "prompts": {
+    "passcode": [
+      "password",
+      "Temporary Authentication Code ( Get one at https://login.jelly-ferret.lite.cli.fun/passcode )"
+    ],
+    "password": "[PRIVATE DATA HIDDEN]",
+    "username": [
+      "text",
+      "Email"
+    ]
+  },
+  "showLoginLinks": true,
+  "timestamp": "2020-03-27T11:45:44+0000",
+  "zone_name": "uaa"
+}
+
+
+[1mREQUEST: [2020-04-29T16:48:29-07:00][0m
+GET / HTTP/1.1
+Host: api.jelly-ferret.lite.cli.fun
+Accept: application/json
+Authorization: [PRIVATE DATA HIDDEN]
+User-Agent: cf/7.0.0-beta.31+2e2f11478.2020-04-29 (go1.14.2; amd64 darwin)
+
+[1mRESPONSE: [2020-04-29T16:48:30-07:00][0m
+HTTP/1.1 200 OK
+Content-Length: 1367
+Content-Type: application/json;charset=utf-8
+Date: Wed, 29 Apr 2020 23:48:30 GMT
+Server: nginx
+X-Content-Type-Options: nosniff
+X-Vcap-Request-Id: 9028ff73-c9ab-4fd4-689b-b44939f05a5a::46bc93d6-6f28-4c90-9eba-326a49d38e1b
+{
+  "links": {
+    "app_ssh": {
+      "href": "ssh.jelly-ferret.lite.cli.fun:2222",
+      "meta": {
+        "host_key_fingerprint": "4yEamnQKLCqG91PEzOHMT7rLoRq/cjsQW693AOBrGQ0",
+        "oauth_client": "ssh-proxy"
+      }
+    },
+    "bits_service": null,
+    "cloud_controller_v2": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v2",
+      "meta": {
+        "version": "2.148.0"
+      }
+    },
+    "cloud_controller_v3": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3",
+      "meta": {
+        "version": "3.83.0"
+      }
+    },
+    "credhub": null,
+    "log_cache": {
+      "href": "https://log-cache.jelly-ferret.lite.cli.fun"
+    },
+    "log_stream": {
+      "href": "https://log-stream.jelly-ferret.lite.cli.fun"
+    },
+    "logging": {
+      "href": "wss://doppler.jelly-ferret.lite.cli.fun:443"
+    },
+    "login": {
+      "href": "https://login.jelly-ferret.lite.cli.fun"
+    },
+    "network_policy_v0": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/networking/v0/external"
+    },
+    "network_policy_v1": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/networking/v1/external"
+    },
+    "routing": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/routing"
+    },
+    "self": {
+      "href": "https://api.jelly-ferret.lite.cli.fun"
+    },
+    "uaa": {
+      "href": "https://uaa.jelly-ferret.lite.cli.fun"
+    }
+  }
+}
+
+
+[1mREQUEST: [2020-04-29T16:48:30-07:00][0m
+GET /v3 HTTP/1.1
+Host: api.jelly-ferret.lite.cli.fun
+Accept: application/json
+Authorization: [PRIVATE DATA HIDDEN]
+User-Agent: cf/7.0.0-beta.31+2e2f11478.2020-04-29 (go1.14.2; amd64 darwin)
+
+[1mRESPONSE: [2020-04-29T16:48:30-07:00][0m
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Date: Wed, 29 Apr 2020 23:48:30 GMT
+Referrer-Policy: strict-origin-when-cross-origin
+Server: nginx
+X-Content-Type-Options: nosniff
+X-Download-Options: noopen
+X-Frame-Options: SAMEORIGIN
+X-Permitted-Cross-Domain-Policies: none
+X-Runtime: 0.007428
+X-Vcap-Request-Id: fef00632-7e8d-4860-4ff9-3ba55332edf7::6610f5cc-a171-428b-9c92-c8bd3e30f74f
+X-Xss-Protection: 1; mode=block
+{
+  "links": {
+    "apps": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/apps"
+    },
+    "audit_events": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/audit_events"
+    },
+    "buildpacks": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/buildpacks"
+    },
+    "builds": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/builds"
+    },
+    "deployments": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/deployments"
+    },
+    "domains": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/domains"
+    },
+    "droplets": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/droplets"
+    },
+    "environment_variable_groups": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/environment_variable_groups"
+    },
+    "feature_flags": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/feature_flags"
+    },
+    "info": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/info"
+    },
+    "isolation_segments": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/isolation_segments"
+    },
+    "organization_quotas": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/organization_quotas"
+    },
+    "organizations": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/organizations"
+    },
+    "packages": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/packages"
+    },
+    "processes": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/processes"
+    },
+    "resource_matches": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/resource_matches"
+    },
+    "roles": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/roles"
+    },
+    "routes": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/routes"
+    },
+    "security_groups": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/security_groups"
+    },
+    "self": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3"
+    },
+    "service_brokers": {
+      "experimental": true,
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/service_brokers"
+    },
+    "service_instances": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/service_instances"
+    },
+    "service_offerings": {
+      "experimental": true,
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/service_offerings"
+    },
+    "service_plans": {
+      "experimental": true,
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/service_plans"
+    },
+    "space_quotas": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/space_quotas"
+    },
+    "spaces": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/spaces"
+    },
+    "stacks": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/stacks"
+    },
+    "tasks": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/tasks"
+    },
+    "users": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/users"
+    }
+  }
+}
+
+
+Pushing app [36;1mdora[0m to org [36;1morg[0m / space [36;1mspace[0m as [36;1madmin[0m...
+[1mREQUEST: [2020-04-29T16:48:30-07:00][0m
+POST /v3/spaces/d6777786-6a7d-44a6-ad76-90e019c0811d/actions/apply_manifest HTTP/1.1
+Host: api.jelly-ferret.lite.cli.fun
+Accept: application/json
+Authorization: [PRIVATE DATA HIDDEN]
+Content-Type: application/x-yaml
+User-Agent: cf/7.0.0-beta.31+2e2f11478.2020-04-29 (go1.14.2; amd64 darwin)
+[application/x-yaml Content Hidden]
+
+[1mRESPONSE: [2020-04-29T16:48:30-07:00][0m
+HTTP/1.1 202 Accepted
+Content-Length: 0
+Content-Type: application/json
+Date: Wed, 29 Apr 2020 23:48:30 GMT
+Location: https://api.jelly-ferret.lite.cli.fun/v3/jobs/dd9c8391-3c04-406b-92f1-ac4603e646cf
+Referrer-Policy: strict-origin-when-cross-origin
+Server: nginx
+X-Content-Type-Options: nosniff
+X-Download-Options: noopen
+X-Frame-Options: SAMEORIGIN
+X-Permitted-Cross-Domain-Policies: none
+X-Runtime: 0.104261
+X-Vcap-Request-Id: 9ddd1673-3bd2-499b-75a6-bd9e0954b763::5c3395c9-7cc1-41f0-803b-275591d0d844
+X-Xss-Protection: 1; mode=block
+
+[1mREQUEST: [2020-04-29T16:48:30-07:00][0m
+GET /v3/jobs/dd9c8391-3c04-406b-92f1-ac4603e646cf HTTP/1.1
+Host: api.jelly-ferret.lite.cli.fun
+Accept: application/json
+Authorization: [PRIVATE DATA HIDDEN]
+User-Agent: cf/7.0.0-beta.31+2e2f11478.2020-04-29 (go1.14.2; amd64 darwin)
+
+[1mRESPONSE: [2020-04-29T16:48:30-07:00][0m
+HTTP/1.1 200 OK
+Content-Length: 498
+Content-Type: application/json; charset=utf-8
+Date: Wed, 29 Apr 2020 23:48:30 GMT
+Referrer-Policy: strict-origin-when-cross-origin
+Server: nginx
+X-Content-Type-Options: nosniff
+X-Download-Options: noopen
+X-Frame-Options: SAMEORIGIN
+X-Permitted-Cross-Domain-Policies: none
+X-Runtime: 0.008230
+X-Vcap-Request-Id: 7766cf95-4a76-4551-6166-2e6fdc7fea47::d7fcebdd-f7a5-4844-90a1-b986514097f2
+X-Xss-Protection: 1; mode=block
+{
+  "created_at": "2020-04-29T23:48:30Z",
+  "errors": null,
+  "guid": "dd9c8391-3c04-406b-92f1-ac4603e646cf",
+  "links": {
+    "self": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/jobs/dd9c8391-3c04-406b-92f1-ac4603e646cf"
+    },
+    "space": {
+      "href": "https://api.jelly-ferret.lite.cli.fun/v3/spaces/d6777786-6a7d-44a6-ad76-90e019c0811d"
+    }
+  },
+  "operation": "space.apply_manifest",
+  "state": "PROCESSING",
+  "updated_at": "2020-04-29T23:48:30Z",
+  "warnings": null
+}
+
+

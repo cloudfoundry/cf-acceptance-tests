@@ -152,7 +152,7 @@ type AppUsageEvents struct {
 func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
 	var response AppUsageEvents
 	AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1&results-per-page=150", &response, Config.DefaultTimeoutDuration())
+		ApiRequest("GET", "/v3/app_usage_events?order_by=-created_at&page=1&per_page=150", &response, Config.DefaultTimeoutDuration())
 	})
 
 	for _, event := range response.Resources {

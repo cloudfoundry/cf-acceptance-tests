@@ -519,7 +519,7 @@ func GetLastAppUseEventForProcess(processType string, state string, afterGUID st
 		if afterGUID != "" {
 			afterGuidParam = fmt.Sprintf("&after_guid=%s", afterGUID)
 		}
-		usageEventsUrl := fmt.Sprintf("/v2/app_usage_events?order-direction=desc&page=1&results-per-page=150%s", afterGuidParam)
+		usageEventsUrl := fmt.Sprintf("/v3/app_usage_events?order_by=-created_at&page=1&per_page=150%s", afterGuidParam)
 		workflowhelpers.ApiRequest("GET", usageEventsUrl, &response, Config.DefaultTimeoutDuration())
 	})
 

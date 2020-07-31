@@ -23,51 +23,51 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-type AppUsageEvent struct {
-	Entity struct {
-		AppName       string `json:"app_name"`
-		State         string `json:"state"`
-		BuildpackName string `json:"buildpack_name"`
-		BuildpackGuid string `json:"buildpack_guid"`
-		ParentAppName string `json:"parent_app_name"`
-	} `json:"entity"`
-}
+//type AppUsageEvent struct {
+//	Entity struct {
+//		AppName       string `json:"app_name"`
+//		State         string `json:"state"`
+//		BuildpackName string `json:"buildpack_name"`
+//		BuildpackGuid string `json:"buildpack_guid"`
+//		ParentAppName string `json:"parent_app_name"`
+//	} `json:"entity"`
+//}
+//
+//type AppUsageEvents struct {
+//	Resources []AppUsageEvent `struct:"resources"`
+//}
 
-type AppUsageEvents struct {
-	Resources []AppUsageEvent `struct:"resources"`
-}
-
-func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
-	var response AppUsageEvents
+func lastAppUsageEvent(appName string, state string) (bool, app_helpers.AppUsageEvent) {
+	var response app_helpers.AppUsageEvents
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		workflowhelpers.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1&results-per-page=150", &response, Config.DefaultTimeoutDuration())
+		workflowhelpers.ApiRequest("GET", "/v3/app_usage_events?order-by=-created_at&page=1&per-page=150", &response, Config.DefaultTimeoutDuration())
 	})
 
 	for _, event := range response.Resources {
-		if event.Entity.AppName == appName && event.Entity.State == state {
+		if event.App.Name == appName && event.State.Current == state {
 			return true, event
 		}
 	}
 
-	return false, AppUsageEvent{}
+	return false, app_helpers.AppUsageEvent{}
 }
 
-func lastAppUsageEventWithParentAppName(parentAppName string, state string) (bool, AppUsageEvent) {
-	var response AppUsageEvents
+func lastAppUsageEventWithParentAppName(parentAppName string, state string) (bool, app_helpers.AppUsageEvent) {
+	var response app_helpers.AppUsageEvents
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		workflowhelpers.ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1&results-per-page=150", &response, Config.DefaultTimeoutDuration())
+		workflowhelpers.ApiRequest("GET", "/v3/app_usage_events?order_by=-created_at&page=1&per_page=150", &response, Config.DefaultTimeoutDuration())
 	})
 
 	for _, event := range response.Resources {
-		if event.Entity.ParentAppName == parentAppName && event.Entity.State == state {
+		if event.App.Name == parentAppName && event.State.Current == state {
 			return true, event
 		}
 	}
 
-	return false, AppUsageEvent{}
+	return false, app_helpers.AppUsageEvent{}
 }
 
-var _ = AppsDescribe("Application Lifecycle", func() {
+var _ = FDescribe("Application Lifecycle", func() {
 	var (
 		appName              string
 		expectedNullResponse string
@@ -283,8 +283,8 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			found, matchingEvent := lastAppUsageEventWithParentAppName(appName, "BUILDPACK_SET")
 
 			Expect(found).To(BeTrue())
-			Expect(matchingEvent.Entity.BuildpackName).To(Equal("binary_buildpack"))
-			Expect(matchingEvent.Entity.BuildpackGuid).ToNot(BeZero())
+			Expect(matchingEvent.Buildpack.Name).To(Equal("binary_buildpack"))
+			Expect(matchingEvent.Buildpack.Guid).ToNot(BeZero())
 		})
 	})
 

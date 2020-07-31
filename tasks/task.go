@@ -103,7 +103,7 @@ func createSecurityGroup(allowedDestinations ...Destination) string {
 	return securityGroupName
 }
 
-var _ = TasksDescribe("v3 tasks", func() {
+var _ = FDescribe("v3 tasks", func() {
 	var (
 		appName string
 		appGuid string
@@ -138,7 +138,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 		})
 
-		It("can successfully create and run a task", func() {
+		FIt("can successfully create and run a task", func() {
 			By("creating the task")
 			taskName := "mreow"
 			// sleep for enough time to see the task is RUNNING
@@ -162,7 +162,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 
 			By("TASK_STARTED AppUsageEvent")
 			usageEvents := app_helpers.UsageEventsAfterGuid(lastUsageEventGuid)
-			start_event := app_helpers.AppUsageEvent{Entity: app_helpers.Entity{State: "TASK_STARTED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: taskGuid}}
+			start_event := app_helpers.AppUsageEvent{Task: app_helpers.UsageTask{Guid: taskGuid}, State: app_helpers.UsageState{Current: "TASK_STARTED"}, App: app_helpers.UsageApp{Guid: appGuid, Name: appName}}
 			Expect(app_helpers.UsageEventsInclude(usageEvents, start_event)).To(BeTrue())
 
 			By("successfully running")
@@ -178,7 +178,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 
 			By("TASK_STOPPED AppUsageEvent")
 			usageEvents = app_helpers.UsageEventsAfterGuid(lastUsageEventGuid)
-			stop_event := app_helpers.AppUsageEvent{Entity: app_helpers.Entity{State: "TASK_STOPPED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: taskGuid}}
+			stop_event := app_helpers.AppUsageEvent{Task: app_helpers.UsageTask{Guid: taskGuid}, State: app_helpers.UsageState{Current: "TASK_STOPPED"}, App: app_helpers.UsageApp{Guid: appGuid, Name: appName}}
 			Expect(app_helpers.UsageEventsInclude(usageEvents, stop_event)).To(BeTrue())
 		})
 

@@ -1,0 +1,12 @@
+---
+applications:
+- name: dora
+  stack: cflinuxfs3
+  routes:
+  - route: dora.branch-fisher.lite.cli.fun
+  processes:
+  - type: web
+    instances: 1
+    memory: 32M
+    disk_quota: 1024M
+    health-check-type: port
