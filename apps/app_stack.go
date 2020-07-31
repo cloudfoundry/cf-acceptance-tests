@@ -34,6 +34,8 @@ var _ = AppsDescribe("Specifying a specific stack", func() {
 		tmpdir string
 	)
 
+	SkipOnK8s()
+
 	matchingFilename := func(appName string) string {
 		return fmt.Sprintf("stack-match-%s", appName)
 	}

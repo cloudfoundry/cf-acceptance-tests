@@ -254,6 +254,7 @@ func CredhubDescribe(description string, callback func()) bool {
 				Skip(skip_messages.SkipCredhubMessage)
 			}
 		})
+		SkipOnK8s()
 		Describe(description, callback)
 	})
 }
@@ -290,6 +291,7 @@ func WindowsCredhubDescribe(description string, callback func()) bool {
 				Skip(skip_messages.SkipCredhubMessage)
 			}
 		})
+		SkipOnK8s()
 		Describe(description, callback)
 	})
 }
@@ -323,6 +325,7 @@ func WindowsDescribe(description string, callback func()) bool {
 				Skip(skip_messages.SkipWindowsMessage)
 			}
 		})
+		SkipOnK8s()
 		Describe(description, callback)
 	})
 }

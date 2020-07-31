@@ -32,6 +32,8 @@ var _ = AppsDescribe("Buildpack Environment", func() {
 		tmpdir string
 	)
 
+	SkipOnK8s()
+
 	matchingFilename := func(appName string) string {
 		return fmt.Sprintf("buildpack-environment-match-%s", appName)
 	}

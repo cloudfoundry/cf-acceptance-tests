@@ -41,6 +41,8 @@ var _ = V3Describe("buildpack", func() {
 		Version       string `json:"version"`
 	}
 
+	SkipOnK8s()
+
 	Context("With a single buildpack app", func() {
 		BeforeEach(func() {
 			appName = random_name.CATSRandomName("APP")
