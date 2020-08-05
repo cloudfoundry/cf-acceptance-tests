@@ -31,7 +31,7 @@ var _ = WindowsCredhubDescribe("CredHub Integration", func() {
 
 	BeforeEach(func() {
 		TestSetup.RegularUserContext().TargetSpace()
-		cf.Cf("target", "-o", TestSetup.RegularUserContext().Org)
+		cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space)
 
 		chBrokerAppName = random_name.CATSRandomName("BRKR-CH")
 

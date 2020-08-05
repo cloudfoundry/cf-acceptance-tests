@@ -25,7 +25,7 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 
 		JustBeforeEach(func() {
 			TestSetup.RegularUserContext().TargetSpace()
-			cf.Cf("target", "-o", TestSetup.RegularUserContext().Org)
+			cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space)
 
 			chBrokerName = random_name.CATSRandomName("BRKR-CH")
 
