@@ -28,6 +28,14 @@ var (
 	SftpPath  string
 )
 
+func SkipOnK8s() {
+	BeforeEach(func() {
+		if Config.RunningOnK8s() {
+			Skip(skip_messages.SkipK8sMessage)
+		}
+	})
+}
+
 func AppsDescribe(description string, callback func()) bool {
 	return Describe("[apps]", func() {
 		BeforeEach(func() {
@@ -246,6 +254,7 @@ func CredhubDescribe(description string, callback func()) bool {
 				Skip(skip_messages.SkipCredhubMessage)
 			}
 		})
+		SkipOnK8s()
 		Describe(description, callback)
 	})
 }
@@ -282,6 +291,7 @@ func WindowsCredhubDescribe(description string, callback func()) bool {
 				Skip(skip_messages.SkipCredhubMessage)
 			}
 		})
+		SkipOnK8s()
 		Describe(description, callback)
 	})
 }
@@ -315,6 +325,7 @@ func WindowsDescribe(description string, callback func()) bool {
 				Skip(skip_messages.SkipWindowsMessage)
 			}
 		})
+		SkipOnK8s()
 		Describe(description, callback)
 	})
 }

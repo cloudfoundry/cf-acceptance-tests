@@ -285,6 +285,8 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 	Describe("Using staging security groups", func() {
 		var testAppName, buildpack string
 
+		SkipOnK8s()
+
 		BeforeEach(func() {
 			serverAppName, privateHost, privatePort = pushServerApp()
 

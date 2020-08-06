@@ -102,6 +102,8 @@ exit 1
 		var buildpackName string
 		var envVarName string
 
+		SkipOnK8s()
+
 		BeforeEach(func() {
 			appName = random_name.CATSRandomName("APP")
 			envVarName = fmt.Sprintf("CATS_STAGING_TEST_VAR_%s", strconv.Itoa(int(time.Now().UnixNano())))

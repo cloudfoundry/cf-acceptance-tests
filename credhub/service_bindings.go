@@ -134,6 +134,9 @@ var _ = CredhubDescribe("service bindings", func() {
 
 			tmpdir string
 		)
+
+		SkipOnK8s()
+
 		BeforeEach(func() {
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				buildpackName = random_name.CATSRandomName("BPK")
