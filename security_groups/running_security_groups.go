@@ -26,16 +26,20 @@ import (
 
 type AppsResponse struct {
 	Resources []struct {
-		Metadata struct {
-			Url string
+		Links struct {
+			Processes struct {
+				Href string
+			}
 		}
 	}
 }
 
-type StatsResponse map[string]struct {
-	Stats struct {
-		Host string
-		Port int
+type StatsResponse struct {
+	Resources []struct {
+		Host           string
+		Instance_ports []struct {
+			External int
+		}
 	}
 }
 
@@ -57,16 +61,14 @@ func pushApp(appName, buildpack string) {
 }
 
 func getAppHostIpAndPort(appName string) (string, int) {
-	var appsResponse AppsResponse
-	cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/apps?q=name:%s", appName)).Wait().Out.Contents()
-	json.Unmarshal(cfResponse, &appsResponse)
-	serverAppUrl := appsResponse.Resources[0].Metadata.Url
+	appGUID := app_helpers.GetAppGuid(appName)
+
+	cfResponse := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/processes/web/stats", appGUID)).Wait().Out.Contents()
 
 	var statsResponse StatsResponse
-	cfResponse = cf.Cf("curl", fmt.Sprintf("%s/stats", serverAppUrl)).Wait().Out.Contents()
 	json.Unmarshal(cfResponse, &statsResponse)
 
-	return statsResponse["0"].Stats.Host, statsResponse["0"].Stats.Port
+	return statsResponse.Resources[0].Host, statsResponse.Resources[0].Instance_ports[0].External
 }
 
 func testAppConnectivity(clientAppName string, privateHost string, privatePort int) CatnipCurlResponse {
