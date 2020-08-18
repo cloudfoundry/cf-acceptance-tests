@@ -27,7 +27,7 @@ var _ = AppsDescribe("An application being staged", func() {
 		cf.Cf("delete", appName, "-f", "-r").Wait()
 	})
 
-	FIt("has its staging log streamed during a push", func() {
+	 It("has its staging log streamed during a push", func() {
 		push := cf.Cf(app_helpers.CatnipWithArgs(appName, "-m", DEFAULT_MEMORY_LIMIT)...).Wait(Config.CfPushTimeoutDuration())
 		Expect(push).To(Exit(0))
 
