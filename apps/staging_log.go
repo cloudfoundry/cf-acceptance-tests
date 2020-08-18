@@ -11,7 +11,6 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
@@ -28,18 +27,17 @@ var _ = AppsDescribe("An application being staged", func() {
 		cf.Cf("delete", appName, "-f", "-r").Wait()
 	})
 
-	It("has its staging log streamed during a push", func() {
-		push := cf.Cf("push",
-			appName,
-			"-b", Config.GetBinaryBuildpackName(),
-			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", assets.NewAssets().Catnip,
-			"-c", "./catnip",
-		).Wait(Config.CfPushTimeoutDuration())
+	FIt("has its staging log streamed during a push", func() {
+		push := cf.Cf(app_helpers.CatnipWithArgs(appName, "-m", DEFAULT_MEMORY_LIMIT)...).Wait(Config.CfPushTimeoutDuration())
 		Expect(push).To(Exit(0))
 
 		output := string(push.Out.Contents())
-		expected := []string{"Installing dependencies", "Uploading droplet", "App started"}
+		var expected []string
+		if (!Config.RunningOnK8s()) {
+			expected = []string{"Installing dependencies", "Uploading droplet", "App started"}
+		} else {
+			expected = []string{"Paketo Procfile Buildpack", "Build successful"}
+		}
 		found := false
 		for _, value := range expected {
 			if strings.Contains(output, value) {
