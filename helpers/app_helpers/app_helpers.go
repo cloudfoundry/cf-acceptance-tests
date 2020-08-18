@@ -2,6 +2,8 @@ package app_helpers
 
 import (
 	"fmt"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"io/ioutil"
 	"strings"
 	"time"
 
@@ -14,6 +16,27 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 )
+
+func CatnipWithArgs(appName string, args... string) []string {
+
+	pushArgs := []string{
+		"push", appName,
+		"-b", Config.GetBinaryBuildpackName(),
+		"-p", assets.NewAssets().Catnip,
+	}
+
+	if (!Config.RunningOnK8s()) {
+		pushArgs = append(pushArgs, "-c", "./catnip")
+	}
+
+	if Config.RunningOnK8s() {
+		ioutil.WriteFile("assets/catnip/bin/Procfile", []byte("web: ./catnip"), 0644)
+	}
+
+	pushArgs = append(pushArgs, args...)
+
+	return pushArgs
+}
 
 func GetAppGuid(appName string) string {
 	cfApp := cf.Cf("app", appName, "--guid")

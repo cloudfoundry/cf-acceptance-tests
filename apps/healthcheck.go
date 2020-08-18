@@ -36,7 +36,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 				"push", appName,
 				"-p", assets.NewAssets().WorkerApp,
 				"-f", filepath.Join(assets.NewAssets().WorkerApp, "manifest.yml"),
-				"-b", "go_buildpack",
+				"-b", Config.GetGoBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-i", "1",
 				"-u", "process"),
@@ -55,14 +55,8 @@ var _ = AppsDescribe("Healthcheck", func() {
 	Describe("when the healthcheck is set to port", func() {
 		It("starts up successfully", func() {
 			By("pushing it")
-			Eventually(cf.Cf(
-				"push", appName,
-				"-b", Config.GetBinaryBuildpackName(),
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().Catnip,
-				"-c", "./catnip",
-				"-i", "1",
-				"-u", "port"),
+
+			Eventually(cf.Cf(app_helpers.CatnipWithArgs(appName, "-m", DEFAULT_MEMORY_LIMIT,"-i", "1","-u", "port")...),
 				Config.CfPushTimeoutDuration(),
 			).Should(Exit(0))
 
@@ -74,14 +68,8 @@ var _ = AppsDescribe("Healthcheck", func() {
 	Describe("when the healthcheck is set to http", func() {
 		It("starts up successfully", func() {
 			By("pushing it")
-			Eventually(cf.Cf(
-				"push", appName,
-				"-b", Config.GetBinaryBuildpackName(),
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().Catnip,
-				"-c", "./catnip",
-				"-i", "1",
-				"-u", "port"),
+
+			Eventually(cf.Cf(app_helpers.CatnipWithArgs(appName,"-m", DEFAULT_MEMORY_LIMIT,"-i", "1","-u", "port")...),
 				Config.CfPushTimeoutDuration(),
 			).Should(Exit(0))
 
