@@ -17,7 +17,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-func CatnipWithArgs(appName string, args... string) []string {
+func CatnipWithArgs(appName string, args ...string) []string {
 
 	pushArgs := []string{
 		"push", appName,
@@ -25,12 +25,25 @@ func CatnipWithArgs(appName string, args... string) []string {
 		"-p", assets.NewAssets().Catnip,
 	}
 
-	if (!Config.RunningOnK8s()) {
+	if !Config.RunningOnK8s() {
 		pushArgs = append(pushArgs, "-c", "./catnip")
 	}
 
 	if Config.RunningOnK8s() {
 		ioutil.WriteFile("assets/catnip/bin/Procfile", []byte("web: ./catnip"), 0644)
+	}
+
+	pushArgs = append(pushArgs, args...)
+
+	return pushArgs
+}
+
+func HelloWorldWithArgs(appName string, args ...string) []string {
+
+	pushArgs := []string{
+		"push", appName,
+		"-b", Config.GetRubyBuildpackName(),
+		"-p", assets.NewAssets().HelloWorld,
 	}
 
 	pushArgs = append(pushArgs, args...)
