@@ -35,6 +35,9 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 	Context("by using the command flag", func() {
 		var expectedNullResponse string
 
+		// TODO: No binary buildpack w/o Procfile support
+		SkipOnK8s()
+
 		BeforeEach(func() {
 
 			appUrl := "https://" + appName + "." + Config.GetAppsDomain()
@@ -90,6 +93,9 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 		type AppsResponse struct {
 			Resources []AppResource `json:"resources"`
 		}
+
+		// TODO: Procfile support with nodejs buildpack
+		SkipOnK8s()
 
 		BeforeEach(func() {
 			Expect(cf.Cf("push", appName, "-b", Config.GetNodejsBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().NodeWithProcfile).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
