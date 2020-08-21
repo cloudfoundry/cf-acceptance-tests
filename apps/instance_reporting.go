@@ -5,7 +5,6 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -18,18 +17,19 @@ var _ = AppsDescribe("Getting instance information", func() {
 		var appName string
 		var runawayTestSetup *workflowhelpers.ReproducibleTestSuiteSetup
 
+		// TODO: Talk to appropriate component team
+		// Case of 'insufficient' is different depending upon platform.
+		SkipOnK8s()
+
 		BeforeEach(func() {
 			runawayTestSetup = workflowhelpers.NewRunawayAppTestSuiteSetup(Config)
 			runawayTestSetup.Setup()
 
 			appName = random_name.CATSRandomName("APP")
 
-			Eventually(cf.Cf(
-				"push", appName,
-				"-p", assets.NewAssets().Binary,
-				"-b", "binary_buildpack",
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-c", "./app"),
+			Eventually(cf.Cf(app_helpers.BinaryWithArgs(
+				appName,
+				"-m", DEFAULT_MEMORY_LIMIT)...),
 				Config.CfPushTimeoutDuration()).Should(Exit(0))
 		})
 
@@ -57,14 +57,10 @@ var _ = AppsDescribe("Getting instance information", func() {
 		BeforeEach(func() {
 			appName = random_name.CATSRandomName("APP")
 
-			Expect(cf.Cf("push",
+			Expect(cf.Cf(app_helpers.CatnipWithArgs(
 				appName,
-				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().Catnip,
-				"-c", "./catnip",
-				"-i", "1",
-			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				"-i", "1")...).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
 		AfterEach(func() {

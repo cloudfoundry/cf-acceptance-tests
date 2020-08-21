@@ -2,10 +2,11 @@ package app_helpers
 
 import (
 	"fmt"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"io/ioutil"
 	"strings"
 	"time"
+
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
@@ -31,6 +32,27 @@ func CatnipWithArgs(appName string, args ...string) []string {
 
 	if Config.RunningOnK8s() {
 		ioutil.WriteFile("assets/catnip/bin/Procfile", []byte("web: ./catnip"), 0644)
+	}
+
+	pushArgs = append(pushArgs, args...)
+
+	return pushArgs
+}
+
+func BinaryWithArgs(appName string, args ...string) []string {
+
+	pushArgs := []string{
+		"push", appName,
+		"-b", Config.GetBinaryBuildpackName(),
+		"-p", assets.NewAssets().Binary,
+	}
+
+	if !Config.RunningOnK8s() {
+		pushArgs = append(pushArgs, "-c", "./app")
+	}
+
+	if Config.RunningOnK8s() {
+		ioutil.WriteFile("assets/binary/bin/Procfile", []byte("web: ./app"), 0644)
 	}
 
 	pushArgs = append(pushArgs, args...)
