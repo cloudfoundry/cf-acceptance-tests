@@ -162,7 +162,11 @@ var _ = TasksDescribe("v3 tasks", func() {
 
 			By("TASK_STARTED AppUsageEvent")
 			usageEvents := app_helpers.UsageEventsAfterGuid(lastUsageEventGuid)
-			start_event := app_helpers.AppUsageEvent{Entity: app_helpers.Entity{State: "TASK_STARTED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: taskGuid}}
+			start_event := app_helpers.AppUsageEvent{}
+			start_event.State.Current = "TASK_STARTED"
+			start_event.App.Guid = appGuid
+			start_event.App.Name = appName
+			start_event.Task.Guid = taskGuid
 			Expect(app_helpers.UsageEventsInclude(usageEvents, start_event)).To(BeTrue())
 
 			By("successfully running")
@@ -178,7 +182,11 @@ var _ = TasksDescribe("v3 tasks", func() {
 
 			By("TASK_STOPPED AppUsageEvent")
 			usageEvents = app_helpers.UsageEventsAfterGuid(lastUsageEventGuid)
-			stop_event := app_helpers.AppUsageEvent{Entity: app_helpers.Entity{State: "TASK_STOPPED", ParentAppGuid: appGuid, ParentAppName: appName, TaskGuid: taskGuid}}
+			stop_event := app_helpers.AppUsageEvent{}
+			stop_event.State.Current = "TASK_STOPPED"
+			stop_event.App.Guid = appGuid
+			stop_event.App.Name = appName
+			stop_event.Task.Guid = taskGuid
 			Expect(app_helpers.UsageEventsInclude(usageEvents, stop_event)).To(BeTrue())
 		})
 
