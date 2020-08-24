@@ -42,12 +42,9 @@ var _ = AppsDescribe("Wildcard Routes", func() {
 		appNameCatnip = random_name.CATSRandomName("APP")
 		appNameSimple = random_name.CATSRandomName("APP")
 
-		Expect(cf.Cf(
-			"push", appNameCatnip,
-			"-b", Config.GetBinaryBuildpackName(),
-			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", assets.NewAssets().Catnip,
-			"-c", "./catnip",
+		Expect(cf.Cf(app_helpers.CatnipWithArgs(
+			appNameCatnip,
+			"-m", DEFAULT_MEMORY_LIMIT)...,
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		Expect(cf.Cf(
