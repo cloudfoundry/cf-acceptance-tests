@@ -1,11 +1,12 @@
 package apps
 
 import (
+	"path/filepath"
+
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
-	"path/filepath"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
@@ -16,6 +17,9 @@ import (
 
 var _ = AppsDescribe("Routing Transparency", func() {
 	var appName string
+
+	// TODO: Routing output differs between cf-for-vms and cf-for-k8s
+	SkipOnK8s()
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
