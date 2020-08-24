@@ -3,14 +3,15 @@ package app_helpers
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
+	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/download"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
-	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -18,7 +19,7 @@ import (
 )
 
 type AppDroplet struct {
-	guid string
+	guid    string
 	appGuid string
 	config  config.CatsConfig
 }
@@ -30,11 +31,11 @@ func NewAppDroplet(appGuid string, config config.CatsConfig) *AppDroplet {
 	}
 }
 
-func CreateEmptyDroplet(appGuid string) *AppDroplet{
+func CreateEmptyDroplet(appGuid string) *AppDroplet {
 	var createDropletBody struct {
 		Relationships struct {
 			App struct {
-				Data struct{
+				Data struct {
 					Guid string `json:"guid"`
 				} `json:"data"`
 			} `json:"app"`
@@ -45,10 +46,10 @@ func CreateEmptyDroplet(appGuid string) *AppDroplet{
 	Expect(err).NotTo(HaveOccurred())
 
 	var dropletResponseJSON struct {
-		Guid string `json:"guid"`
+		Guid          string `json:"guid"`
 		Relationships struct {
 			App struct {
-				Data struct{
+				Data struct {
 					Guid string `json:"guid"`
 				} `json:"data"`
 			} `json:"app"`
@@ -65,8 +66,8 @@ func CreateEmptyDroplet(appGuid string) *AppDroplet{
 
 	Expect(dropletResponseJSON.Relationships.App.Data.Guid).To(Equal(appGuid))
 	var newEmptyDroplet = AppDroplet{
-		config: Config,
-		guid: dropletResponseJSON.Guid,
+		config:  Config,
+		guid:    dropletResponseJSON.Guid,
 		appGuid: dropletResponseJSON.Relationships.App.Data.Guid,
 	}
 	return &newEmptyDroplet
@@ -90,10 +91,10 @@ func (droplet *AppDroplet) UploadFrom(uploadPath string) {
 	Expect(curl).To(Exit(0))
 
 	var dropletResponseJSON struct {
-		Guid string `json:"guid"`
+		Guid          string `json:"guid"`
 		Relationships struct {
 			App struct {
-				Data struct{
+				Data struct {
 					Guid string `json:"guid"`
 				} `json:"data"`
 			} `json:"app"`
@@ -110,10 +111,9 @@ func (droplet *AppDroplet) UploadFrom(uploadPath string) {
 
 func (droplet *AppDroplet) SetAsCurrentDroplet() {
 	appGuid := droplet.appGuid
-	token := v3_helpers.GetAuthToken()
 
-	currentDropletUrl :=  fmt.Sprintf("/v3/apps/%s/relationships/current_droplet", appGuid)
-	curl := cf.Cf("curl", currentDropletUrl, "-X", "PATCH", "-d", fmt.Sprintf("'{ \"data\": { \"guid\": \"%s\" } }'", droplet.guid), "-H", fmt.Sprintf("Authorization: %s", token)).Wait()
+	currentDropletUrl := fmt.Sprintf("/v3/apps/%s/relationships/current_droplet", appGuid)
+	curl := cf.Cf("curl", currentDropletUrl, "--fail", "-X", "PATCH", "-d", fmt.Sprintf(`{ "data": { "guid": "%s" } }`, droplet.guid)).Wait()
 	Expect(curl).To(Exit(0))
 
 	session := cf.Cf("curl", currentDropletUrl)

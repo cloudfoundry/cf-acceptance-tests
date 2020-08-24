@@ -1,15 +1,15 @@
 package apps
 
 import (
-	"fmt"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
+
+	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
@@ -81,7 +81,6 @@ var _ = Describe("Uploading and Downloading droplets", func() {
 		By("Downloading the droplet for the Hello World app")
 		guid := appGuid(appName)
 		tmpdir := makeTempDir()
-		fmt.Println("Tmpdir:" + tmpdir)
 		defer os.RemoveAll(tmpdir)
 
 		appDroplet := app_helpers.NewAppDroplet(guid, Config)

@@ -110,7 +110,6 @@ func GetProcessGuidsForType(appGuid string, processType string) []string {
 	return guids
 }
 
-
 func GetCurrentDropletGuidFromApp(appGuid string) string {
 	session := cf.Cf("curl", fmt.Sprintf("/v3/apps/%s/droplets/current", appGuid))
 	bytes := session.Wait().Out.Contents()
@@ -146,18 +145,17 @@ func AssignIsolationSegmentToSpace(spaceGuid, isoSegGuid string) {
 
 func CreateAndMapRoute(appGuid, domain, host string) {
 	CreateRoute(domain, host)
-	getRoutePath := fmt.Sprintf("/v2/routes?q=host:%s", host)
+	getRoutePath := fmt.Sprintf("/v3/routes?hosts=%s", host)
+
 	routeBody := cf.Cf("curl", getRoutePath).Wait().Out.Contents()
 	routeJSON := struct {
 		Resources []struct {
-			Metadata struct {
-				Guid string `json:"guid"`
-			} `json:"metadata"`
+			Guid string `json:"guid"`
 		} `json:"resources"`
 	}{}
 	json.Unmarshal([]byte(routeBody), &routeJSON)
-	routeGuid := routeJSON.Resources[0].Metadata.Guid
-	Expect(cf.Cf("curl", fmt.Sprintf("/v2/routes/%s/apps/%s", routeGuid, appGuid), "-X", "PUT").Wait()).To(Exit(0))
+	routeGuid := routeJSON.Resources[0].Guid
+	Expect(cf.Cf("curl", fmt.Sprintf("/v3/routes/%s/destinations", routeGuid), "-X", "POST", "-d", fmt.Sprintf(`{"destinations": [{"app": {"guid": "%s"}}]}`, appGuid)).Wait()).To(Exit(0))
 }
 
 func UnmapAllRoutes(appGuid string) {
