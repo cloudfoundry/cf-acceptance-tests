@@ -158,24 +158,6 @@ func CreateAndMapRoute(appGuid, domain, host string) {
 	Expect(cf.Cf("curl", fmt.Sprintf("/v3/routes/%s/destinations", routeGuid), "-X", "POST", "-d", fmt.Sprintf(`{"destinations": [{"app": {"guid": "%s"}}]}`, appGuid)).Wait()).To(Exit(0))
 }
 
-func UnmapAllRoutes(appGuid string) {
-	getRoutespath := fmt.Sprintf("/v2/apps/%s/routes", appGuid)
-	routesBody := cf.Cf("curl", getRoutespath).Wait().Out.Contents()
-	routesJSON := struct {
-		Resources []struct {
-			Metadata struct {
-				Guid string `json:"guid"`
-			} `json:"metadata"`
-		} `json:"resources"`
-	}{}
-	json.Unmarshal([]byte(routesBody), &routesJSON)
-
-	for _, routeResource := range routesJSON.Resources {
-		routeGuid := routeResource.Metadata.Guid
-		Expect(cf.Cf("curl", fmt.Sprintf("/v2/routes/%s/apps/%s", routeGuid, appGuid), "-X", "DELETE").Wait()).To(Exit(0))
-	}
-}
-
 func CreateApp(appName, spaceGuid, environmentVariables string) string {
 	session := cf.Cf("curl", "/v3/apps", "-X", "POST", "-d", fmt.Sprintf(`{"name":"%s", "relationships": {"space": {"data": {"guid": "%s"}}}, "environment_variables":%s}`, appName, spaceGuid, environmentVariables))
 	bytes := session.Wait().Out.Contents()
@@ -512,13 +494,13 @@ func WaitForPackageToBeReady(packageGuid string) {
 }
 
 type ProcessAppUsageEvent struct {
-	Metadata struct {
-		Guid string `json:"guid"`
-	} `json:"metadata"`
-	Entity struct {
-		ProcessType string `json:"process_type"`
-		State       string `json:"state"`
-	} `json:"entity"`
+	Guid string `json:"guid"`
+	Process struct {
+		Type string `json:"type"`
+	} `json:"process"`
+	State struct {
+		Current string `json:"current"`
+	} `json: "state"`
 }
 
 type ProcessAppUsageEvents struct {
@@ -532,12 +514,12 @@ func GetLastAppUseEventForProcess(processType string, state string, afterGUID st
 		if afterGUID != "" {
 			afterGuidParam = fmt.Sprintf("&after_guid=%s", afterGUID)
 		}
-		usageEventsUrl := fmt.Sprintf("/v2/app_usage_events?order-direction=desc&page=1&results-per-page=150%s", afterGuidParam)
+		usageEventsUrl := fmt.Sprintf("/v3/app_usage_events?order_by=-created_at&page=1&per_page=150%s", afterGuidParam)
 		workflowhelpers.ApiRequest("GET", usageEventsUrl, &response, Config.DefaultTimeoutDuration())
 	})
 
 	for _, event := range response.Resources {
-		if event.Entity.ProcessType == processType && event.Entity.State == state {
+		if event.Process.Type == processType && event.State.Current == state {
 			return true, event
 		}
 	}
@@ -548,15 +530,19 @@ func GetLastAppUseEventForProcess(processType string, state string, afterGUID st
 //private
 
 func getHttpLoggregatorEndpoint() string {
-	infoCommand := cf.Cf("curl", "/v2/info")
+	infoCommand := cf.Cf("curl", "/")
 	Expect(infoCommand.Wait()).To(Exit(0))
 
 	var response struct {
-		DopplerLoggingEndpoint string `json:"doppler_logging_endpoint"`
+		Links struct {
+			Logging struct {
+				Href string `json:"href"`
+			} `json:"logging"`
+		} `json:"links"`
 	}
 
 	err := json.Unmarshal(infoCommand.Buffer().Contents(), &response)
 	Expect(err).NotTo(HaveOccurred())
 
-	return strings.Replace(response.DopplerLoggingEndpoint, "ws", "http", 1)
+	return strings.Replace(response.Links.Logging.Href, "ws", "http", 1)
 }
