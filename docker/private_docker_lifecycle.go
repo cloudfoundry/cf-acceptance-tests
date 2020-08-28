@@ -18,6 +18,8 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	"os"
+	"strings"
 )
 
 var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
@@ -25,6 +27,7 @@ var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
 		appName  string
 		username string
 		password string
+		repository string
 	)
 
 	type dockerCreds struct {
@@ -53,27 +56,10 @@ var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
 		spaceGuid = strings.TrimSpace(spaceGuid)
 		appName = random_name.CATSRandomName("APP")
 
-		newAppRequest, err := json.Marshal(createAppRequest{
-			Name:        appName,
-			SpaceGuid:   spaceGuid,
-			DockerImage: Config.GetPrivateDockerRegistryImage(),
-			DockerCredentials: dockerCreds{
-				Username: username,
-				Password: password,
-			}})
-
-		Expect(err).NotTo(HaveOccurred())
-
-		cmd := exec.Command("cf", "curl", "-X", "POST", "/v2/apps", "-d", string(newAppRequest))
-		cfCurlSession, err := Start(cmd, GinkgoWriter, GinkgoWriter)
-		Expect(err).NotTo(HaveOccurred())
-
-		// Redact the docker password from the test logs
-		cmd.Args[6] = strings.Replace(cmd.Args[6], `"password":"`+password+`"`, `"password":"***"`, 1)
-		reporter := commandreporter.NewCommandReporter()
-		reporter.Report(time.Now(), cmd)
-
-		Eventually(cfCurlSession).Should(Exit(0))
+		os.Setenv("CF_DOCKER_PASSWORD", password)
+		Eventually(cf.Cf("push", appName,
+			"--docker-image", repository,
+			"--docker-username", username)).Should(Exit(0))
 	})
 
 	AfterEach(func() {
@@ -85,12 +71,10 @@ var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
 		BeforeEach(func() {
 			username = Config.GetPrivateDockerRegistryUsername()
 			password = Config.GetPrivateDockerRegistryPassword()
+			repository = Config.GetPrivateDockerRegistryImage()
 		})
 
 		It("starts the docker app successfully", func() {
-			Eventually(cf.Cf("start", appName), Config.CfPushTimeoutDuration()).Should(Exit(0))
-			Eventually(cf.Cf("map-route", appName, Config.GetAppsDomain(), "--hostname", appName)).Should(Exit(0))
-
 			Eventually(func() string {
 				return helpers.CurlApp(Config, appName, "/env/INSTANCE_INDEX")
 			}).Should(Equal("0"))
