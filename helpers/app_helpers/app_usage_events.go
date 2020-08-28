@@ -85,6 +85,20 @@ func UsageEventsAfterGuid(guid string) []AppUsageEvent {
 			url = response.Pagination.Next.href
 		}
 	})
-
 	return resources
+}
+
+func LastAppUsageEventByState(appName string, state string) (bool, AppUsageEvent) {
+	var response AppUsageEvents
+	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+		workflowhelpers.ApiRequest("GET", "/v3/app_usage_events?order_by=-created_at&page=1&per_page=150", &response, Config.DefaultTimeoutDuration())
+	})
+
+	for _, event := range response.Resources {
+		if event.App.Name == appName && event.State.Current == state {
+			return true, event
+		}
+	}
+
+	return false, AppUsageEvent{}
 }
