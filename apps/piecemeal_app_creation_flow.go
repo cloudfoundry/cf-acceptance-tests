@@ -22,8 +22,7 @@ var _ = AppsDescribe("Piecemeal App Creation", func() {
 		appName string
 	)
 
-	// Droplet tests aren't applicable to cf-for-k8s
-	SkipOnK8s()
+	SkipOnK8s("App droplets not supported")
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")

@@ -17,8 +17,7 @@ import (
 var _ = AppsDescribe("Crashing", func() {
 	var appName string
 
-	// TODO: Check with appropriate component team
-	SkipOnK8s()
+	SkipOnK8s("Multi-buildpack apps not supported")
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")

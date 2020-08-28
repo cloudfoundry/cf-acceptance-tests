@@ -17,10 +17,6 @@ var _ = AppsDescribe("Getting instance information", func() {
 		var appName string
 		var runawayTestSetup *workflowhelpers.ReproducibleTestSuiteSetup
 
-		// TODO: Talk to appropriate component team
-		// Case of 'insufficient' is different depending upon platform.
-		SkipOnK8s()
-
 		BeforeEach(func() {
 			runawayTestSetup = workflowhelpers.NewRunawayAppTestSuiteSetup(Config)
 			runawayTestSetup.Setup()
@@ -42,7 +38,13 @@ var _ = AppsDescribe("Getting instance information", func() {
 
 		It("fails with insufficient resources", func() {
 			scale := cf.Cf("scale", appName, "-m", workflowhelpers.RUNAWAY_QUOTA_MEM_LIMIT, "-f")
-			Eventually(scale).Should(Or(Say("insufficient"), Say("down")))
+			scaleMatch := "insufficient"
+
+			if Config.RunningOnK8s() {
+				scaleMatch = "Insufficient"
+			}
+
+			Eventually(scale).Should(Or(Say(scaleMatch), Say("down")))
 			scale.Kill()
 
 			app := cf.Cf("app", appName)

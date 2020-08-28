@@ -41,7 +41,7 @@ var _ = V3Describe("buildpack", func() {
 		Version       string `json:"version"`
 	}
 
-	SkipOnK8s()
+	SkipOnK8s("Custom buildpacks not yet supported")
 
 	Context("With a single buildpack app", func() {
 		BeforeEach(func() {

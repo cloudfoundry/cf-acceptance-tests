@@ -102,7 +102,7 @@ exit 1
 		var buildpackName string
 		var envVarName string
 
-		SkipOnK8s()
+		SkipOnK8s("Custom buildpacks not yet supported")
 
 		BeforeEach(func() {
 			appName = random_name.CATSRandomName("APP")

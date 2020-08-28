@@ -32,7 +32,7 @@ var _ = AppsDescribe("Buildpack cache", func() {
 		buildpackArchivePath string
 	)
 
-	SkipOnK8s()
+	SkipOnK8s("Custom buildpacks not yet supported")
 
 	matchingFilename := func(appName string) string {
 		return fmt.Sprintf("buildpack-for-buildpack-cache-test-%s", appName)

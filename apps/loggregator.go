@@ -91,8 +91,7 @@ var _ = AppsDescribe("loggregator", func() {
 	})
 
 	Context("firehose data", func() {
-
-		SkipOnK8s()
+		SkipOnK8s("Not yet supported")
 
 		It("shows logs and metrics", func() {
 			noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.GetSkipSSLValidation()}, nil)
@@ -112,8 +111,7 @@ var _ = AppsDescribe("loggregator", func() {
 	})
 
 	Context("reverse log proxy", func() {
-
-		SkipOnK8s()
+		SkipOnK8s("Not yet supported")
 
 		It("streams logs", func() {
 			rlpClient := loggregator.NewRLPGatewayClient(

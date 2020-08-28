@@ -26,8 +26,7 @@ var _ = AppsDescribe("Logging", func() {
 	var interrupt chan struct{}
 	var serviceNames []string
 
-	// TODO: check with appropriate component team
-	SkipOnK8s()
+	SkipOnK8s("Not yet supported")
 
 	Describe("Syslog drains", func() {
 		BeforeEach(func() {

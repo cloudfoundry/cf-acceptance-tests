@@ -18,8 +18,7 @@ import (
 var _ = AppsDescribe("Routing Transparency", func() {
 	var appName string
 
-	// TODO: Routing output differs between cf-for-vms and cf-for-k8s
-	SkipOnK8s()
+	SkipOnK8s("See https://github.com/cloudfoundry/cf-acceptance-tests/pull/396")
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
