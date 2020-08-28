@@ -9,7 +9,6 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
@@ -27,12 +26,10 @@ var _ = AppsDescribe("Delete Route", func() {
 		nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait()
 		expectedNullResponse = string(nullSession.Buffer().Contents())
 
-		Expect(cf.Cf("push",
+		Expect(cf.Cf(app_helpers.CatnipWithArgs(
 			appName,
-			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", assets.NewAssets().Catnip,
-			"-c", "./catnip",
+		)...,
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, appName)

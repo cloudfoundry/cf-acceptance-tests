@@ -2,10 +2,11 @@ package app_helpers
 
 import (
 	"fmt"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"io/ioutil"
 	"strings"
 	"time"
+
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
@@ -17,7 +18,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-func CatnipWithArgs(appName string, args... string) []string {
+func CatnipWithArgs(appName string, args ...string) []string {
 
 	pushArgs := []string{
 		"push", appName,
@@ -25,12 +26,46 @@ func CatnipWithArgs(appName string, args... string) []string {
 		"-p", assets.NewAssets().Catnip,
 	}
 
-	if (!Config.RunningOnK8s()) {
+	if !Config.RunningOnK8s() {
 		pushArgs = append(pushArgs, "-c", "./catnip")
 	}
 
 	if Config.RunningOnK8s() {
 		ioutil.WriteFile("assets/catnip/bin/Procfile", []byte("web: ./catnip"), 0644)
+	}
+
+	pushArgs = append(pushArgs, args...)
+
+	return pushArgs
+}
+
+func BinaryWithArgs(appName string, args ...string) []string {
+
+	pushArgs := []string{
+		"push", appName,
+		"-b", Config.GetBinaryBuildpackName(),
+		"-p", assets.NewAssets().Binary,
+	}
+
+	if !Config.RunningOnK8s() {
+		pushArgs = append(pushArgs, "-c", "./app")
+	}
+
+	if Config.RunningOnK8s() {
+		ioutil.WriteFile("assets/binary/bin/Procfile", []byte("web: ./app"), 0644)
+	}
+
+	pushArgs = append(pushArgs, args...)
+
+	return pushArgs
+}
+
+func HelloWorldWithArgs(appName string, args ...string) []string {
+
+	pushArgs := []string{
+		"push", appName,
+		"-b", Config.GetRubyBuildpackName(),
+		"-p", assets.NewAssets().HelloWorld,
 	}
 
 	pushArgs = append(pushArgs, args...)

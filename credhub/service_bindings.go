@@ -135,7 +135,7 @@ var _ = CredhubDescribe("service bindings", func() {
 			tmpdir string
 		)
 
-		SkipOnK8s()
+		SkipOnK8s("Custom buildpacks not yet supported")
 
 		BeforeEach(func() {
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {

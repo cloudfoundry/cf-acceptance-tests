@@ -52,6 +52,8 @@ func unpackTarball(tarballPath string) {
 var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 	var helloWorldAppName string
 
+	SkipOnK8s("App droplets not supported")
+
 	BeforeEach(func() {
 		helloWorldAppName = random_name.CATSRandomName("APP")
 

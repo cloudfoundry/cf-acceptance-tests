@@ -26,6 +26,8 @@ var _ = AppsDescribe("Logging", func() {
 	var interrupt chan struct{}
 	var serviceNames []string
 
+	SkipOnK8s("Not yet supported")
+
 	Describe("Syslog drains", func() {
 		BeforeEach(func() {
 			interrupt = make(chan struct{}, 1)

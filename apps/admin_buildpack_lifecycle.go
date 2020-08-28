@@ -32,7 +32,7 @@ var _ = AppsDescribe("Admin Buildpacks", func() {
 		buildpackArchivePath string
 	)
 
-	SkipOnK8s()
+	SkipOnK8s("Custom buildpacks not supported")
 
 	noAppDetectedErrorRegexp := "NoAppDetectedError|An app was not successfully detected by any available buildpack"
 	buildpackCompileFailedRegexp := "BuildpackCompileFailed|App staging failed in the buildpack compile phase"
