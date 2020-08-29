@@ -23,6 +23,18 @@ const (
 	V3_JAVA_MEMORY_LIMIT    = "1024"
 )
 
+type App struct {
+	GUID    string              `json:"guid"`
+	Process *DestinationProcess `json:"process,omitempty"`
+	Name string `json:name`
+	Links struct {
+		Self struct {
+			Href string `json:href`
+		} `json:self`
+	} `json:links`
+
+}
+
 func CreateDeployment(appGuid string) string {
 	deploymentPath := fmt.Sprintf("/v3/deployments")
 	deploymentRequestBody := fmt.Sprintf(`{"relationships": {"app": {"data": {"guid": "%s"}}}}`, appGuid)
@@ -56,6 +68,16 @@ func CancelDeployment(deploymentGuid string) {
 	session := cf.Cf("curl", deploymentPath, "-X", "POST", "-i").Wait()
 	Expect(string(session.Out.Contents())).To(ContainSubstring("200 OK"))
 	Expect(session).To(Exit(0))
+}
+
+type AppsResponse struct {
+	Resources []App
+}
+func GetApp(appName string) App {
+	var appsResponse AppsResponse
+	cfResponse := cf.Cf("curl", fmt.Sprintf("/v3/apps?names=%s", appName)).Wait().Out.Contents()
+	json.Unmarshal(cfResponse, &appsResponse)
+	return appsResponse.Resources[0]
 }
 
 func ScaleApp(appGuid string, instances int) {

@@ -13,11 +13,6 @@ type DestinationProcess struct {
 	Type string `json:"type"`
 }
 
-type App struct {
-	GUID    string              `json:"guid"`
-	Process *DestinationProcess `json:"process,omitempty"`
-}
-
 type Destination struct {
 	GUID   string `json:"guid,omitempty"`
 	App    App    `json:"app"`
