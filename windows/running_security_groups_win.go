@@ -3,9 +3,10 @@ package windows
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 	"io/ioutil"
 	"os"
+
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
@@ -21,12 +22,10 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-
-
-type StatsResponse map[string]struct {
-	Stats struct {
-		Host string
-		Port int
+type StatsResponse struct {
+	Resources []struct {
+		Host string `json:"host"`
+		Port int    `json:"port"`
 	}
 }
 
@@ -56,14 +55,14 @@ func warmUpRequest(appName string) {
 
 func getAppHostIpAndPort(appName string) (string, int) {
 	app := v3_helpers.GetApp(appName)
-	processGuid := v3_helpers.GetProcessGuidForType(app.GUID, "web")[0]
+	processGuid := v3_helpers.GetProcessGuidForType(app.GUID, "web")
 	processUrl := fmt.Sprintf("v3/processes/%s", processGuid)
 
 	var statsResponse StatsResponse
 	cfResponse := cf.Cf("curl", fmt.Sprintf("%s/stats", processUrl)).Wait().Out.Contents()
 	json.Unmarshal(cfResponse, &statsResponse)
 
-	return statsResponse["0"].Stats.Host, statsResponse["0"].Stats.Port
+	return statsResponse.Resources[0].Host, statsResponse.Resources[0].Port
 }
 
 func testAppConnectivity(clientAppName string, privateHost string, privatePort int) NoraCurlResponse {
@@ -141,7 +140,7 @@ func assertNetworkingPreconditions(clientAppName string, privateHost string, pri
 	Expect(noraCurlResponse.ReturnCode).NotTo(Equal(0), "Expected default running security groups not to allow internal communication between app containers. Configure your running security groups to not allow traffic on internal networks, or disable this test by setting 'include_security_groups' to 'false' in '"+os.Getenv("CONFIG")+"'.")
 }
 
-var _ = FDescribe("WINDOWS: App Instance Networking", func() {
+var _ = WindowsDescribe("WINDOWS: App Instance Networking", func() {
 	SecurityGroupsDescribe("WINDOWS: Using container-networking and running security-groups", func() {
 		var serverAppName, clientAppName, privateHost, orgName, spaceName, securityGroupName string
 		var privatePort int
