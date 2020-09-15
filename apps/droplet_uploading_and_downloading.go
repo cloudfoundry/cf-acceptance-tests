@@ -50,9 +50,16 @@ func unpackTarball(tarballPath string) {
 	Expect(session.Out.Contents()).To(ContainSubstring("./logs"))
 }
 
-var _ = Describe("Uploading and Downloading droplets", func() {
+var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 	var appName string
 	var otherAppName string
+
+	SkipOnK8s("App droplets not supported")
+
+	BeforeEach(func() {
+		appName = random_name.CATSRandomName("APP")
+		Expect(cf.Cf("push", appName, "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+	})
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
@@ -63,9 +70,6 @@ var _ = Describe("Uploading and Downloading droplets", func() {
 
 	It("Users can manage droplet bits for an app", func() {
 		By("Pushing an app with 'hello world' in the response")
-		appName = random_name.CATSRandomName("APP")
-		Expect(cf.Cf("push", appName, "-b", Config.GetRubyBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().HelloWorld).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, appName)
 		}).Should(ContainSubstring("Hello, world!"))

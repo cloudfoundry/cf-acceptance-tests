@@ -108,6 +108,8 @@ exit 1
 		var buildpackName string
 		var envVarName string
 
+		SkipOnK8s("Custom buildpacks not yet supported")
+
 		BeforeEach(func() {
 			appName = random_name.CATSRandomName("APP")
 			envVarName = fmt.Sprintf("CATS_STAGING_TEST_VAR_%s", strconv.Itoa(int(time.Now().UnixNano())))
@@ -165,12 +167,9 @@ exit 1
 				extendEnv("running", envVarName, envVarValue)
 			})
 
-			Expect(cf.Cf("push",
+			Expect(cf.Cf(app_helpers.CatnipWithArgs(
 				appName,
-				"-b", Config.GetBinaryBuildpackName(),
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().Catnip,
-				"-c", "./catnip",
+				"-m", DEFAULT_MEMORY_LIMIT)...,
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			env := helpers.CurlApp(Config, appName, "/env.json")

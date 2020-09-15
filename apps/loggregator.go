@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"code.cloudfoundry.org/go-loggregator"
-	"code.cloudfoundry.org/go-loggregator/rpc/loggregator_v2"
+	"code.cloudfoundry.org/go-loggregator/v8"
+	"code.cloudfoundry.org/go-loggregator/v8/rpc/loggregator_v2"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	"net/http"
@@ -91,6 +91,8 @@ var _ = AppsDescribe("loggregator", func() {
 	})
 
 	Context("firehose data", func() {
+		SkipOnK8s("Not yet supported")
+
 		It("shows logs and metrics", func() {
 			noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.GetSkipSSLValidation()}, nil)
 			msgChan := make(chan *events.Envelope, 100000)
@@ -109,6 +111,8 @@ var _ = AppsDescribe("loggregator", func() {
 	})
 
 	Context("reverse log proxy", func() {
+		SkipOnK8s("Not yet supported")
+
 		It("streams logs", func() {
 			rlpClient := loggregator.NewRLPGatewayClient(
 				getLogStreamEndpoint(),

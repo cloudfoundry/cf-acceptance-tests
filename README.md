@@ -192,6 +192,8 @@ include_v3
 * `volume_service_plan_name`: The name of the plan of the service provided by the volume service broker.
 * `volume_service_create_config`: The JSON configuration that is used when volume service is created.
 
+* `infrastructure`: The name of the infrastructure for the environment that the tests will run against. Must be either "vms" or "kubernetes". Defaults to "vms".
+
 #### Buildpack Names
 Many tests specify a buildpack when pushing an app, so that on diego the app staging process completes in less time. The default names for the buildpacks are as follows; if you have buildpacks with different names, you can override them by setting different names:
 

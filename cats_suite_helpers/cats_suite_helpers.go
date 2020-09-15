@@ -1,6 +1,7 @@
 package cats_suite_helpers
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -27,6 +28,14 @@ var (
 	ScpPath   string
 	SftpPath  string
 )
+
+func SkipOnK8s(reason string) {
+	BeforeEach(func() {
+		if Config.RunningOnK8s() {
+			Skip(fmt.Sprintf(skip_messages.SkipK8sMessage, reason))
+		}
+	})
+}
 
 func AppsDescribe(description string, callback func()) bool {
 	return Describe("[apps]", func() {
@@ -246,6 +255,7 @@ func CredhubDescribe(description string, callback func()) bool {
 				Skip(skip_messages.SkipCredhubMessage)
 			}
 		})
+		SkipOnK8s("Credhub not supported")
 		Describe(description, callback)
 	})
 }
@@ -282,6 +292,7 @@ func WindowsCredhubDescribe(description string, callback func()) bool {
 				Skip(skip_messages.SkipCredhubMessage)
 			}
 		})
+		SkipOnK8s("Windows not supported")
 		Describe(description, callback)
 	})
 }
@@ -315,6 +326,7 @@ func WindowsDescribe(description string, callback func()) bool {
 				Skip(skip_messages.SkipWindowsMessage)
 			}
 		})
+		SkipOnK8s("Windows not supported")
 		Describe(description, callback)
 	})
 }

@@ -40,6 +40,8 @@ var _ = Describe("Changing an app's start command", func() {
 	})
 
 	Context("by using the command flag", func() {
+		SkipOnK8s("Custom start command not supported")
+
 		BeforeEach(func() {
 			Expect(cf.Cf(
 				"push", appName,
@@ -103,6 +105,8 @@ var _ = Describe("Changing an app's start command", func() {
 		type AppsResponse struct {
 			Resources []AppResource `json:"resources"`
 		}
+
+		SkipOnK8s("Multi-buildpack apps not supported")
 
 		BeforeEach(func() {
 			Expect(cf.Cf("push", appName, "-b", Config.GetNodejsBuildpackName(), "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().NodeWithProcfile).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))

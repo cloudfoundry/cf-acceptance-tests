@@ -34,7 +34,7 @@ var _ = CredhubDescribe("service bindings", func() {
 
 	BeforeEach(func() {
 		TestSetup.RegularUserContext().TargetSpace()
-		cf.Cf("target", "-o", TestSetup.RegularUserContext().Org)
+		cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space)
 
 		chBrokerAppName = random_name.CATSRandomName("BRKR-CH")
 
@@ -134,6 +134,9 @@ var _ = CredhubDescribe("service bindings", func() {
 
 			tmpdir string
 		)
+
+		SkipOnK8s("Custom buildpacks not yet supported")
+
 		BeforeEach(func() {
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				buildpackName = random_name.CATSRandomName("BPK")
