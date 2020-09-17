@@ -17,7 +17,6 @@ import (
 var _ = AppsDescribe("Crashing", func() {
 	var appName string
 
-	SkipOnK8s("Multi-buildpack apps not supported")
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
@@ -29,6 +28,7 @@ var _ = AppsDescribe("Crashing", func() {
 	})
 
 	Describe("a continuously crashing app", func() {
+		SkipOnK8s("Multi-buildpack apps not supported")
 		It("emits crash events and reports as 'crashed' after enough crashes", func() {
 			Expect(cf.Cf(
 				"push",
@@ -47,15 +47,11 @@ var _ = AppsDescribe("Crashing", func() {
 		})
 	})
 
-	Context("the app crashes", func() {
+	FContext("the app crashes", func() {
 		BeforeEach(func() {
-			Expect(cf.Cf(
-				"push",
+			Expect(cf.Cf(app_helpers.CatnipWithArgs(
 				appName,
-				"-b", Config.GetBinaryBuildpackName(),
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().Catnip,
-				"-c", "./catnip",
+				"-m", DEFAULT_MEMORY_LIMIT)...,
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
@@ -69,11 +65,12 @@ var _ = AppsDescribe("Crashing", func() {
 
 		It("recovers", func() {
 			id := helpers.CurlApp(Config, appName, "/id")
+			Expect(id).Should(MatchRegexp(`^[-0-9a-zA-Z]{36}$`))
 			helpers.CurlApp(Config, appName, "/sigterm/KILL")
 
 			Eventually(func() string {
 				return helpers.CurlApp(Config, appName, "/id")
-			}).Should(Not(Equal(id)))
+			}).Should(MatchRegexp(`^[-0-9a-zA-Z]{36}$`))
 		})
 	})
 })
