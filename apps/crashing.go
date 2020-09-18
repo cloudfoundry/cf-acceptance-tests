@@ -17,7 +17,6 @@ import (
 var _ = AppsDescribe("Crashing", func() {
 	var appName string
 
-
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 	})
@@ -47,7 +46,7 @@ var _ = AppsDescribe("Crashing", func() {
 		})
 	})
 
-	FContext("the app crashes", func() {
+	Context("the app crashes", func() {
 		BeforeEach(func() {
 			Expect(cf.Cf(app_helpers.CatnipWithArgs(
 				appName,
@@ -55,12 +54,15 @@ var _ = AppsDescribe("Crashing", func() {
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
-		It("shows crash events", func() {
-			helpers.CurlApp(Config, appName, "/sigterm/KILL")
+		Context("crash events", func() {
+			SkipOnK8s("remove this skip and the enclosing Context() once we bump to eirini 1.9")
+			It("shows crash events", func() {
+				helpers.CurlApp(Config, appName, "/sigterm/KILL")
 
-			Eventually(func() string {
-				return string(cf.Cf("events", appName).Wait().Out.Contents())
-			}).Should(MatchRegexp("app.crash"))
+				Eventually(func() string {
+					return string(cf.Cf("events", appName).Wait().Out.Contents())
+				}).Should(MatchRegexp("app.crash"))
+			})
 		})
 
 		It("recovers", func() {
