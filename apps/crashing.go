@@ -65,14 +65,17 @@ var _ = AppsDescribe("Crashing", func() {
 			})
 		})
 
+
 		It("recovers", func() {
+			const idChecker = "^[0-9a-zA-Z]+(?:-[0-9a-zA-z]+)+$"
+
 			id := helpers.CurlApp(Config, appName, "/id")
-			Expect(id).Should(MatchRegexp(`^[-0-9a-zA-Z]{36}$`))
+			Expect(id).Should(MatchRegexp(idChecker))
 			helpers.CurlApp(Config, appName, "/sigterm/KILL")
 
 			Eventually(func() string {
 				return helpers.CurlApp(Config, appName, "/id")
-			}).Should(MatchRegexp(`^[-0-9a-zA-Z]{36}$`))
+			}).Should(MatchRegexp(idChecker))
 		})
 	})
 })
