@@ -13,6 +13,8 @@ import (
 )
 
 var _ = RoutingDescribe("Context Paths", func() {
+	SkipOnK8s("Not yet supported in CF-for-K8s")
+
 	var (
 		app1              string
 		helloRoutingAsset = assets.NewAssets().HelloRouting
