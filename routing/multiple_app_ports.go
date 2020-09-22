@@ -57,19 +57,12 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 	Context("when app has multiple ports mapped", func() {
 		BeforeEach(func() {
 			appGUID := app_helpers.GetAppGuid(appName)
-			// Give an app ports 7777, 8888 and 8080
-			// Expect(cf.Cf(
-			// 	"curl",
-			// 	fmt.Sprintf("/v2/apps/%s", appGuid),  //<-- bad
-			// 	"-X", "PUT", "-d", `{"ports": [7777,8888,8080]}`,
-			// ).Wait()).To(Exit(0))
 
-			// create 2nd route
 			secondRouteHostname = fmt.Sprintf("%s-two", appName)
 			Expect(cf.Cf("create-route", Config.GetAppsDomain(),
 				"--hostname", secondRouteHostname,
 			).Wait()).To(Exit(0))
-			// map app route to other port
+
 			destination := Destination{
 				App: App{
 					GUID: appGUID,

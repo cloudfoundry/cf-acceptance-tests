@@ -26,13 +26,12 @@ const (
 type App struct {
 	GUID    string              `json:"guid"`
 	Process *DestinationProcess `json:"process,omitempty"`
-	Name string `json:name`
-	Links struct {
+	Name    string              `json:name`
+	Links   struct {
 		Self struct {
 			Href string `json:href`
 		} `json:self`
 	} `json:links`
-
 }
 
 func CreateDeployment(appGuid string) string {
@@ -73,6 +72,7 @@ func CancelDeployment(deploymentGuid string) {
 type AppsResponse struct {
 	Resources []App
 }
+
 func GetApp(appName string) App {
 	var appsResponse AppsResponse
 	cfResponse := cf.Cf("curl", fmt.Sprintf("/v3/apps?names=%s", appName)).Wait().Out.Contents()
@@ -296,7 +296,7 @@ func FetchRecentLogs(appGuid, oauthToken string, config config.CatsConfig) *Sess
 }
 
 func GetAuthToken() string {
-	session := cf.Cf("oauth-token") // TODO replace with CfSilent
+	session := cf.CfSilent("oauth-token")
 	bytes := session.Wait().Out.Contents()
 	return strings.TrimSpace(string(bytes))
 }
@@ -516,7 +516,7 @@ func WaitForPackageToBeReady(packageGuid string) {
 }
 
 type ProcessAppUsageEvent struct {
-	Guid string `json:"guid"`
+	Guid    string `json:"guid"`
 	Process struct {
 		Type string `json:"type"`
 	} `json:"process"`

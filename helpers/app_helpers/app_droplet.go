@@ -87,7 +87,7 @@ func (droplet *AppDroplet) UploadFrom(uploadPath string) {
 	uploadURL := fmt.Sprintf("%s%s/v3/droplets/%s/upload", droplet.config.Protocol(), droplet.config.GetApiEndpoint(), droplet.guid)
 	bits := fmt.Sprintf(`bits=@%s`, uploadPath)
 
-	curl := helpers.CurlRedact(token, droplet.config, uploadURL, "-v", "-X", "POST", "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).Wait()
+	curl := helpers.CurlRedact(token, droplet.config, uploadURL, "-X", "POST", "-F", bits, "-H", fmt.Sprintf("Authorization: %s", token)).Wait()
 	Expect(curl).To(Exit(0))
 
 	var dropletResponseJSON struct {
