@@ -2,10 +2,10 @@ require 'json'
 
 app = lambda do |env|
   json = ENV['VCAP_APPLICATION']
- 
-  vcapApp = JSON.parse(json)
+  vcapApp = {}
+  vcapApp = JSON.parse(json) unless json.nil?
 
-  body = "Hello, " + vcapApp['name'] + " at index: " + ENV['CF_INSTANCE_INDEX'] + "!"
+  body = "Hello, " + vcapApp['name'].to_s + " at index: " + ENV['CF_INSTANCE_INDEX'].to_s + "!"
 
   # log headers
   puts JSON.pretty_generate(env)
