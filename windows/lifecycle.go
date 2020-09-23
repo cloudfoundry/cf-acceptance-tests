@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"time"
 
-	. "github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
@@ -38,7 +37,7 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 		})
 
 		By("checking the 'started' event", func() {
-			found, _ := lastAppUsageEvent(appName, "STARTED")
+			found, _ := app_helpers.LastAppUsageEventByState(appName, "STARTED")
 			Expect(found).To(BeTrue())
 		})
 
@@ -131,36 +130,9 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 				return helpers.CurlAppRoot(Config, appName)
 			}).Should(ContainSubstring("404"))
 
-			found, _ := lastAppUsageEvent(appName, "STOPPED")
+			found, _ := app_helpers.LastAppUsageEventByState(appName, "STOPPED")
 			Expect(found).To(BeTrue())
 		})
 	})
 })
 
-type AppUsageEvent struct {
-	Entity struct {
-		AppName       string `json:"app_name"`
-		State         string `json:"state"`
-		BuildpackName string `json:"buildpack_name"`
-		BuildpackGuid string `json:"buildpack_guid"`
-	} `json:"entity"`
-}
-
-type AppUsageEvents struct {
-	Resources []AppUsageEvent `struct:"resources"`
-}
-
-func lastAppUsageEvent(appName string, state string) (bool, AppUsageEvent) {
-	var response AppUsageEvents
-	AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		ApiRequest("GET", "/v2/app_usage_events?order-direction=desc&page=1&results-per-page=150", &response, Config.DefaultTimeoutDuration())
-	})
-
-	for _, event := range response.Resources {
-		if event.Entity.AppName == appName && event.Entity.State == state {
-			return true, event
-		}
-	}
-
-	return false, AppUsageEvent{}
-}

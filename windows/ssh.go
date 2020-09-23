@@ -214,16 +214,20 @@ func sshAccessCode() string {
 }
 
 func sshProxyAddress() string {
-	infoCommand := cf.Cf("curl", "/v2/info")
+	infoCommand := cf.Cf("curl", "/")
 	Expect(infoCommand.Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 	type infoResponse struct {
-		AppSSHEndpoint string `json:"app_ssh_endpoint"`
+		Links struct {
+			AppSsh struct {
+				Href string `json:"href"`
+			} `json:"app_ssh"`
+		} `json:"links"`
 	}
 
 	var response infoResponse
 	err := json.Unmarshal(infoCommand.Buffer().Contents(), &response)
 	Expect(err).NotTo(HaveOccurred())
 
-	return response.AppSSHEndpoint
+	return response.Links.AppSsh.Href
 }

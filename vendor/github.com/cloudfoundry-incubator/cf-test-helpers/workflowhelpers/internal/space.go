@@ -87,7 +87,7 @@ func NewBaseTestSpace(spaceName, organizationName, quotaDefinitionName, quotaDef
 
 func (ts *TestSpace) Create() {
 	args := []string{
-		"create-quota",
+		"create-org-quota",
 		ts.QuotaDefinitionName,
 		"-m", ts.QuotaDefinitionTotalMemoryLimit,
 		"-i", ts.QuotaDefinitionInstanceMemoryLimit,
@@ -105,7 +105,7 @@ func (ts *TestSpace) Create() {
 		createOrg := internal.Cf(ts.CommandStarter, "create-org", ts.organizationName)
 		EventuallyWithOffset(1, createOrg, ts.Timeout).Should(Exit(0), "Failed to create org")
 
-		setQuota := internal.Cf(ts.CommandStarter, "set-quota", ts.organizationName, ts.QuotaDefinitionName)
+		setQuota := internal.Cf(ts.CommandStarter, "set-org-quota", ts.organizationName, ts.QuotaDefinitionName)
 		EventuallyWithOffset(1, setQuota, ts.Timeout).Should(Exit(0), "Failed to set org quota")
 	}
 
@@ -125,7 +125,7 @@ func (ts *TestSpace) Destroy() {
 		deleteOrg := internal.Cf(ts.CommandStarter, "delete-org", "-f", ts.organizationName)
 		EventuallyWithOffset(1, deleteOrg, ts.Timeout).Should(Exit(0), "Failed to delete org")
 
-		deleteQuota := internal.Cf(ts.CommandStarter, "delete-quota", "-f", ts.QuotaDefinitionName)
+		deleteQuota := internal.Cf(ts.CommandStarter, "delete-org-quota", "-f", ts.QuotaDefinitionName)
 		EventuallyWithOffset(1, deleteQuota, ts.Timeout).Should(Exit(0), "Failed to delete quota")
 	}
 }

@@ -61,13 +61,19 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 			buildGuid := StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
 
 			usageEvents := UsageEventsAfterGuid(lastUsageEventGuid)
-			event := AppUsageEvent{Entity: Entity{State: "STAGING_STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
+			event := AppUsageEvent{}
+			event.State.Current = "STAGING_STARTED"
+			event.App.Guid = appGuid
+			event.App.Name = appName
 			Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
 
 			WaitForBuildToStage(buildGuid)
 
 			usageEvents = UsageEventsAfterGuid(lastUsageEventGuid)
-			event = AppUsageEvent{Entity: Entity{State: "STAGING_STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
+			event = AppUsageEvent{}
+			event.State.Current = "STAGING_STOPPED"
+			event.App.Guid = appGuid
+			event.App.Name = appName
 			Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
 
 			dropletGuid := GetDropletFromBuild(buildGuid)
@@ -100,8 +106,20 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			usageEvents = UsageEventsAfterGuid(lastUsageEventGuid)
 
-			event1 := AppUsageEvent{Entity: Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
-			event2 := AppUsageEvent{Entity: Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
+			event1 := AppUsageEvent{}
+			event1.Process.Type = webProcess.Type
+			event1.Process.Guid = webProcess.Guid
+			event1.State.Current = "STARTED"
+			event1.App.Guid = appGuid
+			event1.App.Name = appName
+
+			event2 := AppUsageEvent{}
+			event2.Process.Type = workerProcess.Type
+			event2.Process.Guid = workerProcess.Guid
+			event2.State.Current = "STARTED"
+			event2.App.Guid = appGuid
+			event2.App.Name = appName
+
 			Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
 			Expect(UsageEventsInclude(usageEvents, event2)).To(BeTrue())
 
@@ -111,8 +129,20 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 			Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", workerProcess.Name)))
 
 			usageEvents = UsageEventsAfterGuid(lastUsageEventGuid)
-			event1 = AppUsageEvent{Entity: Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
-			event2 = AppUsageEvent{Entity: Entity{ProcessType: workerProcess.Type, AppGuid: workerProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
+			event1 = AppUsageEvent{}
+			event1.Process.Type = webProcess.Type
+			event1.Process.Guid = webProcess.Guid
+			event1.State.Current = "STOPPED"
+			event1.App.Guid = appGuid
+			event1.App.Name = appName
+
+			event2 = AppUsageEvent{}
+			event2.Process.Type = workerProcess.Type
+			event2.Process.Guid = workerProcess.Guid
+			event2.State.Current = "STOPPED"
+			event2.App.Guid = appGuid
+			event2.App.Name = appName
+
 			Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
 			Expect(UsageEventsInclude(usageEvents, event2)).To(BeTrue())
 
@@ -156,7 +186,12 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			usageEvents := UsageEventsAfterGuid(lastUsageEventGuid)
 
-			event1 := AppUsageEvent{Entity: Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
+			event1 := AppUsageEvent{}
+			event1.Process.Type = webProcess.Type
+			event1.Process.Guid = webProcess.Guid
+			event1.State.Current = "STARTED"
+			event1.App.Guid = appGuid
+			event1.App.Name = appName
 			Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
 
 			StopApp(appGuid)
@@ -164,7 +199,12 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 			Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", webProcess.Name)))
 
 			usageEvents = UsageEventsAfterGuid(lastUsageEventGuid)
-			event1 = AppUsageEvent{Entity: Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
+			event1 = AppUsageEvent{}
+			event1.Process.Type = webProcess.Type
+			event1.Process.Guid = webProcess.Guid
+			event1.State.Current = "STOPPED"
+			event1.App.Guid = appGuid
+			event1.App.Name = appName
 			Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
 
 			Eventually(func() string {
@@ -232,7 +272,12 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 		Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 		usageEvents := UsageEventsAfterGuid(lastUsageEventGuid)
 
-		event := AppUsageEvent{Entity: Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STARTED", ParentAppGuid: appGuid, ParentAppName: appName}}
+		event := AppUsageEvent{}
+		event.Process.Type = webProcess.Type
+		event.Process.Guid = webProcess.Guid
+		event.State.Current = "STARTED"
+		event.App.Guid = appGuid
+		event.App.Name = appName
 		Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
 
 		StopApp(appGuid)
@@ -240,7 +285,12 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 		Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", webProcess.Name)))
 
 		usageEvents = UsageEventsAfterGuid(lastUsageEventGuid)
-		event = AppUsageEvent{Entity: Entity{ProcessType: webProcess.Type, AppGuid: webProcess.Guid, State: "STOPPED", ParentAppGuid: appGuid, ParentAppName: appName}}
+		event = AppUsageEvent{}
+		event.Process.Type = webProcess.Type
+		event.Process.Guid = webProcess.Guid
+		event.State.Current = "STOPPED"
+		event.App.Guid = appGuid
+		event.App.Name = appName
 		Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
 
 		Eventually(func() string {

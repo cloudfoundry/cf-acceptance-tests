@@ -16,7 +16,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = V3Describe("droplet features", func() {
+var _ = Describe("droplet features", func() {
 
 	var (
 		appGuid     string
@@ -102,7 +102,7 @@ var _ = V3Describe("droplet features", func() {
 			DeleteApp(appGuid) // to prove that the new app does not depend on the old app
 
 			AssignDropletToApp(destinationAppGuid, copiedDropletGuid)
-			eventsQuery := fmt.Sprintf("v2/events?q=type:audit.app.droplet.create&q=actee:%s", destinationAppGuid)
+			eventsQuery := fmt.Sprintf("v3/audit_events?types=audit.app.droplet.create&target_guids=%s", destinationAppGuid)
 			session = cf.Cf("curl", eventsQuery, "-X", "GET")
 			bytes = session.Wait().Out.Contents()
 
@@ -115,15 +115,16 @@ var _ = V3Describe("droplet features", func() {
 				Request        request `json:"request"`
 			}
 
-			type entity struct {
-				Type      string   `json:"type"`
-				Actee     string   `json:"actee"`
-				ActeeName string   `json:"actee_name"`
-				Metadata  metadata `json:"metadata"`
+			type target struct {
+				Type string `json:"type"`
+				Guid string `json:"guid"`
+				Name string `json:"name"`
 			}
 
 			type event struct {
-				Entity entity `json:"entity"`
+				Guid   string `json:"guid"`
+				Type   string `json:"type"`
+				Target target `json:"target"`
 			}
 
 			var resources struct {
@@ -132,20 +133,10 @@ var _ = V3Describe("droplet features", func() {
 
 			json.Unmarshal(bytes, &resources)
 
-			Expect(len(resources.Events) > 0).Should(BeTrue())
-			Expect(resources.Events).Should(ContainElement(event{
-				entity{
-					Type:      "audit.app.droplet.create",
-					Actee:     destinationAppGuid,
-					ActeeName: destinationAppName,
-					Metadata: metadata{
-						NewDropletGuid: copiedDropletGuid,
-						Request: request{
-							SourceDropletGuid: sourceDropletGuid,
-						},
-					},
-				},
-			}))
+			Expect(len(resources.Events) == 1).Should(BeTrue())
+			Expect(resources.Events[0].Target.Type).Should(Equal("app"))
+			Expect(resources.Events[0].Target.Guid).Should(Equal(destinationAppGuid))
+			Expect(resources.Events[0].Target.Name).Should(Equal(destinationAppName))
 		})
 
 	})

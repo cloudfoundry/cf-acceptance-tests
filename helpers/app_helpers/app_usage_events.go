@@ -5,41 +5,48 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 )
 
-type Entity struct {
-	AppName       string `json:"app_name"`
-	AppGuid       string `json:"app_guid"`
-	State         string `json:"state"`
-	BuildpackName string `json:"buildpack_name"`
-	BuildpackGuid string `json:"buildpack_guid"`
-	ParentAppName string `json:"parent_app_name"`
-	ParentAppGuid string `json:"parent_app_guid"`
-	ProcessType   string `json:"process_type"`
-	TaskGuid      string `json:"task_guid"`
-}
-
-type Metadata struct {
-	Guid string `json:"guid"`
-}
-
 type AppUsageEvent struct {
-	Entity   `json:"entity"`
-	Metadata `json:"metadata"`
+	Guid      string `json:"guid"`
+	Buildpack struct {
+		Name string `json:"name"`
+		Guid string `json:"guid"`
+	} `json:"buildpack"`
+	Task struct {
+		Guid string `json:"guid"`
+	} `json:"task"`
+	State struct {
+		Current string `json:"current"`
+	} `json:"state"`
+	App struct {
+		Name string `json:"name"`
+		Guid string `json:"guid"`
+	} `json:"app"`
+	Process struct {
+		Type string `json:"type"`
+		Guid string `json:"guid"`
+	} `json:"process"`
+}
+
+type Pagination struct {
+	Next struct {
+		href string `json:"href"`
+	} `json:"next"`
 }
 
 type AppUsageEvents struct {
-	Resources []AppUsageEvent `struct:"resources"`
-	NextUrl   string          `json:"next_url"`
+	Resources  []AppUsageEvent `struct:"resources"`
+	Pagination Pagination      `json:"pagination"`
 }
 
 func UsageEventsInclude(events []AppUsageEvent, event AppUsageEvent) bool {
 	found := false
 	for _, e := range events {
-		found = event.Entity.ParentAppName == e.Entity.ParentAppName &&
-			event.Entity.ParentAppGuid == e.Entity.ParentAppGuid &&
-			event.Entity.ProcessType == e.Entity.ProcessType &&
-			event.Entity.State == e.Entity.State &&
-			event.Entity.AppGuid == e.Entity.AppGuid &&
-			event.Entity.TaskGuid == e.Entity.TaskGuid
+		found = event.App.Name == e.App.Name &&
+			event.App.Guid == e.App.Guid &&
+			event.Process.Type == e.Process.Type &&
+			event.State.Current == e.State.Current &&
+			event.Process.Guid == e.Process.Guid &&
+			event.Task.Guid == e.Task.Guid
 		if found {
 			break
 		}
@@ -51,10 +58,10 @@ func LastAppUsageEventGuid(testSetup *workflowhelpers.ReproducibleTestSuiteSetup
 	var response AppUsageEvents
 
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		workflowhelpers.ApiRequest("GET", "/v2/app_usage_events?results-per-page=1&order-direction=desc&page=1", &response, Config.DefaultTimeoutDuration())
+		workflowhelpers.ApiRequest("GET", "/v3/app_usage_events?per_page=1&order_by=-created_at&page=1", &response, Config.DefaultTimeoutDuration())
 	})
 
-	return response.Resources[0].Metadata.Guid
+	return response.Resources[0].Guid
 }
 
 // Returns all app usage events that occured since the given app usage event guid
@@ -62,7 +69,7 @@ func UsageEventsAfterGuid(guid string) []AppUsageEvent {
 	resources := make([]AppUsageEvent, 0)
 
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		firstPageUrl := "/v2/app_usage_events?results-per-page=150&order-direction=desc&page=1&after_guid=" + guid
+		firstPageUrl := "/v3/app_usage_events?per_page=150&order_by=-created_at&page=1&after_guid=" + guid
 		url := firstPageUrl
 
 		for {
@@ -71,13 +78,27 @@ func UsageEventsAfterGuid(guid string) []AppUsageEvent {
 
 			resources = append(resources, response.Resources...)
 
-			if len(response.Resources) == 0 || response.NextUrl == "" {
+			if len(response.Resources) == 0 || response.Pagination.Next.href == "" {
 				break
 			}
 
-			url = response.NextUrl
+			url = response.Pagination.Next.href
 		}
 	})
-
 	return resources
+}
+
+func LastAppUsageEventByState(appName string, state string) (bool, AppUsageEvent) {
+	var response AppUsageEvents
+	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+		workflowhelpers.ApiRequest("GET", "/v3/app_usage_events?order_by=-created_at&page=1&per_page=150", &response, Config.DefaultTimeoutDuration())
+	})
+
+	for _, event := range response.Resources {
+		if event.App.Name == appName && event.State.Current == state {
+			return true, event
+		}
+	}
+
+	return false, AppUsageEvent{}
 }

@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
+
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	. "github.com/onsi/ginkgo"
@@ -20,18 +22,10 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-type AppsResponse struct {
+type StatsResponse struct {
 	Resources []struct {
-		Metadata struct {
-			Url string
-		}
-	}
-}
-
-type StatsResponse map[string]struct {
-	Stats struct {
-		Host string
-		Port int
+		Host string `json:"host"`
+		Port int    `json:"port"`
 	}
 }
 
@@ -60,16 +54,15 @@ func warmUpRequest(appName string) {
 }
 
 func getAppHostIpAndPort(appName string) (string, int) {
-	var appsResponse AppsResponse
-	cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/apps?q=name:%s", appName)).Wait().Out.Contents()
-	json.Unmarshal(cfResponse, &appsResponse)
-	serverAppUrl := appsResponse.Resources[0].Metadata.Url
+	app := v3_helpers.GetApp(appName)
+	processGuid := v3_helpers.GetProcessGuidForType(app.GUID, "web")
+	processUrl := fmt.Sprintf("v3/processes/%s", processGuid)
 
 	var statsResponse StatsResponse
-	cfResponse = cf.Cf("curl", fmt.Sprintf("%s/stats", serverAppUrl)).Wait().Out.Contents()
+	cfResponse := cf.Cf("curl", fmt.Sprintf("%s/stats", processUrl)).Wait().Out.Contents()
 	json.Unmarshal(cfResponse, &statsResponse)
 
-	return statsResponse["0"].Stats.Host, statsResponse["0"].Stats.Port
+	return statsResponse.Resources[0].Host, statsResponse.Resources[0].Port
 }
 
 func testAppConnectivity(clientAppName string, privateHost string, privatePort int) NoraCurlResponse {
