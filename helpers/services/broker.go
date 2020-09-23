@@ -87,9 +87,7 @@ type ServicePlanResponse struct {
 }
 
 type ServiceInstance struct {
-	Metadata struct {
-		Guid string `json:"guid"`
-	}
+	Guid string `json:"guid"`
 }
 
 type ServiceInstanceResponse struct {
@@ -98,9 +96,7 @@ type ServiceInstanceResponse struct {
 
 type SpaceJson struct {
 	Resources []struct {
-		Metadata struct {
-			Guid string
-		}
+		Guid string
 	}
 }
 
@@ -225,23 +221,28 @@ func (b ServiceBroker) ToJSON() string {
 	return replacer.Replace(string(bytes))
 }
 
+type V3ServicePlanResponse struct {
+	Name string `json:"name"`
+	GUID string `json:"guid"`
+}
+
+type ServicesPlansResponse struct {
+	Resources []V3ServicePlanResponse
+}
+
 func (b ServiceBroker) PublicizePlans() {
-	url := fmt.Sprintf("/v2/services?inline-relations-depth=1&q=label:%s", b.Service.Name)
+	url := fmt.Sprintf("/v3/service_plans?service_offering_names=%s&service_broker_names=%s", b.Service.Name, b.Name)
 	var session *Session
 	workflowhelpers.AsUser(b.TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 		session = cf.Cf("curl", url).Wait()
 		Expect(session).To(Exit(0))
 	})
-	structure := ServicesResponse{}
+	structure := ServicesPlansResponse{}
 	json.Unmarshal(session.Out.Contents(), &structure)
 
-	for _, service := range structure.Resources {
-		if service.Entity.Label == b.Service.Name {
-			for _, plan := range service.Entity.ServicePlans {
-				if b.HasPlan(plan.Entity.Name) {
-					b.PublicizePlan(plan.Metadata.Url)
-				}
-			}
+	for _, plan := range structure.Resources {
+		if b.HasPlan(plan.Name) {
+			b.PublicizePlan(plan.GUID)
 		}
 	}
 }
@@ -255,32 +256,31 @@ func (b ServiceBroker) HasPlan(planName string) bool {
 	return false
 }
 
-func (b ServiceBroker) PublicizePlan(url string) {
-	jsonMap := make(map[string]bool)
-	jsonMap["public"] = true
-	planJson, _ := json.Marshal(jsonMap)
+func (b ServiceBroker) PublicizePlan(guid string) {
+	url := fmt.Sprintf("/v3/service_plans/%s/visibility", guid)
+	body := `{"type":"public"}`
 	workflowhelpers.AsUser(b.TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("curl", url, "-X", "PUT", "-d", string(planJson)).Wait()).To(Exit(0))
+		Expect(cf.Cf("curl", url, "-X", "PATCH", "-d", body).Wait()).To(Exit(0))
 	})
 }
 
 func (b ServiceBroker) CreateServiceInstance(instanceName string) string {
 	Expect(cf.Cf("create-service", b.Service.Name, b.SyncPlans[0].Name, instanceName).Wait()).To(Exit(0))
-	url := fmt.Sprintf("/v2/service_instances?q=name:%s", instanceName)
+	url := fmt.Sprintf("/v3/service_instances?names=%s", instanceName)
 	serviceInstance := ServiceInstanceResponse{}
 	curl := cf.Cf("curl", url).Wait()
 	Expect(curl).To(Exit(0))
 	json.Unmarshal(curl.Out.Contents(), &serviceInstance)
-	return serviceInstance.Resources[0].Metadata.Guid
+	return serviceInstance.Resources[0].Guid
 }
 
 func (b ServiceBroker) GetSpaceGuid() string {
-	url := fmt.Sprintf("/v2/spaces?q=name%%3A%s", b.TestSetup.RegularUserContext().Space)
+	url := fmt.Sprintf("/v3/spaces?names=%s", b.TestSetup.RegularUserContext().Space)
 	jsonResults := SpaceJson{}
 	curl := cf.Cf("curl", url).Wait()
 	Expect(curl).To(Exit(0))
 	json.Unmarshal(curl.Out.Contents(), &jsonResults)
-	return jsonResults.Resources[0].Metadata.Guid
+	return jsonResults.Resources[0].Guid
 }
 
 func (b ServiceBroker) Plans() []Plan {

@@ -70,7 +70,7 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 
 		nfsGuid := GuidForAppName("nfs")
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
-			session := cf.Cf("curl", "/v2/routes").Wait()
+			session := cf.Cf("curl", "/v3/routes").Wait()
 			Expect(session).To(Exit(0), "cannot retrieve current routes")
 
 			routes := &Routes{}
@@ -79,7 +79,7 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 
 			routeId := nfsRouteGuid(routes)
 
-			session = cf.Cf("curl", "/v2/route_mappings", "-X", "POST", "-d", fmt.Sprintf(`{"app_guid": "%s", "route_guid": "%s", "app_port": %s}`, nfsGuid, routeId, nfsPort)).Wait()
+			session = cf.Cf("curl", fmt.Sprintf("/v3/routes/%s/destinations", routeId), "-X", "POST", "-d", fmt.Sprintf(`{"destinations": [{"app": {"guid": "%s"}, "port": %s}]}`, nfsGuid, nfsPort)).Wait()
 			Expect(session).To(Exit(0), "cannot create a tcp route mapping to the nfs server app")
 		})
 
@@ -104,7 +104,7 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		By("creating a service")
 		var createServiceSession *Session
 		if Config.GetVolumeServiceCreateConfig() != "" {
-			createServiceSession = cf.Cf("create-service", serviceName, Config.GetVolumeServicePlanName(), serviceInstanceName, "-c", fmt.Sprintf(`%s`, Config.GetVolumeServiceCreateConfig()))
+			createServiceSession = cf.Cf("create-service", serviceName, Config.GetVolumeServicePlanName(), serviceInstanceName, "-c", Config.GetVolumeServiceCreateConfig())
 		} else {
 			createServiceSession = cf.Cf("create-service", serviceName, Config.GetVolumeServicePlanName(), serviceInstanceName, "-c", fmt.Sprintf(`{"share": "%s/"}`, tcpDomain))
 		}
@@ -146,8 +146,8 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 
 func nfsRouteGuid(routes *Routes) string {
 	for _, resource := range routes.Resources {
-		if resource.Entity.Port != nil && resource.Entity.Port.(float64) == 2049 {
-			return resource.Metadata.GUID
+		if resource.Port != 0 && resource.Port == 2049 {
+			return resource.GUID
 		}
 	}
 	Fail("Unable to find a valid tcp route for port 2049")
@@ -175,28 +175,46 @@ type RouterGroup struct {
 }
 
 type Routes struct {
-	TotalResults int         `json:"total_results"`
-	TotalPages   int         `json:"total_pages"`
-	PrevURL      interface{} `json:"prev_url"`
-	NextURL      interface{} `json:"next_url"`
-	Resources    []struct {
-		Metadata struct {
-			GUID      string    `json:"guid"`
-			URL       string    `json:"url"`
-			CreatedAt time.Time `json:"created_at"`
-			UpdatedAt time.Time `json:"updated_at"`
-		} `json:"metadata"`
-		Entity struct {
-			Host                string      `json:"host"`
-			Path                string      `json:"path"`
-			DomainGUID          string      `json:"domain_guid"`
-			SpaceGUID           string      `json:"space_guid"`
-			ServiceInstanceGUID interface{} `json:"service_instance_guid"`
-			Port                interface{} `json:"port"`
-			DomainURL           string      `json:"domain_url"`
-			SpaceURL            string      `json:"space_url"`
-			AppsURL             string      `json:"apps_url"`
-			RouteMappingsURL    string      `json:"route_mappings_url"`
-		} `json:"entity"`
+	TotalResults int `json:"total_results"`
+	TotalPages   int `json:"total_pages"`
+	Previous     struct {
+		Href string `json:"prev_url"`
+	}
+	Next struct {
+		Href string `json:"prev_url"`
+	}
+	Resources []struct {
+		GUID         string    `json:"guid"`
+		URL          string    `json:"url"`
+		CreatedAt    time.Time `json:"created_at"`
+		UpdatedAt    time.Time `json:"updated_at"`
+		Host         string    `json:"host"`
+		Path         string    `json:"path"`
+		Port         int       `json:"port"`
+		Destinations []struct {
+			GUID string `json:"guid"`
+			App  struct {
+				GUID    string `json:"guid"`
+				Port    int    `json:"port"`
+				Process struct {
+					Type string `json:"type"`
+				} `json:"process"`
+			} `json:"app"`
+			ServiceInstance struct {
+				GUID string `json:"guid"`
+			} `json:"service_instance"`
+		} `json:"destinations"`
+		Relationships struct {
+			Space struct {
+				Data struct {
+					GUID string `json:"guid"`
+				} `json:"data"`
+			} `json:"space"`
+			Domain struct {
+				Data struct {
+					GUID string `json:"guid"`
+				} `json:"data"`
+			} `json:"domain"`
+		} `json:"relationships"`
 	} `json:"resources"`
 }

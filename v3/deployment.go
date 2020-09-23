@@ -144,7 +144,7 @@ var _ = V3Describe("deployment", func() {
 			}).Should(Equal(10))
 
 			Eventually(func() bool {
-				restartEventExists, _ := GetLastAppUseEventForProcess("worker", "STARTED", originalWorkerStartEvent.Metadata.Guid)
+				restartEventExists, _ := GetLastAppUseEventForProcess("worker", "STARTED", originalWorkerStartEvent.Guid)
 				return restartEventExists
 			}).Should(BeTrue(), "Did not find a start event indicating the 'worker' process restarted")
 		})
