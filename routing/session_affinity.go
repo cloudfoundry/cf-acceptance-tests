@@ -22,6 +22,8 @@ import (
 )
 
 var _ = RoutingDescribe("Session Affinity", func() {
+	SkipOnK8s("Not yet supported in CF-for-K8s")
+
 	var stickyAsset = assets.NewAssets().HelloRouting
 
 	Context("when an app sets a JSESSIONID cookie", func() {
