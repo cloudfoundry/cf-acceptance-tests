@@ -26,6 +26,8 @@ var _ = Describe("droplet features", func() {
 		token       string
 	)
 
+	SkipOnK8s("App droplets not supported")
+
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 		spaceGuid = GetSpaceGuidFromName(TestSetup.RegularUserContext().Space)
