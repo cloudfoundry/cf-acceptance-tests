@@ -26,8 +26,6 @@ var _ = Describe("droplet features", func() {
 		token       string
 	)
 
-	SkipOnK8s("App droplets not supported")
-
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 		spaceGuid = GetSpaceGuidFromName(TestSetup.RegularUserContext().Space)
@@ -45,6 +43,8 @@ var _ = Describe("droplet features", func() {
 			destinationAppName string
 			sourceDropletGuid  string
 		)
+
+		SkipOnK8s("App droplets not supported")
 
 		BeforeEach(func() {
 			buildGuid := StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
