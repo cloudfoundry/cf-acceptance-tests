@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
@@ -38,7 +39,7 @@ func unpackTarball(tarballPath string) {
 	cmd := exec.Command("gzip", "-dk", tarballPath)
 	session, err := Start(cmd, GinkgoWriter, GinkgoWriter)
 	Expect(err).ToNot(HaveOccurred())
-	Eventually(session).Should(Exit(0))
+	Eventually(session, time.Minute).Should(Exit(0))
 
 	cmd = exec.Command("tar", "-tf", strings.Trim(tarballPath, ".gz"))
 	session, err = Start(cmd, GinkgoWriter, GinkgoWriter)
