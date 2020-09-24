@@ -43,6 +43,7 @@ var _ = AppsDescribe("Copy app bits", func() {
 	})
 
 	It("Copies over the package from the source app to the destination app", func() {
+		SkipOnK8s("Currently broken. Captured by https://github.com/cloudfoundry/cloud_controller_ng/issues/1857")
 		Expect(cf.Cf("copy-source", helloWorldAppName, golangAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		Eventually(func() string {
