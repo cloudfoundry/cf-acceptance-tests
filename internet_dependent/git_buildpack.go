@@ -18,6 +18,8 @@ var _ = InternetDependentDescribe("GitBuildpack", func() {
 		appName string
 	)
 
+	SkipOnK8s("URL-based buildpacks not yet supported.")
+
 	It("uses a buildpack from a git url", func() {
 		appName = random_name.CATSRandomName("APP")
 		Expect(cf.Cf("push", appName,
@@ -33,7 +35,6 @@ var _ = InternetDependentDescribe("GitBuildpack", func() {
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
-
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 	})
 })
