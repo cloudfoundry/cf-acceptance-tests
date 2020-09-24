@@ -2,7 +2,6 @@ package download
 
 import (
 	"fmt"
-	"io/ioutil"
 	"regexp"
 	"strconv"
 
@@ -19,6 +18,7 @@ func WithRedirect(url, path string, config config.CatsConfig) error {
 		config,
 		"-v", fmt.Sprintf("%s%s%s", config.Protocol(), config.GetApiEndpoint(), url),
 		"-H", fmt.Sprintf("Authorization: %s", oauthToken),
+		"-o", path,
 		"-f",
 	).Wait()
 	if downloadCurl.ExitCode() != 0 {
@@ -30,13 +30,13 @@ func WithRedirect(url, path string, config config.CatsConfig) error {
 		return err
 	}
 	if !isRedirect {
-		ioutil.WriteFile(path, downloadCurl.Out.Contents(), 0644)
 		return nil
 	}
 	for i := 0; i < maxNumRedirects; i++ {
 		downloadCurl := helpers.Curl(
 			config,
 			"-v", redirectURI,
+			"-o", path,
 			"-f",
 		).Wait()
 		if downloadCurl.ExitCode() != 0 {
@@ -48,7 +48,6 @@ func WithRedirect(url, path string, config config.CatsConfig) error {
 			return err
 		}
 		if !isRedirect {
-			ioutil.WriteFile(path, downloadCurl.Out.Contents(), 0644)
 			return nil
 		}
 	}
