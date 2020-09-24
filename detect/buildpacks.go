@@ -129,6 +129,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 	})
 
 	Describe("staticfile", func() {
+		SkipOnK8s("staticfile not yet supported, as currently structured in CATS")
 		It("makes the app reachable via its bound route", func() {
 			Expect(cf.Cf("push", appName,
 				"-m", DEFAULT_MEMORY_LIMIT,
