@@ -54,17 +54,12 @@ var _ = AppsDescribe("Crashing", func() {
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
-		Context("crash events", func() {
-			SkipOnK8s("remove this skip and the enclosing Context() once we bump to eirini 1.9")
-			It("shows crash events", func() {
-				helpers.CurlApp(Config, appName, "/sigterm/KILL")
-
-				Eventually(func() string {
-					return string(cf.Cf("events", appName).Wait().Out.Contents())
-				}).Should(MatchRegexp("app.crash"))
-			})
+		It("shows crash events", func() {
+			helpers.CurlApp(Config, appName, "/sigterm/KILL")
+			Eventually(func() string {
+				return string(cf.Cf("events", appName).Wait().Out.Contents())
+			}).Should(MatchRegexp("app.crash"))
 		})
-
 
 		It("recovers", func() {
 			const idChecker = "^[0-9a-zA-Z]+(?:-[0-9a-zA-z]+)+$"
