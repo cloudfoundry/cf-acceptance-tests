@@ -467,9 +467,13 @@ func validateApiEndpoint(config *config) error {
 		return fmt.Errorf("* Invalid configuration: 'api' must be a valid Cloud Controller endpoint but was blank")
 	}
 
+	// Use URL parse to check endpoint, but we do not want users to provide a scheme/protocol
 	u, err := url.Parse(config.GetApiEndpoint())
 	if err != nil {
-		return fmt.Errorf("* Invalid configuration: 'api' must be a valid URL but was set to '%s'", config.GetApiEndpoint())
+		return fmt.Errorf("* Invalid configuration: 'api' must be a valid domain but was set to '%s'", config.GetApiEndpoint())
+	}
+	if u.Scheme != "" {
+		return fmt.Errorf("* Invalid configuration: 'api' must not contain a scheme/protocol but was set to '%s' in '%s'", u.Scheme, config.GetApiEndpoint())
 	}
 
 	host := u.Host

@@ -689,7 +689,19 @@ var _ = Describe("Config", func() {
 			It("returns an error", func() {
 				_, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(err).To(HaveOccurred())
-				Expect(err).To(MatchError("* Invalid configuration: 'api' must be a valid URL but was set to '_bogus%%%'"))
+				Expect(err).To(MatchError("* Invalid configuration: 'api' must be a valid domain but was set to '_bogus%%%'"))
+			})
+		})
+
+		Context("when the url contains https://", func() {
+			BeforeEach(func() {
+				testCfg.ApiEndpoint = ptrToString("https://api.bosh-lite.com")
+			})
+
+			It("returns an error", func() {
+				_, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).To(HaveOccurred())
+				Expect(err).To(MatchError("* Invalid configuration: 'api' must not contain a scheme/protocol but was set to 'https' in 'https://api.bosh-lite.com'"))
 			})
 		})
 

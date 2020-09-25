@@ -112,10 +112,10 @@ include_v3
 
 #### The full set of config parameters is explained below:
 ##### Required parameters:
-* `api`: Cloud Controller API endpoint.
+* `api`: Cloud Controller API endpoint, without scheme (HTTP/S) specified.
 * `admin_user`: Name of a user in your CF instance with admin credentials.  This admin user must have the `doppler.firehose` scope.
 * `admin_password`: Password of the admin user above.
-* `apps_domain`: A shared domain that tests can use to create subdomains that will route to applications also created in the tests.
+* `apps_domain`: A shared domain that tests can use to create subdomains that will route to applications also created in the tests, without scheme (HTTP/S) specified.
 * `skip_ssl_validation`: Set to true if using an invalid (e.g. self-signed) cert for traffic routed to your CF instance; this is generally always true for BOSH-Lite deployments of CF.
 
 ##### Optional parameters:
