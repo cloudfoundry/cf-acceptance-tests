@@ -29,14 +29,14 @@ type AppUsageEvent struct {
 		Guid string
 	}
 	State struct {
-		Current string
+		Current  string
 		Previous string
 	}
 	Buildpack struct {
 		Guid string
 		Name string
 	}
-	Process struct{
+	Process struct {
 		Guid string
 		Name string
 	}
@@ -76,7 +76,7 @@ func lastAppUsageEventWithParentAppName(parentAppName string, state string) (boo
 	return false, AppUsageEvent{}
 }
 
-var _ = Describe("Application Lifecycle", func() {
+var _ = AppsDescribe("Application Lifecycle", func() {
 	var (
 		appName              string
 		expectedNullResponse string
@@ -152,8 +152,8 @@ var _ = Describe("Application Lifecycle", func() {
 				appGuid := cf.Cf("app", app2, "--guid").Wait().Out.Contents()
 
 				var createRouteBody struct {
-					Host string `json:"host"`
-					Path string `json:"path"`
+					Host          string `json:"host"`
+					Path          string `json:"path"`
 					Relationships struct {
 						Space struct {
 							Data struct {
@@ -188,7 +188,7 @@ var _ = Describe("Application Lifecycle", func() {
 					} `json:"app"`
 				}
 
-				var destinationBody struct{
+				var destinationBody struct {
 					Destinations []Destination `json:"destinations"`
 				}
 				destinationBody.Destinations = []Destination{{}}

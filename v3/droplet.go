@@ -16,7 +16,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("droplet features", func() {
+var _ = V3Describe("droplet features", func() {
 
 	var (
 		appGuid     string

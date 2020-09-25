@@ -16,7 +16,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 )
 
-var _ = Describe("Changing an app's start command", func() {
+var _ = AppsDescribe("Changing an app's start command", func() {
 	type AppProcessResponse struct {
 		Resources []struct {
 			Command string
