@@ -91,7 +91,7 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 
 		It("is reachable from the shared router", func() {
 			hostHeader := fmt.Sprintf("Host: %s.%s", appName, appsDomain)
-			host := fmt.Sprintf("http://wildcard-path.%s", appsDomain)
+			host := fmt.Sprintf("https://wildcard-path.%s", appsDomain)
 
 			curlSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), host, "-H", hostHeader)
 			Eventually(curlSession).Should(Exit(0))
@@ -101,7 +101,7 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 		It("is not reachable from the isolation segment router", func() {
 			//send a request to app in the shared domain, but through the isolation segment router
 			hostHeader := fmt.Sprintf("Host: %s.%s", appName, appsDomain)
-			host := fmt.Sprintf("http://wildcard-path.%s", isoSegDomain)
+			host := fmt.Sprintf("https://wildcard-path.%s", isoSegDomain)
 
 			curlSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), host, "-H", hostHeader)
 
@@ -137,7 +137,7 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 
 		It("the app is reachable from the isolated router", func() {
 			hostHeader := fmt.Sprintf("Host: %s.%s", appName, isoSegDomain)
-			host := fmt.Sprintf("http://wildcard-path.%s", isoSegDomain)
+			host := fmt.Sprintf("https://wildcard-path.%s", isoSegDomain)
 
 			curlSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), host, "-H", hostHeader)
 			Eventually(curlSession).Should(Exit(0))
@@ -146,7 +146,7 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 
 		It("the app is not reachable from the shared router", func() {
 			hostHeader := fmt.Sprintf("Host: %s.%s", appName, isoSegDomain)
-			host := fmt.Sprintf("http://wildcard-path.%s", appsDomain)
+			host := fmt.Sprintf("https://wildcard-path.%s", appsDomain)
 
 			curlSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), host, "-H", hostHeader)
 			Eventually(curlSession).Should(Exit(0))
