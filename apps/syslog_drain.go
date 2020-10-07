@@ -60,7 +60,6 @@ var _ = AppsDescribe("Logging", func() {
 			Eventually(cf.Cf(
 				"push",
 				logWriterAppName2,
-				"--no-start",
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().RubySimple,
