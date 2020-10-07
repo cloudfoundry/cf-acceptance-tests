@@ -264,7 +264,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 
 				By("getting the overlay ip of app")
 				appHostname := appName + "." + Config.GetAppsDomain()
-				curl := helpers.Curl(Config, appHostname, "-L").Wait()
+				curl := helpers.Curl(Config, Config.Protocol()+appHostname, "-L").Wait()
 				contents := curl.Out.Contents()
 
 				var proxyResponse ProxyResponse
