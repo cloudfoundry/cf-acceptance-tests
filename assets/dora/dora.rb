@@ -16,6 +16,7 @@ Bundler.require :default, ENV['RACK_ENV'].to_sym
 $stdout.sync = true
 $stderr.sync = true
 $counter = 0
+$start_time = Time.now
 
 class Dora < Sinatra::Base
   use Instances
@@ -117,6 +118,10 @@ class Dora < Sinatra::Base
     size = numKB > fiveMB ? fiveMB : numKB
     size.times {text+=ktext}
     text
+  end
+
+  get '/uptime' do
+    (Time.now - $start_time).to_s
   end
 
   run! if app_file == $0
