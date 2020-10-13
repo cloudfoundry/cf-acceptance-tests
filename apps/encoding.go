@@ -18,8 +18,6 @@ import (
 var _ = AppsDescribe("Encoding", func() {
 	var appName string
 
-	SkipOnK8s("Default encoding not yet supported in the bionic stack used by cf-for-k8s")
-
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 		Expect(cf.Cf("push",
