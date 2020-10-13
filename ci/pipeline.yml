@@ -155,8 +155,7 @@ jobs:
 
 - name: deploy-cf
   serial: true
-  # TODO: make public when the toolsmiths-env resource stops leaking creds
-  #public: true
+  public: true
   plan:
   - in_parallel:
     - get: toolsmiths-env
@@ -210,8 +209,7 @@ jobs:
 
 - name: run-cats
   serial: true
-  # TODO: make public when the toolsmiths-env resource stops leaking creds
-  #public: true
+  public: true
   plan:
   - in_parallel:
     - get: toolsmiths-env
