@@ -15,5 +15,11 @@ describe Instances do
       expect(last_response.headers["Set-Cookie"]).to eq "JSESSIONID=#{id}"
       expect(last_response.body).to eq "Please read the README.md for help on how to use sticky sessions."
     end
+
+    it "should set the JSESSIONID so that we can get a sticky session" do
+      get "/session"
+      expect(last_response.headers["Set-Cookie"]).to eq "JSESSIONID=#{id}"
+      expect(last_response.body).to eq "Please read the README.md for help on how to use sticky sessions."
+    end
   end
 end
