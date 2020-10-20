@@ -198,14 +198,12 @@ func (c customMap) key(key string) customMap {
 
 func bindRouteToService(hostname, serviceInstanceName string) {
 	Expect(cf.Cf("bind-route-service", Config.GetAppsDomain(), serviceInstanceName,
-		"-f",
 		"--hostname", hostname,
 	).Wait()).To(Exit(0))
 }
 
 func bindRouteToServiceWithParams(hostname, serviceInstanceName string, params string) {
 	Expect(cf.Cf("bind-route-service", Config.GetAppsDomain(), serviceInstanceName,
-		"-f",
 		"--hostname", hostname,
 		"-c", fmt.Sprintf("{\"parameters\": %s}", params),
 	).Wait()).To(Exit(0))
