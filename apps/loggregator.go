@@ -76,7 +76,7 @@ var _ = AppsDescribe("loggregator", func() {
 				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
 			}).Should(ContainSubstring("Muahaha"))
 
-			Eventually(logs).Should(Say("Muahaha"))
+			Eventually(logs, Config.DefaultTimeoutDuration()*2).Should(Say("Muahaha"))
 		})
 	})
 
@@ -86,7 +86,7 @@ var _ = AppsDescribe("loggregator", func() {
 				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
 			}).Should(ContainSubstring("Muahaha"))
 
-			Eventually(logshelper.Recent(appName)).Should(Say("Muahaha"))
+			Eventually(logshelper.Recent(appName), Config.DefaultTimeoutDuration()*2).Should(Say("Muahaha"))
 		})
 	})
 
