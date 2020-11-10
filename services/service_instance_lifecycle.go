@@ -50,15 +50,15 @@ type ErrorResponse struct {
 }
 
 var _ = ServicesDescribe("Service Instance Lifecycle", func() {
+	const asyncOperationPollInterval = 5 * time.Second
 	var broker ServiceBroker
-	var ASYNC_OPERATION_POLL_INTERVAL = 5 * time.Second
 
 	waitForAsyncDeletionToComplete := func(broker ServiceBroker, instanceName string) {
 		Eventually(func() *Buffer {
 			session := cf.Cf("service", instanceName).Wait()
 			combinedOutputBytes := append(session.Out.Contents(), session.Err.Contents()...)
 			return BufferWithBytes(combinedOutputBytes)
-		}, Config.AsyncServiceOperationTimeoutDuration(), ASYNC_OPERATION_POLL_INTERVAL).Should(Say("not found"))
+		}, Config.AsyncServiceOperationTimeoutDuration(), asyncOperationPollInterval).Should(Say("not found"))
 	}
 
 	waitForAsyncOperationToCompleteAndSay := func(broker ServiceBroker, instanceName, expectedText string) {
@@ -66,7 +66,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 			serviceDetails := cf.Cf("service", instanceName).Wait()
 			Expect(serviceDetails).To(Exit(0), "failed getting service instance details")
 			return serviceDetails
-		}, Config.AsyncServiceOperationTimeoutDuration(), ASYNC_OPERATION_POLL_INTERVAL).Should(Say(expectedText))
+		}, Config.AsyncServiceOperationTimeoutDuration(), asyncOperationPollInterval).Should(Say(expectedText))
 	}
 
 	Describe("Synchronous operations", func() {
@@ -234,7 +234,8 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 							Expect(deleteServiceKey).To(Exit(0), "failed deleting service key")
 
 							keyInfo := cf.Cf("service-key", instanceName, keyName).Wait()
-							Expect(keyInfo).To(Say(fmt.Sprintf("No service key %s found for service instance %s", keyName, instanceName)))
+							output := append(keyInfo.Out.Contents(), keyInfo.Err.Contents()...)
+							Expect(output).To(ContainSubstring("No service key %s found for service instance %s", keyName, instanceName))
 						})
 					})
 				})
@@ -569,7 +570,7 @@ func getBindingParamsEndpoint(appGUID string, instanceGUID string) string {
 	jsonResults := Response{}
 	bindingCurl := cf.Cf("curl", fmt.Sprintf("/v2/apps/%s/service_bindings?q=service_instance_guid:%s", appGUID, instanceGUID)).Wait()
 	Expect(bindingCurl).To(Exit(0))
-	json.Unmarshal(bindingCurl.Out.Contents(), &jsonResults)
+	Expect(json.Unmarshal(bindingCurl.Out.Contents(), &jsonResults)).NotTo(HaveOccurred())
 
 	Expect(len(jsonResults.Resources)).To(BeNumerically(">", 0), "Expected to find at least one service resource.")
 
