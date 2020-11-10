@@ -3,6 +3,7 @@ package apps
 import (
 	"encoding/json"
 	"fmt"
+	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -402,12 +403,21 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 	})
 
 	Describe("deleting", func() {
-		var expectedNullResponse string
+		var appUrl, expectedNullResponse string
 
 		BeforeEach(func() {
-			appUrl := "https://" + appName + "." + Config.GetAppsDomain()
-			nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait()
-			expectedNullResponse = string(nullSession.Buffer().Contents())
+			appUrl = "https://" + appName + "." + Config.GetAppsDomain()
+			if Config.GetIngressProvider() == "contour" {
+				// when requesting a route that doesn't exist via https when using,
+				// contour will reset the connection instead of responding with a
+				// status code. This causes an error when using a curl command, so we
+				// make a custom response to allow this error.
+				expectedNullResponse = "Curl failed with exit code: 35"
+
+			} else {
+				nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait()
+				expectedNullResponse = string(nullSession.Buffer().Contents())
+			}
 
 			Expect(cf.Cf(app_helpers.CatnipWithArgs(
 				appName,
@@ -425,7 +435,19 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 
 			Eventually(func() string {
-				return helpers.CurlAppRoot(Config, appName)
+				var response string
+				if Config.GetIngressProvider() == "contour" {
+					curlCmd := exec.Command("curl", "-k", appUrl)
+					err := curlCmd.Run()
+					if err contains 35 then we gucci{
+					response = "Curl failed with exit code: 35"
+					} else {
+					response = fmt.Printf("Curl failed with exit code: %s", code)
+				}
+				} else {
+					response = helpers.CurlAppRoot(Config, appName)
+				}
+				return response
 			}).Should(ContainSubstring(expectedNullResponse))
 		})
 
