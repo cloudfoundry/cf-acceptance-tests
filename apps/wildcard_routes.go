@@ -15,6 +15,7 @@ import (
 )
 
 var _ = AppsDescribe("Wildcard Routes", func() {
+	SkipForIngressProvider("contour")
 	var appNameCatnip string
 	var appNameSimple string
 	var domainName string

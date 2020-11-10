@@ -113,7 +113,8 @@ type config struct {
 
 	ReporterConfig *reporterConfig `json:"reporter_config"`
 
-	Infrastructure *string `json:"infrastructure"`
+	Infrastructure  *string `json:"infrastructure"`
+	IngressProvider *string `json:"ingress_provider"`
 }
 
 type reporterConfig struct {
@@ -227,6 +228,7 @@ func getDefaults() config {
 	defaults.Stacks = &[]string{"cflinuxfs3"}
 
 	defaults.Infrastructure = ptrToString("vms")
+	defaults.IngressProvider = ptrToString("istio")
 	return defaults
 }
 
@@ -1046,4 +1048,8 @@ func (c *config) GetReporterConfig() reporterConfig {
 
 func (c *config) RunningOnK8s() bool {
 	return *c.Infrastructure == "kubernetes"
+}
+
+func (c *config) GetIngressProvider() string {
+	return *c.IngressProvider
 }

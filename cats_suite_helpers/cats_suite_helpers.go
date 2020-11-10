@@ -37,6 +37,15 @@ func SkipOnK8s(reason string) {
 	})
 }
 
+func SkipForIngressProvider(provider string) {
+	reason := fmt.Sprintf("Feature not support for chosen ingress provider: %s", provider)
+	BeforeEach(func() {
+		if Config.GetIngressProvider() == provider {
+			Skip(fmt.Sprintf(skip_messages.SkipK8sMessage, reason))
+		}
+	})
+}
+
 func AppsDescribe(description string, callback func()) bool {
 	return Describe("[apps]", func() {
 		BeforeEach(func() {

@@ -96,6 +96,7 @@ type CatsConfig interface {
 	GetPublicDockerAppImage() string
 
 	RunningOnK8s() bool
+	GetIngressProvider() string
 }
 
 func NewCatsConfig(path string) (CatsConfig, error) {
