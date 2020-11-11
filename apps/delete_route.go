@@ -1,6 +1,8 @@
 package apps
 
 import (
+	"os/exec"
+
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -15,13 +17,14 @@ import (
 var _ = AppsDescribe("Delete Route", func() {
 	var (
 		appName              string
+		appUrl               string
 		expectedNullResponse string
 	)
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 
-		appUrl := "https://" + appName + "." + Config.GetAppsDomain()
+		appUrl = "https://" + appName + "." + Config.GetAppsDomain()
 
 		nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait()
 		expectedNullResponse = string(nullSession.Buffer().Contents())
@@ -58,7 +61,21 @@ var _ = AppsDescribe("Delete Route", func() {
 
 			By("deleting the original route")
 			Expect(cf.Cf("delete-route", Config.GetAppsDomain(), "-n", appName, "-f").Wait()).To(Exit(0))
-			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring(expectedNullResponse))
+			if Config.GetIngressProvider() == "contour" {
+				Eventually(func() int {
+					curlCmd := exec.Command("curl", "-k", appUrl)
+					err := curlCmd.Run()
+					if err != nil {
+						switch t := err.(type) {
+						case *exec.ExitError:
+							return t.ExitCode()
+						}
+					}
+					return -2
+				}).Should(Equal(35))
+			} else {
+				Eventually(helpers.CurlAppRoot(Config, appName)).Should(ContainSubstring(expectedNullResponse))
+			}
 		})
 	})
 })

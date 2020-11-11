@@ -80,13 +80,14 @@ func lastAppUsageEventWithParentAppName(parentAppName string, state string) (boo
 var _ = AppsDescribe("Application Lifecycle", func() {
 	var (
 		appName              string
+		appUrl               string
 		expectedNullResponse string
 	)
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 
-		appUrl := "https://" + appName + "." + Config.GetAppsDomain()
+		appUrl = "https://" + appName + "." + Config.GetAppsDomain()
 		nullSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), appUrl).Wait()
 		expectedNullResponse = string(nullSession.Buffer().Contents())
 	})
