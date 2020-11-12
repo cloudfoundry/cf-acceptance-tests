@@ -290,13 +290,10 @@ EOF
 
 			AssistedCredhubDescribe("", func() {
 				BeforeEach(func() {
-					createApp := cf.Cf(
-						"push", appName,
+					createApp := cf.Cf(app_helpers.CatnipWithArgs(
+						appName,
 						"--no-start",
-						"-b", Config.GetBinaryBuildpackName(),
-						"-m", DEFAULT_MEMORY_LIMIT,
-						"-p", assets.NewAssets().Catnip,
-						"-c", "./catnip",
+						"-m", DEFAULT_MEMORY_LIMIT)...,
 					).Wait(Config.CfPushTimeoutDuration())
 					Expect(createApp).To(Exit(0), "failed creating credhub-enabled app")
 					bindServiceAndStartApp(appName)

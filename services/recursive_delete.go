@@ -53,12 +53,9 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 			target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
 			Expect(target).To(Exit(0), "failed targeting")
 
-			createApp := cf.Cf("push",
+			createApp := cf.Cf(app_helpers.CatnipWithArgs(
 				appName,
-				"-b", Config.GetBinaryBuildpackName(),
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().Catnip,
-				"-c", "./catnip",
+				"-m", DEFAULT_MEMORY_LIMIT)...,
 			).Wait(Config.CfPushTimeoutDuration())
 			Expect(createApp).To(Exit(0), "failed creating app")
 

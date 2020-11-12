@@ -119,12 +119,9 @@ var _ = TasksDescribe("v3 tasks", func() {
 
 	Context("tasks lifecycle", func() {
 		BeforeEach(func() {
-			Expect(cf.Cf("push",
+			Expect(cf.Cf(app_helpers.CatnipWithArgs(
 				appName,
-				"-b", Config.GetBinaryBuildpackName(),
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().Catnip,
-				"-c", "./catnip",
+				"-m", DEFAULT_MEMORY_LIMIT)...,
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			appGuid = app_helpers.GetAppGuid(appName)
 			Eventually(func() string {

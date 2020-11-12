@@ -14,7 +14,6 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
@@ -28,12 +27,9 @@ var _ = SshDescribe("SSH", func() {
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
-		Eventually(cf.Cf(
-			"push", appName,
-			"-b", Config.GetBinaryBuildpackName(),
-			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", assets.NewAssets().Catnip,
-			"-c", "./catnip",
+		Eventually(cf.Cf(app_helpers.CatnipWithArgs(
+			appName,
+			"-m", DEFAULT_MEMORY_LIMIT)...,
 		),
 			Config.CfPushTimeoutDuration(),
 		).Should(Exit(0))

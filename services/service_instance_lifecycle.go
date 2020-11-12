@@ -247,12 +247,9 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 			BeforeEach(func() {
 				appName = random_name.CATSRandomName("APP")
-				createApp := cf.Cf("push",
+				createApp := cf.Cf(app_helpers.CatnipWithArgs(
 					appName,
-					"-b", Config.GetBinaryBuildpackName(),
-					"-m", DEFAULT_MEMORY_LIMIT,
-					"-p", assets.NewAssets().Catnip,
-					"-c", "./catnip",
+					"-m", DEFAULT_MEMORY_LIMIT)...,
 				).Wait(Config.CfPushTimeoutDuration())
 				Expect(createApp).To(Exit(0), "failed creating app")
 
@@ -436,12 +433,9 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					var appName string
 					BeforeEach(func() {
 						appName = random_name.CATSRandomName("APP")
-						Expect(cf.Cf("push",
+						Expect(cf.Cf(app_helpers.CatnipWithArgs(
 							appName,
-							"-b", Config.GetBinaryBuildpackName(),
-							"-m", DEFAULT_MEMORY_LIMIT,
-							"-p", assets.NewAssets().Catnip,
-							"-c", "./catnip",
+							"-m", DEFAULT_MEMORY_LIMIT)...,
 						).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed creating app")
 					})
 
@@ -506,12 +500,9 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 				waitForAsyncOperationToCompleteAndSay(broker, instanceName, "succeeded")
 
 				appName = random_name.CATSRandomName("APP")
-				Expect(cf.Cf("push",
+				Expect(cf.Cf(app_helpers.CatnipWithArgs(
 					appName,
-					"-b", Config.GetBinaryBuildpackName(),
-					"-m", DEFAULT_MEMORY_LIMIT,
-					"-p", assets.NewAssets().Catnip,
-					"-c", "./catnip",
+					"-m", DEFAULT_MEMORY_LIMIT)...,
 				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed pushing app")
 			})
 

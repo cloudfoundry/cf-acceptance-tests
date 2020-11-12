@@ -50,12 +50,9 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 
 		It("removes all instances and plans of the service, then removes the service offering", func() {
 			By("Having bound service instances")
-			createApp := cf.Cf("push",
+			createApp := cf.Cf(app_helpers.CatnipWithArgs(
 				appName,
-				"-b", Config.GetBinaryBuildpackName(),
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().Catnip,
-				"-c", "./catnip",
+				"-m", DEFAULT_MEMORY_LIMIT)...,
 			).Wait(Config.CfPushTimeoutDuration())
 			Expect(createApp).To(Exit(0), "failed creating app")
 
@@ -118,12 +115,9 @@ var _ = ServicesDescribe("Purging service offerings", func() {
 		It("removes all instances and plans of the service, then removes the service offering", func() {
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), TestSetup.ShortTimeout(), func() {
 				By("Having bound service instances")
-				createApp := cf.Cf("push",
+				createApp := cf.Cf(app_helpers.CatnipWithArgs(
 					appName,
-					"-b", Config.GetBinaryBuildpackName(),
-					"-m", DEFAULT_MEMORY_LIMIT,
-					"-p", assets.NewAssets().Catnip,
-					"-c", "./catnip",
+					"-m", DEFAULT_MEMORY_LIMIT)...,
 				).Wait(Config.CfPushTimeoutDuration())
 				Expect(createApp).To(Exit(0), "failed creating app")
 
