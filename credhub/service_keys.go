@@ -89,6 +89,8 @@ var _ = CredhubDescribe("service keys", func() {
 	})
 
 	Context("when a service key for a service instance is requested from a CredHub-enabled broker", func() {
+		SkipOnK8s("create-service-key not yet supported. See https://github.com/cloudfoundry/capi-k8s-release/issues/101")
+
 		It("Cloud Controller retrieves the value from CredHub for the service key", func() {
 			serviceKeyName = random_name.CATSRandomName("SVKEY-CH")
 			createKey := cf.Cf("create-service-key", instanceName, serviceKeyName).Wait()
