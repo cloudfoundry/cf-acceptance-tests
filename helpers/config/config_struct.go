@@ -202,7 +202,7 @@ func getDefaults() config {
 
 	defaults.AsyncServiceOperationTimeout = ptrToInt(120)
 	defaults.BrokerStartTimeout = ptrToInt(300)
-	defaults.CfPushTimeout = ptrToInt(120)
+	defaults.CfPushTimeout = ptrToInt(240)
 	defaults.DefaultTimeout = ptrToInt(30)
 	defaults.DetectTimeout = ptrToInt(300)
 	defaults.LongCurlTimeout = ptrToInt(120)
