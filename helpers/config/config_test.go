@@ -287,7 +287,7 @@ var _ = Describe("Config", func() {
 
 		Expect(config.AsyncServiceOperationTimeoutDuration()).To(Equal(4 * time.Minute))
 		Expect(config.BrokerStartTimeoutDuration()).To(Equal(10 * time.Minute))
-		Expect(config.CfPushTimeoutDuration()).To(Equal(4 * time.Minute))
+		Expect(config.CfPushTimeoutDuration()).To(Equal(8 * time.Minute))
 		Expect(config.DefaultTimeoutDuration()).To(Equal(60 * time.Second))
 		Expect(config.LongCurlTimeoutDuration()).To(Equal(4 * time.Minute))
 
