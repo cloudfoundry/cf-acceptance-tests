@@ -5,6 +5,7 @@ import (
 )
 
 type CatsConfig interface {
+	GetIncludeAppSyslogTcp() bool
 	GetIncludeApps() bool
 	GetIncludeContainerNetworking() bool
 	GetIncludeCredhubAssisted() bool

@@ -37,6 +37,17 @@ func SkipOnK8s(reason string) {
 	})
 }
 
+func AppSyslogTcpDescribe(description string, callback func()) bool {
+	return Describe("[app_syslog_tcp]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeAppSyslogTcp() {
+				Skip(skip_messages.SkipAppSyslogTcpMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
 func AppsDescribe(description string, callback func()) bool {
 	return Describe("[apps]", func() {
 		BeforeEach(func() {

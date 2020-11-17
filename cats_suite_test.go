@@ -12,6 +12,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/mholt/archiver"
 
+	_ "github.com/cloudfoundry/cf-acceptance-tests/app_syslog_tcp"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/apps"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/credhub"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/detect"

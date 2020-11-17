@@ -66,29 +66,30 @@ type config struct {
 	VolumeServicePlanName     *string `json:"volume_service_plan_name"`
 	VolumeServiceCreateConfig *string `json:"volume_service_create_config"`
 
+	IncludeAppSyslogTcp             *bool `json:"include_app_syslog_tcp"`
 	IncludeApps                     *bool `json:"include_apps"`
 	IncludeContainerNetworking      *bool `json:"include_container_networking"`
+	IncludeDeployments              *bool `json:"include_deployments"`
 	IncludeDetect                   *bool `json:"include_detect"`
 	IncludeDocker                   *bool `json:"include_docker"`
 	IncludeInternetDependent        *bool `json:"include_internet_dependent"`
 	IncludeInternetless             *bool `json:"include_internetless"`
+	IncludeIsolationSegments        *bool `json:"include_isolation_segments"`
 	IncludePrivateDockerRegistry    *bool `json:"include_private_docker_registry"`
 	IncludeRouteServices            *bool `json:"include_route_services"`
 	IncludeRouting                  *bool `json:"include_routing"`
+	IncludeRoutingIsolationSegments *bool `json:"include_routing_isolation_segments"`
 	IncludeSSO                      *bool `json:"include_sso"`
 	IncludeSecurityGroups           *bool `json:"include_security_groups"`
-	IncludeServices                 *bool `json:"include_services"`
 	IncludeServiceDiscovery         *bool `json:"include_service_discovery"`
 	IncludeServiceInstanceSharing   *bool `json:"include_service_instance_sharing"`
+	IncludeServices                 *bool `json:"include_services"`
 	IncludeSsh                      *bool `json:"include_ssh"`
-	IncludeTasks                    *bool `json:"include_tasks"`
 	IncludeTCPRouting               *bool `json:"include_tcp_routing"`
+	IncludeTasks                    *bool `json:"include_tasks"`
 	IncludeV3                       *bool `json:"include_v3"`
-	IncludeDeployments              *bool `json:"include_deployments"`
-	IncludeZipkin                   *bool `json:"include_zipkin"`
-	IncludeIsolationSegments        *bool `json:"include_isolation_segments"`
-	IncludeRoutingIsolationSegments *bool `json:"include_routing_isolation_segments"`
 	IncludeVolumeServices           *bool `json:"include_volume_services"`
+	IncludeZipkin                   *bool `json:"include_zipkin"`
 
 	CredhubMode         *string `json:"credhub_mode"`
 	CredhubLocation     *string `json:"credhub_location"`
@@ -154,6 +155,7 @@ func getDefaults() config {
 	defaults.RubyBuildpackName = ptrToString("ruby_buildpack")
 	defaults.StaticFileBuildpackName = ptrToString("staticfile_buildpack")
 
+	defaults.IncludeAppSyslogTcp = ptrToBool(true)
 	defaults.IncludeApps = ptrToBool(true)
 	defaults.IncludeDetect = ptrToBool(true)
 	defaults.IncludeRouting = ptrToBool(true)
@@ -378,6 +380,9 @@ func validateConfig(config *config) Errors {
 	}
 	if config.StaticFileBuildpackName == nil {
 		errs.Add(fmt.Errorf("* 'staticfile_buildpack_name' must not be null"))
+	}
+	if config.IncludeAppSyslogTcp == nil {
+		errs.Add(fmt.Errorf("* 'include_app_syslog_tcp' must not be null"))
 	}
 	if config.IncludeApps == nil {
 		errs.Add(fmt.Errorf("* 'include_apps' must not be null"))
@@ -824,6 +829,10 @@ func (c *config) GetApiEndpoint() string {
 
 func (c *config) GetIncludeSsh() bool {
 	return *c.IncludeSsh
+}
+
+func (c *config) GetIncludeAppSyslogTcp() bool {
+	return *c.IncludeAppSyslogTcp
 }
 
 func (c *config) GetIncludeApps() bool {
