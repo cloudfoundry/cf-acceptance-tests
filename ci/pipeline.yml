@@ -18,14 +18,12 @@ resources:
   type: git
   icon: github
   source:
-    branch: master
     uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
 
 - name: runtime-ci
   type: git
   icon: github
   source:
-    branch: master
     uri: https://github.com/cloudfoundry/runtime-ci.git
 
 - name: cf-acceptance-tests-develop
@@ -61,11 +59,10 @@ resources:
     - ci/**
     - .envrc
 
-- name: cf-deployment-master
+- name: cf-deployment-main
   type: git
   icon: github
   source:
-    branch: master
     uri: git@github.com:cloudfoundry/cf-deployment.git
     private_key: ((cf_deployment_readwrite_deploy_key.private_key))
     ignore_paths:
@@ -76,7 +73,6 @@ resources:
   type: git
   icon: github
   source:
-    branch: master
     uri: https://github.com/cloudfoundry-incubator/cf-test-helpers
 
 - name: cats-version
@@ -84,7 +80,7 @@ resources:
   source:
     driver: git
     uri: git@github.com:cloudfoundry/cf-relint-ci-semver.git
-    branch: master
+    branch: main
     private_key: ((cf_relint_ci_semver_readwrite_deploy_key.private_key))
     git_user: "CF MEGA BOT <cf-mega@pivotal.io>"
     file: cats-version
