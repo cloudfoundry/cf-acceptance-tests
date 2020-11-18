@@ -161,7 +161,7 @@ jobs:
       - vsphere-cf-release-integration
       trigger: true
     - get: cf-deployment-concourse-tasks
-    - get: cf-deployment-master
+    - get: cf-deployment-main
     - get: cf-acceptance-tests-develop
       passed:
       - claim-env
@@ -174,8 +174,8 @@ jobs:
   - task: bosh-deploy-cf-with-windows
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
     input_mapping:
-      cf-deployment: cf-deployment-master
-      ops-files: cf-deployment-master
+      cf-deployment: cf-deployment-main
+      ops-files: cf-deployment-main
     params:
       OPS_FILES: |
         operations/use-compiled-releases.yml
