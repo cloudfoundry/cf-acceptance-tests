@@ -1,5 +1,6 @@
 package skip_messages
 
+const SkipAppSyslogTcpMessage = `Skipping this test because config.IncludeAppSyslogTcp is set to 'false'.`
 const SkipAppsMessage = `Skipping this test because config.IncludeApps is set to 'false'.`
 const SkipContainerNetworkingMessage = `Skipping this test because config.IncludeContainerNetworking is set to 'false'.`
 const SkipDetectMessage = `Skipping this test because config.IncludeDetect is set to 'false'.`

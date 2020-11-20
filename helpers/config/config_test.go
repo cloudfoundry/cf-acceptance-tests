@@ -238,11 +238,11 @@ var _ = Describe("Config", func() {
 		requiredCfgFilePath := writeConfigFile(requiredCfg)
 		config, err := cfg.NewCatsConfig(requiredCfgFilePath)
 		Expect(err).ToNot(HaveOccurred())
-		Expect(config.GetIncludeApps()).To(BeTrue())
 
 		Expect(config.GetIsolationSegmentName()).To(Equal(""))
 		Expect(config.GetIsolationSegmentDomain()).To(Equal(""))
 
+		Expect(config.GetIncludeAppSyslogTcp()).To(BeTrue())
 		Expect(config.GetIncludeApps()).To(BeTrue())
 		Expect(config.GetIncludeDetect()).To(BeTrue())
 		Expect(config.GetIncludeRouting()).To(BeTrue())

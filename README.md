@@ -120,6 +120,7 @@ include_v3
 
 ##### Optional parameters:
 `include_*` parameters are used to specify whether to skip tests based on how a deployment is configured.
+* `include_app_syslog_tcp`: Flag to include the app syslog drain over TCP test group.
 * `include_apps`: Flag to include the apps test group.
 * `include_container_networking`: Flag to include tests related to container networking.
   `include_security_groups` must also be set for tests to run. [See below](#container-networking-and-application-security-groups)
@@ -168,7 +169,7 @@ include_v3
 * `private_docker_registry_password`: Password to access the private docker repository. [See below](#private-docker)
 * `unallocated_ip_for_security_group`: An unused IP address in the private network used by CF. Defaults to 10.0.244.255. [See below](#container-networking-and-application-security-groups)
 
-* `require_proxied_app_traffic`: Set this to `true` if Diego was configured to require proxied port mappings, i.e. if `containers.proxy.enable_unproxied_port_mappings` is set to `false`.  Note that this also requires using the [cf-syslog-skip-cert-verify](https://github.com/cloudfoundry/cf-deployment/blob/main/operations/cf-syslog-skip-cert-verify.yml).
+* `require_proxied_app_traffic`: Set this to `true` if Diego was configured to require proxied port mappings, i.e. if `containers.proxy.enable_unproxied_port_mappings` is set to `false`.
 
 * `staticfile_buildpack_name` [See below](#buildpack-names)
 * `java_buildpack_name` [See below](#buildpack-names)
@@ -338,6 +339,7 @@ You can of course combine the `-v` flag with the `-nodes=N` flag.
 
 Test Group Name| Description
 --- | ---
+`app_syslog_tcp`| Tests the ability to configure an app syslog drain listener.
 `apps`| Tests the core functionalities of Cloud Foundry: staging, running, logging, routing, buildpacks, etc.  This test group should always pass against a sound Cloud Foundry deployment.
 `credhub`| Tests CredHub-delivered Secure Service credentials in the service binding. [CredHub configuration][credhub-secure-service-credentials] is required to run these tests. In addition to selecting a `credhub_mode`, `credhub_client` and `credhub_secret` values are required for these tests.
 `detect` | Tests the ability of the platform to detect the correct buildpack for compiling an application if no buildpack is explicitly specified.

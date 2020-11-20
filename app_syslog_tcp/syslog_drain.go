@@ -18,7 +18,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = AppsDescribe("Logging", func() {
+var _ = AppSyslogTcpDescribe("Syslog Drain over TCP", func() {
 	var logWriterAppName1 string
 	var logWriterAppName2 string
 	var listenerAppName string
