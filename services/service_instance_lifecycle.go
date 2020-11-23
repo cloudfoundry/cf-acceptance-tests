@@ -518,7 +518,6 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 				bindService := cf.Cf("bind-service", appName, instanceName).Wait()
 
 				Expect(bindService).To(Exit(0), "failed to asynchronously bind service")
-				Expect(bindService).To(Say("Binding in progress."))
 
 				By("waiting for binding to be created")
 				waitForAsyncOperationToCompleteAndSay(broker, instanceName, appName+".*\\ssucceeded")
@@ -535,7 +534,6 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 				By("deleting the binding asynchronously")
 				unbindService := cf.Cf("unbind-service", appName, instanceName).Wait()
 				Expect(unbindService).To(Exit(0), "failed to asynchronously unbind service")
-				Expect(unbindService).To(Say("Unbinding in progress."))
 
 				By("waiting for binding to be deleted")
 				waitForAsyncOperationToCompleteAndSay(broker, instanceName, "There are no bound apps for this service.")
