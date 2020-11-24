@@ -8,7 +8,7 @@ resource_types:
 resources:
 - name: relint-envs
   type: git
-  icon: github-box
+  icon: github
   source:
     branch: main
     uri: git@github.com:cloudfoundry/relint-envs.git
@@ -16,21 +16,19 @@ resources:
 
 - name: cf-deployment-concourse-tasks
   type: git
-  icon: github-box
+  icon: github
   source:
-    branch: master
     uri: https://github.com/cloudfoundry/cf-deployment-concourse-tasks.git
 
 - name: runtime-ci
   type: git
-  icon: github-box
+  icon: github
   source:
-    branch: master
     uri: https://github.com/cloudfoundry/runtime-ci.git
 
 - name: cf-acceptance-tests-develop
   type: git
-  icon: github-box
+  icon: github
   source:
     branch: develop
     uri: git@github.com:cloudfoundry/cf-acceptance-tests.git
@@ -41,7 +39,7 @@ resources:
 
 - name: cf-acceptance-tests-rc
   type: git
-  icon: github-box
+  icon: github
   source:
     branch: release-candidate
     uri: git@github.com:cloudfoundry/cf-acceptance-tests.git
@@ -50,22 +48,21 @@ resources:
     - ci/**
     - .envrc
 
-- name: cf-acceptance-tests-master
+- name: cf-acceptance-tests-main
   type: git
-  icon: github-box
+  icon: github
   source:
-    branch: master
     uri: git@github.com:cloudfoundry/cf-acceptance-tests.git
+    branch: main
     private_key: ((cf_acceptance_tests_readwrite_deploy_key.private_key))
     ignore_paths:
     - ci/**
     - .envrc
 
-- name: cf-deployment-master
+- name: cf-deployment-main
   type: git
-  icon: github-box
+  icon: github
   source:
-    branch: master
     uri: git@github.com:cloudfoundry/cf-deployment.git
     private_key: ((cf_deployment_readwrite_deploy_key.private_key))
     ignore_paths:
@@ -74,9 +71,8 @@ resources:
 
 - name: cf-test-helpers
   type: git
-  icon: github-box
+  icon: github
   source:
-    branch: master
     uri: https://github.com/cloudfoundry-incubator/cf-test-helpers
 
 - name: cats-version
@@ -84,7 +80,7 @@ resources:
   source:
     driver: git
     uri: git@github.com:cloudfoundry/cf-relint-ci-semver.git
-    branch: master
+    branch: main
     private_key: ((cf_relint_ci_semver_readwrite_deploy_key.private_key))
     git_user: "CF MEGA BOT <cf-mega@pivotal.io>"
     file: cats-version
@@ -165,7 +161,7 @@ jobs:
       - vsphere-cf-release-integration
       trigger: true
     - get: cf-deployment-concourse-tasks
-    - get: cf-deployment-master
+    - get: cf-deployment-main
     - get: cf-acceptance-tests-develop
       passed:
       - claim-env
@@ -178,8 +174,8 @@ jobs:
   - task: bosh-deploy-cf-with-windows
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
     input_mapping:
-      cf-deployment: cf-deployment-master
-      ops-files: cf-deployment-master
+      cf-deployment: cf-deployment-main
+      ops-files: cf-deployment-main
     params:
       OPS_FILES: |
         operations/use-compiled-releases.yml
@@ -293,7 +289,7 @@ jobs:
       - get: cf-acceptance-tests-develop
       - get: cf-acceptance-tests-rc
         passed: [bless-cats]
-      - put: cf-acceptance-tests-master
+      - put: cf-acceptance-tests-main
         params:
           repository: cf-acceptance-tests-rc
           tag: cats-version/version
@@ -310,7 +306,7 @@ jobs:
       - get: cf-acceptance-tests-develop
       - get: cf-acceptance-tests-rc
         passed: [bless-cats]
-      - put: cf-acceptance-tests-master
+      - put: cf-acceptance-tests-main
         params:
           repository: cf-acceptance-tests-rc
           tag: cats-version/version
@@ -327,7 +323,7 @@ jobs:
       - get: cf-acceptance-tests-develop
       - get: cf-acceptance-tests-rc
         passed: [bless-cats]
-      - put: cf-acceptance-tests-master
+      - put: cf-acceptance-tests-main
         params:
           repository: cf-acceptance-tests-rc
           tag: cats-version/version
