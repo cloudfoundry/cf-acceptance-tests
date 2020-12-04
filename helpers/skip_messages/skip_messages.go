@@ -8,8 +8,6 @@ const SkipDockerMessage = `Skipping this test because config.IncludeDocker is se
 NOTE: Ensure Docker containers are enabled on your platform before enabling this test.`
 const SkipInternetDependentMessage = `Skipping this test because config.IncludeInternetDependent is set to 'false'.
 NOTE: Ensure that your platform has access to the internet before running this test.`
-const SkipInternetlessMessage = `Skipping this test because config.IncludeInternetless is set to 'false'.
-NOTE: Ensure that your platform does not have access to the internet before running this test.`
 const SkipPrivateDockerRegistryMessage = `Skipping this test because config.IncludePrivateDockerRegistry is set to 'false'.
 NOTE: Ensure that you've provided values for config.PrivateDockerRegistryImage, config.PrivateDockerRegistryUsername,
 and config.PrivateDockerRegistryPassword before running this test.`

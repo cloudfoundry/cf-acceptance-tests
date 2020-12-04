@@ -103,17 +103,6 @@ func InternetDependentDescribe(description string, callback func()) bool {
 	})
 }
 
-func InternetlessDescribe(description string, callback func()) bool {
-	return Describe("[internetless]", func() {
-		BeforeEach(func() {
-			if !Config.GetIncludeInternetless() {
-				Skip(skip_messages.SkipInternetlessMessage)
-			}
-		})
-		Describe(description, callback)
-	})
-}
-
 func RouteServicesDescribe(description string, callback func()) bool {
 	return Describe("[route_services]", func() {
 		BeforeEach(func() {
