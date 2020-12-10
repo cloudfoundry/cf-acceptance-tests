@@ -1,3 +1,0 @@
-[submodule "assets/logging-route-service"]
-	path = assets/logging-route-service
-	url = https://github.com/cloudfoundry-samples/logging-route-service
