@@ -73,7 +73,6 @@ type config struct {
 	IncludeDetect                   *bool `json:"include_detect"`
 	IncludeDocker                   *bool `json:"include_docker"`
 	IncludeInternetDependent        *bool `json:"include_internet_dependent"`
-	IncludeInternetless             *bool `json:"include_internetless"`
 	IncludeIsolationSegments        *bool `json:"include_isolation_segments"`
 	IncludePrivateDockerRegistry    *bool `json:"include_private_docker_registry"`
 	IncludeRouteServices            *bool `json:"include_route_services"`
@@ -169,7 +168,6 @@ func getDefaults() config {
 	defaults.CredhubClientSecret = ptrToString("")
 	defaults.IncludeDocker = ptrToBool(false)
 	defaults.IncludeInternetDependent = ptrToBool(false)
-	defaults.IncludeInternetless = ptrToBool(false)
 	defaults.IncludeIsolationSegments = ptrToBool(false)
 	defaults.IncludeRoutingIsolationSegments = ptrToBool(false)
 	defaults.IncludePrivateDockerRegistry = ptrToBool(false)
@@ -398,9 +396,6 @@ func validateConfig(config *config) Errors {
 	}
 	if config.IncludeInternetDependent == nil {
 		errs.Add(fmt.Errorf("* 'include_internet_dependent' must not be null"))
-	}
-	if config.IncludeInternetless == nil {
-		errs.Add(fmt.Errorf("* 'include_internetless' must not be null"))
 	}
 	if config.IncludePrivateDockerRegistry == nil {
 		errs.Add(fmt.Errorf("* 'include_private_docker_registry' must not be null"))
@@ -853,10 +848,6 @@ func (c *config) GetIncludeDocker() bool {
 
 func (c *config) GetIncludeInternetDependent() bool {
 	return *c.IncludeInternetDependent
-}
-
-func (c *config) GetIncludeInternetless() bool {
-	return *c.IncludeInternetless
 }
 
 func (c *config) GetIncludeRouteServices() bool {
