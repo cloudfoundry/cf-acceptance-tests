@@ -52,8 +52,8 @@ resources:
   type: git
   icon: github
   source:
-    branch: main
     uri: git@github.com:cloudfoundry/cf-acceptance-tests.git
+    branch: main
     private_key: ((cf_acceptance_tests_readwrite_deploy_key.private_key))
     ignore_paths:
     - ci/**
@@ -235,6 +235,7 @@ jobs:
     params:
       CONFIG_FILE_PATH: environments/test/cats/integration_config.json
       REPORTER_CONFIG_FILE_PATH: environments/test/cats/reporter_config.json
+      FLAKE_ATTEMPTS: 3
 
 - name: bless-cats
   public: true
