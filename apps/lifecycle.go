@@ -377,6 +377,8 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 	})
 
 	Describe("updating", func() {
+		SkipOnK8s("Buildpack update workflow no longer supported")
+
 		BeforeEach(func() {
 			Expect(cf.Cf(app_helpers.CatnipWithArgs(
 				appName,
