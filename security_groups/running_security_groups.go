@@ -314,7 +314,7 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 			deleteBuildpack(buildpack)
 		})
 
-		It("allows external and denies internal traffic during staging based on default staging security rules", func() {
+		FIt("allows external and denies internal traffic during staging based on default staging security rules", func() {
 			Expect(cf.Cf("set-env", testAppName, "TESTURI", "www.google.com").Wait()).To(Exit(0))
 			Expect(cf.Cf("start", testAppName).Wait(Config.CfPushTimeoutDuration())).To(Exit(1))
 			Eventually(getStagingOutput(testAppName), 5).Should(Say("CURL_EXIT=0"))
