@@ -15,6 +15,3 @@ PLATFORMS
 DEPENDENCIES
   rack
   thin
-
-BUNDLED WITH
-   2.2.4

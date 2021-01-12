@@ -41,6 +41,3 @@ DEPENDENCIES
   rainbow
   rspec
   sinatra
-
-BUNDLED WITH
-   2.2.4
