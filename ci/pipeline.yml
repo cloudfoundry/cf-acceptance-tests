@@ -1,11 +1,14 @@
 ---
-resource_types:
-- name: toolsmiths-cf-pool
-  type: docker-image
-  source:
-    repository: cftoolsmiths/toolsmiths-envs-resource
-
 resources:
+- name: cats-pool
+  type: pool
+  icon: pool
+  source:
+    uri: git@github.com:cloudfoundry/relint-ci-pools
+    branch: main
+    pool: cats
+    private_key: ((relint_ci_pools_readwrite_deploy_key.private_key))
+
 - name: relint-envs
   type: git
   icon: github
@@ -92,15 +95,6 @@ resources:
     project_id: "1382120"
     tracker_url: https://www.pivotaltracker.com
 
-- name: toolsmiths-env
-  type: toolsmiths-cf-pool
-  source:
-    api_token: ((toolsmiths_api_token))
-    hostname: environments.toolsmiths.cf-app.com
-    pool_name: cf-deployment
-  tags:
-  - vsphere-cf-release-integration
-
 jobs:
 - name: bump-cf-test-helpers
   public: true
@@ -133,109 +127,121 @@ jobs:
     input_mapping:
       cf-acceptance-tests: cf-acceptance-tests-develop
 
-- name: claim-env
+- name: acquire-pool-cats
+  public: true
   serial: true
-  # TODO: make public when the toolsmiths-env resource stops leaking creds
-  #public: true
   plan:
   - in_parallel:
-    - put: toolsmiths-env
-      params:
-        action: claim
-      tags:
-      - vsphere-cf-release-integration
     - get: cf-acceptance-tests-develop
       trigger: true
-      passed: [unit-test]
-    timeout: 4h
+      passed: [ unit-test ]
+    - put: cats-pool
+      params: {claim: cats}
+
+- name: acquire-pool
+  public: true
+  serial: true
+  plan:
+  - in_parallel:
+    - get: cf-deployment-main
+      trigger: true
+    - put: cats-pool
+      params: {claim: cats}
+
+- name: release-pool-manual
+  public: true
+  plan:
+  - get: cats-pool
+  ensure:
+    try:
+      put: cats-pool
+      params: {release: cats-pool}
 
 - name: deploy-cf
+  serial_groups: [ cats ]
+  public: true
+  plan:
+  - on_success:
+      put: cats-pool
+      params: {release: cats-pool}
+    do:
+    - get: cats-pool
+      trigger: true
+      passed: [ acquire-pool ]
+    - in_parallel:
+      - get: runtime-ci
+      - get: cf-deployment-concourse-tasks
+      - get: cf-deployment-main
+        passed: [ acquire-pool ]
+      - get: relint-envs
+    - task: bosh-deploy-cf
+      file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+      input_mapping:
+        bbl-state: relint-envs
+        cf-deployment: cf-deployment-main
+        ops-files: cf-deployment-main
+        vars-files: relint-envs
+      params:
+        BBL_STATE_DIR: environments/test/cats/bbl-state
+        SYSTEM_DOMAIN: cats.cf-app.com
+        OPS_FILES: |
+          operations/use-compiled-releases.yml
+          operations/use-internal-lookup-for-route-services.yml
+    - task: run-bosh-cleanup
+      file: cf-deployment-concourse-tasks/bosh-cleanup/task.yml
+      input_mapping:
+        bbl-state: relint-envs
+      params:
+        BBL_STATE_DIR: environments/test/cats/bbl-state
+    - task: update-integration-configs
+      file: cf-deployment-concourse-tasks/update-integration-configs/task.yml
+      params:
+        BBL_STATE_DIR: environments/test/cats/bbl-state
+        CATS_INTEGRATION_CONFIG_FILE: environments/test/cats/integration_config.json
+      input_mapping:
+        bbl-state: relint-envs
+        integration-configs: relint-envs
+      ensure:
+        put: relint-envs
+        params:
+          repository: updated-integration-configs
+          rebase: true
+
+- name: run-cats
+  serial_groups: [ cats ]
   serial: true
   public: true
   plan:
-  - in_parallel:
-    - get: toolsmiths-env
-      passed:
-      - claim-env
-      tags:
-      - vsphere-cf-release-integration
+  - timeout: 4h
+    do:
+    - get: cats-pool
       trigger: true
-    - get: cf-deployment-concourse-tasks
-    - get: cf-deployment-main
-    - get: cf-acceptance-tests-develop
-      passed:
-      - claim-env
-  - task: bosh-delete-cf-deployment
-    file: cf-deployment-concourse-tasks/bosh-delete-deployment/task.yml
-    params:
-      IGNORE_ERRORS: true
-  - task: bosh-cleanup
-    file: cf-deployment-concourse-tasks/bosh-cleanup/task.yml
-  - task: bosh-deploy-cf-with-windows
-    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
-    input_mapping:
-      cf-deployment: cf-deployment-main
-      ops-files: cf-deployment-main
-    params:
-      OPS_FILES: |
-        operations/use-compiled-releases.yml
-        operations/windows2019-cell.yml
-        operations/use-online-windows2019fs.yml
-        operations/experimental/use-compiled-releases-windows.yml
-        operations/use-internal-lookup-for-route-services.yml
-        operations/experimental/colocate-smoke-tests-on-cc-worker.yml
-  - in_parallel:
-    - task: open-asgs-for-credhub
-      file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
-      params:
-        INSTANCE_GROUP_NAME: credhub
-        SECURITY_GROUP_NAME: credhub
-    - task: open-asgs-for-uaa
-      file: cf-deployment-concourse-tasks/open-asgs-for-bosh-instance-group/task.yml
-      params:
-        INSTANCE_GROUP_NAME: uaa
-        SECURITY_GROUP_NAME: uaa
+      passed: [ acquire-pool-cats ]
+    - in_parallel:
+      - get: cf-deployment-concourse-tasks
+      - get: cf-acceptance-tests-develop
+        passed: [ acquire-pool-cats ]
+      - get: relint-envs
     - task: enable-docker-and-tasks
       file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
+      attempts: 3
+      input_mapping:
+        bbl-state: relint-envs
       params:
+        BBL_STATE_DIR: environments/test/cats/bbl-state
+        SYSTEM_DOMAIN: cats.cf-app.com
         ENABLED_FEATURE_FLAGS: |
           diego_docker
           task_creation
           service_instance_sharing
-
-- name: run-cats
-  serial: true
-  public: true
-  plan:
-  - in_parallel:
-    - get: toolsmiths-env
-      passed:
-      - deploy-cf
-      tags:
-      - vsphere-cf-release-integration
-      trigger: true
-    - get: cf-deployment-concourse-tasks
-    - get: cf-acceptance-tests-develop
-      passed:
-      - deploy-cf
-    - get: relint-envs
-
-  - task: update-integration-configs
-    file: cf-deployment-concourse-tasks/update-integration-configs/task.yml
-    params:
-      CATS_INTEGRATION_CONFIG_FILE: environments/test/cats/integration_config.json
-    input_mapping:
-      integration-configs: relint-envs
-
-  - task: run-cats
-    file: cf-deployment-concourse-tasks/run-cats/task.yml
-    input_mapping:
-      integration-config: updated-integration-configs
-      cf-acceptance-tests: cf-acceptance-tests-develop
-    params:
-      CONFIG_FILE_PATH: environments/test/cats/integration_config.json
-      REPORTER_CONFIG_FILE_PATH: environments/test/cats/reporter_config.json
-      FLAKE_ATTEMPTS: 3
+    - task: run-cats
+      file: cf-deployment-concourse-tasks/run-cats/task.yml
+      input_mapping:
+        integration-config: relint-envs
+        cf-acceptance-tests: cf-acceptance-tests-develop
+      params:
+        CONFIG_FILE_PATH: environments/test/cats/integration_config.json
+        REPORTER_CONFIG_FILE_PATH: environments/test/cats/reporter_config.json
 
 - name: bless-cats
   public: true
@@ -263,23 +269,36 @@ jobs:
       TRACKER_API_TOKEN: ((cf_relint_tracker_api_token))
       DESCRIPTION_FILE: version.json
 
-- name: unclaim-env
-  serial: true
-  # TODO: make public when the toolsmiths-env resource stops leaking creds
-  #public: true
+- name: release-pool
+  public: true
   plan:
-  - get: toolsmiths-env
-    passed:
-    - run-cats
-    tags:
-    - vsphere-cf-release-integration
+  - get: cats-pool
+    passed: [ run-cats ]
     trigger: true
-  - put: toolsmiths-env
-    params:
-      action: unclaim
-      env_file: toolsmiths-env/metadata
-    tags:
-    - vsphere-cf-release-integration
+  - put: cats-pool
+    params: {release: cats-pool}
+
+- name: cleanup-cats
+  serial: true
+  public: true
+  plan:
+  - timeout: 4h
+    do:
+    - get: cats-pool
+      trigger: true
+      passed: [ run-cats ]
+    - in_parallel:
+      - get: cf-acceptance-tests-develop
+        passed: [ run-cats]
+        trigger: true
+      - get: runtime-ci
+      - get: relint-envs
+    - task: cleanup-cats
+      file: runtime-ci/tasks/cleanup-after-cats/task.yml
+      input_mapping:
+        integration-config: relint-envs
+      params:
+        CONFIG_FILE_PATH: environments/test/cats/integration_config.json
 
 - name: ship-it-patch
   public: true
