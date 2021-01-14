@@ -259,15 +259,6 @@ jobs:
     params:
       repos:
         - cf-acceptance-tests-develop
-  - task: create-pm-story
-    file: runtime-ci/tasks/create-pm-story/task.yml
-    input_mapping:
-      input-description: version-json
-    params:
-      TRACKER_STORY_NAME: "New CATs Change has been Blessed!!!"
-      TRACKER_STORY_STATE: delivered
-      TRACKER_API_TOKEN: ((cf_relint_tracker_api_token))
-      DESCRIPTION_FILE: version.json
 
 - name: release-pool
   public: true
