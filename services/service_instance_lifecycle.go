@@ -195,8 +195,6 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 						Expect(cf.Cf("delete-service-key", instanceName, keyName, "-f").Wait()).To(Exit(0))
 					})
 
-					SkipOnK8s("create-service-key not yet supported. See https://github.com/cloudfoundry/capi-k8s-release/issues/101")
-
 					It("can create service keys", func() {
 						createKey := cf.Cf("create-service-key", instanceName, keyName).Wait()
 						Expect(createKey).To(Exit(0), "failed to create key")
