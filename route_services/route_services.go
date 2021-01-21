@@ -3,9 +3,7 @@ package route_services
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/url"
-	"os"
 	"path/filepath"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -20,7 +18,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
-	"github.com/onsi/gomega/gexec"
 	. "github.com/onsi/gomega/gexec"
 )
 
@@ -37,7 +34,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 			)
 
 			BeforeEach(func() {
-				routeServiceName = random_name.CATSRandomName("ROUTE_SVC_APP")
+				routeServiceName = random_name.CATSRandomName("APP")
 				brokerName = random_name.CATSRandomName("BRKR")
 				serviceInstanceName = random_name.CATSRandomName("SVIN")
 				appName = random_name.CATSRandomName("APP")
@@ -90,59 +87,6 @@ var _ = RouteServicesDescribe("Route Services", func() {
 					Expect(logs.Wait()).To(Exit(0))
 					return logs
 				}).Should(Say("Response Body: go, world"))
-			})
-
-			Context("with sticky sessions", func() {
-				var doraAppName, cookieStorePath string
-
-				BeforeEach(func() {
-					doraAppName = random_name.CATSRandomName("DORA")
-
-					Expect(cf.Push(doraAppName,
-						"-p", assets.NewAssets().Dora,
-					).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-					bindRouteToService(doraAppName, serviceInstanceName)
-					Expect(cf.Cf("scale", doraAppName, "-i", "3").Wait()).To(Exit(0))
-
-					cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
-					Expect(err).ToNot(HaveOccurred())
-					cookieStorePath = cookieStore.Name()
-					cookieStore.Close()
-				})
-
-				AfterEach(func() {
-					app_helpers.AppReport(doraAppName)
-
-					unbindRouteFromService(doraAppName, serviceInstanceName)
-					Expect(cf.Cf("delete", doraAppName, "-f", "-r").Wait()).To(Exit(0))
-
-					err := os.Remove(cookieStorePath)
-					Expect(err).ToNot(HaveOccurred())
-				})
-
-				It("routes through the route service to the same app instance every time", func() {
-					// It is up
-					Eventually(func() *Session {
-						helpers.CurlAppRoot(Config, doraAppName)
-						logs := logshelper.Recent(routeServiceName)
-						Expect(logs.Wait()).To(Exit(0))
-						return logs
-					}).Should(Say("Response Body: Hi, I'm Dora!"))
-
-					// JsessionID is set in the cookie
-					body := curlAppWithCookies(doraAppName, "/session", cookieStorePath)
-					Expect(body).To(ContainSubstring("Please read the README.md for help on how to use sticky sessions."))
-
-					// get instance guid for the app it is sticky to
-					appGuid := curlAppWithCookies(doraAppName, "/id", cookieStorePath)
-
-					// get instance guid a bunch of times and see that it is routed to the same instance every time
-					for i := 0; i < 10; i++ {
-						body := curlAppWithCookies(doraAppName, "/id", cookieStorePath)
-						Expect(body).To(Equal(appGuid))
-					}
-				})
 			})
 		})
 
@@ -362,11 +306,4 @@ func initiateBrokerConfig(serviceName, serviceBrokerAppName string) {
 	Expect(err).NotTo(HaveOccurred())
 
 	helpers.CurlApp(Config, serviceBrokerAppName, "/config", "-X", "POST", "-d", string(changedJson))
-}
-
-func curlAppWithCookies(appName, path string, cookieStorePath string) string {
-	uri := helpers.AppUri(appName, path, Config)
-	curlCmd := helpers.Curl(Config, uri, "-b", cookieStorePath, "-c", cookieStorePath).Wait(helpers.CURL_TIMEOUT)
-	Expect(curlCmd).To(gexec.Exit(0))
-	return string(curlCmd.Out.Contents())
 }
