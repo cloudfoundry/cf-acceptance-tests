@@ -119,7 +119,11 @@ func AuthorizeScopes(cookie string, config OAuthConfig) (authCode string) {
 
 	pattern := fmt.Sprintf(`%v\?code=([a-zA-Z0-9]+)`, regexp.QuoteMeta(config.RedirectUri))
 	regEx, _ := regexp.Compile(pattern)
-	authCode = regEx.FindStringSubmatch(apiResponse)[1]
+
+	stringMatch := regEx.FindStringSubmatch(apiResponse)
+	Expect(stringMatch).To(HaveLen(2))
+
+	authCode = stringMatch[1]
 
 	return
 }
@@ -136,7 +140,11 @@ func GetAccessToken(authCode string, config OAuthConfig) (accessToken string) {
 	apiResponse := curl.Out.Contents()
 	jsonResult := ParseJsonResponse(apiResponse)
 
-	accessToken = fmt.Sprintf("%v", jsonResult[`access_token`])
+	rawToken := jsonResult[`access_token`]
+
+	Expect(rawToken).NotTo(BeNil(), `Failed to obtain an access token.`)
+
+	accessToken = fmt.Sprintf("%v", rawToken)
 	return
 }
 
