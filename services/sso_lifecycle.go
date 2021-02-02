@@ -52,7 +52,7 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 		broker.Destroy()
 	})
 
-	Context("When a service broker is created with a dashboard client", func() {
+	FContext("When a service broker is created with a dashboard client", func() {
 		var instanceName string
 
 		BeforeEach(func() {
@@ -85,7 +85,7 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 		})
 	})
 
-	Context("When a service broker is updated with a new dashboard client", func() {
+	FContext("When a service broker is updated with a new dashboard client", func() {
 		var instanceName string
 
 		BeforeEach(func() {
