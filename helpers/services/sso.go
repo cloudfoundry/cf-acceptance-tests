@@ -136,7 +136,9 @@ func GetAccessToken(authCode string, config OAuthConfig) (accessToken string) {
 	apiResponse := curl.Out.Contents()
 	jsonResult := ParseJsonResponse(apiResponse)
 
-	accessToken = fmt.Sprintf("%v", jsonResult[`access_token`])
+	rawToken := jsonResult[`access_token`]
+
+	accessToken = fmt.Sprintf("%v", rawToken)
 	return
 }
 
