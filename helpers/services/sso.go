@@ -117,7 +117,7 @@ func AuthorizeScopes(cookie string, config OAuthConfig) (authCode string) {
 	Expect(curl).To(Exit(0))
 	apiResponse := string(curl.Out.Contents())
 
-	pattern := fmt.Sprintf(`%v\?code=([a-zA-Z0-9]+)`, regexp.QuoteMeta(config.RedirectUri))
+	pattern := fmt.Sprintf(`%v\?code=([^&\r\n]+)`, regexp.QuoteMeta(config.RedirectUri))
 	regEx, _ := regexp.Compile(pattern)
 
 	stringMatch := regEx.FindStringSubmatch(apiResponse)
