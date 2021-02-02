@@ -75,7 +75,6 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 			Expect(authCode).ToNot(BeNil(), `Failed to request and authorize scopes.`)
 
 			accessToken := GetAccessToken(authCode, oauthConfig)
-			Expect(accessToken).ToNot(BeNil(), `Failed to obtain an access token.`)
 
 			// use the access token to perform an operation on the user's behalf
 			canManage, httpCode := QueryServiceInstancePermissionEndpoint(apiEndpoint, accessToken, serviceInstanceGuid)
@@ -114,7 +113,6 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 			Expect(authCode).ToNot(BeNil(), `Failed to request and authorize scopes.`)
 
 			accessToken := GetAccessToken(authCode, oauthConfig)
-			Expect(accessToken).ToNot(BeNil(), `Failed to obtain an access token.`)
 
 			// use the access token to perform an operation on the user's behalf
 			canManage, httpCode := QueryServiceInstancePermissionEndpoint(apiEndpoint, accessToken, serviceInstanceGuid)

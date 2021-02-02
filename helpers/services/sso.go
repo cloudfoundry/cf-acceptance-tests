@@ -138,6 +138,8 @@ func GetAccessToken(authCode string, config OAuthConfig) (accessToken string) {
 
 	rawToken := jsonResult[`access_token`]
 
+	Expect(rawToken).NotTo(BeNil(), `Failed to obtain an access token.`)
+
 	accessToken = fmt.Sprintf("%v", rawToken)
 	return
 }
