@@ -119,7 +119,10 @@ func AuthorizeScopes(cookie string, config OAuthConfig) (authCode string) {
 
 	pattern := fmt.Sprintf(`%v\?code=([a-zA-Z0-9]+)`, regexp.QuoteMeta(config.RedirectUri))
 	regEx, _ := regexp.Compile(pattern)
-	authCode = regEx.FindStringSubmatch(apiResponse)[1]
+
+	stringMatch := regEx.FindStringSubmatch(apiResponse)
+
+	authCode = stringMatch[1]
 
 	return
 }
