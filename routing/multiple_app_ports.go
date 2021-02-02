@@ -72,6 +72,8 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 				Port: 7777,
 			}
 			InsertDestinations(getRouteGuid(secondRouteHostname), []Destination{destination})
+
+			Expect(cf.Cf("restart", appName, "--strategy", "rolling").Wait()).To(Exit(0))
 		})
 
 		It("should listen on multiple ports", func() {
