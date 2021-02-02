@@ -121,6 +121,7 @@ func AuthorizeScopes(cookie string, config OAuthConfig) (authCode string) {
 	regEx, _ := regexp.Compile(pattern)
 
 	stringMatch := regEx.FindStringSubmatch(apiResponse)
+	Expect(stringMatch).To(HaveLen(2))
 
 	authCode = stringMatch[1]
 
