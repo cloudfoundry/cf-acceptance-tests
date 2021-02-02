@@ -12,6 +12,8 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
+
+	"fmt"
 )
 
 var _ = ServicesDescribe("SSO Lifecycle", func() {
@@ -80,6 +82,8 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 			// use the access token to perform an operation on the user's behalf
 			canManage, httpCode := QueryServiceInstancePermissionEndpoint(apiEndpoint, accessToken, serviceInstanceGuid)
 
+			fmt.Printf("=== BRUCE token: \n%s\n obtained from code: \n%s\n ===", accessToken, authCode)
+
 			Expect(httpCode).To(Equal(`200`), `The provided access token was not valid.`)
 			Expect(canManage).To(Equal(`true`))
 		})
@@ -115,6 +119,8 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 
 			accessToken := GetAccessToken(authCode, oauthConfig)
 			Expect(accessToken).ToNot(BeNil(), `Failed to obtain an access token.`)
+
+			fmt.Printf("=== BRUCE token: \n%s\n obtained from code: \n%s\n ===", accessToken, authCode)
 
 			// use the access token to perform an operation on the user's behalf
 			canManage, httpCode := QueryServiceInstancePermissionEndpoint(apiEndpoint, accessToken, serviceInstanceGuid)
