@@ -123,7 +123,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 
 				sharedToCmd := cf.Cf("service", serviceInstanceName).Wait()
 				Expect(sharedToCmd).To(Exit(0))
-				Expect(sharedToCmd).To(Say("shared with spaces"))
+				Expect(sharedToCmd).To(Say("Shared with spaces"))
 			})
 		})
 
