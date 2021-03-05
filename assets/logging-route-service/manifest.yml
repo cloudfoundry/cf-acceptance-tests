@@ -5,3 +5,4 @@ applications:
   env:
     GOVERSION: 1.x
     GOPACKAGENAME: github.com/cloudfoundry-samples/logging-route-service
+    GO111MODULE: "off"
