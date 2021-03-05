@@ -2,7 +2,6 @@ package services_test
 
 import (
 	"encoding/json"
-
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
@@ -123,7 +122,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 
 				sharedToCmd := cf.Cf("service", serviceInstanceName).Wait()
 				Expect(sharedToCmd).To(Exit(0))
-				Expect(sharedToCmd).To(Say("shared with spaces"))
+				Expect(sharedToCmd).To(Say("[S|s]hared with spaces"))
 			})
 		})
 
