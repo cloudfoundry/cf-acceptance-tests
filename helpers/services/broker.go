@@ -59,33 +59,6 @@ type ServiceBroker struct {
 	AsyncPlans []Plan
 }
 
-type ServicesResponse struct {
-	Resources []ServiceResponse
-}
-
-type ServiceResponse struct {
-	Entity struct {
-		Label        string
-		ServicePlans []ServicePlanResponse `json:"service_plans"`
-	}
-}
-
-type ServicePlansResponse struct {
-	Resources []ServicePlanResponse
-}
-
-type ServicePlanResponse struct {
-	Entity struct {
-		Name    string
-		Public  bool
-		Schemas PlanSchemas
-	}
-	Metadata struct {
-		Url  string
-		Guid string
-	}
-}
-
 type ServiceInstance struct {
 	Guid string `json:"guid"`
 }
@@ -94,10 +67,14 @@ type ServiceInstanceResponse struct {
 	Resources []ServiceInstance
 }
 
-type SpaceJson struct {
-	Resources []struct {
-		Guid string
-	}
+type ServicePlanResponse struct {
+	Name    string      `json:"name"`
+	GUID    string      `json:"guid"`
+	Schemas PlanSchemas `json:"schemas"`
+}
+
+type ServicesPlansResponse struct {
+	Resources []ServicePlanResponse
 }
 
 func NewServiceBroker(name string, path string, TestSetup *workflowhelpers.ReproducibleTestSuiteSetup) ServiceBroker {
@@ -221,15 +198,6 @@ func (b ServiceBroker) ToJSON() string {
 	return replacer.Replace(string(bytes))
 }
 
-type V3ServicePlanResponse struct {
-	Name string `json:"name"`
-	GUID string `json:"guid"`
-}
-
-type ServicesPlansResponse struct {
-	Resources []V3ServicePlanResponse
-}
-
 func (b ServiceBroker) PublicizePlans() {
 	url := fmt.Sprintf("/v3/service_plans?service_offering_names=%s&service_broker_names=%s", b.Service.Name, b.Name)
 	var session *Session
@@ -272,15 +240,6 @@ func (b ServiceBroker) CreateServiceInstance(instanceName string) string {
 	Expect(curl).To(Exit(0))
 	json.Unmarshal(curl.Out.Contents(), &serviceInstance)
 	return serviceInstance.Resources[0].Guid
-}
-
-func (b ServiceBroker) GetSpaceGuid() string {
-	url := fmt.Sprintf("/v3/spaces?names=%s", b.TestSetup.RegularUserContext().Space)
-	jsonResults := SpaceJson{}
-	curl := cf.Cf("curl", url).Wait()
-	Expect(curl).To(Exit(0))
-	json.Unmarshal(curl.Out.Contents(), &jsonResults)
-	return jsonResults.Resources[0].Guid
 }
 
 func (b ServiceBroker) Plans() []Plan {

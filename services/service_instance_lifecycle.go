@@ -26,19 +26,10 @@ type LastOperation struct {
 	State string `json:"state"`
 }
 
-type Entity struct {
-	Name          string        `json:"name"`
-	LastOperation LastOperation `json:"last_operation"`
-}
-
-type Metadata struct {
-	URL  string
-	GUID string
-}
-
 type Resource struct {
-	Entity   Entity   `json:"entity"`
-	Metadata Metadata `json:"metadata"`
+	Name          string `json:"name"`
+	GUID          string
+	LastOperation LastOperation `json:"last_operation"`
 }
 
 type Response struct {
@@ -119,7 +110,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 				It("fetch the configuration parameters", func() {
 					instanceGUID := getGuidFor("service", instanceName)
-					configParams := cf.Cf("curl", fmt.Sprintf("/v2/service_instances/%s/parameters", instanceGUID)).Wait()
+					configParams := cf.Cf("curl", fmt.Sprintf("/v3/service_instances/%s/parameters", instanceGUID)).Wait()
 					Expect(configParams).To(Exit(0), "failed to curl fetch binding parameters")
 					Expect(configParams).To(Say("\"param1\": \"value\""))
 				})
@@ -222,7 +213,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 						It("can retrieve parameters", func() {
 							serviceKeyGUID := getGuidFor("service-key", instanceName, keyName)
-							paramsEndpoint := fmt.Sprintf("/v2/service_keys/%s/parameters", serviceKeyGUID)
+							paramsEndpoint := fmt.Sprintf("/v3/service_credential_bindings/%s/parameters", serviceKeyGUID)
 
 							fetchServiceKeyParameters := cf.Cf("curl", paramsEndpoint).Wait()
 							Expect(fetchServiceKeyParameters).To(Say(`"param1": "value"`))
@@ -288,13 +279,13 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					Expect(bindService).To(Exit(0), "failed binding app to service")
 				})
 
-				Context("when there is an existing binding", func() {
+				FContext("when there is an existing binding", func() {
 					BeforeEach(func() {
 						bindService := cf.Cf("bind-service", appName, instanceName, "-c", `{"max_clients": 5}`).Wait()
 						Expect(bindService).To(Exit(0), "failed binding app to service")
 					})
 
-					It("can retrieve parameters", func() {
+					FIt("can retrieve parameters", func() {
 						appGUID := app_helpers.GetAppGuid(appName)
 						serviceInstanceGUID := getGuidFor("service", instanceName)
 						paramsEndpoint := getBindingParamsEndpoint(appGUID, serviceInstanceGUID)
@@ -557,13 +548,13 @@ func checkForAppEvent(appName string, eventName string) {
 
 func getBindingParamsEndpoint(appGUID string, instanceGUID string) string {
 	jsonResults := Response{}
-	bindingCurl := cf.Cf("curl", fmt.Sprintf("/v2/apps/%s/service_bindings?q=service_instance_guid:%s", appGUID, instanceGUID)).Wait()
+	bindingCurl := cf.Cf("curl", fmt.Sprintf("/v3/service_credential_bindings?app_guids=%s&service_instance_guids=%s", appGUID, instanceGUID)).Wait()
 	Expect(bindingCurl).To(Exit(0))
 	Expect(json.Unmarshal(bindingCurl.Out.Contents(), &jsonResults)).NotTo(HaveOccurred())
 
 	Expect(len(jsonResults.Resources)).To(BeNumerically(">", 0), "Expected to find at least one service resource.")
 
-	return fmt.Sprintf("%s/parameters", jsonResults.Resources[0].Metadata.URL)
+	return fmt.Sprintf("/v3/service_credential_bindings/%s/parameters", jsonResults.Resources[0].GUID)
 }
 
 func getGuidFor(args ...string) string {
