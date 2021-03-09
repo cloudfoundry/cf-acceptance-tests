@@ -2,8 +2,8 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: 'formatting: conform to new buildpacks syntax...'
-      sha: d025c158fa7da855635fae4240cd8dbf6d2540c5
+      commitTitle: 'Merge pull request #9 from davewalter/master...'
+      sha: c6f9e828536c60cc8f84b48b32af175049f704c1
     path: .
   path: assets/logging-route-service
 kind: LockConfig
