@@ -279,13 +279,13 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					Expect(bindService).To(Exit(0), "failed binding app to service")
 				})
 
-				FContext("when there is an existing binding", func() {
+				Context("when there is an existing binding", func() {
 					BeforeEach(func() {
 						bindService := cf.Cf("bind-service", appName, instanceName, "-c", `{"max_clients": 5}`).Wait()
 						Expect(bindService).To(Exit(0), "failed binding app to service")
 					})
 
-					FIt("can retrieve parameters", func() {
+					It("can retrieve parameters", func() {
 						appGUID := app_helpers.GetAppGuid(appName)
 						serviceInstanceGUID := getGuidFor("service", instanceName)
 						paramsEndpoint := getBindingParamsEndpoint(appGUID, serviceInstanceGUID)
