@@ -3,8 +3,6 @@ package services_test
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
-
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
 	. "github.com/onsi/ginkgo"
@@ -60,18 +58,14 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				Expect(plans).To(Say(broker.SyncPlans[1].Name))
 
 				// Confirm default schemas show up in CAPI
-				cfResponse := cf.Cf("curl", fmt.Sprintf("/v2/service_plans?q=unique_id:%s", broker.SyncPlans[0].ID)).Wait().Out.Contents()
+				cfResponse := cf.Cf("curl", fmt.Sprintf("/v3/service_plans?broker_catalog_ids=%s", broker.SyncPlans[0].ID)).Wait().Out.Contents()
 
-				var plansResponse ServicePlansResponse
+				var plansResponse ServicesPlansResponse
 				err := json.Unmarshal(cfResponse, &plansResponse)
 				Expect(err).To(BeNil())
 
 				var emptySchemas PlanSchemas
-				emptySchemas.ServiceInstance.Create.Parameters = map[string]interface{}{}
-				emptySchemas.ServiceInstance.Update.Parameters = map[string]interface{}{}
-				emptySchemas.ServiceBinding.Create.Parameters = map[string]interface{}{}
-
-				Expect(plansResponse.Resources[0].Entity.Schemas).To(Equal(emptySchemas))
+				Expect(plansResponse.Resources[0].Schemas).To(Equal(emptySchemas))
 
 				// Changing the catalog on the broker
 				oldServiceName = broker.Service.Name
@@ -109,11 +103,11 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				Expect(plans).To(Say(broker.Plans()[0].Name))
 
 				// Confirm plan schemas show up in CAPI
-				cfResponse = cf.Cf("curl", fmt.Sprintf("/v2/service_plans?q=unique_id:%s", broker.SyncPlans[0].ID)).Wait().Out.Contents()
+				cfResponse = cf.Cf("curl", fmt.Sprintf("/v3/service_plans?broker_catalog_ids=%s", broker.SyncPlans[0].ID)).Wait().Out.Contents()
 
 				err = json.Unmarshal(cfResponse, &plansResponse)
 				Expect(err).To(BeNil())
-				Expect(plansResponse.Resources[0].Entity.Schemas).To(Equal(broker.SyncPlans[0].Schemas))
+				Expect(plansResponse.Resources[0].Schemas).To(Equal(broker.SyncPlans[0].Schemas))
 
 				// Deleting the service broker and confirming the plans no longer display
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
@@ -234,7 +228,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 		})
 	})
 
-	Describe("private brokers", func() {
+	Describe("space scoped brokers", func() {
 		BeforeEach(func() {
 			broker = NewServiceBroker(
 				random_name.CATSRandomName("BRKR"),
@@ -253,20 +247,14 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 
 		It("can be created, viewed (in list), updated, and deleted by SpaceDevelopers", func() {
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), TestSetup.ShortTimeout(), func() {
-				spaceCmd := cf.Cf("space", TestSetup.RegularUserContext().Space, "--guid").Wait()
-				spaceGuid := string(spaceCmd.Out.Contents())
-				spaceGuid = strings.Trim(spaceGuid, "\n")
-				body := map[string]string{
-					"name":          broker.Name,
-					"broker_url":    helpers.AppUri(broker.Name, "", Config),
-					"auth_username": TestSetup.RegularUserContext().Username,
-					"auth_password": TestSetup.RegularUserContext().Password,
-					"space_guid":    spaceGuid,
-				}
-				jsonBody, _ := json.Marshal(body)
-
 				By("Create")
-				createBrokerCommand := cf.Cf("curl", "/v2/service_brokers", "-X", "POST", "-d", string(jsonBody)).Wait()
+				createBrokerCommand := cf.Cf("create-service-broker",
+					broker.Name,
+					TestSetup.RegularUserContext().Username,
+					TestSetup.RegularUserContext().Password,
+					helpers.AppUri(broker.Name, "", Config),
+					"--space-scoped",
+				).Wait()
 				Expect(createBrokerCommand).To(Exit(0))
 
 				By("Read")
@@ -295,19 +283,13 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 
 		It("exposes the services and plans of the private broker in the space", func() {
 			workflowhelpers.AsUser(TestSetup.RegularUserContext(), TestSetup.ShortTimeout(), func() {
-				spaceCmd := cf.Cf("space", TestSetup.RegularUserContext().Space, "--guid").Wait()
-				spaceGuid := string(spaceCmd.Out.Contents())
-				spaceGuid = strings.Trim(spaceGuid, "\n")
-				body := map[string]string{
-					"name":          broker.Name,
-					"broker_url":    helpers.AppUri(broker.Name, "", Config),
-					"auth_username": TestSetup.RegularUserContext().Username,
-					"auth_password": TestSetup.RegularUserContext().Password,
-					"space_guid":    spaceGuid,
-				}
-				jsonBody, _ := json.Marshal(body)
-
-				createBrokerCommand := cf.Cf("curl", "/v2/service_brokers", "-X", "POST", "-d", string(jsonBody)).Wait()
+				createBrokerCommand := cf.Cf("create-service-broker",
+					broker.Name,
+					TestSetup.RegularUserContext().Username,
+					TestSetup.RegularUserContext().Password,
+					helpers.AppUri(broker.Name, "", Config),
+					"--space-scoped",
+				).Wait()
 				Expect(createBrokerCommand).To(Exit(0))
 
 				marketplaceOutput := cf.Cf("marketplace").Wait()
