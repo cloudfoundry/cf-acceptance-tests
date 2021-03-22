@@ -65,6 +65,10 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				Expect(err).To(BeNil())
 
 				var emptySchemas PlanSchemas
+				emptySchemas.ServiceInstance.Create.Parameters = map[string]interface{}{}
+				emptySchemas.ServiceInstance.Update.Parameters = map[string]interface{}{}
+				emptySchemas.ServiceBinding.Create.Parameters = map[string]interface{}{}
+
 				Expect(plansResponse.Resources[0].Schemas).To(Equal(emptySchemas))
 
 				// Changing the catalog on the broker
