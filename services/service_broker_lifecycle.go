@@ -64,15 +64,12 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 				err := json.Unmarshal(cfResponse, &plansResponse)
 				Expect(err).To(BeNil())
 
-				// There has been backwards incompatible change in the schema response.
-				// We are commenting this assertion out until all CAPI related releases are update.
-				// TODO: Uncomment this assertion
-				//var emptySchemas PlanSchemas
-				//emptySchemas.ServiceInstance.Create.Parameters = map[string]interface{}{}
-				//emptySchemas.ServiceInstance.Update.Parameters = map[string]interface{}{}
-				//emptySchemas.ServiceBinding.Create.Parameters = map[string]interface{}{}
-				//
-				//Expect(plansResponse.Resources[0].Schemas).To(Equal(emptySchemas))
+				var emptySchemas PlanSchemas
+				emptySchemas.ServiceInstance.Create.Parameters = map[string]interface{}{}
+				emptySchemas.ServiceInstance.Update.Parameters = map[string]interface{}{}
+				emptySchemas.ServiceBinding.Create.Parameters = map[string]interface{}{}
+
+				Expect(plansResponse.Resources[0].Schemas).To(Equal(emptySchemas))
 
 				// Changing the catalog on the broker
 				oldServiceName = broker.Service.Name
