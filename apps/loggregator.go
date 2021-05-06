@@ -113,7 +113,7 @@ var _ = AppsDescribe("loggregator", func() {
 	Context("reverse log proxy", func() {
 		SkipOnK8s("Not yet supported")
 
-		It("streams logs", func() {
+		It("streams app logs", func() {
 			rlpClient := loggregator.NewRLPGatewayClient(
 				getLogStreamEndpoint(),
 				loggregator.WithRLPGatewayHTTPClient(newAuthClient()),
@@ -145,6 +145,36 @@ var _ = AppsDescribe("loggregator", func() {
 				}
 				return strings.Join(messages, "")
 			}, Config.DefaultTimeoutDuration(), time.Millisecond).Should(ContainSubstring("Muahaha"), "To enable the log-stream feature, please ask your CF administrator to enable the RLP Gateway and to add the 'doppler.firehose' scope to your CF admin user.")
+		})
+
+		It("streams app from uaa", func() {
+			rlpClient := loggregator.NewRLPGatewayClient(
+				getLogStreamEndpoint(),
+				loggregator.WithRLPGatewayHTTPClient(newAuthClient()),
+			)
+
+			ebr := &loggregator_v2.EgressBatchRequest{
+				ShardId: CATSRandomName("SUBSCRIPTION-ID"),
+				Selectors: []*loggregator_v2.Selector{
+					{Message: &loggregator_v2.Selector_Gauge{}, SourceId: "uaa"},
+				},
+			}
+
+			ctx, cancelFunc := context.WithTimeout(context.Background(), Config.DefaultTimeoutDuration())
+			defer cancelFunc()
+
+			s := rlpClient.Stream(ctx, ebr)
+
+			Eventually(func() string {
+				es := s()
+				var messages []string
+				for _, e := range es {
+					gauge, ok := e.Message.(*loggregator_v2.Envelope_Gauge)
+					Expect(ok).To(BeTrue())
+					messages = append(messages, string(gauge.Gauge.String()))
+				}
+				return strings.Join(messages, "")
+			}, Config.DefaultTimeoutDuration(), time.Millisecond).Should(ContainSubstring("requests.global.completed"), "To enable the log-stream feature, please ask your CF administrator to enable the RLP Gateway and to add the 'doppler.firehose' scope to your CF admin user.")
 		})
 	})
 })
