@@ -25,8 +25,6 @@ require (
 	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/ulikunitz/xz v0.5.4 // indirect
 	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59
-	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7 // indirect
-	golang.org/x/sys v0.0.0-20190826163724-acd9dae8e8cc // indirect
-	golang.org/x/text v0.3.2 // indirect
+	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0 // indirect
 )
