@@ -20,6 +20,7 @@ IN DEVELOPMENT
   "include_private_docker_registry": false,
   "include_route_services": true,
   "include_routing": true,
+  "include_http2_routing": true,
   "include_tcp_routing": true,
   "include_routing_isolation_segments": false,
   "include_security_groups": true,

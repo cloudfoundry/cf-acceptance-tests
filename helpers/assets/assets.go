@@ -13,6 +13,7 @@ type Assets struct {
 	Golang                     string
 	HelloWorld                 string
 	HelloRouting               string
+	HTTP2                      string
 	Java                       string
 	JavaSpringZip              string
 	JavaUnwriteableZip         string
@@ -55,6 +56,7 @@ func NewAssets() Assets {
 		Golang:                     "assets/golang",
 		HelloRouting:               "assets/hello-routing",
 		HelloWorld:                 "assets/hello-world",
+		HTTP2:                      "assets/http2",
 		Java:                       "assets/java",
 		JavaSpringZip:              "assets/java-spring/java-spring.jar",
 		JavaUnwriteableZip:         "assets/java-unwriteable-dir/java-unwriteable-dir.jar",

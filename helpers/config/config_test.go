@@ -66,7 +66,8 @@ type testConfig struct {
 
 	IncludeServiceDiscovery *bool `json:"include_service_discovery,omitempty"`
 
-	IncludeTCPRouting *bool `json:"include_tcp_routing,omitempty"`
+	IncludeHTTP2Routing *bool `json:"include_http2_routing,omitempty"`
+	IncludeTCPRouting   *bool `json:"include_tcp_routing,omitempty"`
 
 	ReporterConfig *testReporterConfig `json:"reporter_config"`
 
@@ -141,6 +142,7 @@ type allConfig struct {
 	IncludeZipkin                   *bool `json:"include_zipkin"`
 	IncludeIsolationSegments        *bool `json:"include_isolation_segments"`
 	IncludeRoutingIsolationSegments *bool `json:"include_routing_isolation_segments"`
+	IncludeHTTP2Routing             *bool `json:"include_http2_routing"`
 	IncludeTCPRouting               *bool `json:"include_tcp_routing"`
 	IncludeServiceDiscovery         *bool `json:"include_service_discovery"`
 
@@ -263,6 +265,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeCredhubAssisted()).To(BeFalse())
 		Expect(config.GetIncludeCredhubNonAssisted()).To(BeFalse())
 		Expect(config.GetIncludeServiceInstanceSharing()).To(BeFalse())
+		Expect(config.GetIncludeHTTP2Routing()).To(BeFalse())
 		Expect(config.GetIncludeTCPRouting()).To(BeFalse())
 
 		Expect(config.GetIncludeWindows()).To(BeFalse())
@@ -379,6 +382,7 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_service_instance_sharing' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_ssh' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_tasks' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_http2_routing' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_tcp_routing' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_v3' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_zipkin' must not be null"))

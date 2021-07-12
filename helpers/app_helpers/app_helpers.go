@@ -73,6 +73,20 @@ func HelloWorldWithArgs(appName string, args ...string) []string {
 	return pushArgs
 }
 
+func HTTP2WithArgs(appName string, args ...string) []string {
+
+	pushArgs := []string{
+		"push", appName,
+		"-b", Config.GetGoBuildpackName(),
+		"-p", assets.NewAssets().HTTP2,
+		"-c", "./http2",
+	}
+
+	pushArgs = append(pushArgs, args...)
+
+	return pushArgs
+}
+
 func GetAppGuid(appName string) string {
 	cfApp := cf.Cf("app", appName, "--guid")
 	Eventually(cfApp).Should(Exit(0))
