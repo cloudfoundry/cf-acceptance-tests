@@ -1,7 +1,15 @@
 package http2_routing
 
 import (
+	"context"
+	"crypto/tls"
+	"time"
+
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	protobuff "github.com/cloudfoundry/cf-acceptance-tests/helpers/assets/test"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
@@ -42,6 +50,60 @@ var _ = HTTP2RoutingDescribe("HTTP/2 Routing", func() {
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
 			}).Should(ContainSubstring("Hello"))
+		})
+	})
+
+	Context("when a destination serves gRPC", func() {
+		It("successfully routes the gRPC traffic (requires HTTP/2 for all hops)", func() {
+			appName := random_name.CATSRandomName("APP")
+
+			Expect(cf.Cf(
+				"push",
+				appName,
+				"-b", Config.GetGoBuildpackName(),
+				"-c", "./grpc",
+				"-p", assets.NewAssets().GRPC,
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"--no-route",
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+			appGUID := app_helpers.GetAppGuid(appName)
+
+			appsDomain := Config.GetAppsDomain()
+			Expect(cf.Cf("create-route", appsDomain,
+				"--hostname", appName,
+			).Wait()).To(Exit(0))
+
+			destination := Destination{
+				App: App{
+					GUID: appGUID,
+				},
+				HTTPVersion: 2,
+			}
+			InsertDestinations(GetRouteGuid(appName), []Destination{destination})
+
+			appURI := appName + "." + appsDomain + ":443"
+
+			tlsConfig := tls.Config{InsecureSkipVerify: true}
+			creds := credentials.NewTLS(&tlsConfig)
+
+			conn, err := grpc.Dial(
+				appURI,
+				grpc.WithTransportCredentials(creds),
+				grpc.WithBlock(),
+				grpc.FailOnNonTempDialError(true),
+				grpc.WithTimeout(time.Duration(1)*time.Second),
+			)
+			Expect(err).ToNot(HaveOccurred())
+			defer conn.Close()
+
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+
+			client := protobuff.NewTestClient(conn)
+			response, err := client.Run(ctx, &protobuff.Request{})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(response.GetBody()).To(Equal("Hello"))
 		})
 	})
 })
