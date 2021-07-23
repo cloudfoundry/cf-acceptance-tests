@@ -142,49 +142,48 @@ jobs:
     - get: runtime-ci
     - get: cf-test-helpers
       trigger: true
+
   - task: run-cf-test-helpers-unit-tests
     file: runtime-ci/tasks/run-cf-test-helpers-unit-tests/task.yml
+
   - task: bump-cf-test-helpers
     file: runtime-ci/tasks/bump-cf-test-helpers/task.yml
     input_mapping:
       repository: cf-acceptance-tests-develop
+
   - put: cf-acceptance-tests-develop
     params:
       repository: updated-repository
       rebase: true
 
-- name: unit-test
+- name: run-unit-tests
   serial: true
   public: true
   plan:
-  - get: cf-acceptance-tests-develop
-    trigger: true
-  - get: runtime-ci
+  - in_parallel:
+    - get: cf-acceptance-tests-develop
+      trigger: true
+    - get: runtime-ci
+
   - task: run-cats-unit-tests
     file: runtime-ci/tasks/run-cats-unit-tests/task.yml
     input_mapping:
       cf-acceptance-tests: cf-acceptance-tests-develop
 
-- name: acquire-pool-cats
-  public: true
-  serial: true
-  plan:
-  - in_parallel:
-    - get: cf-acceptance-tests-develop
-      trigger: true
-      passed: [ unit-test ]
-    - put: cats-pool
-      params: {claim: cats}
+  - put: cats-pool
+    params:
+      claim: cats
 
-- name: acquire-pool
+- name: acquire-pool-deploy
   public: true
   serial: true
   plan:
-  - in_parallel:
-    - get: cf-deployment-main
-      trigger: true
-    - put: cats-pool
-      params: {claim: cats}
+  - get: cf-deployment-main
+    trigger: true
+
+  - put: cats-pool
+    params:
+      claim: cats
 
 - name: release-pool-manual
   public: true
@@ -193,93 +192,99 @@ jobs:
   ensure:
     try:
       put: cats-pool
-      params: {release: cats-pool}
+      params:
+        release: cats-pool
 
 - name: deploy-cf
-  serial_groups: [ cats ]
   public: true
   plan:
-  - on_success:
-      put: cats-pool
-      params: {release: cats-pool}
-    do:
+  - in_parallel:
     - get: cats-pool
+      passed:
+      - acquire-pool-deploy
       trigger: true
-      passed: [ acquire-pool ]
-    - in_parallel:
-      - get: runtime-ci
-      - get: cf-deployment-concourse-tasks
-      - get: cf-deployment-main
-        passed: [ acquire-pool ]
-      - get: relint-envs
-    - task: bosh-deploy-cf
-      file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
-      input_mapping:
-        bbl-state: relint-envs
-        cf-deployment: cf-deployment-main
-        ops-files: cf-deployment-main
-        vars-files: relint-envs
+    - get: runtime-ci
+    - get: cf-deployment-concourse-tasks
+    - get: cf-deployment-main
+      passed:
+      - acquire-pool-deploy
+    - get: relint-envs
+
+  - task: bosh-deploy-cf
+    file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
+    input_mapping:
+      bbl-state: relint-envs
+      cf-deployment: cf-deployment-main
+      ops-files: cf-deployment-main
+      vars-files: relint-envs
+    params:
+      BBL_STATE_DIR: environments/test/cats/bbl-state
+      SYSTEM_DOMAIN: cats.cf-app.com
+      OPS_FILES: |
+        operations/use-compiled-releases.yml
+        operations/use-internal-lookup-for-route-services.yml
+
+  - task: run-bosh-cleanup
+    file: cf-deployment-concourse-tasks/bosh-cleanup/task.yml
+    input_mapping:
+      bbl-state: relint-envs
+    params:
+      BBL_STATE_DIR: environments/test/cats/bbl-state
+
+  - task: update-integration-configs
+    file: cf-deployment-concourse-tasks/update-integration-configs/task.yml
+    params:
+      BBL_STATE_DIR: environments/test/cats/bbl-state
+      CATS_INTEGRATION_CONFIG_FILE: environments/test/cats/integration_config.json
+    input_mapping:
+      bbl-state: relint-envs
+      integration-configs: relint-envs
+    ensure:
+      put: relint-envs
       params:
-        BBL_STATE_DIR: environments/test/cats/bbl-state
-        SYSTEM_DOMAIN: cats.cf-app.com
-        OPS_FILES: |
-          operations/use-compiled-releases.yml
-          operations/use-internal-lookup-for-route-services.yml
-    - task: run-bosh-cleanup
-      file: cf-deployment-concourse-tasks/bosh-cleanup/task.yml
-      input_mapping:
-        bbl-state: relint-envs
-      params:
-        BBL_STATE_DIR: environments/test/cats/bbl-state
-    - task: update-integration-configs
-      file: cf-deployment-concourse-tasks/update-integration-configs/task.yml
-      params:
-        BBL_STATE_DIR: environments/test/cats/bbl-state
-        CATS_INTEGRATION_CONFIG_FILE: environments/test/cats/integration_config.json
-      input_mapping:
-        bbl-state: relint-envs
-        integration-configs: relint-envs
-      ensure:
-        put: relint-envs
-        params:
-          repository: updated-integration-configs
-          rebase: true
+        repository: updated-integration-configs
+        rebase: true
+
+  - put: cats-pool
+    params:
+      release: cats-pool
 
 - name: run-cats-vms
-  serial_groups: [ cats ]
   serial: true
   public: true
   plan:
-  - timeout: 4h
-    do:
+  - in_parallel:
     - get: cats-pool
+      passed:
+      - run-unit-tests
       trigger: true
-      passed: [ acquire-pool-cats ]
-    - in_parallel:
-      - get: cf-deployment-concourse-tasks
-      - get: cf-acceptance-tests-develop
-        passed: [ acquire-pool-cats ]
-      - get: relint-envs
-    - task: enable-docker-and-tasks
-      file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
-      attempts: 3
-      input_mapping:
-        bbl-state: relint-envs
-      params:
-        BBL_STATE_DIR: environments/test/cats/bbl-state
-        SYSTEM_DOMAIN: cats.cf-app.com
-        ENABLED_FEATURE_FLAGS: |
-          diego_docker
-          task_creation
-          service_instance_sharing
-    - task: run-cats
-      file: cf-deployment-concourse-tasks/run-cats/task.yml
-      input_mapping:
-        integration-config: relint-envs
-        cf-acceptance-tests: cf-acceptance-tests-develop
-      params:
-        CONFIG_FILE_PATH: environments/test/cats/integration_config.json
-        REPORTER_CONFIG_FILE_PATH: environments/test/cats/reporter_config.json
+    - get: cf-deployment-concourse-tasks
+    - get: cf-acceptance-tests-develop
+      passed:
+      - run-unit-tests
+    - get: relint-envs
+
+  - task: enable-docker-and-tasks
+    file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
+    attempts: 3
+    input_mapping:
+      bbl-state: relint-envs
+    params:
+      BBL_STATE_DIR: environments/test/cats/bbl-state
+      SYSTEM_DOMAIN: cats.cf-app.com
+      ENABLED_FEATURE_FLAGS: |
+        diego_docker
+        task_creation
+        service_instance_sharing
+
+  - task: run-cats
+    file: cf-deployment-concourse-tasks/run-cats/task.yml
+    input_mapping:
+      integration-config: relint-envs
+      cf-acceptance-tests: cf-acceptance-tests-develop
+    params:
+      CONFIG_FILE_PATH: environments/test/cats/integration_config.json
+      REPORTER_CONFIG_FILE_PATH: environments/test/cats/reporter_config.json
 
 - name: run-cats-k8s
   public: true
@@ -288,7 +293,8 @@ jobs:
     - get: cf-for-k8s-main
     - get: cf-for-k8s-ci
     - get: cf-acceptance-tests-develop
-      passed: [ unit-test ]
+      passed:
+      - run-unit-tests
       trigger: true
 
   - put: ready-pool
@@ -353,101 +359,108 @@ jobs:
   public: true
   serial: true
   plan:
-  - get: runtime-ci
-  - get: cf-acceptance-tests-develop
-    trigger: true
-    passed:
-    - run-cats-vms
-    - run-cats-k8s
+  - in_parallel:
+    - get: runtime-ci
+    - get: cf-acceptance-tests-develop
+      passed:
+      - run-cats-vms
+      - run-cats-k8s
+      trigger: true
+
   - put: cf-acceptance-tests-rc
     params:
       repository: cf-acceptance-tests-develop
+
   - put: deliver-tracker-story
     params:
       repos:
         - cf-acceptance-tests-develop
 
-- name: release-pool
-  public: true
-  plan:
-  - get: cats-pool
-    passed:
-    - run-cats-vms
-    trigger: true
-  - put: cats-pool
-    params: {release: cats-pool}
-
 - name: cleanup-cats
   serial: true
   public: true
   plan:
-  - timeout: 4h
-    do:
+  - in_parallel:
     - get: cats-pool
-      trigger: true
       passed:
       - run-cats-vms
-    - in_parallel:
-      - get: cf-acceptance-tests-develop
-        passed:
-        - run-cats-vms
-        trigger: true
-      - get: runtime-ci
-      - get: relint-envs
-    - task: cleanup-cats
-      file: runtime-ci/tasks/cleanup-after-cats/task.yml
-      input_mapping:
-        integration-config: relint-envs
-      params:
-        CONFIG_FILE_PATH: environments/test/cats/integration_config.json
+      trigger: true
+    - get: runtime-ci
+    - get: relint-envs
+
+  - task: cleanup-cats
+    file: runtime-ci/tasks/cleanup-after-cats/task.yml
+    input_mapping:
+      integration-config: relint-envs
+    params:
+      CONFIG_FILE_PATH: environments/test/cats/integration_config.json
+
+  - put: cats-pool
+    params:
+      release: cats-pool
 
 - name: ship-it-patch
   public: true
   plan:
-    - do:
-      - get: cats-version
-        params: {bump: patch}
-      - get: cf-acceptance-tests-develop
-      - get: cf-acceptance-tests-rc
-        passed: [bless-cats]
-      - put: cf-acceptance-tests-main
-        params:
-          repository: cf-acceptance-tests-rc
-          tag: cats-version/version
-          tag_prefix: v
-      - put: cats-version
-        params: {bump: patch}
+  - in_parallel:
+    - get: cats-version
+      params:
+        bump: patch
+    - get: cf-acceptance-tests-develop
+    - get: cf-acceptance-tests-rc
+      passed:
+      - bless-cats
+
+  - put: cf-acceptance-tests-main
+    params:
+      repository: cf-acceptance-tests-rc
+      tag: cats-version/version
+      tag_prefix: v
+
+  - put: cats-version
+    params:
+      bump: patch
 
 - name: ship-it-minor
   public: true
   plan:
-    - do:
-      - get: cats-version
-        params: {bump: minor}
-      - get: cf-acceptance-tests-develop
-      - get: cf-acceptance-tests-rc
-        passed: [bless-cats]
-      - put: cf-acceptance-tests-main
-        params:
-          repository: cf-acceptance-tests-rc
-          tag: cats-version/version
-          tag_prefix: v
-      - put: cats-version
-        params: {bump: minor}
+  - in_parallel:
+    - get: cats-version
+      params:
+        bump: minor
+    - get: cf-acceptance-tests-develop
+    - get: cf-acceptance-tests-rc
+      passed:
+      - bless-cats
+
+  - put: cf-acceptance-tests-main
+    params:
+      repository: cf-acceptance-tests-rc
+      tag: cats-version/version
+      tag_prefix: v
+
+  - put: cats-version
+    params:
+      bump: minor
 
 - name: ship-it-major
   public: true
   plan:
-    - do:
-      - get: cats-version
-        params: {bump: major}
-      - get: cf-acceptance-tests-develop
-      - get: cf-acceptance-tests-rc
-        passed: [bless-cats]
-      - put: cf-acceptance-tests-main
-        params:
-          repository: cf-acceptance-tests-rc
-          tag: cats-version/version
-          tag_prefix: v
-      - put: cats-version
-        params: {bump: major}
+  - in_parallel:
+    - get: cats-version
+      params:
+        bump: major
+    - get: cf-acceptance-tests-develop
+    - get: cf-acceptance-tests-rc
+      passed:
+      - bless-cats
+
+  - put: cf-acceptance-tests-main
+    params:
+      repository: cf-acceptance-tests-rc
+      tag: cats-version/version
+      tag_prefix: v
+
+  - put: cats-version
+    params:
+      bump: major
