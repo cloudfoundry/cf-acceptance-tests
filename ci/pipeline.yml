@@ -164,6 +164,10 @@ jobs:
     - get: cf-acceptance-tests-develop
       trigger: true
     - get: runtime-ci
+    - get: cf-deployment-main
+      passed:
+      - smoke-tests
+      trigger: true
 
   - task: run-cats-unit-tests
     file: runtime-ci/tasks/run-cats-unit-tests/task.yml
@@ -245,6 +249,28 @@ jobs:
         repository: updated-integration-configs
         rebase: true
 
+- name: smoke-tests
+  public: true
+  plan:
+  - in_parallel:
+    - get: cats-pool
+      passed:
+      - deploy-cf
+      trigger: true
+    - get: relint-envs
+    - get: cf-deployment-main
+      passed:
+      - deploy-cf
+    - get: cf-deployment-concourse-tasks
+
+  - task: bosh-run-errand-smoke-tests
+    file: cf-deployment-concourse-tasks/run-errand/task.yml
+    input_mapping:
+      bbl-state: relint-envs
+    params:
+      BBL_STATE_DIR: environments/test/cats/bbl-state
+      ERRAND_NAME: smoke_tests
+
   - put: cats-pool
     params:
       release: cats-pool
@@ -263,6 +289,9 @@ jobs:
       passed:
       - run-unit-tests
     - get: relint-envs
+    - get: cf-deployment-main
+      passed:
+      - run-unit-tests
 
   - task: enable-docker-and-tasks
     file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
@@ -293,6 +322,10 @@ jobs:
     - get: cf-for-k8s-main
     - get: cf-for-k8s-ci
     - get: cf-acceptance-tests-develop
+      passed:
+      - run-unit-tests
+      trigger: true
+    - get: cf-deployment-main
       passed:
       - run-unit-tests
       trigger: true
@@ -366,6 +399,11 @@ jobs:
       - run-cats-vms
       - run-cats-k8s
       trigger: true
+    - get: cf-deployment-main
+      passed:
+      - run-cats-vms
+      - run-cats-k8s
+      trigger: true
 
   - put: cf-acceptance-tests-rc
     params:
@@ -375,6 +413,14 @@ jobs:
     params:
       repos:
         - cf-acceptance-tests-develop
+  - task: update-cats-cfd-branch
+    file: runtime-ci/tasks/update-cats-branch-with-cf-deployment-version/task.yml
+    input_mapping:
+      cf-deployment: cf-deployment-main
+      cf-acceptance-tests: cf-acceptance-tests-rc
+    params:
+      CATS_BRANCH: release-candidate
+      DEPLOY_KEY: ((cf_acceptance_tests_readwrite_deploy_key.private_key))
 
 - name: cleanup-cats
   serial: true
