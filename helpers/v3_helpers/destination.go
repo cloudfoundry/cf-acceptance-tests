@@ -14,11 +14,11 @@ type DestinationProcess struct {
 }
 
 type Destination struct {
-	GUID        string `json:"guid,omitempty"`
-	App         App    `json:"app"`
-	HTTPVersion int    `json:"http_version,omitempty"`
-	Port        int    `json:"port,omitempty"`
-	Weight      int    `json:"weight,omitempty"`
+	GUID     string `json:"guid,omitempty"`
+	App      App    `json:"app"`
+	Protocol string `json:"protocol,omitempty"`
+	Port     int    `json:"port,omitempty"`
+	Weight   int    `json:"weight,omitempty"`
 }
 
 type Destinations struct {

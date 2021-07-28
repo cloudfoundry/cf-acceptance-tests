@@ -43,7 +43,7 @@ var _ = HTTP2RoutingDescribe("HTTP/2 Routing", func() {
 				App: App{
 					GUID: appGUID,
 				},
-				HTTPVersion: 2,
+				Protocol: "http2",
 			}
 			InsertDestinations(GetRouteGuid(appName), []Destination{destination})
 
@@ -78,7 +78,7 @@ var _ = HTTP2RoutingDescribe("HTTP/2 Routing", func() {
 				App: App{
 					GUID: appGUID,
 				},
-				HTTPVersion: 2,
+				Protocol: "http2",
 			}
 			InsertDestinations(GetRouteGuid(appName), []Destination{destination})
 
