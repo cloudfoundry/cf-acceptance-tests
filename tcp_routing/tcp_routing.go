@@ -2,10 +2,7 @@ package tcp_routing
 
 import (
 	"fmt"
-	"net"
 	"path/filepath"
-	"regexp"
-	"time"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
@@ -61,7 +58,7 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 				"-f", filepath.Join(tcpDropletReceiver, "manifest.yml"),
 				"-c", cmd,
 			).Wait()).To(Exit(0))
-			externalPort1 = mapTCPRoute(appName, domainName)
+			externalPort1 = MapTCPRoute(appName, domainName)
 			Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		})
 
@@ -71,7 +68,7 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 		})
 
 		It("maps a single external port to an application's container port", func() {
-			resp, err := sendAndReceive(domainName, externalPort1)
+			resp, err := SendAndReceive(domainName, externalPort1)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(resp).To(ContainSubstring(serverId1))
 		})
@@ -111,7 +108,7 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 			})
 
 			It("maps single external port to both applications", func() {
-				serverResponses, err := getNServerResponses(10, domainName, externalPort1)
+				serverResponses, err := GetNServerResponses(10, domainName, externalPort1)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(serverResponses).To(ContainElement(ContainSubstring(serverId1)))
 				Expect(serverResponses).To(ContainElement(ContainSubstring(serverId2)))
@@ -122,78 +119,18 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 			var externalPort2 string
 
 			BeforeEach(func() {
-				externalPort2 = mapTCPRoute(appName, domainName)
+				externalPort2 = MapTCPRoute(appName, domainName)
 			})
 
 			It("maps both ports to the same application", func() {
-				resp1, err := sendAndReceive(domainName, externalPort1)
+				resp1, err := SendAndReceive(domainName, externalPort1)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(resp1).To(ContainSubstring(serverId1))
 
-				resp2, err := sendAndReceive(domainName, externalPort2)
+				resp2, err := SendAndReceive(domainName, externalPort2)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(resp2).To(ContainSubstring(serverId1))
 			})
 		})
 	})
 })
-
-func getNServerResponses(n int, domainName, externalPort1 string) ([]string, error) {
-	var responses []string
-
-	for i := 0; i < n; i++ {
-		resp, err := sendAndReceive(domainName, externalPort1)
-		if err != nil {
-			return nil, err
-		}
-
-		responses = append(responses, resp)
-	}
-
-	return responses, nil
-}
-
-func mapTCPRoute(appName, domainName string) string {
-	createRouteSession := cf.Cf("map-route", appName, domainName).Wait()
-	Expect(createRouteSession).To(Exit(0))
-
-	r := regexp.MustCompile(fmt.Sprintf(`.+%s:(\d+).+`, domainName))
-	return r.FindStringSubmatch(string(createRouteSession.Out.Contents()))[1]
-}
-
-func sendAndReceive(addr string, externalPort string) (string, error) {
-	address := fmt.Sprintf("%s:%s", addr, externalPort)
-
-	conn, err := net.Dial("tcp", address)
-	if err != nil {
-		return "", err
-	}
-	defer conn.Close()
-
-	message := []byte(fmt.Sprintf("Time is %d", time.Now().Nanosecond()))
-
-	_, err = conn.Write(message)
-	if err != nil {
-		if ne, ok := err.(*net.OpError); ok {
-			if ne.Temporary() {
-				return sendAndReceive(addr, externalPort)
-			}
-		}
-
-		return "", err
-	}
-
-	buff := make([]byte, 1024)
-	_, err = conn.Read(buff)
-	if err != nil {
-		if ne, ok := err.(*net.OpError); ok {
-			if ne.Temporary() {
-				return sendAndReceive(addr, externalPort)
-			}
-		}
-
-		return "", err
-	}
-
-	return string(buff), nil
-}
