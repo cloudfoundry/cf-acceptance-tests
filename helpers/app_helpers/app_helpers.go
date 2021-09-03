@@ -60,6 +60,19 @@ func BinaryWithArgs(appName string, args ...string) []string {
 	return pushArgs
 }
 
+func GRPCWithArgs(appName string, args ...string) []string {
+
+	pushArgs := []string{
+		"push", appName,
+		"-b", Config.GetGoBuildpackName(),
+		"-p", assets.NewAssets().GRPC,
+	}
+
+	pushArgs = append(pushArgs, args...)
+
+	return pushArgs
+}
+
 func HelloWorldWithArgs(appName string, args ...string) []string {
 
 	pushArgs := []string{
@@ -79,7 +92,6 @@ func HTTP2WithArgs(appName string, args ...string) []string {
 		"push", appName,
 		"-b", Config.GetGoBuildpackName(),
 		"-p", assets.NewAssets().HTTP2,
-		"-c", "./http2",
 	}
 
 	pushArgs = append(pushArgs, args...)

@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"time"
 
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	protobuff "github.com/cloudfoundry/cf-acceptance-tests/helpers/assets/test"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 	"google.golang.org/grpc"
@@ -57,15 +56,10 @@ var _ = HTTP2RoutingDescribe("HTTP/2 Routing", func() {
 		It("successfully routes the gRPC traffic (requires HTTP/2 for all hops)", func() {
 			appName := random_name.CATSRandomName("APP")
 
-			Expect(cf.Cf(
-				"push",
+			Expect(cf.Cf(app_helpers.GRPCWithArgs(
 				appName,
-				"-b", Config.GetGoBuildpackName(),
-				"-c", "./grpc",
-				"-p", assets.NewAssets().GRPC,
-				"-m", DEFAULT_MEMORY_LIMIT,
 				"--no-route",
-			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				"-m", DEFAULT_MEMORY_LIMIT)...).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			appGUID := app_helpers.GetAppGuid(appName)
 
