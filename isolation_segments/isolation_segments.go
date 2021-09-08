@@ -2,7 +2,6 @@ package isolation_segments
 
 import (
 	"fmt"
-	"path/filepath"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/ginkgo"
@@ -13,7 +12,6 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
@@ -22,7 +20,6 @@ import (
 const (
 	SHARED_ISOLATION_SEGMENT_GUID = "933b4c58-120b-499a-b85d-4b6fc9e2903b"
 	binaryHi                      = "Hello from a binary"
-	IsolationSegRouterGroupName   = "default-tcp"
 )
 
 var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
@@ -47,7 +44,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 		}
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-			createQuota := cf.Cf("create-quota", quotaName, "-m", "10G", "-r", "1000", "-s", "5", "--reserved-route-ports", "20").Wait(TestSetup.ShortTimeout())
+			createQuota := cf.Cf("create-quota", quotaName, "-m", "10G", "-r", "1000", "-s", "5").Wait(TestSetup.ShortTimeout())
 			Expect(createQuota).To(Exit(0))
 
 			createOrg := cf.Cf("create-org", orgName).Wait()
@@ -229,141 +226,6 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 				curlSession := helpers.CurlSkipSSL(Config.GetSkipSSLValidation(), host, "-H", hostHeader)
 				Eventually(curlSession).Should(Exit(0))
 				Expect(curlSession.Out).To(Say(binaryHi))
-			})
-		})
-	})
-
-	IsolatedTCPRoutingDescribe("When TCP routing is enabled", func() {
-
-		var domainName string
-
-		BeforeEach(func() {
-			domainName = fmt.Sprintf("tcp.%s", isoSegDomain)
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
-				session := cf.Cf("curl", fmt.Sprintf("/v3/spaces?names=%s", spaceName))
-				bytes := session.Wait().Out.Contents()
-				spaceGuid = v3_helpers.GetGuidFromResponse(bytes)
-				v3_helpers.AssignIsolationSegmentToSpace(spaceGuid, isoSegGuid)
-
-				routerGroupOutput := string(cf.Cf("router-groups").Wait().Out.Contents())
-				Expect(routerGroupOutput).To(
-					MatchRegexp(fmt.Sprintf("%s\\s+tcp", IsolationSegRouterGroupName)),
-					fmt.Sprintf("Router group %s of type tcp doesn't exist", IsolationSegRouterGroupName),
-				)
-
-				Expect(cf.Cf("create-shared-domain",
-					domainName,
-					"--router-group", IsolationSegRouterGroupName,
-				).Wait()).To(Exit())
-			})
-		})
-
-		Context("external ports", func() {
-			var (
-				appName            string
-				tcpDropletReceiver = assets.NewAssets().TCPListener
-				serverId1          = "server1"
-				externalPort1      string
-			)
-
-			BeforeEach(func() {
-				appName = random_name.CATSRandomName("APP")
-				cmd := fmt.Sprintf("tcp-listener --serverId=%s", serverId1)
-
-				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
-				Expect(target).To(Exit(0), "failed targeting")
-
-				Expect(cf.Cf("push",
-					"--no-route",
-					"--no-start",
-					appName,
-					"-p", tcpDropletReceiver,
-					"-b", Config.GetGoBuildpackName(),
-					"-m", DEFAULT_MEMORY_LIMIT,
-					"-f", filepath.Join(tcpDropletReceiver, "manifest.yml"),
-					"-c", cmd,
-				).Wait()).To(Exit(0))
-				externalPort1 = MapTCPRoute(appName, domainName)
-				appStart := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
-				Expect(appStart).To(Exit(0))
-				Expect(string(appStart.Out.Contents())).To(ContainSubstring(isoSegName))
-			})
-
-			AfterEach(func() {
-				app_helpers.AppReport(appName)
-				Eventually(cf.Cf("delete", appName, "-f", "-r")).Should(Exit(0))
-			})
-
-			It("maps a single external port to an application's container port", func() {
-				resp, err := SendAndReceive(domainName, externalPort1)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(resp).To(ContainSubstring(serverId1))
-			})
-
-			Context("with two different apps", func() {
-				var (
-					secondAppName string
-					serverId2     = "server2"
-				)
-
-				BeforeEach(func() {
-					secondAppName = random_name.CATSRandomName("APP")
-					cmd := fmt.Sprintf("tcp-listener --serverId=%s", serverId2)
-
-					target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
-					Expect(target).To(Exit(0), "failed targeting")
-
-					Expect(cf.Cf("push",
-						"--no-route",
-						"--no-start",
-						secondAppName,
-						"-p", tcpDropletReceiver,
-						"-b", Config.GetGoBuildpackName(),
-						"-m", DEFAULT_MEMORY_LIMIT,
-						"-f", filepath.Join(tcpDropletReceiver, "manifest.yml"),
-						"-c", cmd,
-					).Wait()).To(Exit(0))
-
-					Expect(cf.Cf("map-route",
-						secondAppName, domainName, "--port", externalPort1,
-					).Wait()).To(Exit(0))
-					appStart := cf.Cf("start", secondAppName).Wait(Config.CfPushTimeoutDuration())
-					Expect(appStart).To(Exit(0))
-					Expect(string(appStart.Out.Contents())).To(ContainSubstring(isoSegName))
-				})
-
-				AfterEach(func() {
-					app_helpers.AppReport(secondAppName)
-					Eventually(cf.Cf("delete-route", domainName, "--port", externalPort1, "-f")).Should(Exit(0))
-					Eventually(cf.Cf("delete", appName, "-f", "-r")).Should(Exit(0))
-					Eventually(cf.Cf("delete", secondAppName, "-f", "-r")).Should(Exit(0))
-				})
-
-				It("maps single external port to both applications", func() {
-					serverResponses, err := GetNServerResponses(10, domainName, externalPort1)
-					Expect(err).ToNot(HaveOccurred())
-					Expect(serverResponses).To(ContainElement(ContainSubstring(serverId1)))
-					Expect(serverResponses).To(ContainElement(ContainSubstring(serverId2)))
-				})
-			})
-
-			Context("with a second external port", func() {
-				var externalPort2 string
-
-				BeforeEach(func() {
-					externalPort2 = MapTCPRoute(appName, domainName)
-				})
-
-				It("maps both ports to the same application", func() {
-					resp1, err := SendAndReceive(domainName, externalPort1)
-					Expect(err).ToNot(HaveOccurred())
-					Expect(resp1).To(ContainSubstring(serverId1))
-
-					resp2, err := SendAndReceive(domainName, externalPort2)
-					Expect(err).ToNot(HaveOccurred())
-					Expect(resp2).To(ContainSubstring(serverId1))
-				})
 			})
 		})
 	})
