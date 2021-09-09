@@ -73,7 +73,7 @@ var _ = AppsDescribe("loggregator", func() {
 
 		It("exercises basic loggregator behavior", func() {
 			Eventually(func() string {
-				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
+				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", 1000000))
 			}).Should(ContainSubstring("Muahaha"))
 
 			Eventually(logs, Config.DefaultTimeoutDuration()*2).Should(Say("Muahaha"))
