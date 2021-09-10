@@ -3,7 +3,6 @@ package routing
 import (
 	"fmt"
 	"path/filepath"
-	"regexp"
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
@@ -71,7 +70,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 				},
 				Port: 7777,
 			}
-			InsertDestinations(getRouteGuid(secondRouteHostname), []Destination{destination})
+			InsertDestinations(GetRouteGuid(secondRouteHostname), []Destination{destination})
 
 			Expect(cf.Cf("restart", appName, "--strategy", "rolling").Wait()).To(Exit(0))
 		})
@@ -87,12 +86,3 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 		})
 	})
 })
-
-func getRouteGuid(hostname string) string {
-	routeQuery := fmt.Sprintf("/v3/routes?hosts=%s", hostname)
-	getRoutesCurl := cf.Cf("curl", routeQuery)
-	Expect(getRoutesCurl.Wait()).To(Exit(0))
-
-	routeGuidRegex := regexp.MustCompile(`\s+"guid": "(.+)"`)
-	return routeGuidRegex.FindStringSubmatch(string(getRoutesCurl.Out.Contents()))[1]
-}

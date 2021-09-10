@@ -125,6 +125,17 @@ func RoutingDescribe(description string, callback func()) bool {
 	})
 }
 
+func HTTP2RoutingDescribe(description string, callback func()) bool {
+	return Describe("[HTTP/2 routing]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeHTTP2Routing() {
+				Skip(skip_messages.SkipHTTP2RoutingMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
 func TCPRoutingDescribe(description string, callback func()) bool {
 	return Describe("[tcp routing]", func() {
 		BeforeEach(func() {
