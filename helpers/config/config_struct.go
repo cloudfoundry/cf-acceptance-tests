@@ -84,6 +84,7 @@ type config struct {
 	IncludeServiceInstanceSharing   *bool `json:"include_service_instance_sharing"`
 	IncludeServices                 *bool `json:"include_services"`
 	IncludeSsh                      *bool `json:"include_ssh"`
+	IncludeTCPIsolationSegments     *bool `json:"include_tcp_isolation_segments"`
 	IncludeHTTP2Routing             *bool `json:"include_http2_routing"`
 	IncludeTCPRouting               *bool `json:"include_tcp_routing"`
 	IncludeTasks                    *bool `json:"include_tasks"`
@@ -170,6 +171,7 @@ func getDefaults() config {
 	defaults.IncludeDocker = ptrToBool(false)
 	defaults.IncludeInternetDependent = ptrToBool(false)
 	defaults.IncludeIsolationSegments = ptrToBool(false)
+	defaults.IncludeTCPIsolationSegments = ptrToBool(false)
 	defaults.IncludeRoutingIsolationSegments = ptrToBool(false)
 	defaults.IncludePrivateDockerRegistry = ptrToBool(false)
 	defaults.IncludeRouteServices = ptrToBool(false)
@@ -282,6 +284,11 @@ func validateConfig(config *config) Errors {
 	}
 
 	err = validateRoutingIsolationSegments(config)
+	if err != nil {
+		errs.Add(err)
+	}
+
+	err = validateTCPIsolationSegments(config)
 	if err != nil {
 		errs.Add(err)
 	}
@@ -442,6 +449,9 @@ func validateConfig(config *config) Errors {
 		errs.Add(fmt.Errorf("* 'include_zipkin' must not be null"))
 	}
 	if config.IncludeIsolationSegments == nil {
+		errs.Add(fmt.Errorf("* 'include_isolation_segments' must not be null"))
+	}
+	if config.IncludeTCPIsolationSegments == nil {
 		errs.Add(fmt.Errorf("* 'include_isolation_segments' must not be null"))
 	}
 	if config.PrivateDockerRegistryImage == nil {
@@ -621,6 +631,27 @@ func validateRoutingIsolationSegments(config *config) error {
 	}
 	if config.GetIsolationSegmentDomain() == "" {
 		return fmt.Errorf("* Invalid configuration: 'isolation_segment_domain' must be provided if 'include_routing_isolation_segments' is true")
+	}
+	return nil
+}
+
+func validateTCPIsolationSegments(config *config) error {
+	if config.IncludeTCPIsolationSegments == nil {
+		return fmt.Errorf("* 'include_tcp_isolation_segments' must not be null")
+	}
+	if config.IsolationSegmentName == nil {
+		return fmt.Errorf("* 'isolation_segment_name' must not be null")
+	}
+
+	if !config.GetIncludeTCPIsolationSegments() {
+		return nil
+	}
+
+	if !config.GetIncludeIsolationSegments() {
+		return fmt.Errorf("* Invalid configuration: 'include_isolation_segments' must be set if 'include_tcp_isolation_segments' is true")
+	}
+	if config.GetIsolationSegmentName() == "" {
+		return fmt.Errorf("* Invalid configuration: 'isolation_segment_name' must be provided if 'include_tcp_isolation_segments' is true")
 	}
 	return nil
 }
@@ -905,6 +936,10 @@ func (c *config) GetIncludeDeployments() bool {
 
 func (c *config) GetIncludeIsolationSegments() bool {
 	return *c.IncludeIsolationSegments
+}
+
+func (c *config) GetIncludeTCPIsolationSegments() bool {
+	return *c.IncludeTCPIsolationSegments
 }
 
 func (c *config) GetIncludeRoutingIsolationSegments() bool {

@@ -39,6 +39,7 @@ const SkipWindowsMessage = `Skipping this test because config.IncludeWindows is 
 NOTE: Ensure that your deployment includes at least one Windows cell before enabling this test.`
 const SkipWindowsContextPathsMessage = `Skipping this test because config.UseWindowsContextPath is set to 'false'.
 NOTE: Ensure that your deployment includes at least one Windows cell before enabling this test.`
+const SkipIsolatedTCPRoutingMessage = `Skipping this test because either config.IncludeTCPIsolationSegments is set to 'false', or config.IncludeRoutingIsolationSegments is set to 'true'.`
 const SkipIsolationSegmentsMessage = `Skipping this test because config.IncludeIsolationSegments is set to 'false'`
 const SkipRoutingIsolationSegmentsMessage = `Skipping this test because Config.IncludeRoutingIsolationSegments is set to 'false'.`
 const SkipZipkinMessage = `Skipping this test because config.IncludeZipkin is set to 'false'`
