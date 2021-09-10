@@ -131,6 +131,7 @@ include_v3
 * `include_deployments`: Flag to include tests for the cloud controller rolling deployments. V3 must also be enabled.
 * `include_detect`: Flag to include tests in the detect group.
 * `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
+* `include_http2_routing`: Flag to include the HTTP/2 Routing tests.
 * `include_internet_dependent`: Flag to include tests that require the deployment to have internet access.
 * `include_isolation_segments`: Flag to include isolation segment tests.
 * `include_private_docker_registry`: Flag to run tests that rely on a private docker image. [See below](#private-docker).

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option go_package = "github.com/cloudfoundry/cf-acceptance-tests/assets/grpc/test";
+
+package test;
+
+service Test {
+  rpc Run(Request) returns (Response) {}
+}
+
+message Request {}
+
+message Response {
+  string body = 1;
+}

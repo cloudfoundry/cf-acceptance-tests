@@ -11,8 +11,10 @@ type Assets struct {
 	Fuse                       string
 	GoCallsRubyZip             string
 	Golang                     string
+	GRPC                       string
 	HelloWorld                 string
 	HelloRouting               string
+	HTTP2                      string
 	Java                       string
 	JavaSpringZip              string
 	JavaUnwriteableZip         string
@@ -53,8 +55,10 @@ func NewAssets() Assets {
 		Fuse:                       "assets/fuse-mount",
 		GoCallsRubyZip:             "assets/go_calls_ruby.zip",
 		Golang:                     "assets/golang",
+		GRPC:                       "assets/grpc",
 		HelloRouting:               "assets/hello-routing",
 		HelloWorld:                 "assets/hello-world",
+		HTTP2:                      "assets/http2",
 		Java:                       "assets/java",
 		JavaSpringZip:              "assets/java-spring/java-spring.jar",
 		JavaUnwriteableZip:         "assets/java-unwriteable-dir/java-unwriteable-dir.jar",

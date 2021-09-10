@@ -22,9 +22,10 @@ require (
 	github.com/nwaples/rardecode v0.0.0-20171029023500-e06696f847ae // indirect
 	github.com/onsi/ginkgo v1.9.0
 	github.com/onsi/gomega v1.6.0
-	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/ulikunitz/xz v0.5.4 // indirect
-	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
+	google.golang.org/grpc v1.39.0
+	google.golang.org/protobuf v1.27.1
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0 // indirect
 )

@@ -20,6 +20,7 @@ NOTE: Ensure instance identity credential is turned on and CredHub is deployed b
 const SkipRouteServicesMessage = `Skipping this test because config.IncludeRouteServices is set to 'false'.
 NOTE: Ensure that route services are enabled on your platform before running this test.`
 const SkipRoutingMessage = `Skipping this test because config.IncludeRouting is set to 'false'.`
+const SkipHTTP2RoutingMessage = `Skipping this test because config.IncludeHTTP2Routing is set to 'false'.`
 const SkipTCPRoutingMessage = `Skipping this test because config.IncludeTCPRouting is set to 'false'.`
 const SkipSecurityGroupsMessage = `Skipping this test because config.IncludeSecurityGroups is set to 'false'.
 NOTE: Ensure that your platform restricts internal network traffic by default in order to run this test.`

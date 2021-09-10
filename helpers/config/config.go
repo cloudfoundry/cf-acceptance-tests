@@ -29,6 +29,7 @@ type CatsConfig interface {
 	GetIncludeRoutingIsolationSegments() bool
 	GetIncludeServiceInstanceSharing() bool
 	GetIncludeTCPIsolationSegments() bool
+	GetIncludeHTTP2Routing() bool
 	GetIncludeTCPRouting() bool
 	GetIncludeWindows() bool
 	GetIncludeVolumeServices() bool
