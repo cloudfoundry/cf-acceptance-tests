@@ -2,6 +2,8 @@ package cats_suite_helpers
 
 import (
 	"fmt"
+	"net"
+	"regexp"
 	"strings"
 	"time"
 
@@ -53,6 +55,17 @@ func AppsDescribe(description string, callback func()) bool {
 		BeforeEach(func() {
 			if !Config.GetIncludeApps() {
 				Skip(skip_messages.SkipAppsMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
+func IsolatedTCPRoutingDescribe(description string, callback func()) bool {
+	return Describe("[isolated tcp routing]", func() {
+		BeforeEach(func() {
+			if Config.GetIncludeRoutingIsolationSegments() || !Config.GetIncludeTCPIsolationSegments() {
+				Skip(skip_messages.SkipIsolatedTCPRoutingMessage)
 			}
 		})
 		Describe(description, callback)
@@ -343,4 +356,64 @@ func VolumeServicesDescribe(description string, callback func()) bool {
 		})
 		Describe(description, callback)
 	})
+}
+
+func GetNServerResponses(n int, domainName, externalPort1 string) ([]string, error) {
+	var responses []string
+
+	for i := 0; i < n; i++ {
+		resp, err := SendAndReceive(domainName, externalPort1)
+		if err != nil {
+			return nil, err
+		}
+
+		responses = append(responses, resp)
+	}
+
+	return responses, nil
+}
+
+func MapTCPRoute(appName, domainName string) string {
+	createRouteSession := cf.Cf("map-route", appName, domainName).Wait()
+	Expect(createRouteSession).To(Exit(0))
+
+	r := regexp.MustCompile(fmt.Sprintf(`.+%s:(\d+).+`, domainName))
+	return r.FindStringSubmatch(string(createRouteSession.Out.Contents()))[1]
+}
+
+func SendAndReceive(addr string, externalPort string) (string, error) {
+	address := fmt.Sprintf("%s:%s", addr, externalPort)
+
+	conn, err := net.Dial("tcp", address)
+	if err != nil {
+		return "", err
+	}
+	defer conn.Close()
+
+	message := []byte(fmt.Sprintf("Time is %d", time.Now().Nanosecond()))
+
+	_, err = conn.Write(message)
+	if err != nil {
+		if ne, ok := err.(*net.OpError); ok {
+			if ne.Temporary() {
+				return SendAndReceive(addr, externalPort)
+			}
+		}
+
+		return "", err
+	}
+
+	buff := make([]byte, 1024)
+	_, err = conn.Read(buff)
+	if err != nil {
+		if ne, ok := err.(*net.OpError); ok {
+			if ne.Temporary() {
+				return SendAndReceive(addr, externalPort)
+			}
+		}
+
+		return "", err
+	}
+
+	return string(buff), nil
 }
