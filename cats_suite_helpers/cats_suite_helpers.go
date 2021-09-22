@@ -145,6 +145,7 @@ func HTTP2RoutingDescribe(description string, callback func()) bool {
 				Skip(skip_messages.SkipHTTP2RoutingMessage)
 			}
 		})
+		SkipOnK8s("Not yet supported in CF-for-K8s")
 		Describe(description, callback)
 	})
 }
