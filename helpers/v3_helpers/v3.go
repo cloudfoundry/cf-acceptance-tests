@@ -250,7 +250,8 @@ func CreateRoute(domain, host string) {
 func HandleAsyncRequest(path string, method string) {
 	session := cf.Cf("curl", path, "-X", method, "-i")
 	bytes := session.Wait().Out.Contents()
-	Expect(string(bytes)).To(ContainSubstring("202 Accepted"))
+	firstLine := strings.Split(string(bytes), "\n")[0]
+	Expect(firstLine).To(ContainSubstring("202"))
 
 	jobPath := GetJobPath(bytes)
 	PollJob(jobPath)
