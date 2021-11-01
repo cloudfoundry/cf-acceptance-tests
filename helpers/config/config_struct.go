@@ -83,6 +83,7 @@ type config struct {
 	IncludeServiceDiscovery         *bool `json:"include_service_discovery"`
 	IncludeServiceInstanceSharing   *bool `json:"include_service_instance_sharing"`
 	IncludeServices                 *bool `json:"include_services"`
+	IncludeUserProvidedServices     *bool `json:"include_user_provided_services"`
 	IncludeSsh                      *bool `json:"include_ssh"`
 	IncludeTCPIsolationSegments     *bool `json:"include_tcp_isolation_segments"`
 	IncludeHTTP2Routing             *bool `json:"include_http2_routing"`
@@ -179,6 +180,7 @@ func getDefaults() config {
 	defaults.IncludeSecurityGroups = ptrToBool(false)
 	defaults.IncludeServiceDiscovery = ptrToBool(false)
 	defaults.IncludeServices = ptrToBool(false)
+	defaults.IncludeUserProvidedServices = ptrToBool(false)
 	defaults.IncludeSsh = ptrToBool(false)
 	defaults.IncludeTasks = ptrToBool(false)
 	defaults.IncludeZipkin = ptrToBool(false)
@@ -426,6 +428,9 @@ func validateConfig(config *config) Errors {
 	}
 	if config.IncludeServices == nil {
 		errs.Add(fmt.Errorf("* 'include_services' must not be null"))
+	}
+	if config.IncludeUserProvidedServices == nil {
+		errs.Add(fmt.Errorf("* 'include_user_provided_services' must not be null"))
 	}
 	if config.IncludeServiceInstanceSharing == nil {
 		errs.Add(fmt.Errorf("* 'include_service_instance_sharing' must not be null"))
@@ -912,6 +917,10 @@ func (c *config) GetIncludeSecurityGroups() bool {
 
 func (c *config) GetIncludeServices() bool {
 	return *c.IncludeServices
+}
+
+func (c *config) GetIncludeUserProvidedServices() bool {
+	return *c.IncludeUserProvidedServices
 }
 
 func (c *config) GetIncludeSSO() bool {

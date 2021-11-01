@@ -230,6 +230,17 @@ func ServiceInstanceSharingDescribe(description string, callback func()) bool {
 	})
 }
 
+func UserProvidedServicesDescribe(description string, callback func()) bool {
+	return Describe("[user provided services]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeUserProvidedServices() {
+				Skip(skip_messages.SkipUserProvidedServicesMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
 func SshDescribe(description string, callback func()) bool {
 	return Describe("[ssh]", func() {
 		BeforeEach(func() {

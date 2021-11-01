@@ -20,6 +20,7 @@ type CatsConfig interface {
 	GetIncludeSSO() bool
 	GetIncludeSecurityGroups() bool
 	GetIncludeServices() bool
+	GetIncludeUserProvidedServices() bool
 	GetIncludeServiceDiscovery() bool
 	GetIncludeSsh() bool
 	GetIncludeTasks() bool

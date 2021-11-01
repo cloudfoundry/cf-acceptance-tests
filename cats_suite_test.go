@@ -29,6 +29,7 @@ import (
 	_ "github.com/cloudfoundry/cf-acceptance-tests/ssh"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/tasks"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/tcp_routing"
+	_ "github.com/cloudfoundry/cf-acceptance-tests/user_provided_services"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/v3"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/volume_services"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/windows"

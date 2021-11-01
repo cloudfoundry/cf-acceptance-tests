@@ -145,6 +145,7 @@ include_v3
 * `include_sso`: Flag to include the services tests that integrate with Single Sign On. `include_services` must also be set for tests to run.
 * `include_tasks`: Flag to include the v3 task tests. `include_v3` must also be set for tests to run. The CC API task_creation feature flag must be enabled for these tests to pass.
 * `include_tcp_routing`: Flag to include the TCP Routing tests. These tests are equivalent to the [TCP Routing tests](https://github.com/cloudfoundry/routing-acceptance-tests/blob/master/tcp_routing/tcp_routing_test.go) from the Routing Acceptance Tests.
+* `include_user_provided_services`: Flag to include test for user-provided services.
 * `include_v3`: Flag to include tests for the v3 API.
 * `include_zipkin`: Flag to include tests for Zipkin tracing. `include_routing` must also be set for tests to run. CF must be deployed with `router.tracing.enable_zipkin` set for tests to pass.
 * `use_http`: Set to true if you would like CF Acceptance Tests to use HTTP when making api and application requests. (default is HTTPS)
@@ -355,6 +356,7 @@ Test Group Name| Description
 `ssh`| Tests communication with Diego apps via ssh, scp, and sftp.
 `tasks`| Tests Cloud Foundry's [Tasks](https://docs.cloudfoundry.org/devguide/using-tasks.html) feature.
 `tcp_routing`| Tests TCP Routing Feature of Cloud Foundry. You need to make sure you've set up a TCP domain `tcp.<SYSTEM_DOMAIN>` as described [here](https://docs.cloudfoundry.org/adminguide/enabling-tcp-routing.html). If you are using `bbl` (BOSH Bootloader), TCP domain is set up for you automatically.
+`user_provided_services` | Tests features related to creating and binding user-provided services for holding app credentials securely.
 `v3`| This test group contains tests for the next-generation v3 Cloud Controller API.
 `volume_services` | Tests the [Volume Services](https://docs.cloudfoundry.org/devguide/services/using-vol-services.html) feature of Cloud Foundry.
 

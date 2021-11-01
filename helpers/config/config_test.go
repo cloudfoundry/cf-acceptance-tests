@@ -134,6 +134,7 @@ type allConfig struct {
 	IncludeSSO                      *bool `json:"include_sso"`
 	IncludeSecurityGroups           *bool `json:"include_security_groups"`
 	IncludeServices                 *bool `json:"include_services"`
+	IncludeUserProvidedServices     *bool `json:"include_user_provided_services"`
 	IncludeServiceInstanceSharing   *bool `json:"include_service_instance_sharing"`
 	IncludeSsh                      *bool `json:"include_ssh"`
 	IncludeTasks                    *bool `json:"include_tasks"`
@@ -255,6 +256,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeContainerNetworking()).To(BeFalse())
 		Expect(config.GetIncludeSecurityGroups()).To(BeFalse())
 		Expect(config.GetIncludeServices()).To(BeFalse())
+		Expect(config.GetIncludeUserProvidedServices()).To(BeFalse())
 		Expect(config.GetIncludeSsh()).To(BeFalse())
 		Expect(config.GetIncludeIsolationSegments()).To(BeFalse())
 		Expect(config.GetIncludeRoutingIsolationSegments()).To(BeFalse())
@@ -379,6 +381,7 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_sso' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_security_groups' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_services' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_user_provided_services' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_service_instance_sharing' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_ssh' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_tasks' must not be null"))

@@ -25,6 +25,7 @@ const SkipTCPRoutingMessage = `Skipping this test because config.IncludeTCPRouti
 const SkipSecurityGroupsMessage = `Skipping this test because config.IncludeSecurityGroups is set to 'false'.
 NOTE: Ensure that your platform restricts internal network traffic by default in order to run this test.`
 const SkipServicesMessage = `Skipping this test because config.IncludeServices is set to 'false'.`
+const SkipUserProvidedServicesMessage = `Skipping this test because config.IncludeUserProvidedServices is set to 'false'.`
 const SkipSSHMessage = `Skipping this test because config.IncludeSsh is set to 'false'.
 NOTE: Ensure that your platform is deployed with a Diego SSH proxy in order to run this test.`
 const SkipSSOMessage = `Skipping this test because config.IncludeSSO is not set to 'true'.
