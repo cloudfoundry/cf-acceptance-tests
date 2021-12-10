@@ -30,6 +30,7 @@ IN DEVELOPMENT
   "include_ssh": true,
   "include_sso": true,
   "include_tasks": true,
+  "include_user_provided_services": true,
   "include_v3": true,
   "include_zipkin": true,
   "include_volume_services": false,
