@@ -37,7 +37,7 @@ import (
 
 var _ = AppsDescribe("loggregator", func() {
 	var appName string
-	const hundredthOfOneSecond = 10000 // this app uses millionth of seconds
+	const oneSecond = 1000000 // this app uses millionth of seconds
 
 	BeforeEach(func() {
 		appName = CATSRandomName("APP")
@@ -73,7 +73,7 @@ var _ = AppsDescribe("loggregator", func() {
 
 		It("exercises basic loggregator behavior", func() {
 			Eventually(func() string {
-				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", 1000000))
+				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", oneSecond))
 			}).Should(ContainSubstring("Muahaha"))
 
 			Eventually(logs, Config.DefaultTimeoutDuration()*2).Should(Say("Muahaha"))
@@ -83,7 +83,7 @@ var _ = AppsDescribe("loggregator", func() {
 	Context("cf logs --recent", func() {
 		It("makes loggregator buffer and dump log messages", func() {
 			Eventually(func() string {
-				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
+				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", oneSecond))
 			}).Should(ContainSubstring("Muahaha"))
 
 			Eventually(func() *Session {
@@ -107,7 +107,7 @@ var _ = AppsDescribe("loggregator", func() {
 			defer close(stopchan)
 
 			Eventually(func() string {
-				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
+				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", oneSecond))
 			}).Should(ContainSubstring("Muahaha"))
 
 			Eventually(msgChan, Config.DefaultTimeoutDuration(), time.Millisecond).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
@@ -126,23 +126,26 @@ var _ = AppsDescribe("loggregator", func() {
 			ebr := &loggregator_v2.EgressBatchRequest{
 				ShardId: CATSRandomName("SUBSCRIPTION-ID"),
 				Selectors: []*loggregator_v2.Selector{
-					{Message: &loggregator_v2.Selector_Log{Log: &loggregator_v2.LogSelector{}}},
+					{
+						SourceId: app_helpers.GetAppGuid(appName),
+						Message:  &loggregator_v2.Selector_Log{Log: &loggregator_v2.LogSelector{}},
+					},
 				},
 			}
 
 			ctx, cancelFunc := context.WithTimeout(context.Background(), Config.DefaultTimeoutDuration())
 			defer cancelFunc()
 
-			s := rlpClient.Stream(ctx, ebr)
+			es := rlpClient.Stream(ctx, ebr)
 
 			Eventually(func() string {
-				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
+				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", oneSecond))
 			}).Should(ContainSubstring("Muahaha"))
 
 			Eventually(func() string {
-				es := s()
+				envelopes := es()
 				var messages []string
-				for _, e := range es {
+				for _, e := range envelopes {
 					log, ok := e.Message.(*loggregator_v2.Envelope_Log)
 					Expect(ok).To(BeTrue())
 					messages = append(messages, string(log.Log.Payload))
