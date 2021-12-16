@@ -22,6 +22,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/proxy/", proxyHandler)
+	mux.HandleFunc("/https_proxy/", httpsProxyHandler)
 	mux.HandleFunc("/", infoHandler(systemPort))
 
 	http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", systemPort), mux)
@@ -55,7 +56,17 @@ func infoHandler(port int) http.HandlerFunc {
 
 func proxyHandler(resp http.ResponseWriter, req *http.Request) {
 	destination := strings.TrimPrefix(req.URL.Path, "/proxy/")
-	destination = "http://" + destination
+	destination = fmt.Sprintf("%s://%s", "http", destination)
+	handleRequest(destination, resp, req)
+}
+
+func httpsProxyHandler(resp http.ResponseWriter, req *http.Request) {
+	destination := strings.TrimPrefix(req.URL.Path, "/https_proxy/")
+	destination = fmt.Sprintf("%s://%s", "https", destination)
+	handleRequest(destination, resp, req)
+}
+
+func handleRequest(destination string, resp http.ResponseWriter, req *http.Request) {
 	getResp, err := httpClient.Get(destination)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "request failed: %s", err)
