@@ -81,5 +81,26 @@ var _ = ServiceDiscoveryDescribe("Service Discovery", func() {
 				return string(curl.Out.Contents())
 			}).Should(ContainSubstring("Hello, world!"))
 		})
+
+		It("can communicate over TLS using app domain on port 61443", func() {
+			curlArgs := Config.Protocol() + appNameFrontend + "." + Config.GetAppsDomain() + "/https_proxy/" + internalHostName + "." + defaultInternalDomain + ":61443"
+			Eventually(func() string {
+				curl := helpers.Curl(Config, curlArgs).Wait()
+				return string(curl.Out.Contents())
+			}).ShouldNot(ContainSubstring("Hello, world!"))
+
+			// add a policy
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				Expect(cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()).To(Exit(0))
+				Expect(string(cf.Cf("network-policies").Wait().Out.Contents())).ToNot(ContainSubstring(appNameBackend))
+				Expect(cf.Cf("add-network-policy", appNameFrontend, appNameBackend, "--protocol", "tcp", "--port", "61443").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				Expect(string(cf.Cf("network-policies").Wait().Out.Contents())).To(ContainSubstring(appNameBackend))
+			})
+
+			Eventually(func() string {
+				curl := helpers.Curl(Config, curlArgs).Wait()
+				return string(curl.Out.Contents())
+			}).Should(ContainSubstring("Hello, world!"))
+		})
 	})
 })
