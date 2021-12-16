@@ -526,7 +526,7 @@ func validateAppsDomain(config *config) error {
 		host = u.Path
 	}
 
-	if _, err = net.LookupHost(madeUpAppHostname); err != nil {
+	if _, err = net.LookupHost(host); err != nil {
 		return fmt.Errorf("* Invalid configuration for 'apps_domain' <%s>: %s", config.GetAppsDomain(), err)
 	}
 
@@ -667,7 +667,7 @@ func validateCredHubSettings(config *config) error {
 	}
 
 	if config.GetIncludeCredhubAssisted() || config.GetIncludeCredhubNonAssisted() {
-		if config.GetCredHubBrokerClientSecret() == "" || config.GetCredHubBrokerClientSecret() == "" {
+		if config.GetCredHubBrokerClientCredential() == "" || config.GetCredHubBrokerClientSecret() == "" {
 			return fmt.Errorf("* 'credhub_client' and 'credhub_secret' must not be null")
 		}
 	}

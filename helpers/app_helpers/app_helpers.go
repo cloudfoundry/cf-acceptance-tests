@@ -131,7 +131,7 @@ func ReportedIDs(instances int, appName string) map[string]bool {
 	}()
 
 	seenIDs := map[string]bool{}
-	for len(seenIDs) != instances && run == true {
+	for len(seenIDs) != instances && run {
 		seenIDs[helpers.CurlApp(Config, appName, "/id")] = true
 		time.Sleep(time.Second)
 	}

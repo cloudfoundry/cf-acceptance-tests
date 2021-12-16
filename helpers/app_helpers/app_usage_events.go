@@ -29,7 +29,7 @@ type AppUsageEvent struct {
 
 type Pagination struct {
 	Next struct {
-		href string `json:"href"`
+		Href string `json:"href"`
 	} `json:"next"`
 }
 
@@ -78,11 +78,11 @@ func UsageEventsAfterGuid(guid string) []AppUsageEvent {
 
 			resources = append(resources, response.Resources...)
 
-			if len(response.Resources) == 0 || response.Pagination.Next.href == "" {
+			if len(response.Resources) == 0 || response.Pagination.Next.Href == "" {
 				break
 			}
 
-			url = response.Pagination.Next.href
+			url = response.Pagination.Next.Href
 		}
 	})
 	return resources

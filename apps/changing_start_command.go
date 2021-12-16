@@ -96,16 +96,6 @@ var _ = AppsDescribe("Changing an app's start command", func() {
 	})
 
 	Context("by using a Procfile", func() {
-		type AppResource struct {
-			Entity struct {
-				DetectedStartCommand string `json:"detected_start_command"`
-			} `json:"entity"`
-		}
-
-		type AppsResponse struct {
-			Resources []AppResource `json:"resources"`
-		}
-
 		SkipOnK8s("Multi-buildpack apps not supported")
 
 		BeforeEach(func() {

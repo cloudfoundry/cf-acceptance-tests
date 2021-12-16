@@ -49,7 +49,6 @@ func SetOauthEndpoints(apiEndpoint string, oAuthConfig *OAuthConfig, config cats
 
 	oAuthConfig.TokenEndpoint = fmt.Sprintf("%v", jsonResult[`token_endpoint`])
 	oAuthConfig.AuthorizationEndpoint = fmt.Sprintf("%v", jsonResult[`authorization_endpoint`])
-	return
 }
 
 func AuthenticateUser(authorizationEndpoint string, username string, password string) (cookie string) {

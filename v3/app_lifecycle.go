@@ -7,7 +7,6 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -45,7 +44,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName)
+		AppReport(appName)
 		DeleteApp(appGuid)
 	})
 
@@ -240,7 +239,7 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(appName)
+		AppReport(appName)
 		DeleteApp(appGuid)
 	})
 

@@ -26,8 +26,8 @@ func GetProcesses(appGuid, appName string) []Process {
 	processes := ProcessList{}
 	json.Unmarshal(bytes, &processes)
 
-	for i, _ := range processes.Processes {
-		processes.Processes[i].Name = appName
+	for _, process := range processes.Processes {
+		process.Name = appName
 	}
 
 	return processes.Processes

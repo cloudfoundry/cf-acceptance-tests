@@ -125,7 +125,7 @@ func getSyslogDrainAddresses(appName string) []string {
 	var address, internalAddress []byte
 
 	Eventually(func() [][]byte {
-		re, err := regexp.Compile("EXTERNAL ADDRESS: \\|(.*)\\|; INTERNAL ADDRESS: \\|(.*)\\|")
+		re, err := regexp.Compile(`EXTERNAL ADDRESS: \|(.*)\|; INTERNAL ADDRESS: \|(.*)\|`)
 		Expect(err).NotTo(HaveOccurred())
 
 		logs := logshelper.Recent(appName).Wait()

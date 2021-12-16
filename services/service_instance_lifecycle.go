@@ -266,7 +266,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 					appEnv := cf.Cf("env", appName).Wait()
 					Expect(appEnv).To(Exit(0), "failed get env for app")
-					Expect(appEnv).To(Say(fmt.Sprintf("credentials")))
+					Expect(appEnv).To(Say("credentials"))
 
 					restartApp := cf.Cf("restart", appName).Wait(Config.CfPushTimeoutDuration())
 					Expect(restartApp).To(Exit(0), "failed restarting app")
@@ -303,7 +303,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 						appEnv := cf.Cf("env", appName).Wait()
 						Expect(appEnv).To(Exit(0), "failed get env for app")
-						Expect(appEnv).ToNot(Say(fmt.Sprintf("credentials")))
+						Expect(appEnv).ToNot(Say("credentials"))
 
 						restartApp := cf.Cf("restart", appName).Wait(Config.CfPushTimeoutDuration())
 						Expect(restartApp).To(Exit(0), "failed restarting app")
@@ -448,7 +448,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 						appEnv := cf.Cf("env", appName).Wait()
 						Expect(appEnv).To(Exit(0), "failed get env for app")
-						Expect(appEnv).To(Say(fmt.Sprintf("credentials")))
+						Expect(appEnv).To(Say("credentials"))
 					})
 
 					It("can bind service to app and send arbitrary params", func() {
@@ -472,7 +472,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 							appEnv := cf.Cf("env", appName).Wait()
 							Expect(appEnv).To(Exit(0), "failed get env for app")
-							Expect(appEnv).ToNot(Say(fmt.Sprintf("credentials")))
+							Expect(appEnv).ToNot(Say("credentials"))
 						})
 					})
 				})

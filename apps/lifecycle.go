@@ -195,6 +195,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				destinationBody.Destinations[0].App.Guid = strings.TrimSpace(string(appGuid))
 
 				jsonBody, err = json.Marshal(destinationBody)
+				Expect(err).NotTo(HaveOccurred())
 				Expect(cf.Cf("curl", "/v3/routes/"+string(routeGuid)+"/destinations", "-X", "POST", "-d", string(jsonBody)).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 				Eventually(func() string {
@@ -271,8 +272,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 					appName,
 					"-m", DEFAULT_MEMORY_LIMIT)...).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-				var envOutput string
-				envOutput = helpers.CurlApp(Config, appName, "/env.json")
+				envOutput := helpers.CurlApp(Config, appName, "/env.json")
 				Expect(envOutput).ToNot(BeEmpty())
 				type env struct {
 					Index      string `json:"CF_INSTANCE_INDEX"`

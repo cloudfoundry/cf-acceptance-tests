@@ -51,23 +51,23 @@ func WithRedirect(url, path string, config config.CatsConfig) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("Only %v redirects allowed", maxNumRedirects)
+	return fmt.Errorf("only %v redirects allowed", maxNumRedirects)
 }
 
 func CheckRedirect(curlOutput string) (bool, string, error) {
 	statusCodePattern := `HTTP/\d(?:\.\d)? (\d{3})[A-Za-z \-]*`
 	statusCodeMatches := regexp.MustCompile(statusCodePattern).FindStringSubmatch(curlOutput)
 	if len(statusCodeMatches) != 2 {
-		return false, "", fmt.Errorf("Unexpected output from curl. Was expecting %v in the following output: %v", statusCodePattern, curlOutput)
+		return false, "", fmt.Errorf("unexpected output from curl. Was expecting %v in the following output: %v", statusCodePattern, curlOutput)
 	}
 	statusCode, e := strconv.Atoi(statusCodeMatches[1])
 	if e != nil {
-		return false, "", fmt.Errorf("Unexpected status code from curl: %v", e.Error())
+		return false, "", fmt.Errorf("unexpected status code from curl: %v", e.Error())
 	}
 	if statusCode > 300 && statusCode < 400 {
 		matches := regexp.MustCompile("(?i)Location: (.*)\r\n").FindStringSubmatch(curlOutput)
 		if len(matches) != 2 {
-			return false, "", fmt.Errorf("Got redirect status code %v, but found no Location in curl output  %v", statusCode, len(matches))
+			return false, "", fmt.Errorf("got redirect status code %v, but found no Location in curl output  %v", statusCode, len(matches))
 		}
 		return true, matches[1], nil
 	}

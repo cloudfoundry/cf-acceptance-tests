@@ -55,6 +55,7 @@ func wcfRequest(appName string) WCFResponse {
 	helloMsg := `<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body><Echo xmlns="http://tempuri.org/"><msg>WATS!!!</msg></Echo></s:Body></s:Envelope>`
 	buf := strings.NewReader(helloMsg)
 	req, err := http.NewRequest("POST", uri, buf)
+	Expect(err).ToNot(HaveOccurred())
 	req.Header.Add("Content-Type", "text/xml")
 	req.Header.Add("SOAPAction", "http://tempuri.org/IHelloService/Echo")
 	client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}

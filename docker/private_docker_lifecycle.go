@@ -3,6 +3,9 @@
 package docker
 
 import (
+	"os"
+	"strings"
+
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -12,29 +15,15 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
-	"os"
-	"strings"
 )
 
 var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
 	var (
-		appName  string
-		username string
-		password string
+		appName    string
+		username   string
+		password   string
 		repository string
 	)
-
-	type dockerCreds struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
-
-	type createAppRequest struct {
-		Name              string      `json:"name"`
-		SpaceGuid         string      `json:"space_guid"`
-		DockerImage       string      `json:"docker_image"`
-		DockerCredentials dockerCreds `json:"docker_credentials"`
-	}
 
 	BeforeEach(func() {
 		if !Config.GetIncludePrivateDockerRegistry() {
@@ -46,8 +35,6 @@ var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
 		spaceName := TestSetup.RegularUserContext().Space
 		session := cf.Cf("space", spaceName, "--guid")
 		Eventually(session).Should(Exit(0))
-		spaceGuid := string(session.Out.Contents())
-		spaceGuid = strings.TrimSpace(spaceGuid)
 		appName = random_name.CATSRandomName("APP")
 
 		os.Setenv("CF_DOCKER_PASSWORD", password)

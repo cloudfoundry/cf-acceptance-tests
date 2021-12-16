@@ -17,7 +17,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/gexec"
 	. "github.com/onsi/gomega/gexec"
 )
 
@@ -306,6 +305,6 @@ func parseInstanceIndex(body string) int {
 func curlAppWithCookies(appName, path string, cookieStorePath string) string {
 	uri := helpers.AppUri(appName, path, Config)
 	curlCmd := helpers.Curl(Config, uri, "-b", cookieStorePath, "-c", cookieStorePath).Wait(helpers.CURL_TIMEOUT)
-	Expect(curlCmd).To(gexec.Exit(0))
+	Expect(curlCmd).To(Exit(0))
 	return string(curlCmd.Out.Contents())
 }
