@@ -11,13 +11,13 @@ import (
 var _ = Describe("CliVersionCheck", func() {
 
 	Describe("ParseRawCliVersionString", func() {
-		It("returns a populated CliVersionCheck{} from a raw versioin string", func() {
+		It("returns a populated CliVersionCheck{} from a raw version string", func() {
 			ver := ParseRawCliVersionString("cf version 6.8.0-b15c536-2014-12-10T23:34:29+00:00")
 			Expect(ver.Revisions).To(Equal([]int{6, 8, 0}))
 			Expect(ver.BuildFromSource).To(BeFalse())
 		})
 
-		It("returns a populated CliVersionCheck{} from a clean versioin string", func() {
+		It("returns a populated CliVersionCheck{} from a clean version string", func() {
 			ver := ParseRawCliVersionString("5.10.3")
 			Expect(ver.Revisions).To(Equal([]int{5, 10, 3}))
 			Expect(ver.BuildFromSource).To(BeFalse())
