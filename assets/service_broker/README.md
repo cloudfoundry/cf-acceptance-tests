@@ -168,11 +168,7 @@ Before running the script, you must:
 - `cf login` with an admin user and password
 - `cf target -o <some org> -s <some space>` with an org and space where you'd like to push the broker
 
-The script also takes parameters:
-- `broker_name`: Specifies the app name and route for the broker. Defaults to 'async-broker'.
-- `env`: Specifies the cf environment (used only for choosing an app domain). Allowed values are 'bosh-lite',
-         'tabasco', and 'a1'. Defaults to 'bosh-lite'.
-
+The script takes a single optional argument that can be used to set the app name and route for the broker, which defaults to 'async-broker'.
 
 ### Running multiple cases ###
 --------------------------
