@@ -8,7 +8,6 @@ import (
 	"time"
 
 	cfg "github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
-	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/validationerrors"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -171,11 +170,7 @@ type testReporterConfig struct {
 }
 
 var tmpFilePath string
-var err error
-var errors Errors
-var requiredCfg requiredConfig
 var testCfg testConfig
-var originalConfig string
 
 func writeConfigFile(updatedConfig interface{}) string {
 	configFile, err := ioutil.TempFile("", "cf-test-helpers-config")
