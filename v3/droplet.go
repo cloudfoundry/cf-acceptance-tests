@@ -108,15 +108,6 @@ var _ = V3Describe("droplet features", func() {
 			session = cf.Cf("curl", eventsQuery, "-X", "GET")
 			bytes = session.Wait().Out.Contents()
 
-			type request struct {
-				SourceDropletGuid string `json:"source_droplet_guid"`
-			}
-
-			type metadata struct {
-				NewDropletGuid string  `json:"droplet_guid"`
-				Request        request `json:"request"`
-			}
-
 			type target struct {
 				Type string `json:"type"`
 				Guid string `json:"guid"`

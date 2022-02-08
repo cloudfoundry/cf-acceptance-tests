@@ -24,18 +24,6 @@ var _ = DockerDescribe("Private Docker Registry Application Lifecycle", func() {
 		repository string
 	)
 
-	type dockerCreds struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
-
-	type createAppRequest struct {
-		Name              string      `json:"name"`
-		SpaceGuid         string      `json:"space_guid"`
-		DockerImage       string      `json:"docker_image"`
-		DockerCredentials dockerCreds `json:"docker_credentials"`
-	}
-
 	BeforeEach(func() {
 		if !Config.GetIncludePrivateDockerRegistry() {
 			Skip(skip_messages.SkipPrivateDockerRegistryMessage)
