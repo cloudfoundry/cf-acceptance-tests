@@ -18,7 +18,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
-	. "github.com/onsi/gomega/gexec"
 )
 
 var _ = RoutingDescribe("Session Affinity", func() {
@@ -38,7 +37,7 @@ var _ = RoutingDescribe("Session Affinity", func() {
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
-			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
 
 			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
 			Expect(err).ToNot(HaveOccurred())
@@ -48,14 +47,14 @@ var _ = RoutingDescribe("Session Affinity", func() {
 
 		AfterEach(func() {
 			app_helpers.AppReport(appName)
-			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(gexec.Exit(0))
 			err := os.Remove(cookieStorePath)
 			Expect(err).ToNot(HaveOccurred())
 		})
 
 		Context("when an app has multiple instances", func() {
 			BeforeEach(func() {
-				Expect(cf.Cf("scale", appName, "-i", "3").Wait()).To(Exit(0))
+				Expect(cf.Cf("scale", appName, "-i", "3").Wait()).To(gexec.Exit(0))
 			})
 
 			Context("when the client sends VCAP_ID and JSESSION cookies", func() {
@@ -91,17 +90,17 @@ var _ = RoutingDescribe("Session Affinity", func() {
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", helloWorldAsset,
-			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
 		})
 
 		AfterEach(func() {
 			app_helpers.AppReport(appName)
-			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(gexec.Exit(0))
 		})
 
 		Context("when an app has multiple instances", func() {
 			BeforeEach(func() {
-				Expect(cf.Cf("scale", appName, "-i", "3").Wait()).To(Exit(0))
+				Expect(cf.Cf("scale", appName, "-i", "3").Wait()).To(gexec.Exit(0))
 			})
 
 			Context("when the client does not send VCAP_ID and JSESSION cookies", func() {
@@ -144,21 +143,21 @@ var _ = RoutingDescribe("Session Affinity", func() {
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
-			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
 			app2 = random_name.CATSRandomName("APP")
 			Expect(cf.Cf("push",
 				app2,
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
-			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
 
-			Expect(cf.Cf("scale", app1, "-i", "3").Wait()).To(Exit(0))
-			Expect(cf.Cf("scale", app2, "-i", "3").Wait()).To(Exit(0))
+			Expect(cf.Cf("scale", app1, "-i", "3").Wait()).To(gexec.Exit(0))
+			Expect(cf.Cf("scale", app2, "-i", "3").Wait()).To(gexec.Exit(0))
 			hostname = random_name.CATSRandomName("ROUTE")
 
-			Expect(cf.Cf("map-route", app1, domain, "--hostname", hostname, "--path", app1Path).Wait()).To(Exit(0))
-			Expect(cf.Cf("map-route", app2, domain, "--hostname", hostname, "--path", app2Path).Wait()).To(Exit(0))
+			Expect(cf.Cf("map-route", app1, domain, "--hostname", hostname, "--path", app1Path).Wait()).To(gexec.Exit(0))
+			Expect(cf.Cf("map-route", app2, domain, "--hostname", hostname, "--path", app2Path).Wait()).To(gexec.Exit(0))
 
 			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
 			Expect(err).ToNot(HaveOccurred())
@@ -169,8 +168,8 @@ var _ = RoutingDescribe("Session Affinity", func() {
 		AfterEach(func() {
 			app_helpers.AppReport(app1)
 			app_helpers.AppReport(app2)
-			Expect(cf.Cf("delete", app1, "-f", "-r").Wait()).To(Exit(0))
-			Expect(cf.Cf("delete", app2, "-f", "-r").Wait()).To(Exit(0))
+			Expect(cf.Cf("delete", app1, "-f", "-r").Wait()).To(gexec.Exit(0))
+			Expect(cf.Cf("delete", app2, "-f", "-r").Wait()).To(gexec.Exit(0))
 
 			err := os.Remove(cookieStorePath)
 			Expect(err).ToNot(HaveOccurred())
@@ -225,20 +224,20 @@ var _ = RoutingDescribe("Session Affinity", func() {
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
-			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
 			app2 = random_name.CATSRandomName("APP")
 			Expect(cf.Cf("push",
 				app2,
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
-			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
 
-			Expect(cf.Cf("scale", app1, "-i", "3").Wait()).To(Exit(0))
-			Expect(cf.Cf("scale", app2, "-i", "3").Wait()).To(Exit(0))
+			Expect(cf.Cf("scale", app1, "-i", "3").Wait()).To(gexec.Exit(0))
+			Expect(cf.Cf("scale", app2, "-i", "3").Wait()).To(gexec.Exit(0))
 			hostname = app1
 
-			Expect(cf.Cf("map-route", app2, domain, "--hostname", hostname, "--path", app2Path).Wait()).To(Exit(0))
+			Expect(cf.Cf("map-route", app2, domain, "--hostname", hostname, "--path", app2Path).Wait()).To(gexec.Exit(0))
 
 			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
 			Expect(err).ToNot(HaveOccurred())
@@ -250,8 +249,8 @@ var _ = RoutingDescribe("Session Affinity", func() {
 			app_helpers.AppReport(app1)
 			app_helpers.AppReport(app2)
 
-			Expect(cf.Cf("delete", app1, "-f", "-r").Wait()).To(Exit(0))
-			Expect(cf.Cf("delete", app2, "-f", "-r").Wait()).To(Exit(0))
+			Expect(cf.Cf("delete", app1, "-f", "-r").Wait()).To(gexec.Exit(0))
+			Expect(cf.Cf("delete", app2, "-f", "-r").Wait()).To(gexec.Exit(0))
 
 			err := os.Remove(cookieStorePath)
 			Expect(err).ToNot(HaveOccurred())
