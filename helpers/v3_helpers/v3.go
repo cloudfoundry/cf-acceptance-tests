@@ -26,12 +26,12 @@ const (
 type App struct {
 	GUID    string              `json:"guid"`
 	Process *DestinationProcess `json:"process,omitempty"`
-	Name    string              `json:name`
+	Name    string              `json:"name"`
 	Links   struct {
 		Self struct {
-			Href string `json:href`
-		} `json:self`
-	} `json:links`
+			Href string `json:"href"`
+		} `json:"self"`
+	} `json:"links"`
 }
 
 func CreateDeployment(appGuid string) string {
@@ -523,7 +523,7 @@ type ProcessAppUsageEvent struct {
 	} `json:"process"`
 	State struct {
 		Current string `json:"current"`
-	} `json: "state"`
+	} `json:"state"`
 }
 
 type ProcessAppUsageEvents struct {
