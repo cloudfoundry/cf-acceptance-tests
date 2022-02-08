@@ -2,7 +2,6 @@ package apps
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"path"
 	"strings"
@@ -34,12 +33,12 @@ var _ = AppsDescribe("Default Environment Variables", func() {
 		archive_helpers.CreateZipArchive(buildpackArchivePath, []archive_helpers.ArchiveFile{
 			{
 				Name: "bin/compile",
-				Body: fmt.Sprintf(`#!/usr/bin/env bash
+				Body: `#!/usr/bin/env bash
 env
 # wait for the log lines to make it through
 sleep 5
 exit 1
-`),
+`,
 			},
 			{
 				Name: "bin/detect",

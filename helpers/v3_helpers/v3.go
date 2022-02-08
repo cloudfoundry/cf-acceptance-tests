@@ -35,7 +35,7 @@ type App struct {
 }
 
 func CreateDeployment(appGuid string) string {
-	deploymentPath := fmt.Sprintf("/v3/deployments")
+	deploymentPath := "/v3/deployments"
 	deploymentRequestBody := fmt.Sprintf(`{"relationships": {"app": {"data": {"guid": "%s"}}}}`, appGuid)
 	session := cf.Cf("curl", deploymentPath, "-X", "POST", "-d", deploymentRequestBody).Wait()
 	Expect(session).To(Exit(0))
@@ -49,7 +49,7 @@ func CreateDeployment(appGuid string) string {
 }
 
 func CreateDeploymentForDroplet(appGuid, dropletGuid string) string {
-	deploymentPath := fmt.Sprintf("/v3/deployments")
+	deploymentPath := "/v3/deployments"
 	deploymentRequestBody := fmt.Sprintf(`{"droplet": {"guid": "%s"}, "relationships": {"app": {"data": {"guid": "%s"}}}}`, dropletGuid, appGuid)
 	session := cf.Cf("curl", deploymentPath, "-X", "POST", "-d", deploymentRequestBody).Wait()
 	Expect(session).To(Exit(0))
@@ -201,7 +201,7 @@ func CreateDockerApp(appName, spaceGuid, environmentVariables string) string {
 }
 
 func CreateDockerPackage(appGuid, imagePath string) string {
-	packageCreateUrl := fmt.Sprintf("/v3/packages")
+	packageCreateUrl := "/v3/packages"
 	session := cf.Cf("curl", packageCreateUrl, "-X", "POST", "-d", fmt.Sprintf(`{"relationships":{"app":{"data":{"guid":"%s"}}},"type":"docker", "data": {"image": "%s"}}`, appGuid, imagePath))
 	bytes := session.Wait().Out.Contents()
 	var pac struct {
@@ -233,7 +233,7 @@ func CreateOrGetIsolationSegment(name string) string {
 }
 
 func CreatePackage(appGuid string) string {
-	packageCreateUrl := fmt.Sprintf("/v3/packages")
+	packageCreateUrl := "/v3/packages"
 	session := cf.Cf("curl", packageCreateUrl, "-X", "POST", "-d", fmt.Sprintf(`{"relationships":{"app":{"data":{"guid":"%s"}}},"type":"bits"}`, appGuid))
 	bytes := session.Wait().Out.Contents()
 	var pac struct {
