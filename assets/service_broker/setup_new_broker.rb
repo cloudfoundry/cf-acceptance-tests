@@ -96,7 +96,7 @@ push_broker(broker_name)
 
 app_guid, routes_object, url = ""
 IO.popen("cf app #{broker_name} --guid") do |cmd|
-  cmd.each { |line| app_guid = "#{line.chop}" }
+  app_guid = cmd.read.chomp
 end
 
 IO.popen("cf curl /v3/apps/#{app_guid}/routes") do |cmd|
