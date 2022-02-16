@@ -5,6 +5,8 @@ const SkipAppsMessage = `Skipping this test because config.IncludeApps is set to
 const SkipContainerNetworkingMessage = `Skipping this test because config.IncludeContainerNetworking is set to 'false'.`
 const SkipDetectMessage = `Skipping this test because config.IncludeDetect is set to 'false'.`
 const SkipDockerMessage = `Skipping this test because config.IncludeDocker is set to 'false'.
+const SkipDynamicASGsEnabledMessage = `Skipping this test because config.IncludeDynamicASGs is set to 'false'.`
+const SkipDynamicASGsTrueMessage = `Skipping this test because config.IncludeDynamicASGs is set to 'true'.`
 NOTE: Ensure Docker containers are enabled on your platform before enabling this test.`
 const SkipInternetDependentMessage = `Skipping this test because config.IncludeInternetDependent is set to 'false'.
 NOTE: Ensure that your platform has access to the internet before running this test.`

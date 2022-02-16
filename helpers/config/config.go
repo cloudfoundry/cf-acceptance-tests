@@ -12,6 +12,7 @@ type CatsConfig interface {
 	GetIncludeCredhubNonAssisted() bool
 	GetIncludeDetect() bool
 	GetIncludeDocker() bool
+	GetIncludeDynamicASGs() bool
 	GetIncludeInternetDependent() bool
 	GetIncludePrivateDockerRegistry() bool
 	GetIncludeRouteServices() bool
