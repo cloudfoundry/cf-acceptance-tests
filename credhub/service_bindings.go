@@ -1,9 +1,11 @@
 package credhub
 
 import (
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"io/ioutil"
 	"os"
 	"path"
+	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/ginkgo"
@@ -226,8 +228,16 @@ EOF
 
 		AssistedCredhubDescribe("", func() {
 			It("has CredHub references in VCAP_SERVICES interpolated", func() {
-				Expect(appStartSession).To(Say(`{"password":"rainbowDash","user-name":"pinkyPie"}`))
-				Expect(appStartSession).NotTo(Say("credhub-ref"))
+				Eventually(func() string {
+					appLogsSession := logs.Recent(appName)
+					appLogsSession.Wait()
+
+					return string(appLogsSession.Out.Contents())
+				}, 3*time.Minute, 10*time.Second).Should(ContainSubstring(`{"password":"rainbowDash","user-name":"pinkyPie"}`))
+
+				appLogsSession := logs.Recent(appName)
+				appLogsSession.Wait()
+				Expect(string(appLogsSession.Out.Contents())).ToNot(ContainSubstring("credhub-ref"))
 			})
 		})
 	})
