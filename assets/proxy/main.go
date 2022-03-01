@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -93,5 +94,8 @@ var httpClient = &http.Client{
 			Timeout:   10 * time.Second,
 			KeepAlive: 0,
 		}).Dial,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
 	},
 }

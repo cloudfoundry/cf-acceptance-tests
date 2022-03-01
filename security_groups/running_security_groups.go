@@ -93,7 +93,7 @@ func getAppContainerIpAndPort(appName string) (string, int) {
 
 type Destination struct {
 	IP       string `json:"destination"`
-	Port     int    `json:"ports,string,omitempty"`
+	Ports    string `json:"ports,string,omitempty"`
 	Protocol string `json:"protocol"`
 }
 
