@@ -228,12 +228,16 @@ EOF
 
 		AssistedCredhubDescribe("", func() {
 			It("has CredHub references in VCAP_SERVICES interpolated", func() {
-				Eventually(func() string {
-					appLogsSession := logs.Recent(appName)
-					appLogsSession.Wait()
+				Eventually(
+					func() string {
+						appLogsSession := logs.Recent(appName)
+						appLogsSession.Wait()
 
-					return string(appLogsSession.Out.Contents())
-				}, 3*time.Minute, 10*time.Second).Should(ContainSubstring(`{"password":"rainbowDash","user-name":"pinkyPie"}`))
+						return string(appLogsSession.Out.Contents())
+					},
+					3*time.Minute,
+					10*time.Second,
+				).Should(ContainSubstring(`{"password":"rainbowDash","user-name":"pinkyPie"}`))
 
 				appLogsSession := logs.Recent(appName)
 				appLogsSession.Wait()
