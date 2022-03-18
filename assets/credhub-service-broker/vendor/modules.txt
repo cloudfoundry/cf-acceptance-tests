@@ -1,0 +1,51 @@
+# code.cloudfoundry.org/credhub-cli v0.0.0-20180712210539-55d15b91e8ce
+## explicit
+code.cloudfoundry.org/credhub-cli/credhub
+code.cloudfoundry.org/credhub-cli/credhub/auth
+code.cloudfoundry.org/credhub-cli/credhub/auth/uaa
+code.cloudfoundry.org/credhub-cli/credhub/credentials
+code.cloudfoundry.org/credhub-cli/credhub/credentials/generate
+code.cloudfoundry.org/credhub-cli/credhub/credentials/values
+code.cloudfoundry.org/credhub-cli/credhub/permissions
+code.cloudfoundry.org/credhub-cli/credhub/server
+code.cloudfoundry.org/credhub-cli/errors
+code.cloudfoundry.org/credhub-cli/util
+# github.com/cloudfoundry/go-socks5 v0.0.0-20180221174514-54f73bdb8a8e
+## explicit
+github.com/cloudfoundry/go-socks5
+# github.com/cloudfoundry/socks5-proxy v0.0.0-20180321211136-3c6b4eec9c2d
+## explicit
+github.com/cloudfoundry/socks5-proxy
+# github.com/gorilla/context v0.0.0-20160226214623-1ea25387ff6f
+## explicit
+github.com/gorilla/context
+# github.com/gorilla/mux v1.4.0
+## explicit
+github.com/gorilla/mux
+# github.com/hashicorp/go-version v0.0.0-20171129150820-4fe82ae3040f
+## explicit
+github.com/hashicorp/go-version
+# github.com/onsi/ginkgo v1.8.0
+## explicit
+# github.com/onsi/gomega v1.5.0
+## explicit
+# github.com/satori/go.uuid v1.1.0
+## explicit
+github.com/satori/go.uuid
+# golang.org/x/crypto v0.0.0-20180211211603-9de5f2eaf759
+## explicit
+golang.org/x/crypto/curve25519
+golang.org/x/crypto/ed25519
+golang.org/x/crypto/ed25519/internal/edwards25519
+golang.org/x/crypto/internal/chacha20
+golang.org/x/crypto/poly1305
+golang.org/x/crypto/ssh
+# golang.org/x/net v0.0.0-20180906233101-161cd47e91fd
+## explicit
+golang.org/x/net/context
+golang.org/x/net/internal/socks
+golang.org/x/net/proxy
+# golang.org/x/sys v0.0.0-20190507160741-ecd444e8653b
+## explicit; go 1.12
+# gopkg.in/yaml.v2 v2.2.2
+## explicit
