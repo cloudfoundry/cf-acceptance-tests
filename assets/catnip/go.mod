@@ -5,7 +5,7 @@ go 1.18
 require (
 	code.cloudfoundry.org/clock v0.0.0-20170223024709-2269160ae175
 	github.com/gorilla/mux v1.8.0
-	github.com/onsi/ginkgo v1.16.4
+	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.18.1
 )
 
