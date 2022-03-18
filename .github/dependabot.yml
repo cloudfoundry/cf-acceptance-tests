@@ -1,0 +1,111 @@
+version: 2
+updates:
+- package-ecosystem: "gomod"
+  directory: "/"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "gomod"
+  directory: "/assets/catnip"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "gomod"
+  directory: "/assets/credhub-service-broker"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "gomod"
+  directory: "/assets/go_calls_ruby"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "gomod"
+  directory: "/assets/golang"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "gomod"
+  directory: "/assets/grpc"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "gomod"
+  directory: "/assets/http2"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "gomod"
+  directory: "/assets/logging-route-service"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "gomod"
+  directory: "/assets/pora"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "gomod"
+  directory: "/assets/proxy"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "gomod"
+  directory: "/assets/syslog-drain-listener"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "gomod"
+  directory: "/assets/tcp-listener"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "gomod"
+  directory: "/assets/worker-app"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "gomod"
+  directory: "/assets/worker"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "docker"
+  directory: "/assets/pora"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "bundler"
+  directory: "/assets/dora/Gemfile"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "bundler"
+  directory: "/assets/go_calls_ruby/Gemfile"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "bundler"
+  directory: "/assets/hello-routing/Gemfile"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "bundler"
+  directory: "/assets/hello-world/Gemfile"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "bundler"
+  directory: "/assets/loggregator-load-generator/Gemfile"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "bundler"
+  directory: "/assets/ruby_simple/Gemfile"
+  schedule:
+    interval: "daily"
+
+- package-ecosystem: "bundler"
+  directory: "/assets/service_broker/Gemfile"
+  schedule:
+    interval: "daily"
