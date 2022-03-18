@@ -29,7 +29,7 @@ github.com/hashicorp/go-version
 ## explicit
 # github.com/onsi/gomega v1.5.0
 ## explicit
-# github.com/satori/go.uuid v1.1.0
+# github.com/satori/go.uuid v1.2.0
 ## explicit
 github.com/satori/go.uuid
 # golang.org/x/crypto v0.0.0-20180211211603-9de5f2eaf759
@@ -47,5 +47,7 @@ golang.org/x/net/internal/socks
 golang.org/x/net/proxy
 # golang.org/x/sys v0.0.0-20190507160741-ecd444e8653b
 ## explicit; go 1.12
+# gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405
+## explicit
 # gopkg.in/yaml.v2 v2.2.2
 ## explicit
