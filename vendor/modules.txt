@@ -58,6 +58,8 @@ github.com/facebookgo/muster
 ## explicit
 # github.com/facebookgo/subset v0.0.0-20150612182917-8dac2c3c4870
 ## explicit
+# github.com/frankban/quicktest v1.14.2
+## explicit; go 1.13
 # github.com/fsnotify/fsnotify v1.4.9
 ## explicit; go 1.13
 github.com/fsnotify/fsnotify
@@ -75,13 +77,18 @@ github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
 github.com/golang/protobuf/ptypes/duration
 github.com/golang/protobuf/ptypes/timestamp
+# github.com/golang/snappy v0.0.4
+## explicit
+github.com/golang/snappy
+# github.com/google/go-cmp v0.5.7
+## explicit; go 1.11
 # github.com/gorilla/websocket v1.0.0
 ## explicit
 github.com/gorilla/websocket
 # github.com/honeycombio/libhoney-go v0.0.0-20180420154957-26d0d7dd8b07
 ## explicit
 github.com/honeycombio/libhoney-go
-# github.com/mholt/archiver v2.0.0+incompatible
+# github.com/mholt/archiver v3.1.1+incompatible
 ## explicit
 github.com/mholt/archiver
 # github.com/nwaples/rardecode v0.0.0-20171029023500-e06696f847ae
@@ -139,12 +146,19 @@ github.com/onsi/gomega/matchers/support/goraph/edge
 github.com/onsi/gomega/matchers/support/goraph/node
 github.com/onsi/gomega/matchers/support/goraph/util
 github.com/onsi/gomega/types
+# github.com/pierrec/lz4 v2.6.1+incompatible
+## explicit
+github.com/pierrec/lz4
+github.com/pierrec/lz4/internal/xxh32
 # github.com/ulikunitz/xz v0.5.4
 ## explicit
 github.com/ulikunitz/xz
 github.com/ulikunitz/xz/internal/hash
 github.com/ulikunitz/xz/internal/xlog
 github.com/ulikunitz/xz/lzma
+# github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
+## explicit
+github.com/xi2/xz
 # golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 ## explicit; go 1.11
 golang.org/x/crypto/blowfish
