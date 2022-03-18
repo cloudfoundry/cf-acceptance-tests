@@ -7,10 +7,8 @@ github.com/cloudfoundry/socks5-proxy v0.0.0-20180321211136-3c6b4eec9c2d/go.mod h
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/golang/protobuf v1.2.0 h1:P3YflyNX/ehuJFLhxviNdFxQPkGK5cDcApsge1SqnvM=
 github.com/golang/protobuf v1.2.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
-github.com/gorilla/context v0.0.0-20160226214623-1ea25387ff6f h1:9oNbS1z4rVpbnkHBdPZU4jo9bSmrLpII768arSyMFgk=
-github.com/gorilla/context v0.0.0-20160226214623-1ea25387ff6f/go.mod h1:kBGZzfjB9CEq2AlWe17Uuf7NDRt0dE0s8S51q0aT7Yg=
-github.com/gorilla/mux v1.4.0 h1:N6R8isjoRv7IcVVlf0cTBbo0UDc9V6ZXWEm0HQoQmLo=
-github.com/gorilla/mux v1.4.0/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
+github.com/gorilla/mux v1.8.0 h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=
+github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
 github.com/hashicorp/go-version v0.0.0-20171129150820-4fe82ae3040f h1:QnRipjW3Mm+sgD+vyO87cb+1RLzoM0mGVTYClil7mQg=
 github.com/hashicorp/go-version v0.0.0-20171129150820-4fe82ae3040f/go.mod h1:fltr4n8CU8Ke44wwGCBoEymUuxUHl09ZGVZPK5anwXA=
 github.com/hpcloud/tail v1.0.0 h1:nfCOvKYfkgYP8hkirhJocXT2+zOD8yUNjXaWfTlyFKI=
