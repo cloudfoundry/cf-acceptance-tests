@@ -4,14 +4,13 @@ go 1.18
 
 require (
 	code.cloudfoundry.org/clock v0.0.0-20170223024709-2269160ae175
-	github.com/gorilla/mux v1.4.0
+	github.com/gorilla/mux v1.8.0
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.18.1
 )
 
 require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/gorilla/context v0.0.0-20160226214623-1ea25387ff6f // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/nxadm/tail v1.4.8 // indirect
 	golang.org/x/net v0.0.0-20210428140749-89ef3d95e781 // indirect
