@@ -4,13 +4,11 @@ code.cloudfoundry.org/archiver/extractor/test_helper
 # code.cloudfoundry.org/go-diodes v0.0.0-20180905200951-72629b5276e3
 ## explicit
 code.cloudfoundry.org/go-diodes
-# code.cloudfoundry.org/go-loggregator/v8 v8.0.2
-## explicit; go 1.12
+# code.cloudfoundry.org/go-loggregator/v8 v8.0.5
+## explicit; go 1.16
 code.cloudfoundry.org/go-loggregator/v8
+code.cloudfoundry.org/go-loggregator/v8/rfc5424
 code.cloudfoundry.org/go-loggregator/v8/rpc/loggregator_v2
-# code.cloudfoundry.org/rfc5424 v0.0.0-20180905210152-236a6d29298a
-## explicit
-code.cloudfoundry.org/rfc5424
 # code.cloudfoundry.org/tlsconfig v0.0.0-20200131000646-bbe0f8da39b3
 ## explicit; go 1.13
 code.cloudfoundry.org/tlsconfig
