@@ -226,7 +226,8 @@ func makeStaticFileZip() {
 		staticFileNames = append(staticFileNames, assets.NewAssets().Staticfile+"/"+staticFile.Name())
 	}
 
-	err = archiver.Zip.Make(staticFileZip, staticFileNames)
+	zip := archiver.NewZip()
+	err = zip.Archive(staticFileNames, staticFileZip)
 	Expect(err).NotTo(HaveOccurred())
 }
 

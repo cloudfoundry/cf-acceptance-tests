@@ -98,8 +98,8 @@ func TestCATS(t *testing.T) {
 		for _, doraFile := range doraFiles {
 			doraFileNames = append(doraFileNames, assets.NewAssets().Dora+"/"+doraFile.Name())
 		}
-
-		err = archiver.Zip.Make(assets.NewAssets().DoraZip, doraFileNames)
+		zip := archiver.NewZip()
+		err = zip.Archive(doraFileNames, assets.NewAssets().DoraZip)
 		Expect(err).NotTo(HaveOccurred())
 
 		return []byte{}
