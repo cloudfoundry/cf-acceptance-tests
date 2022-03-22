@@ -57,7 +57,7 @@ func logSpeed(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		for run {
 			time.Sleep(time.Duration(sleepTime) * time.Microsecond)
-			fmt.Println(fmt.Sprintf("Log: %s Muahaha...", r.Host))
+			fmt.Printf("Log: %s Muahaha...\n", r.Host)
 		}
 	}()
 
@@ -79,7 +79,7 @@ func logBytesize(w http.ResponseWriter, r *http.Request) {
 	}
 	logString := buffer.String()
 
-	fmt.Println(fmt.Sprintf("Muahaha... let's go. No wait. Logging %d bytes per logline.", byteSize))
+	fmt.Printf("Muahaha... let's go. No wait. Logging %d bytes per logline.\n", byteSize)
 
 	for run {
 		fmt.Println(logString)
