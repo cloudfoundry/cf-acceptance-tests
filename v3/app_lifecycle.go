@@ -8,7 +8,6 @@ import (
 	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
-	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
@@ -56,25 +55,25 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 		})
 
 		It("can run apps with processes from the Procfile", func() {
-			lastUsageEventGuid := LastAppUsageEventGuid(TestSetup)
+			lastUsageEventGuid := app_helpers.LastAppUsageEventGuid(TestSetup)
 
 			buildGuid := StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
 
-			usageEvents := UsageEventsAfterGuid(lastUsageEventGuid)
-			event := AppUsageEvent{}
+			usageEvents := app_helpers.UsageEventsAfterGuid(lastUsageEventGuid)
+			event := app_helpers.AppUsageEvent{}
 			event.State.Current = "STAGING_STARTED"
 			event.App.Guid = appGuid
 			event.App.Name = appName
-			Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
+			Expect(app_helpers.UsageEventsInclude(usageEvents, event)).To(BeTrue())
 
 			WaitForBuildToStage(buildGuid)
 
-			usageEvents = UsageEventsAfterGuid(lastUsageEventGuid)
-			event = AppUsageEvent{}
+			usageEvents = app_helpers.UsageEventsAfterGuid(lastUsageEventGuid)
+			event = app_helpers.AppUsageEvent{}
 			event.State.Current = "STAGING_STOPPED"
 			event.App.Guid = appGuid
 			event.App.Name = appName
-			Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
+			Expect(app_helpers.UsageEventsInclude(usageEvents, event)).To(BeTrue())
 
 			dropletGuid := GetDropletFromBuild(buildGuid)
 
@@ -89,7 +88,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			CreateAndMapRoute(appGuid, Config.GetAppsDomain(), webProcess.Name)
 
-			lastUsageEventGuid = LastAppUsageEventGuid(TestSetup)
+			lastUsageEventGuid = app_helpers.LastAppUsageEventGuid(TestSetup)
 
 			StartApp(appGuid)
 
@@ -104,47 +103,47 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 			Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 			Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", workerProcess.Name)))
 
-			usageEvents = UsageEventsAfterGuid(lastUsageEventGuid)
+			usageEvents = app_helpers.UsageEventsAfterGuid(lastUsageEventGuid)
 
-			event1 := AppUsageEvent{}
+			event1 := app_helpers.AppUsageEvent{}
 			event1.Process.Type = webProcess.Type
 			event1.Process.Guid = webProcess.Guid
 			event1.State.Current = "STARTED"
 			event1.App.Guid = appGuid
 			event1.App.Name = appName
 
-			event2 := AppUsageEvent{}
+			event2 := app_helpers.AppUsageEvent{}
 			event2.Process.Type = workerProcess.Type
 			event2.Process.Guid = workerProcess.Guid
 			event2.State.Current = "STARTED"
 			event2.App.Guid = appGuid
 			event2.App.Name = appName
 
-			Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
-			Expect(UsageEventsInclude(usageEvents, event2)).To(BeTrue())
+			Expect(app_helpers.UsageEventsInclude(usageEvents, event1)).To(BeTrue())
+			Expect(app_helpers.UsageEventsInclude(usageEvents, event2)).To(BeTrue())
 
 			StopApp(appGuid)
 
 			Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", webProcess.Name)))
 			Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", workerProcess.Name)))
 
-			usageEvents = UsageEventsAfterGuid(lastUsageEventGuid)
-			event1 = AppUsageEvent{}
+			usageEvents = app_helpers.UsageEventsAfterGuid(lastUsageEventGuid)
+			event1 = app_helpers.AppUsageEvent{}
 			event1.Process.Type = webProcess.Type
 			event1.Process.Guid = webProcess.Guid
 			event1.State.Current = "STOPPED"
 			event1.App.Guid = appGuid
 			event1.App.Name = appName
 
-			event2 = AppUsageEvent{}
+			event2 = app_helpers.AppUsageEvent{}
 			event2.Process.Type = workerProcess.Type
 			event2.Process.Guid = workerProcess.Guid
 			event2.State.Current = "STOPPED"
 			event2.App.Guid = appGuid
 			event2.App.Name = appName
 
-			Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
-			Expect(UsageEventsInclude(usageEvents, event2)).To(BeTrue())
+			Expect(app_helpers.UsageEventsInclude(usageEvents, event1)).To(BeTrue())
+			Expect(app_helpers.UsageEventsInclude(usageEvents, event2)).To(BeTrue())
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, webProcess.Name)
@@ -173,7 +172,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			CreateAndMapRoute(appGuid, Config.GetAppsDomain(), webProcess.Name)
 
-			lastUsageEventGuid := LastAppUsageEventGuid(TestSetup)
+			lastUsageEventGuid := app_helpers.LastAppUsageEventGuid(TestSetup)
 			StartApp(appGuid)
 
 			// Because v3 start returns immediately, the curl returning "ok" is the signal that Push has finished
@@ -184,28 +183,28 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 
-			usageEvents := UsageEventsAfterGuid(lastUsageEventGuid)
+			usageEvents := app_helpers.UsageEventsAfterGuid(lastUsageEventGuid)
 
-			event1 := AppUsageEvent{}
+			event1 := app_helpers.AppUsageEvent{}
 			event1.Process.Type = webProcess.Type
 			event1.Process.Guid = webProcess.Guid
 			event1.State.Current = "STARTED"
 			event1.App.Guid = appGuid
 			event1.App.Name = appName
-			Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
+			Expect(app_helpers.UsageEventsInclude(usageEvents, event1)).To(BeTrue())
 
 			StopApp(appGuid)
 
 			Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", webProcess.Name)))
 
-			usageEvents = UsageEventsAfterGuid(lastUsageEventGuid)
-			event1 = AppUsageEvent{}
+			usageEvents = app_helpers.UsageEventsAfterGuid(lastUsageEventGuid)
+			event1 = app_helpers.AppUsageEvent{}
 			event1.Process.Type = webProcess.Type
 			event1.Process.Guid = webProcess.Guid
 			event1.State.Current = "STOPPED"
 			event1.App.Guid = appGuid
 			event1.App.Name = appName
-			Expect(UsageEventsInclude(usageEvents, event1)).To(BeTrue())
+			Expect(app_helpers.UsageEventsInclude(usageEvents, event1)).To(BeTrue())
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, webProcess.Name)
@@ -258,7 +257,7 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 
 		CreateAndMapRoute(appGuid, Config.GetAppsDomain(), webProcess.Name)
 
-		lastUsageEventGuid := LastAppUsageEventGuid(TestSetup)
+		lastUsageEventGuid := app_helpers.LastAppUsageEventGuid(TestSetup)
 		StartApp(appGuid)
 
 		Eventually(func() string {
@@ -270,28 +269,28 @@ var _ = V3Describe("v3 docker app lifecycle", func() {
 		Expect(output).To(ContainSubstring(appCreationEnvironmentVariables))
 
 		Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
-		usageEvents := UsageEventsAfterGuid(lastUsageEventGuid)
+		usageEvents := app_helpers.UsageEventsAfterGuid(lastUsageEventGuid)
 
-		event := AppUsageEvent{}
+		event := app_helpers.AppUsageEvent{}
 		event.Process.Type = webProcess.Type
 		event.Process.Guid = webProcess.Guid
 		event.State.Current = "STARTED"
 		event.App.Guid = appGuid
 		event.App.Name = appName
-		Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
+		Expect(app_helpers.UsageEventsInclude(usageEvents, event)).To(BeTrue())
 
 		StopApp(appGuid)
 
 		Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(stopped)", webProcess.Name)))
 
-		usageEvents = UsageEventsAfterGuid(lastUsageEventGuid)
-		event = AppUsageEvent{}
+		usageEvents = app_helpers.UsageEventsAfterGuid(lastUsageEventGuid)
+		event = app_helpers.AppUsageEvent{}
 		event.Process.Type = webProcess.Type
 		event.Process.Guid = webProcess.Guid
 		event.State.Current = "STOPPED"
 		event.App.Guid = appGuid
 		event.App.Name = appName
-		Expect(UsageEventsInclude(usageEvents, event)).To(BeTrue())
+		Expect(app_helpers.UsageEventsInclude(usageEvents, event)).To(BeTrue())
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, webProcess.Name)
