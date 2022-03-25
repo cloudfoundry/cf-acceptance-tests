@@ -1,11 +1,12 @@
 package credhub
 
 import (
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"io/ioutil"
 	"os"
 	"path"
 	"time"
+
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	. "github.com/onsi/ginkgo"
@@ -18,12 +19,12 @@ import (
 	"strings"
 
 	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-test-helpers/cf"
+	"github.com/cloudfoundry/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-test-helpers/workflowhelpers"
 )
 
 var _ = CredhubDescribe("service bindings", func() {

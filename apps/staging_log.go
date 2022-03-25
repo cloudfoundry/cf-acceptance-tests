@@ -9,9 +9,9 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-test-helpers/cf"
 )
 
 var _ = AppsDescribe("An application being staged", func() {
@@ -27,13 +27,13 @@ var _ = AppsDescribe("An application being staged", func() {
 		cf.Cf("delete", appName, "-f", "-r").Wait()
 	})
 
-	 It("has its staging log streamed during a push", func() {
+	It("has its staging log streamed during a push", func() {
 		push := cf.Cf(app_helpers.CatnipWithArgs(appName, "-m", DEFAULT_MEMORY_LIMIT)...).Wait(Config.CfPushTimeoutDuration())
 		Expect(push).To(Exit(0))
 
 		output := string(push.Out.Contents())
 		var expected []string
-		if (!Config.RunningOnK8s()) {
+		if !Config.RunningOnK8s() {
 			expected = []string{"Installing dependencies", "Uploading droplet", "App started"}
 		} else {
 			expected = []string{"Paketo Procfile Buildpack", "Build successful"}

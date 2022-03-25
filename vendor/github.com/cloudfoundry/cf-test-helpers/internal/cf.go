@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"github.com/cloudfoundry-incubator/cf-test-helpers/commandreporter"
+	"github.com/cloudfoundry/cf-test-helpers/commandreporter"
 	"github.com/onsi/gomega/gexec"
 )
 
