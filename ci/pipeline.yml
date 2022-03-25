@@ -150,6 +150,8 @@ jobs:
     file: runtime-ci/tasks/bump-cf-test-helpers/task.yml
     input_mapping:
       repository: cf-acceptance-tests-develop
+    params:
+      USE_GO_MOD: true
 
   - put: cf-acceptance-tests-develop
     params:
