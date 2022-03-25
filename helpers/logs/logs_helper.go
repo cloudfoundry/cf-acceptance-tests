@@ -1,7 +1,7 @@
 package logs
 
 import (
-	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry/cf-test-helpers/cf"
 	"github.com/onsi/gomega/gexec"
 )
 

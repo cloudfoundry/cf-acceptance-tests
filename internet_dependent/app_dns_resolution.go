@@ -10,11 +10,11 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
+	"github.com/cloudfoundry/cf-test-helpers/cf"
+	"github.com/cloudfoundry/cf-test-helpers/helpers"
 )
 
 type CatnipCurlResponse struct {
@@ -50,7 +50,6 @@ var _ = InternetDependentDescribe("App container DNS behavior", func() {
 		clientAppName = random_name.CATSRandomName("APP")
 
 		Expect(cf.Cf(app_helpers.CatnipWithArgs(clientAppName, "-m", DEFAULT_MEMORY_LIMIT)...).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
 
 		By("Connecting from running container to an external destination")
 		catnipCurlResponse = testAppConnectivity(clientAppName, "www.google.com", 80)

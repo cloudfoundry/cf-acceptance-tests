@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
+	"github.com/cloudfoundry/cf-test-helpers/cf"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 )

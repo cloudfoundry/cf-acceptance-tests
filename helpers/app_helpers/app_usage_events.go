@@ -1,8 +1,8 @@
 package app_helpers
 
 import (
-	"github.com/cloudfoundry-incubator/cf-test-helpers/workflowhelpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
+	"github.com/cloudfoundry/cf-test-helpers/workflowhelpers"
 )
 
 type AppUsageEvent struct {

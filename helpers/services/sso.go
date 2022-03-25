@@ -14,9 +14,9 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	cats_config "github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
+	"github.com/cloudfoundry/cf-test-helpers/helpers"
 )
 
 type OAuthConfig struct {

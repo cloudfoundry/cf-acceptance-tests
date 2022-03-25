@@ -12,9 +12,9 @@ import (
 
 	"path/filepath"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
-	"github.com/cloudfoundry-incubator/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-test-helpers/cf"
+	"github.com/cloudfoundry/cf-test-helpers/helpers"
 )
 
 var _ = AppsDescribe("Healthcheck", func() {
@@ -56,7 +56,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 		It("starts up successfully", func() {
 			By("pushing it")
 
-			Eventually(cf.Cf(app_helpers.CatnipWithArgs(appName, "-m", DEFAULT_MEMORY_LIMIT,"-i", "1","-u", "port")...),
+			Eventually(cf.Cf(app_helpers.CatnipWithArgs(appName, "-m", DEFAULT_MEMORY_LIMIT, "-i", "1", "-u", "port")...),
 				Config.CfPushTimeoutDuration(),
 			).Should(Exit(0))
 
@@ -69,7 +69,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 		It("starts up successfully", func() {
 			By("pushing it")
 
-			Eventually(cf.Cf(app_helpers.CatnipWithArgs(appName,"-m", DEFAULT_MEMORY_LIMIT,"-i", "1","-u", "port")...),
+			Eventually(cf.Cf(app_helpers.CatnipWithArgs(appName, "-m", DEFAULT_MEMORY_LIMIT, "-i", "1", "-u", "port")...),
 				Config.CfPushTimeoutDuration(),
 			).Should(Exit(0))
 
