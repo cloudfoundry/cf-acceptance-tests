@@ -14,8 +14,8 @@ github.com/apoydence/eachers v0.0.0-20181020210610-23942921fe77/go.mod h1:bXvGk6
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
-github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220322121736-90798e88756a h1:rhAFQHedzkC5qcrQMU1w2lajXqJDNTWo3ntHua8MUwo=
-github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220322121736-90798e88756a/go.mod h1:I4xdlvhqeX3rsWTyf7F66dqHVqj6em2f9H7aHDPsVzo=
+github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220329060630-a1956dba8c6c h1:h6AP14x/fgYNU/rDZ9yqjZ9Ph57cBZ8CUQEoSNxN+Gg=
+github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220329060630-a1956dba8c6c/go.mod h1:NmkioFkIfwFK9ZLG2OB5S3lEMU6soFSGO5oT3kxPUX0=
 github.com/cloudfoundry/custom-cats-reporters v0.0.0-20180629210428-75213ee79907 h1:wyYh6Iv81IwgCyIBG7OW34s5GQOGuWPWECF47arkSNQ=
 github.com/cloudfoundry/custom-cats-reporters v0.0.0-20180629210428-75213ee79907/go.mod h1:uxXHu50QB3u67C2PZlaFBlc9yTy9gQ4Nb+nL3J959bU=
 github.com/cloudfoundry/dropsonde v1.0.0/go.mod h1:6zwvrWK5TpxBVYi1cdkE5WDsIO8E0n7qAJg3wR9B67c=

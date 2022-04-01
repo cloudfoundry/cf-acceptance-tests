@@ -12,8 +12,8 @@ code.cloudfoundry.org/go-loggregator/v8/rpc/loggregator_v2
 # code.cloudfoundry.org/tlsconfig v0.0.0-20200131000646-bbe0f8da39b3
 ## explicit; go 1.13
 code.cloudfoundry.org/tlsconfig
-# github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220322121736-90798e88756a
-## explicit
+# github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220329060630-a1956dba8c6c
+## explicit; go 1.17
 github.com/cloudfoundry/cf-test-helpers/cf
 github.com/cloudfoundry/cf-test-helpers/commandreporter
 github.com/cloudfoundry/cf-test-helpers/commandstarter
