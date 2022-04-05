@@ -14,6 +14,8 @@ import (
 
 var _ = AppsDescribe("Getting instance information", func() {
 	Describe("scaling memory", func() {
+		SkipOnK8s("CF-for-K8s generates a timeout instead of the expected error message")
+
 		var appName string
 		var runawayTestSetup *workflowhelpers.ReproducibleTestSuiteSetup
 
