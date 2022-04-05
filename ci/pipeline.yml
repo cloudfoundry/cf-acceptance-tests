@@ -229,6 +229,9 @@ jobs:
       OPS_FILES: |
         operations/use-compiled-releases.yml
         operations/use-internal-lookup-for-route-services.yml
+        operations/windows2019-cell.yml
+        operations/use-online-windows2019fs.yml
+        operations/experimental/use-compiled-releases-windows.yml
 
   - task: run-bosh-cleanup
     file: cf-deployment-concourse-tasks/bosh-cleanup/task.yml
