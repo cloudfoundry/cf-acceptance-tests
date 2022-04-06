@@ -1,16 +1,16 @@
 # code.cloudfoundry.org/archiver v0.0.0-20150428205605-f598990ddfed
 ## explicit
 code.cloudfoundry.org/archiver/extractor/test_helper
-# code.cloudfoundry.org/go-diodes v0.0.0-20180905200951-72629b5276e3
-## explicit
+# code.cloudfoundry.org/go-diodes v0.0.0-20220325013804-800fb6f70e2f
+## explicit; go 1.16
 code.cloudfoundry.org/go-diodes
-# code.cloudfoundry.org/go-loggregator/v8 v8.0.5
+# code.cloudfoundry.org/go-loggregator/v8 v8.0.6-0.20220330044358-a0e0ddf1d116
 ## explicit; go 1.16
 code.cloudfoundry.org/go-loggregator/v8
 code.cloudfoundry.org/go-loggregator/v8/rfc5424
 code.cloudfoundry.org/go-loggregator/v8/rpc/loggregator_v2
-# code.cloudfoundry.org/tlsconfig v0.0.0-20200131000646-bbe0f8da39b3
-## explicit; go 1.13
+# code.cloudfoundry.org/tlsconfig v0.0.0-20211123175040-23cc9f05b6b3
+## explicit; go 1.16
 code.cloudfoundry.org/tlsconfig
 # github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220329060630-a1956dba8c6c
 ## explicit; go 1.17
@@ -66,8 +66,8 @@ github.com/fsnotify/fsnotify
 # github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0
 ## explicit; go 1.13
 github.com/go-task/slim-sprig
-# github.com/gogo/protobuf v1.2.1
-## explicit
+# github.com/gogo/protobuf v1.3.2
+## explicit; go 1.15
 github.com/gogo/protobuf/proto
 # github.com/golang/protobuf v1.5.2
 ## explicit; go 1.9
@@ -170,7 +170,7 @@ golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/poly1305
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
-# golang.org/x/net v0.0.0-20220225172249-27dd8689420f
+# golang.org/x/net v0.0.0-20220403103023-749bd193bc2b
 ## explicit; go 1.17
 golang.org/x/net/context
 golang.org/x/net/html
@@ -182,7 +182,7 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
-# golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
+# golang.org/x/sys v0.0.0-20220405210540-1e041c57c461
 ## explicit; go 1.17
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
@@ -209,11 +209,11 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-# golang.org/x/tools v0.0.0-20201224043029-2b0845dc783e
+# golang.org/x/tools v0.0.0-20210106214847-113979e3529a
 ## explicit; go 1.12
 golang.org/x/tools/go/ast/inspector
-# google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013
-## explicit; go 1.11
+# google.golang.org/genproto v0.0.0-20220405205423-9d709892a2bf
+## explicit; go 1.15
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.45.0
 ## explicit; go 1.14

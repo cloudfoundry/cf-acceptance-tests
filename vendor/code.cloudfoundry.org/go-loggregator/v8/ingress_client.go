@@ -527,7 +527,7 @@ func (c *IngressClient) closeAndRecv() {
 	if c.sender == nil {
 		return
 	}
-	c.sender.CloseAndRecv()
+	_, _ = c.sender.CloseAndRecv()
 }
 
 func (c *IngressClient) flush(batch []*loggregator_v2.Envelope) error {
