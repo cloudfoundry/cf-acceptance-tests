@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
@@ -344,7 +345,7 @@ exit 1`
 					outputName = taskDetails[1]
 					outputState = taskDetails[2]
 					return outputState
-				}, Config.CfPushTimeoutDuration()).Should(Equal("FAILED"))
+				}, 3*time.Minute).Should(Equal("FAILED"))
 				Expect(outputName).To(Equal(taskName))
 
 				Eventually(func() string {
