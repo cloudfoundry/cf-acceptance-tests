@@ -667,7 +667,7 @@ func validateCredHubSettings(config *config) error {
 	}
 
 	if config.GetIncludeCredhubAssisted() || config.GetIncludeCredhubNonAssisted() {
-		if config.GetCredHubBrokerClientSecret() == "" || config.GetCredHubBrokerClientSecret() == "" {
+		if config.GetCredHubBrokerClientCredential() == "" || config.GetCredHubBrokerClientSecret() == "" {
 			return fmt.Errorf("* 'credhub_client' and 'credhub_secret' must not be null")
 		}
 	}
