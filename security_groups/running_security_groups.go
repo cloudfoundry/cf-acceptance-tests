@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
@@ -93,7 +94,7 @@ func getAppContainerIpAndPort(appName string) (string, int) {
 
 type Destination struct {
 	IP       string `json:"destination"`
-	Port     int    `json:"ports,string,omitempty"`
+	Ports    string `json:"ports,string,omitempty"`
 	Protocol string `json:"protocol"`
 }
 
@@ -233,8 +234,10 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 			Expect(catnipCurlResponse.ReturnCode).NotTo(Equal(0), "no policy configured but client app can talk to server app using overlay")
 
 			By("Testing that external connectivity to a private ip is not refused (but may be unreachable for other reasons)")
-			catnipCurlResponse = testAppConnectivity(clientAppName, privateAddress, 80)
-			Expect(catnipCurlResponse.Stderr).To(MatchRegexp("Connection timed out after|No route to host"), "wide-open ASG configured but app is still refused by private ip")
+			Eventually(func() string {
+				resp := testAppConnectivity(clientAppName, privateAddress, 80)
+				return resp.Stderr
+			}, 3*time.Minute).Should(MatchRegexp("Connection timed out after|No route to host"), "wide-open ASG configured but app is still refused by private ip")
 
 			By("adding policy")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
@@ -261,11 +264,13 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 			Eventually(func() int {
 				catnipCurlResponse = testAppConnectivity(clientAppName, containerIp, containerPort)
 				return catnipCurlResponse.ReturnCode
-			}, "5s").Should(Equal(0), "policy is configured, asgs are not but client app cannot talk to server app using overlay")
+			}, 3*time.Minute).Should(Equal(0), "policy is configured, asgs are not but client app cannot talk to server app using overlay")
 
 			By("Testing that external connectivity to a private ip is refused")
-			catnipCurlResponse = testAppConnectivity(clientAppName, privateAddress, 80)
-			Expect(catnipCurlResponse.Stderr).To(MatchRegexp("refused|No route to host|Connection timed out"))
+			Eventually(func() string {
+				resp := testAppConnectivity(clientAppName, privateAddress, 80)
+				return resp.Stderr
+			}, 3*time.Minute).Should(MatchRegexp("refused|No route to host|Connection timed out"))
 
 			By("deleting policy")
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
@@ -279,7 +284,7 @@ var _ = SecurityGroupsDescribe("App Instance Networking", func() {
 			Eventually(func() int {
 				catnipCurlResponse = testAppConnectivity(clientAppName, containerIp, containerPort)
 				return catnipCurlResponse.ReturnCode
-			}, "5s").ShouldNot(Equal(0), "no policy is configured but client app can talk to server app using overlay")
+			}, 3*time.Minute).ShouldNot(Equal(0), "no policy is configured but client app can talk to server app using overlay")
 		})
 
 	})
