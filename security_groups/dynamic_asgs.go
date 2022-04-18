@@ -12,10 +12,10 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 
-	"github.com/cloudfoundry-incubator/cf-test-helpers/cf"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
+	"github.com/cloudfoundry/cf-test-helpers/cf"
 )
 
 var _ = Describe("Dynamic ASGs", func() {
