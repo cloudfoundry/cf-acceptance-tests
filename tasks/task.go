@@ -50,7 +50,7 @@ type ProxyResponse struct {
 
 type Destination struct {
 	IP       string `json:"destination"`
-	Port     int    `json:"ports,omitempty"`
+	Ports    string `json:"ports,omitempty"`
 	Protocol string `json:"protocol"`
 }
 
@@ -319,7 +319,7 @@ exit 1`
 				By("creating the ASG")
 				destSecurityGroup := Destination{
 					IP:       Config.GetUnallocatedIPForSecurityGroup(),
-					Port:     80,
+					Ports:    "80",
 					Protocol: "tcp",
 				}
 				securityGroupName = createSecurityGroup(destSecurityGroup)
