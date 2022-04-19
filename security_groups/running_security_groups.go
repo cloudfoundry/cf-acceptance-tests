@@ -94,13 +94,15 @@ func getAppContainerIpAndPort(appName string) (string, int) {
 
 type Destination struct {
 	IP       string `json:"destination"`
-	Ports    string `json:"ports,string,omitempty"`
+	Ports    string `json:"ports,omitempty"`
 	Protocol string `json:"protocol"`
 }
 
 func createSecurityGroup(allowedDestinations ...Destination) string {
-	file, _ := ioutil.TempFile(os.TempDir(), "CATS-sg-rules")
+	file, err := ioutil.TempFile(os.TempDir(), "CATS-sg-rules")
+	Expect(err).NotTo(HaveOccurred())
 	defer os.Remove(file.Name())
+
 	Expect(json.NewEncoder(file).Encode(allowedDestinations)).To(Succeed())
 
 	rulesPath := file.Name()

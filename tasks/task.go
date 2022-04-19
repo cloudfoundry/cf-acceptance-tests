@@ -50,7 +50,7 @@ type ProxyResponse struct {
 
 type Destination struct {
 	IP       string `json:"destination"`
-	Port     int    `json:"ports,string,omitempty"`
+	Port     int    `json:"ports,omitempty"`
 	Protocol string `json:"protocol"`
 }
 
