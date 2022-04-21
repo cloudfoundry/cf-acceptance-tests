@@ -10,8 +10,7 @@ import (
 	"github.com/cloudfoundry/cf-test-helpers/cf"
 	"github.com/cloudfoundry/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-test-helpers/workflowhelpers"
-	"github.com/cloudfoundry/noaa"
-	"github.com/cloudfoundry/noaa/events"
+	"github.com/cloudfoundry/noaa/consumer"
 
 	"time"
 
@@ -50,13 +49,9 @@ var _ = WindowsDescribe("Metrics", func() {
 	})
 
 	It("shows logs and metrics", func() {
-		noaaConnection := noaa.NewConsumer(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.GetSkipSSLValidation()}, nil)
-		msgChan := make(chan *events.Envelope, 100000)
-		errorChan := make(chan error)
-		stopchan := make(chan struct{})
-
-		go noaaConnection.Firehose(random_name.CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken(), msgChan, errorChan, stopchan)
-		defer close(stopchan)
+		c := consumer.New(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.GetSkipSSLValidation()}, nil)
+		msgChan, _ := c.Firehose(random_name.CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken())
+		defer c.Close()
 
 		Eventually(func() string {
 			return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", hundredthOfOneSecond))
