@@ -18,7 +18,7 @@ import (
 	"github.com/cloudfoundry/cf-test-helpers/cf"
 )
 
-var _ = XDescribe("Dynamic ASGs", func() {
+var _ = Describe("Dynamic ASGs", func() {
 	var (
 		orgName           string
 		spaceName         string
