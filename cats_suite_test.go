@@ -37,11 +37,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/cli_version_check"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
 	"github.com/cloudfoundry/cf-test-helpers/cf"
-	"github.com/cloudfoundry/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-test-helpers/workflowhelpers"
-	"github.com/cloudfoundry/custom-cats-reporters/honeycomb"
-	"github.com/cloudfoundry/custom-cats-reporters/honeycomb/client"
-	"github.com/honeycombio/libhoney-go"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
@@ -132,34 +128,5 @@ func TestCATS(t *testing.T) {
 		os.Remove(assets.NewAssets().DoraZip)
 	})
 
-	rs := []Reporter{}
-
-	if validationError == nil {
-		if Config.GetArtifactsDirectory() != "" {
-			helpers.EnableCFTrace(Config, "CATS")
-			rs = append(rs, helpers.NewJUnitReporter(Config, "CATS"))
-		}
-	}
-
-	reporterConfig := Config.GetReporterConfig()
-
-	if reporterConfig.HoneyCombDataset != "" && reporterConfig.HoneyCombWriteKey != "" {
-		honeyCombClient := client.New(libhoney.Config{
-			WriteKey: reporterConfig.HoneyCombWriteKey,
-			Dataset:  reporterConfig.HoneyCombDataset,
-		})
-
-		globalTags := map[string]interface{}{
-			"run_id":  os.Getenv("RUN_ID"),
-			"env_api": Config.GetApiEndpoint(),
-		}
-
-		honeyCombReporter := honeycomb.New(honeyCombClient)
-		honeyCombReporter.SetGlobalTags(globalTags)
-		honeyCombReporter.SetCustomTags(reporterConfig.CustomTags)
-
-		rs = append(rs, honeyCombReporter)
-	}
-
-	RunSpecs(t, "CATS", rs)
+	RunSpecs(t, "CATS")
 }
