@@ -20,8 +20,8 @@ github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWR
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
-github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220505203809-403f6007a9e7 h1:Fx5ZE7j75GwyRGibEDTLgH2h+OfrIKhtFyIG6DQ44dw=
-github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220505203809-403f6007a9e7/go.mod h1:NmkioFkIfwFK9ZLG2OB5S3lEMU6soFSGO5oT3kxPUX0=
+github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220505203906-5265aa344b1d h1:7d3BatFen3jI20B9bUg55WFozwIXYrJpYJhURNESTnY=
+github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220505203906-5265aa344b1d/go.mod h1:E+HdfB4leE75sDZcOC0QAsPKJYp7QTJaglFwRCE3Y0U=
 github.com/cloudfoundry/custom-cats-reporters v0.0.0-20180629210428-75213ee79907 h1:wyYh6Iv81IwgCyIBG7OW34s5GQOGuWPWECF47arkSNQ=
 github.com/cloudfoundry/custom-cats-reporters v0.0.0-20180629210428-75213ee79907/go.mod h1:uxXHu50QB3u67C2PZlaFBlc9yTy9gQ4Nb+nL3J959bU=
 github.com/cloudfoundry/dropsonde v1.0.0/go.mod h1:6zwvrWK5TpxBVYi1cdkE5WDsIO8E0n7qAJg3wR9B67c=

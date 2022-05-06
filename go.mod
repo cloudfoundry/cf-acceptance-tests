@@ -5,7 +5,7 @@ go 1.18
 require (
 	code.cloudfoundry.org/archiver v0.0.0-20150428205605-f598990ddfed
 	code.cloudfoundry.org/go-loggregator/v8 v8.0.6-0.20220330044358-a0e0ddf1d116
-	github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220505203809-403f6007a9e7
+	github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220505203906-5265aa344b1d
 	github.com/cloudfoundry/custom-cats-reporters v0.0.0-20180629210428-75213ee79907
 	github.com/cloudfoundry/noaa v2.1.0+incompatible
 	github.com/cloudfoundry/sonde-go v0.0.0-20220324234026-9851b3a0dce2
