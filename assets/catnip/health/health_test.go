@@ -9,7 +9,7 @@ import (
 
 	"code.cloudfoundry.org/clock"
 	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/router"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

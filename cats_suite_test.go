@@ -42,7 +42,7 @@ import (
 	"github.com/cloudfoundry/custom-cats-reporters/honeycomb"
 	"github.com/cloudfoundry/custom-cats-reporters/honeycomb/client"
 	"github.com/honeycombio/libhoney-go"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 )
@@ -161,5 +161,5 @@ func TestCATS(t *testing.T) {
 		rs = append(rs, honeyCombReporter)
 	}
 
-	RunSpecsWithDefaultAndCustomReporters(t, "CATS", rs)
+	RunSpecs(t, "CATS", rs)
 }

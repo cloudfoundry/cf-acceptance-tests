@@ -12,8 +12,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-test-helpers/cf"
 	"github.com/cloudfoundry/cf-test-helpers/helpers"
-	"github.com/onsi/ginkgo"
-	"github.com/onsi/ginkgo/config"
+	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 )
@@ -174,10 +173,6 @@ func printAppReportBanner(announcement string) {
 func getColor() (string, string) {
 	startColor := ""
 	endColor := ""
-	if !config.DefaultReporterConfig.NoColor {
-		startColor = "\x1b[35m"
-		endColor = "\x1b[0m"
-	}
 
 	return startColor, endColor
 }
