@@ -81,18 +81,17 @@ var _ = HTTP2RoutingDescribe("HTTP/2 Routing", func() {
 			tlsConfig := tls.Config{InsecureSkipVerify: true}
 			creds := credentials.NewTLS(&tlsConfig)
 
-			conn, err := grpc.Dial(
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			conn, err := grpc.DialContext(
+				ctx,
 				appURI,
 				grpc.WithTransportCredentials(creds),
 				grpc.WithBlock(),
 				grpc.FailOnNonTempDialError(true),
-				grpc.WithTimeout(time.Duration(1)*time.Second),
 			)
 			Expect(err).ToNot(HaveOccurred())
 			defer conn.Close()
-
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-			defer cancel()
 
 			client := protobuff.NewTestClient(conn)
 			response, err := client.Run(ctx, &protobuff.Request{})
