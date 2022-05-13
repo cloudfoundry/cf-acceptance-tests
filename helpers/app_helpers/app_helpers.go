@@ -173,6 +173,11 @@ func printAppReportBanner(announcement string) {
 func getColor() (string, string) {
 	startColor := ""
 	endColor := ""
+	_, reporterConfig := ginkgo.GinkgoConfiguration()
+	if !reporterConfig.NoColor {
+		startColor = "\x1b[35m"
+		endColor = "\x1b[0m"
+	}
 
 	return startColor, endColor
 }

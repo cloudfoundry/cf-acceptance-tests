@@ -2,6 +2,10 @@ package cats_test
 
 import (
 	"fmt"
+	"github.com/cloudfoundry/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/custom-cats-reporters/honeycomb"
+	"github.com/cloudfoundry/custom-cats-reporters/honeycomb/client"
+	"github.com/honeycombio/libhoney-go"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -127,6 +131,34 @@ func TestCATS(t *testing.T) {
 	}, func() {
 		os.Remove(assets.NewAssets().DoraZip)
 	})
+	rs := []Reporter{}
 
-	RunSpecs(t, "CATS")
+	if validationError == nil {
+		if Config.GetArtifactsDirectory() != "" {
+			helpers.EnableCFTrace(Config, "CATS")
+			rs = append(rs, helpers.NewJUnitReporter(Config, "CATS"))
+		}
+	}
+
+	reporterConfig := Config.GetReporterConfig()
+
+	if reporterConfig.HoneyCombDataset != "" && reporterConfig.HoneyCombWriteKey != "" {
+		honeyCombClient := client.New(libhoney.Config{
+			WriteKey: reporterConfig.HoneyCombWriteKey,
+			Dataset:  reporterConfig.HoneyCombDataset,
+		})
+
+		globalTags := map[string]interface{}{
+			"run_id":  os.Getenv("RUN_ID"),
+			"env_api": Config.GetApiEndpoint(),
+		}
+
+		honeyCombReporter := honeycomb.New(honeyCombClient)
+		honeyCombReporter.SetGlobalTags(globalTags)
+		honeyCombReporter.SetCustomTags(reporterConfig.CustomTags)
+
+		rs = append(rs, honeyCombReporter)
+	}
+
+	RunSpecs(t, "CATS", rs)
 }
