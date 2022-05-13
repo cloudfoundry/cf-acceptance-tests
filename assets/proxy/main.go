@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -25,7 +26,7 @@ func main() {
 	mux.HandleFunc("/https_proxy/", httpsProxyHandler)
 	mux.HandleFunc("/", infoHandler(systemPort))
 
-	http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", systemPort), mux)
+	_ = http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", systemPort), mux)
 }
 
 func infoHandler(port int) http.HandlerFunc {
@@ -50,7 +51,7 @@ func infoHandler(port int) http.HandlerFunc {
 		if err != nil {
 			panic(err)
 		}
-		resp.Write(respBytes)
+		_, _ = resp.Write(respBytes)
 	}
 }
 
@@ -71,7 +72,7 @@ func handleRequest(destination string, resp http.ResponseWriter, req *http.Reque
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "request failed: %s", err)
 		resp.WriteHeader(http.StatusInternalServerError)
-		resp.Write([]byte(fmt.Sprintf("request failed: %s", err)))
+		_, _ = resp.Write([]byte(fmt.Sprintf("request failed: %s", err)))
 		return
 	}
 	defer getResp.Body.Close()
@@ -79,11 +80,11 @@ func handleRequest(destination string, resp http.ResponseWriter, req *http.Reque
 	readBytes, err := ioutil.ReadAll(getResp.Body)
 	if err != nil {
 		resp.WriteHeader(http.StatusInternalServerError)
-		resp.Write([]byte(fmt.Sprintf("read body failed: %s", err)))
+		_, _ = resp.Write([]byte(fmt.Sprintf("read body failed: %s", err)))
 		return
 	}
 
-	resp.Write(readBytes)
+	_, _ = resp.Write(readBytes)
 }
 
 var httpClient = &http.Client{
@@ -93,5 +94,8 @@ var httpClient = &http.Client{
 			Timeout:   10 * time.Second,
 			KeepAlive: 0,
 		}).Dial,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
 	},
 }
