@@ -1,6 +1,7 @@
 package security_groups_test
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -50,10 +51,18 @@ var _ = Describe("Dynamic ASGs", func() {
 	})
 
 	It("applies ASGs wihout app restart", func() {
-		proxyRequestURL := fmt.Sprintf("http://%s.%s/https_proxy/cloud-controller-ng.service.cf.internal:9024/v2/info", appName, Config.GetAppsDomain())
+		proxyRequestURL := fmt.Sprintf("%s%s.%s/https_proxy/cloud-controller-ng.service.cf.internal:9024/v2/info", Config.Protocol(), appName, Config.GetAppsDomain())
+
+		client := &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: Config.GetSkipSSLValidation(),
+				},
+			},
+		}
 
 		By("checking that our app can't initially reach cloud controller over internal address")
-		resp, err := http.Get(proxyRequestURL)
+		resp, err := client.Get(proxyRequestURL)
 		Expect(err).NotTo(HaveOccurred())
 
 		respBytes, err := ioutil.ReadAll(resp.Body)
@@ -72,7 +81,7 @@ var _ = Describe("Dynamic ASGs", func() {
 
 		By("checking that our app can now reach cloud controller over internal address")
 		Eventually(func() []byte {
-			resp, err = http.Get(proxyRequestURL)
+			resp, err = client.Get(proxyRequestURL)
 			Expect(err).NotTo(HaveOccurred())
 
 			respBytes, err = ioutil.ReadAll(resp.Body)
@@ -86,7 +95,7 @@ var _ = Describe("Dynamic ASGs", func() {
 
 		By("checking that our app can no longer reach cloud controller over internal address")
 		Eventually(func() []byte {
-			resp, err = http.Get(proxyRequestURL)
+			resp, err = client.Get(proxyRequestURL)
 			Expect(err).NotTo(HaveOccurred())
 
 			respBytes, err = ioutil.ReadAll(resp.Body)
