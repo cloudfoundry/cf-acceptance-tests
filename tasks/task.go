@@ -328,6 +328,8 @@ exit 1`
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 					Expect(cf.Cf("bind-security-group", securityGroupName, TestSetup.RegularUserContext().Org, "--space", TestSetup.RegularUserContext().Space).Wait()).To(Exit(0))
 				})
+				// Give time to allow the security group to propagate
+				time.Sleep(60 * time.Second)
 
 				By("restarting the app to apply the ASG")
 				Expect(cf.Cf("restart", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
