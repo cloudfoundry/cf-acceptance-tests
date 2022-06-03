@@ -115,10 +115,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 		})
 	})
 
-	PDescribe("dotnet-core", func() {
-		// This test involves a vendored dotnet core app whose locked dotnet version will not be removed
-		// from the dotnet core buildpack until end of the version's LTS in 2019
-
+	Describe("dotnet-core", func() {
 		It("makes the app reachable via its bound route", func() {
 			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().DotnetCore).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
