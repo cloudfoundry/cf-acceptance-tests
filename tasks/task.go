@@ -256,7 +256,7 @@ var _ = TasksDescribe("v3 tasks", func() {
 				}
 			})
 
-			It("applies the associated app's policies to the task", func(done Done) {
+			It("applies the associated app's policies to the task", func() {
 				By("creating the network policy")
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 					Expect(cf.Cf("target", "-o", TestSetup.RegularUserContext().Org, "-s", TestSetup.RegularUserContext().Space).Wait()).To(Exit(0))
@@ -292,11 +292,9 @@ exit 1`
 					outputName = taskDetails[1]
 					outputState = taskDetails[2]
 					return outputState
-				}).Should(Equal("SUCCEEDED"))
+				}, 30*60 /* <-- overall spec timeout in seconds */).Should(Equal("SUCCEEDED"))
 				Expect(outputName).To(Equal(taskName))
-
-				close(done)
-			}, 30*60 /* <-- overall spec timeout in seconds */)
+			})
 		})
 
 		Context("and binding a space-specific ASG", func() {
@@ -315,7 +313,7 @@ exit 1`
 				})
 			})
 
-			It("applies the associated app's ASGs to the task", func(done Done) {
+			It("applies the associated app's ASGs to the task", func() {
 				By("creating the ASG")
 				destSecurityGroup := Destination{
 					IP:       Config.GetUnallocatedIPForSecurityGroup(),
@@ -355,9 +353,7 @@ exit 1`
 					Expect(appLogs).To(Exit(0))
 					return string(appLogs.Out.Contents())
 				}, Config.CfPushTimeoutDuration()).Should(MatchRegexp("Connection timed out|No route to host"), "ASG configured to allow connection to the private IP but the app is still refused by private ip")
-
-				close(done)
-			}, 30*60 /* <-- overall spec timeout in seconds */)
+			})
 		})
 	})
 })
