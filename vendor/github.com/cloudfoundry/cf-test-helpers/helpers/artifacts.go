@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	ginkgoconfig "github.com/onsi/ginkgo/config"
-	"github.com/onsi/ginkgo/reporters"
+	ginkgoconfig "github.com/onsi/ginkgo/v2"
+	"github.com/onsi/ginkgo/v2/reporters"
 )
 
 type artifactsDirectoryConfig interface {
@@ -31,7 +31,7 @@ func jUnitReportFilePath(config artifactsDirectoryConfig, componentName string) 
 }
 
 func ginkgoNode() int {
-	return ginkgoconfig.GinkgoConfig.ParallelNode
+	return ginkgoconfig.GinkgoParallelProcess()
 }
 
 func sanitizeComponentName(componentName string) string {

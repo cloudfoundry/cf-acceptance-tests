@@ -10,8 +10,7 @@ import (
 	"github.com/cloudfoundry/cf-test-helpers/commandstarter"
 	"github.com/cloudfoundry/cf-test-helpers/internal"
 	workflowhelpersinternal "github.com/cloudfoundry/cf-test-helpers/workflowhelpers/internal"
-	"github.com/onsi/ginkgo"
-	ginkgoconfig "github.com/onsi/ginkgo/config"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
@@ -95,7 +94,7 @@ func (uc UserContext) Login() {
 	EventuallyWithOffset(1, session, uc.Timeout).Should(Exit(0), apiErrorMessage(session))
 
 	redactor := internal.NewRedactor(uc.TestUser.Password())
-	redactingReporter := internal.NewRedactingReporter(ginkgo.GinkgoWriter, redactor)
+	redactingReporter := internal.NewRedactingReporter(GinkgoWriter, redactor)
 
 	var err error
 	if uc.UseClientCredentials {
@@ -109,7 +108,7 @@ func (uc UserContext) Login() {
 
 func (uc UserContext) SetCfHomeDir() (string, string) {
 	originalCfHomeDir := os.Getenv("CF_HOME")
-	currentCfHomeDir, err := ioutil.TempDir("", fmt.Sprintf("cf_home_%d", ginkgoconfig.GinkgoConfig.ParallelNode))
+	currentCfHomeDir, err := ioutil.TempDir("", fmt.Sprintf("cf_home_%d", GinkgoParallelProcess()))
 	if err != nil {
 		panic("Error: could not create temporary home directory: " + err.Error())
 	}

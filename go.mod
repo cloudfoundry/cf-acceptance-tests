@@ -5,7 +5,7 @@ go 1.18
 require (
 	code.cloudfoundry.org/archiver v0.0.0-20150428205605-f598990ddfed
 	code.cloudfoundry.org/go-loggregator/v8 v8.0.6-0.20220330044358-a0e0ddf1d116
-	github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220505203906-5265aa344b1d
+	github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220603211108-d498b915ef74
 	github.com/cloudfoundry/custom-cats-reporters v0.0.0-20180629210428-75213ee79907
 	github.com/cloudfoundry/noaa v2.1.0+incompatible
 	github.com/cloudfoundry/sonde-go v0.0.0-20220324234026-9851b3a0dce2
@@ -42,13 +42,14 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/nwaples/rardecode v0.0.0-20171029023500-e06696f847ae // indirect
 	github.com/nxadm/tail v1.4.8 // indirect
+	github.com/onsi/ginkgo/v2 v2.1.4 // indirect
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
 	github.com/ulikunitz/xz v0.5.4 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	golang.org/x/net v0.0.0-20220403103023-749bd193bc2b // indirect
 	golang.org/x/sys v0.0.0-20220405210540-1e041c57c461 // indirect
 	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/tools v0.0.0-20210106214847-113979e3529a // indirect
+	golang.org/x/tools v0.1.10 // indirect
 	google.golang.org/genproto v0.0.0-20220405205423-9d709892a2bf // indirect
 	gopkg.in/alexcesaro/statsd.v2 v2.0.0 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect

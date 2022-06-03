@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/cloudfoundry/cf-test-helpers/internal"
-	"github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega/gexec"
 )
 
