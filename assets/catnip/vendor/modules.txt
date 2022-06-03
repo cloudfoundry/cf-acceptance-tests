@@ -1,5 +1,5 @@
-# code.cloudfoundry.org/clock v0.0.0-20170223024709-2269160ae175
-## explicit
+# code.cloudfoundry.org/clock v1.0.1-0.20220601152104-3983b71fbf93
+## explicit; go 1.16
 code.cloudfoundry.org/clock
 code.cloudfoundry.org/clock/fakeclock
 # github.com/gorilla/mux v1.8.0
