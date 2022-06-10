@@ -108,7 +108,7 @@ func GetAppGuid(appName string) string {
 }
 
 func AppReport(appName string) {
-	if appName == "" || !ginkgo.CurrentGinkgoTestDescription().Failed {
+	if appName == "" || !ginkgo.CurrentSpecReport().Failed() {
 		return
 	}
 
