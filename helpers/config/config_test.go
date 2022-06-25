@@ -9,7 +9,7 @@ import (
 
 	cfg "github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
