@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -37,6 +38,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/cli_version_check"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
 	"github.com/cloudfoundry/cf-test-helpers/cf"
+	"github.com/cloudfoundry/cf-test-helpers/helpers"
 	"github.com/cloudfoundry/cf-test-helpers/workflowhelpers"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -127,34 +129,15 @@ func TestCATS(t *testing.T) {
 	}, func() {
 		os.Remove(assets.NewAssets().DoraZip)
 	})
-	//rs := []Reporter{}
-	//
-	//if validationError == nil {
-	//	if Config.GetArtifactsDirectory() != "" {
-	//		helpers.EnableCFTrace(Config, "CATS")
-	//		rs = append(rs, helpers.NewJUnitReporter(Config, "CATS"))
-	//	}
-	//}
-	//
-	//reporterConfig := Config.GetReporterConfig()
-	//
-	//if reporterConfig.HoneyCombDataset != "" && reporterConfig.HoneyCombWriteKey != "" {
-	//	honeyCombClient := client.New(libhoney.Config{
-	//		WriteKey: reporterConfig.HoneyCombWriteKey,
-	//		Dataset:  reporterConfig.HoneyCombDataset,
-	//	})
-	//
-	//	globalTags := map[string]interface{}{
-	//		"run_id":  os.Getenv("RUN_ID"),
-	//		"env_api": Config.GetApiEndpoint(),
-	//	}
-	//
-	//	honeyCombReporter := honeycomb.New(honeyCombClient)
-	//	honeyCombReporter.SetGlobalTags(globalTags)
-	//	honeyCombReporter.SetCustomTags(reporterConfig.CustomTags)
-	//
-	//	rs = append(rs, honeyCombReporter)
-	//}
 
-	RunSpecs(t, "CATS")
+	_, rc := GinkgoConfiguration()
+
+	if validationError == nil {
+		if Config.GetArtifactsDirectory() != "" {
+			helpers.EnableCFTrace(Config, "CATS")
+			rc.JUnitReport = filepath.Join(Config.GetArtifactsDirectory(), fmt.Sprintf("junit-%s-%d.xml", "CATS", GinkgoParallelProcess()))
+		}
+	}
+
+	RunSpecs(t, "CATS", rc)
 }
