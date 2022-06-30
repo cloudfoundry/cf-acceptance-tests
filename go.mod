@@ -4,10 +4,10 @@ go 1.18
 
 require (
 	code.cloudfoundry.org/archiver v0.0.0-20150428205605-f598990ddfed
-	code.cloudfoundry.org/go-loggregator/v8 v8.0.6-0.20220330044358-a0e0ddf1d116
+	code.cloudfoundry.org/go-loggregator/v9 v9.0.2
 	github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220721195514-36ed5ab41b8f
 	github.com/cloudfoundry/noaa v2.1.0+incompatible
-	github.com/cloudfoundry/sonde-go v0.0.0-20220324234026-9851b3a0dce2
+	github.com/cloudfoundry/sonde-go v0.0.0-20220627221915-ff36de9c3435
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/onsi/ginkgo/v2 v2.1.4
 	github.com/onsi/gomega v1.20.0
@@ -19,6 +19,7 @@ require (
 require (
 	code.cloudfoundry.org/go-diodes v0.0.0-20220325013804-800fb6f70e2f // indirect
 	code.cloudfoundry.org/tlsconfig v0.0.0-20211123175040-23cc9f05b6b3 // indirect
+	github.com/apoydence/eachers v0.0.0-20181020210610-23942921fe77 // indirect
 	github.com/dsnet/compress v0.0.0-20171208185109-cc9eb1d7ad76 // indirect
 	github.com/elazarl/goproxy v0.0.0-20220417044921-416226498f94 // indirect
 	github.com/elazarl/goproxy/ext v0.0.0-20220417044921-416226498f94 // indirect
