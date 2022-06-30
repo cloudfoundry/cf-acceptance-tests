@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"code.cloudfoundry.org/go-loggregator/v8/rpc/loggregator_v2"
-	"github.com/golang/protobuf/jsonpb"
+	"code.cloudfoundry.org/go-loggregator/v9/rpc/loggregator_v2"
 	"golang.org/x/net/context"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type RLPGatewayClient struct {
@@ -220,7 +220,7 @@ func (c *RLPGatewayClient) initWorkerPool(rawBatches chan string, batches chan<-
 		go func(rawBatches chan string, es chan<- []*loggregator_v2.Envelope) {
 			for batch := range rawBatches {
 				var eb loggregator_v2.EnvelopeBatch
-				if err := jsonpb.UnmarshalString(batch, &eb); err != nil {
+				if err := protojson.Unmarshal([]byte(batch), &eb); err != nil {
 					c.log.Printf("failed to unmarshal envelope: %s", err)
 					return
 				}

@@ -4,14 +4,15 @@ code.cloudfoundry.org/archiver/extractor/test_helper
 # code.cloudfoundry.org/go-diodes v0.0.0-20220325013804-800fb6f70e2f
 ## explicit; go 1.16
 code.cloudfoundry.org/go-diodes
-# code.cloudfoundry.org/go-loggregator/v8 v8.0.6-0.20220330044358-a0e0ddf1d116
-## explicit; go 1.16
-code.cloudfoundry.org/go-loggregator/v8
-code.cloudfoundry.org/go-loggregator/v8/rfc5424
-code.cloudfoundry.org/go-loggregator/v8/rpc/loggregator_v2
+# code.cloudfoundry.org/go-loggregator/v9 v9.0.2
+## explicit; go 1.18
+code.cloudfoundry.org/go-loggregator/v9
+code.cloudfoundry.org/go-loggregator/v9/rpc/loggregator_v2
 # code.cloudfoundry.org/tlsconfig v0.0.0-20211123175040-23cc9f05b6b3
 ## explicit; go 1.16
 code.cloudfoundry.org/tlsconfig
+# github.com/apoydence/eachers v0.0.0-20181020210610-23942921fe77
+## explicit
 # github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220721195514-36ed5ab41b8f
 ## explicit; go 1.17
 github.com/cloudfoundry/cf-test-helpers/cf
@@ -30,7 +31,7 @@ github.com/cloudfoundry/noaa
 github.com/cloudfoundry/noaa/consumer
 github.com/cloudfoundry/noaa/consumer/internal
 github.com/cloudfoundry/noaa/errors
-# github.com/cloudfoundry/sonde-go v0.0.0-20220324234026-9851b3a0dce2
+# github.com/cloudfoundry/sonde-go v0.0.0-20220627221915-ff36de9c3435
 ## explicit; go 1.17
 github.com/cloudfoundry/sonde-go/events
 # github.com/dsnet/compress v0.0.0-20171208185109-cc9eb1d7ad76
@@ -52,9 +53,7 @@ github.com/dsnet/compress/internal/prefix
 github.com/go-task/slim-sprig
 # github.com/gogo/protobuf v1.3.2
 ## explicit; go 1.15
-github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/proto
-github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 # github.com/golang/protobuf v1.5.2
 ## explicit; go 1.9
 github.com/golang/protobuf/jsonpb
