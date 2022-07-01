@@ -81,7 +81,7 @@ var _ = HTTP2RoutingDescribe("HTTP/2 Routing", func() {
 			tlsConfig := tls.Config{InsecureSkipVerify: true}
 			creds := credentials.NewTLS(&tlsConfig)
 
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
 			conn, err := grpc.DialContext(
 				ctx,
