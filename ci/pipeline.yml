@@ -402,12 +402,10 @@ jobs:
     - get: cf-acceptance-tests-develop
       passed:
       - run-cats-vms
-      - run-cats-k8s
       trigger: true
     - get: cf-deployment-main
       passed:
       - run-cats-vms
-      - run-cats-k8s
       trigger: true
 
   - put: cf-acceptance-tests-rc
