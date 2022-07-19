@@ -129,8 +129,8 @@ github.com/onsi/gomega/types
 ## explicit
 github.com/pierrec/lz4
 github.com/pierrec/lz4/internal/xxh32
-# github.com/ulikunitz/xz v0.5.4
-## explicit
+# github.com/ulikunitz/xz v0.5.10
+## explicit; go 1.12
 github.com/ulikunitz/xz
 github.com/ulikunitz/xz/internal/hash
 github.com/ulikunitz/xz/internal/xlog
