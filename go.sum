@@ -18,8 +18,8 @@ github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWR
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
-github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220721195514-36ed5ab41b8f h1:7223TSEfG6N6F+aJZ8/Sve81Agu0rRIvj5PStV//h2w=
-github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220721195514-36ed5ab41b8f/go.mod h1:7gGomr7Ymh107W0wdTmfhfLztHTPun+mUANjk7DSMFk=
+github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220727214429-5596fb6f989b h1:IZR1dN23vJmqnQZ23dT+gkLg/89Eqkzm83erad9zEhU=
+github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220727214429-5596fb6f989b/go.mod h1:7gGomr7Ymh107W0wdTmfhfLztHTPun+mUANjk7DSMFk=
 github.com/cloudfoundry/noaa v2.1.0+incompatible h1:hr6VnM5VlYRN3YD+NmAedQLW8686sUMknOSe0mFS2vo=
 github.com/cloudfoundry/noaa v2.1.0+incompatible/go.mod h1:5LmacnptvxzrTvMfL9+EJhgkUfIgcwI61BVSTh47ECo=
 github.com/cloudfoundry/sonde-go v0.0.0-20220627221915-ff36de9c3435 h1:xDsJBppu1bIny3d5CqbOZuCzezFbKhnrmrNucWLpNOk=
