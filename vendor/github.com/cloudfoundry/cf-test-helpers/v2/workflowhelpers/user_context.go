@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudfoundry/cf-test-helpers/commandstarter"
-	"github.com/cloudfoundry/cf-test-helpers/internal"
-	workflowhelpersinternal "github.com/cloudfoundry/cf-test-helpers/workflowhelpers/internal"
+	"github.com/cloudfoundry/cf-test-helpers/v2/commandstarter"
+	"github.com/cloudfoundry/cf-test-helpers/v2/internal"
+	workflowhelpersinternal "github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers/internal"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
@@ -119,8 +119,7 @@ func (uc UserContext) SetCfHomeDir() (string, string) {
 
 func (uc UserContext) TargetSpace() {
 	if uc.TestSpace != nil && uc.TestSpace.OrganizationName() != "" {
-		var session *Session
-		session = internal.Cf(uc.CommandStarter, "target", "-o", uc.TestSpace.OrganizationName(), "-s", uc.TestSpace.SpaceName())
+		session := internal.Cf(uc.CommandStarter, "target", "-o", uc.TestSpace.OrganizationName(), "-s", uc.TestSpace.SpaceName())
 		EventuallyWithOffset(1, session, uc.Timeout).Should(Exit(0), cliErrorMessage(session))
 	}
 }

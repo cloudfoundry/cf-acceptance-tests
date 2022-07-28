@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cloudfoundry/cf-test-helpers/generator"
-	"github.com/cloudfoundry/cf-test-helpers/internal"
+	"github.com/cloudfoundry/cf-test-helpers/v2/generator"
+	"github.com/cloudfoundry/cf-test-helpers/v2/internal"
 	"github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"

@@ -1,9 +1,9 @@
 package helpers
 
 import (
-	"github.com/cloudfoundry/cf-test-helpers/commandstarter"
-	"github.com/cloudfoundry/cf-test-helpers/helpers/internal"
-	"github.com/cloudfoundry/cf-test-helpers/internal"
+	"github.com/cloudfoundry/cf-test-helpers/v2/commandstarter"
+	helpersinternal "github.com/cloudfoundry/cf-test-helpers/v2/helpers/internal"
+	"github.com/cloudfoundry/cf-test-helpers/v2/internal"
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega/gexec"
 )

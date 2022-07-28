@@ -7,7 +7,7 @@ import (
 
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
-	"github.com/cloudfoundry/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
 )
 
 const maxNumRedirects = 10 // This is the same default Go uses with in its http library: https://godoc.org/net/http#Get

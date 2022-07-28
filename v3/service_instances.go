@@ -11,7 +11,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
-	"github.com/cloudfoundry/cf-test-helpers/cf"
+	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
