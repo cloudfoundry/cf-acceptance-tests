@@ -72,12 +72,6 @@ resources:
     - ci/**
     - .envrc
 
-- name: cf-test-helpers
-  type: git
-  icon: github
-  source:
-    uri: https://github.com/cloudfoundry/cf-test-helpers
-
 - name: cf-for-k8s-develop
   type: git
   icon: github
@@ -134,30 +128,6 @@ resources:
     tracker_url: https://www.pivotaltracker.com
 
 jobs:
-- name: bump-cf-test-helpers
-  public: true
-  plan:
-  - in_parallel:
-    - get: cf-acceptance-tests-develop
-    - get: runtime-ci
-    - get: cf-test-helpers
-      trigger: true
-
-  - task: run-cf-test-helpers-unit-tests
-    file: runtime-ci/tasks/run-cf-test-helpers-unit-tests/task.yml
-
-  - task: bump-cf-test-helpers
-    file: runtime-ci/tasks/bump-cf-test-helpers/task.yml
-    input_mapping:
-      repository: cf-acceptance-tests-develop
-    params:
-      USE_GO_MOD: true
-
-  - put: cf-acceptance-tests-develop
-    params:
-      repository: updated-repository
-      rebase: true
-
 - name: run-unit-tests
   serial: true
   public: true
