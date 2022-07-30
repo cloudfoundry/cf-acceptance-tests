@@ -11,18 +11,18 @@ code.cloudfoundry.org/go-loggregator/v9/rpc/loggregator_v2
 # code.cloudfoundry.org/tlsconfig v0.0.0-20211123175040-23cc9f05b6b3
 ## explicit; go 1.16
 code.cloudfoundry.org/tlsconfig
-# github.com/cloudfoundry/cf-test-helpers v1.0.1-0.20220727214429-5596fb6f989b
+# github.com/cloudfoundry/cf-test-helpers/v2 v2.0.0
 ## explicit; go 1.17
-github.com/cloudfoundry/cf-test-helpers/cf
-github.com/cloudfoundry/cf-test-helpers/commandreporter
-github.com/cloudfoundry/cf-test-helpers/commandstarter
-github.com/cloudfoundry/cf-test-helpers/generator
-github.com/cloudfoundry/cf-test-helpers/helpers
-github.com/cloudfoundry/cf-test-helpers/helpers/internal
-github.com/cloudfoundry/cf-test-helpers/internal
-github.com/cloudfoundry/cf-test-helpers/silentcommandstarter
-github.com/cloudfoundry/cf-test-helpers/workflowhelpers
-github.com/cloudfoundry/cf-test-helpers/workflowhelpers/internal
+github.com/cloudfoundry/cf-test-helpers/v2/cf
+github.com/cloudfoundry/cf-test-helpers/v2/commandreporter
+github.com/cloudfoundry/cf-test-helpers/v2/commandstarter
+github.com/cloudfoundry/cf-test-helpers/v2/generator
+github.com/cloudfoundry/cf-test-helpers/v2/helpers
+github.com/cloudfoundry/cf-test-helpers/v2/helpers/internal
+github.com/cloudfoundry/cf-test-helpers/v2/internal
+github.com/cloudfoundry/cf-test-helpers/v2/silentcommandstarter
+github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers
+github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers/internal
 # github.com/cloudfoundry/noaa/v2 v2.2.0
 ## explicit; go 1.18
 github.com/cloudfoundry/noaa/v2

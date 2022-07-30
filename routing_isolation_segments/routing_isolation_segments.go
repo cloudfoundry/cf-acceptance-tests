@@ -12,9 +12,9 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
-	"github.com/cloudfoundry/cf-test-helpers/cf"
-	"github.com/cloudfoundry/cf-test-helpers/helpers"
-	"github.com/cloudfoundry/cf-test-helpers/workflowhelpers"
+	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
+	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
+	"github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers"
 )
 
 const (

@@ -10,7 +10,7 @@ import (
 
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"github.com/cloudfoundry/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
@@ -19,7 +19,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
-	"github.com/cloudfoundry/cf-test-helpers/cf"
+	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 )
 
 func appGuid(appName string) string {

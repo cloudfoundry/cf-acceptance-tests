@@ -11,8 +11,8 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
-	"github.com/cloudfoundry/cf-test-helpers/cf"
-	"github.com/cloudfoundry/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
+	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
 )
 
 var _ = WindowsDescribe("Task Lifecycle", func() {

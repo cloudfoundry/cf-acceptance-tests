@@ -3,7 +3,7 @@ package helpers
 import (
 	"time"
 
-	"github.com/cloudfoundry/cf-test-helpers/helpers/internal"
+	helpersinternal "github.com/cloudfoundry/cf-test-helpers/v2/helpers/internal"
 )
 
 const CURL_TIMEOUT = 60 * time.Second

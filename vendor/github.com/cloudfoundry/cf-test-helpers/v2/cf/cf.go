@@ -3,9 +3,9 @@ package cf
 import (
 	"io"
 
-	"github.com/cloudfoundry/cf-test-helpers/commandstarter"
-	"github.com/cloudfoundry/cf-test-helpers/internal"
-	"github.com/cloudfoundry/cf-test-helpers/silentcommandstarter"
+	"github.com/cloudfoundry/cf-test-helpers/v2/commandstarter"
+	"github.com/cloudfoundry/cf-test-helpers/v2/internal"
+	"github.com/cloudfoundry/cf-test-helpers/v2/silentcommandstarter"
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega/gexec"
 )

@@ -9,8 +9,8 @@ import (
 
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"github.com/cloudfoundry/cf-test-helpers/cf"
-	"github.com/cloudfoundry/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
+	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
 )
 
 var _ = AppsDescribe("An application printing a bunch of output", func() {

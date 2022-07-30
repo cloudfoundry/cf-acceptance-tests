@@ -16,7 +16,7 @@ import (
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	cats_config "github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
-	"github.com/cloudfoundry/cf-test-helpers/helpers"
+	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
 )
 
 type OAuthConfig struct {
