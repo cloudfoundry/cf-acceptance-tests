@@ -396,7 +396,7 @@ adopt:
 
 1. When pushing an app:
   * set the **memory** requirement, and use the suite's `DEFAULT_MEMORY_LIMIT` (`DEFAULT_WINDOWS_MEMORY_LIMIT` for tests in the `windows` directory) unless the test specifically needs to test a different value,
-  * set the **buildpack** unless the test specifically needs to test the case where a buildpack is unspecified, and use one of `config.RubyBuildpack`, `config.JavaBuildpack`, etc.
+  * set the **buildpack** unless the test specifically needs to test the case where a buildpack is unspecified, and use one of `Config.GetRubyBuildpackName()`, `Config.GetJavaBuildpackName()`, etc.
 unless the test specifically needs to use a buildpack name or URL specific to the test,
   * set the **domain**, and use the `Config.AppsDomain` unless the test specifically needs to test a different app domain.
 
