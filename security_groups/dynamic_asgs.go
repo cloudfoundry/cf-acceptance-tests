@@ -61,7 +61,7 @@ var _ = Describe("Dynamic ASGs", func() {
 			},
 		}
 
-		By("checking that our app can't initially reach cloud controller over internal address")
+		By("checking that our app can't initially reach cloud controller over internal address (CF-D environments, not TAS)")
 		resp, err := client.Get(proxyRequestURL)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -70,6 +70,10 @@ var _ = Describe("Dynamic ASGs", func() {
 		resp.Body.Close()
 		Expect(respBytes).To(MatchRegexp("refused"))
 
+		// Note that TAS environments DO allow access to 10.0.0.0/0 addresses.
+		// If testing on a TAS environment, you can change default security groups
+		// to match defaults for CF-D
+		// https://github.com/pivotal/tas/blob/main/tas/jobs/cloud_controller_worker.yml#L38
 		By("binding a new security group")
 		dest := Destination{
 			IP:       "10.0.0.0/0",
