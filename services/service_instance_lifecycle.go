@@ -112,7 +112,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					instanceGUID := getGuidFor("service", instanceName)
 					configParams := cf.Cf("curl", fmt.Sprintf("/v3/service_instances/%s/parameters", instanceGUID)).Wait()
 					Expect(configParams).To(Exit(0), "failed to curl fetch binding parameters")
-					Expect(configParams).To(Say("\"param1\": \"value\""))
+					Expect(configParams.Out.Contents()).To(MatchJSON("{\"param1\": \"value\"}"))
 				})
 
 				It("can delete a service instance", func() {
@@ -216,7 +216,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 							paramsEndpoint := fmt.Sprintf("/v3/service_credential_bindings/%s/parameters", serviceKeyGUID)
 
 							fetchServiceKeyParameters := cf.Cf("curl", paramsEndpoint).Wait()
-							Expect(fetchServiceKeyParameters).To(Say(`"param1": "value"`))
+							Expect(fetchServiceKeyParameters.Out.Contents()).To(MatchJSON(`{"param1": "value"}`))
 							Expect(fetchServiceKeyParameters).To(Exit(0), "failed to fetch service key parameters")
 						})
 
@@ -291,7 +291,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 						paramsEndpoint := getBindingParamsEndpoint(appGUID, serviceInstanceGUID)
 
 						fetchBindingParameters := cf.Cf("curl", paramsEndpoint).Wait()
-						Expect(fetchBindingParameters).To(Say(`"max_clients": 5`))
+						Expect(fetchBindingParameters.Out.Contents()).To(MatchJSON(`{"max_clients": 5}`))
 						Expect(fetchBindingParameters).To(Exit(0), "failed to fetch binding parameters")
 					})
 
