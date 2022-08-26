@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"strings"
 
 	. "github.com/onsi/gomega"
@@ -121,6 +122,18 @@ func (b ServiceBroker) PushWithBuildpackAndManifest(config cats_config.CatsConfi
 		"--health-check-type", "http",
 		"--endpoint", "/v2/catalog",
 	).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
+}
+
+func (b ServiceBroker) GetApiInfoUrl() string {
+	brokerURL := helpers.AppUri(b.Name, "/cf_api_info_url", Config)
+	resp, err := http.Get(brokerURL)
+	Expect(err == nil)
+	Expect(resp.StatusCode == 200)
+
+	respData, err := ioutil.ReadAll(resp.Body)
+	Expect(err == nil)
+	resp.Body.Close()
+	return string(respData)
 }
 
 func (b ServiceBroker) Configure() {

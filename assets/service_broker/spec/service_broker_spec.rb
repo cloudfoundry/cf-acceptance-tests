@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'json'
+require 'timeout'
 
 describe ServiceBroker do
   before do
@@ -196,6 +197,33 @@ describe ServiceBroker do
               }.to_json
           )
         end
+      end
+    end
+  end
+
+  describe 'cf api info location' do
+    api_not_known_error = JSON.pretty_generate({
+      "error" => true,
+      "message" => "CF API info URL not known - either the cloud controller has not called the broker API yet, or it has failed to include a X-Api-Info-Location header that was a valid URL",
+      "path" => "http://example.org/cf_api_info_url",
+      "type" => '503'
+    })
+
+    context "no request to a /v2 endpoint has been made yet" do
+      it 'responds with internal server error' do
+        get '/cf_api_info_url'
+        expect(last_response.status).to eq(503)
+        expect(last_response.body).to eq(api_not_known_error)
+      end
+    end
+
+    context "a /v2 request from the cloud controller had the X-Api-Info-Location header set to a valid url" do
+      it 'receives a url in response' do
+        info_endpoint = 'system-domain.com/v2/info'
+        get '/v2/catalog', nil, { 'HTTP_X_API_INFO_LOCATION' => info_endpoint }
+        get '/cf_api_info_url'
+        expect(last_response.body).to eq(info_endpoint)
+        expect(last_response.status).to eq(200)
       end
     end
   end

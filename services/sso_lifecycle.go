@@ -25,6 +25,7 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 		if !Config.GetIncludeSSO() {
 			Skip(skip_messages.SkipSSOMessage)
 		}
+		apiEndpoint = Config.Protocol() + Config.GetApiEndpoint()
 		broker = NewServiceBroker(
 			random_name.CATSRandomName("BRKR"),
 			assets.NewAssets().ServiceBroker,
@@ -40,10 +41,10 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 		oauthConfig.RedirectUri = redirectUri
 		oauthConfig.RequestedScopes = `openid,cloud_controller_service_permissions.read`
 
-		apiEndpoint = Config.Protocol() + Config.GetApiEndpoint()
-		SetOauthEndpoints(apiEndpoint, &oauthConfig, Config)
-
 		broker.Create()
+
+		apiInfoEndpoint := Config.Protocol() + broker.GetApiInfoUrl() // the CF API must have already called the broker for the first time with its HTTP_X_API_INFO_LOCATION header
+		SetOauthEndpoints(apiInfoEndpoint, &oauthConfig, Config)
 	})
 
 	AfterEach(func() {
@@ -75,10 +76,11 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 			accessToken := GetAccessToken(authCode, oauthConfig)
 
 			// use the access token to perform an operation on the user's behalf
-			canManage, httpCode := QueryServiceInstancePermissionEndpoint(apiEndpoint, accessToken, serviceInstanceGuid)
+			canRead, canManage, httpCode := QueryServiceInstancePermissionEndpoint(apiEndpoint, accessToken, serviceInstanceGuid)
 
 			Expect(httpCode).To(Equal(`200`), `The provided access token was not valid.`)
 			Expect(canManage).To(Equal(`true`))
+			Expect(canRead).To(Equal(`true`))
 		})
 	})
 
@@ -111,10 +113,11 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 			accessToken := GetAccessToken(authCode, oauthConfig)
 
 			// use the access token to perform an operation on the user's behalf
-			canManage, httpCode := QueryServiceInstancePermissionEndpoint(apiEndpoint, accessToken, serviceInstanceGuid)
+			canRead, canManage, httpCode := QueryServiceInstancePermissionEndpoint(apiEndpoint, accessToken, serviceInstanceGuid)
 
 			Expect(httpCode).To(Equal(`200`), `The provided access token was not valid.`)
 			Expect(canManage).To(Equal(`true`))
+			Expect(canRead).To(Equal(`true`))
 		})
 	})
 
