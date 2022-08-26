@@ -36,12 +36,12 @@ func ParseJsonResponse(response []byte) (resultMap map[string]interface{}) {
 	return
 }
 
-func SetOauthEndpoints(apiEndpoint string, oAuthConfig *OAuthConfig, config cats_config.CatsConfig) {
+func SetOauthEndpoints(apiInfoEndpoint string, oAuthConfig *OAuthConfig, config cats_config.CatsConfig) {
 	args := []string{}
 	if config.GetSkipSSLValidation() {
 		args = append(args, "--insecure")
 	}
-	args = append(args, fmt.Sprintf("%v/info", apiEndpoint))
+	args = append(args, apiInfoEndpoint)
 	curl := helpers.Curl(Config, args...).Wait()
 	Expect(curl).To(Exit(0))
 	apiResponse := curl.Out.Contents()
@@ -49,7 +49,6 @@ func SetOauthEndpoints(apiEndpoint string, oAuthConfig *OAuthConfig, config cats
 
 	oAuthConfig.TokenEndpoint = fmt.Sprintf("%v", jsonResult[`token_endpoint`])
 	oAuthConfig.AuthorizationEndpoint = fmt.Sprintf("%v", jsonResult[`authorization_endpoint`])
-	return
 }
 
 func AuthenticateUser(authorizationEndpoint string, username string, password string) (cookie string) {
@@ -148,10 +147,9 @@ func GetAccessToken(authCode string, config OAuthConfig) (accessToken string) {
 	return
 }
 
-func QueryServiceInstancePermissionEndpoint(apiEndpoint string, accessToken string, serviceInstanceGuid string) (canManage string, httpCode string) {
-	canManage = `not populated`
+func QueryServiceInstancePermissionEndpoint(apiEndpoint string, accessToken string, serviceInstanceGuid string) (canRead string, canManage string, httpCode string) {
 	authHeader := fmt.Sprintf("Authorization: bearer %v", accessToken)
-	permissionsUri := fmt.Sprintf("%v/v2/service_instances/%v/permissions", apiEndpoint, serviceInstanceGuid)
+	permissionsUri := fmt.Sprintf("%v/v3/service_instances/%v/permissions", apiEndpoint, serviceInstanceGuid)
 
 	curl := helpers.Curl(Config, permissionsUri, `-H`, authHeader, `-w`, `:TestReponseCode:%{http_code}`, `--insecure`, `-v`).Wait()
 	Expect(curl).To(Exit(0))
@@ -164,6 +162,7 @@ func QueryServiceInstancePermissionEndpoint(apiEndpoint string, accessToken stri
 	if httpCode == `200` {
 		jsonResult := ParseJsonResponse([]byte(resultText))
 		canManage = fmt.Sprintf("%v", jsonResult[`manage`])
+		canRead = fmt.Sprintf("%v", jsonResult[`read`])
 	}
 
 	return

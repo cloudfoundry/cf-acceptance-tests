@@ -6,6 +6,7 @@ require 'json'
 require 'pp'
 require 'logger'
 require 'rainbow/ext/string'
+require 'uri'
 
 require 'bundler'
 Bundler.require :default, ENV['RACK_ENV'].to_sym
@@ -132,6 +133,7 @@ end
 
 class ServiceBroker < Sinatra::Base
   set :logging, true
+  set :cf_api_info_location, ''
 
   configure :production, :development, :test do
     $datasource = DataSource.new
@@ -158,6 +160,11 @@ class ServiceBroker < Sinatra::Base
   def log_response(status, body)
     $log.info "Response: status=#{status}, body=#{body}".color(:green)
     body
+  end
+
+  def get_info_endpoint(request)
+    api_info_location_header = request.env['HTTP_X_API_INFO_LOCATION']
+    settings.cf_api_info_location = api_info_location_header
   end
 
   def respond_with_behavior(behavior, accepts_incomplete=false)
@@ -187,8 +194,23 @@ class ServiceBroker < Sinatra::Base
     end
   end
 
+  def cf_respond_with_api_info_location(cf_api_info_location)
+    if cf_api_info_location.empty?
+      status 503
+      log_response(status, JSON.pretty_generate({
+        error: true,
+        message: "CF API info URL not known - either the cloud controller has not called the broker API yet, or it has failed to include a X-Api-Info-Location header that was a valid URL",
+        path: request.url,
+        type: '503'
+      }))
+    else
+      log_response(status, cf_api_info_location)
+    end
+  end
+
   before do
     log(request)
+    get_info_endpoint(request) if request.path.start_with?("/v2/")
   end
 
   # fetch catalog
@@ -317,6 +339,10 @@ class ServiceBroker < Sinatra::Base
   post '/config/reset/?' do
     $datasource = DataSource.new
     log_response(status, JSON.pretty_generate($datasource.without_instances_or_bindings))
+  end
+
+  get '/cf_api_info_url' do
+    cf_respond_with_api_info_location(settings.cf_api_info_location)
   end
 
   error do
