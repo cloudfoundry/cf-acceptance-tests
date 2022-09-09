@@ -45,10 +45,10 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hello i am nora"))
 		})
 
-		By("verifying reported disk/memory usage", func() {
-			// #0   running   2015-06-10 02:22:39 PM   0.0%   48.7M of 2G   14M of 1G
-			var metrics = regexp.MustCompile(`running.*(?:[\d\.]+)%\s+([\d\.]+)[MG]? of (?:[\d\.]+)[MG]\s+([\d\.]+)[MG]? of (?:[\d\.]+)[MG]`)
-			memdisk := func() (float64, float64) {
+		By("verifying reported usage", func() {
+			// #0   running   2015-06-10 02:22:39 PM   0.0%   48.7M of 2G   14M of 1G     68B/s of unlimited
+			var metrics = regexp.MustCompile(`running.*(?:[\d\.]+)%\s+([\d\.]+)[KMG]? of (?:[\d\.]+)[KMG]?\s+([\d\.]+)[KMG]? of (?:[\d\.]+)[KMG]?\s+([\d\.]+)[BKMG]?/s of (?:[\d\.]+[BKMG]?/s|unlimited)`)
+			stats := func() (float64, float64, float64) {
 				app := cf.Cf("app", appName)
 				Expect(app.Wait()).To(Exit(0))
 
@@ -59,10 +59,13 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 				Expect(err).ToNot(HaveOccurred())
 				disk, err := strconv.ParseFloat(arr[2], 64)
 				Expect(err).ToNot(HaveOccurred())
-				return mem, disk
+				logs, err := strconv.ParseFloat(arr[3], 64)
+				Expect(err).ToNot(HaveOccurred())
+				return mem, disk, logs
 			}
-			Eventually(func() float64 { m, _ := memdisk(); return m }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
-			Eventually(func() float64 { _, d := memdisk(); return d }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
+			Eventually(func() float64 { m, _, _ := stats(); return m }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
+			Eventually(func() float64 { _, d, _ := stats(); return d }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
+			Eventually(func() float64 { _, _, l := stats(); return l }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
 		})
 
 		By("makes system environment variables available", func() {
