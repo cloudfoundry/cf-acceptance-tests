@@ -117,7 +117,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("dotnet-core", func() {
 		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().DotnetCore).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-f", assets.NewAssets().DotnetCore+"/manifest.yml").Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)

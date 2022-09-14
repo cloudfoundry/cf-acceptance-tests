@@ -1,0 +1,8 @@
+---
+applications:
+- buildpacks:
+  - dotnet_core_buildpack
+  stack: cflinuxfs3
+  path: .
+  env:
+    BP_DEBUG: true
