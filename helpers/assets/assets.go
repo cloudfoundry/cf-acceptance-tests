@@ -7,7 +7,7 @@ type Assets struct {
 	CredHubServiceBroker       string
 	Dora                       string
 	DoraZip                    string
-	DotnetCore                 string
+	DotnetCore                 map[string]string
 	Fuse                       string
 	GoCallsRubyZip             string
 	Golang                     string
@@ -45,13 +45,16 @@ type Assets struct {
 
 func NewAssets() Assets {
 	return Assets{
-		AspClassic:                 "assets/asp-classic",
-		Catnip:                     "assets/catnip/bin",
-		CredHubEnabledApp:          "assets/credhub-enabled-app/credhub-enabled-app.jar",
-		CredHubServiceBroker:       "assets/credhub-service-broker",
-		Dora:                       "assets/dora",
-		DoraZip:                    "assets/dora.zip",
-		DotnetCore:                 "assets/dotnet-core/bin/Release/net6.0/publish",
+		AspClassic:           "assets/asp-classic",
+		Catnip:               "assets/catnip/bin",
+		CredHubEnabledApp:    "assets/credhub-enabled-app/credhub-enabled-app.jar",
+		CredHubServiceBroker: "assets/credhub-service-broker",
+		Dora:                 "assets/dora",
+		DoraZip:              "assets/dora.zip",
+		DotnetCore: map[string]string{
+			"cflinuxfs3": "assets/dotnet-core/cflinuxfs3",
+			"cflinuxfs4": "assets/dotnet-core/cflinuxfs4",
+		},
 		Fuse:                       "assets/fuse-mount",
 		GoCallsRubyZip:             "assets/go_calls_ruby.zip",
 		Golang:                     "assets/golang",

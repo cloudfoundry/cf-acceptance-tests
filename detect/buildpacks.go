@@ -1,6 +1,7 @@
 package detect
 
 import (
+	"fmt"
 	"path/filepath"
 	"time"
 
@@ -116,13 +117,19 @@ var _ = DetectDescribe("Buildpacks", func() {
 	})
 
 	Describe("dotnet-core", func() {
-		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().DotnetCore).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+		for _, stack := range Config.GetStacks() {
+			It(fmt.Sprintf("[%s] makes the app reachable via its bound route", stack), func() {
+				assetPath, ok := assets.NewAssets().DotnetCore[stack]
+				if !ok {
+					Fail(fmt.Sprintf("dotnet-core app is missing asset for %s stack", stack))
+				}
+				Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assetPath).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
-			Eventually(func() string {
-				return helpers.CurlAppRoot(Config, appName)
-			}).Should(ContainSubstring("Hello from dotnet-core"))
-		})
+				Eventually(func() string {
+					return helpers.CurlAppRoot(Config, appName)
+				}).Should(ContainSubstring("Hello from dotnet-core"))
+			})
+		}
 	})
 
 	Describe("staticfile", func() {
