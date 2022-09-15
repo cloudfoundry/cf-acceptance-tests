@@ -51,7 +51,7 @@ func NewAssets() Assets {
 		CredHubServiceBroker:       "assets/credhub-service-broker",
 		Dora:                       "assets/dora",
 		DoraZip:                    "assets/dora.zip",
-		DotnetCore:                 "assets/dotnet-core",
+		DotnetCore:                 "assets/dotnet-core/bin/Release/net6.0/publish",
 		Fuse:                       "assets/fuse-mount",
 		GoCallsRubyZip:             "assets/go_calls_ruby.zip",
 		Golang:                     "assets/golang",
