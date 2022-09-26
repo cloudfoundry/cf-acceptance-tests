@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -51,7 +52,9 @@ var _ = Describe("Dynamic ASGs", func() {
 	})
 
 	It("applies ASGs wihout app restart", func() {
-		proxyRequestURL := fmt.Sprintf("%s%s.%s/https_proxy/cloud-controller-ng.service.cf.internal:9024/v2/info", Config.Protocol(), appName, Config.GetAppsDomain())
+		endpointHostPortPath := fmt.Sprintf("%s:%d%s", Config.GetDynamicASGTestConfig().EndpointHost, Config.GetDynamicASGTestConfig().EndpointPort, Config.GetDynamicASGTestConfig().EndpointPath)
+
+		proxyRequestURL := fmt.Sprintf("%s%s.%s/https_proxy/%s", Config.Protocol(), appName, Config.GetAppsDomain(), endpointHostPortPath)
 
 		client := &http.Client{
 			Transport: &http.Transport{
@@ -61,7 +64,7 @@ var _ = Describe("Dynamic ASGs", func() {
 			},
 		}
 
-		By("checking that our app can't initially reach cloud controller over internal address")
+		By(fmt.Sprintf("checking that our app can't initially reach %s", endpointHostPortPath))
 		resp, err := client.Get(proxyRequestURL)
 		Expect(err).NotTo(HaveOccurred())
 
@@ -72,14 +75,14 @@ var _ = Describe("Dynamic ASGs", func() {
 
 		By("binding a new security group")
 		dest := Destination{
-			IP:       "10.0.0.0/0",
-			Ports:    "9024", // internal cc port
+			IP:       Config.GetDynamicASGTestConfig().EndpointAllowIPRange,
+			Ports:    strconv.Itoa(Config.GetDynamicASGTestConfig().EndpointPort),
 			Protocol: "tcp",
 		}
 		securityGroupName = createSecurityGroup(dest)
 		bindSecurityGroup(securityGroupName, orgName, spaceName)
 
-		By("checking that our app can now reach cloud controller over internal address")
+		By(fmt.Sprintf("checking that our app can now reach %s", endpointHostPortPath))
 		Eventually(func() []byte {
 			resp, err = client.Get(proxyRequestURL)
 			Expect(err).NotTo(HaveOccurred())
@@ -88,12 +91,12 @@ var _ = Describe("Dynamic ASGs", func() {
 			Expect(err).ToNot(HaveOccurred())
 			resp.Body.Close()
 			return respBytes
-		}, 3*time.Minute).Should(MatchRegexp("api_version"))
+		}, 3*time.Minute).Should(MatchRegexp(Config.GetDynamicASGTestConfig().ExpectedResponseRegex))
 
 		By("unbinding the security group")
 		unbindSecurityGroup(securityGroupName, orgName, spaceName)
 
-		By("checking that our app can no longer reach cloud controller over internal address")
+		By(fmt.Sprintf("checking that our app can no longer reach %s", endpointHostPortPath))
 		Eventually(func() []byte {
 			resp, err = client.Get(proxyRequestURL)
 			Expect(err).NotTo(HaveOccurred())

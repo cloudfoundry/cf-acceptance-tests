@@ -114,7 +114,8 @@ type config struct {
 
 	NamePrefix *string `json:"name_prefix"`
 
-	ReporterConfig *reporterConfig `json:"reporter_config"`
+	ReporterConfig       *reporterConfig       `json:"reporter_config"`
+	DynamicASGTestConfig *dynamicASGTestConfig `json:"dynamic_asg_test_config"`
 
 	Infrastructure *string `json:"infrastructure"`
 }
@@ -123,6 +124,14 @@ type reporterConfig struct {
 	HoneyCombWriteKey string                 `json:"honeycomb_write_key"`
 	HoneyCombDataset  string                 `json:"honeycomb_dataset"`
 	CustomTags        map[string]interface{} `json:"custom_tags"`
+}
+
+type dynamicASGTestConfig struct {
+	EndpointHost          string `json:"endpoint_host"`
+	EndpointPort          int    `json:"endpoint_port"`
+	EndpointPath          string `json:"endpoint_path"`
+	EndpointAllowIPRange  string `json:"endpoint_allow_ip_range"`
+	ExpectedResponseRegex string `json:"expected_response_regex"`
 }
 
 var defaults = config{}
@@ -198,6 +207,15 @@ func getDefaults() config {
 	defaults.VolumeServiceCreateConfig = ptrToString("")
 
 	defaults.ReporterConfig = &reporterConfig{}
+	defaults.DynamicASGTestConfig = &dynamicASGTestConfig{
+		// By default run dynamic ASG test against internal
+		// Cloud Controller endpoint (port 9024)
+		ExpectedResponseRegex: "api_version",
+		EndpointAllowIPRange:  "10.0.0.0/0",
+		EndpointHost:          "cloud-controller-ng.service.cf.internal",
+		EndpointPath:          "/v2/info",
+		EndpointPort:          9024,
+	}
 
 	defaults.UseHttp = ptrToBool(false)
 	defaults.UseExistingUser = ptrToBool(false)
@@ -1095,6 +1113,16 @@ func (c *config) GetReporterConfig() reporterConfig {
 	}
 
 	return reporterConfig{}
+}
+
+func (c *config) GetDynamicASGTestConfig() dynamicASGTestConfig {
+	dynamicASGTestConfigFromConfig := c.DynamicASGTestConfig
+
+	if dynamicASGTestConfigFromConfig != nil {
+		return *dynamicASGTestConfigFromConfig
+	}
+
+	return dynamicASGTestConfig{}
 }
 
 func (c *config) RunningOnK8s() bool {

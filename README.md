@@ -196,6 +196,13 @@ include_v3
 
 * `infrastructure`: The name of the infrastructure for the environment that the tests will run against. Must be either "vms" or "kubernetes". Defaults to "vms".
 
+* `dynamic_asg_test_config`: By default the Dynamic ASG test allows and blocks access to the Cloud Controller internal endpoint by toggling access for TCP requests on port 9024 to 10.0.0.0/8. To test dynamic ASGs against another endpoint and/or by toggling a different IP range, include `dynamic_asg_test_config` as an object with the following properties:
+  * `endpoint_host`: Hostname or IP for test endpoint to allow/block
+  * `endpoint_port`: Port for test endpoint to allow/block
+  * `endpoint_path`: HTTP Path for test endpoint to allow/block
+  * `endpoint_allow_ip_range`: IP range used for allowing and blocking access to the test endpoint. This can be a single IP address, a range like 192.0.2.0-192.0.2.50, or a CIDR block like 10.0.0.0/8.
+  * `expected_response_regex`: Regex to match expected response body from test endpoint
+
 #### Buildpack Names
 Many tests specify a buildpack when pushing an app, so that on diego the app staging process completes in less time. The default names for the buildpacks are as follows; if you have buildpacks with different names, you can override them by setting different names:
 
