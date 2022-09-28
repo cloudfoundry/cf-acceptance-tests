@@ -71,7 +71,7 @@ var _ = UserProvidedServicesDescribe("Service Instance Lifecycle", func() {
 				instanceGUID := getGuidFor("service", instanceName)
 				credentials := cf.Cf("curl", fmt.Sprintf("/v3/service_instances/%s/credentials", instanceGUID)).Wait()
 				Expect(credentials).To(Exit(0), "failed to curl fetch credentials")
-				Expect(credentials).To(Say(`"param1": "value"`))
+				Expect(credentials.Out.Contents()).To(MatchJSON(`{"param1":"value"}`))
 			})
 
 			It("can delete a service instance", func() {
@@ -106,7 +106,7 @@ var _ = UserProvidedServicesDescribe("Service Instance Lifecycle", func() {
 					instanceGUID := getGuidFor("service", instanceName)
 					credentials := cf.Cf("curl", fmt.Sprintf("/v3/service_instances/%s/credentials", instanceGUID)).Wait()
 					Expect(credentials).To(Exit(0), "failed to curl fetch credentials")
-					Expect(credentials).To(Say(`"param2": "newValue"`))
+					Expect(credentials.Out.Contents()).To(MatchJSON(`{"param2":"newValue"}`))
 				})
 
 				It("can update service tags", func() {
@@ -175,7 +175,7 @@ var _ = UserProvidedServicesDescribe("Service Instance Lifecycle", func() {
 					detailsEndpoint := getBindingDetailsEndpoint(appGUID, serviceInstanceGUID)
 
 					fetchBindingDetails := cf.Cf("curl", detailsEndpoint).Wait()
-					Expect(fetchBindingDetails).To(Say(`"username": "%s"`, username))
+					Expect(fetchBindingDetails.Out.Contents()).To(MatchJSON(fmt.Sprintf(`{"credentials":{"username": "%s"}}`, username)))
 					Expect(fetchBindingDetails).To(Exit(0), "failed to fetch binding details")
 				})
 
