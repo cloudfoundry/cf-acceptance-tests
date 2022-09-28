@@ -1,6 +1,7 @@
 package services
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -126,13 +127,19 @@ func (b ServiceBroker) PushWithBuildpackAndManifest(config cats_config.CatsConfi
 
 func (b ServiceBroker) GetApiInfoUrl() string {
 	brokerURL := helpers.AppUri(b.Name, "/cf_api_info_url", Config)
-	resp, err := http.Get(brokerURL)
-	Expect(err == nil)
-	Expect(resp.StatusCode == 200)
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: Config.GetSkipSSLValidation(),
+			},
+		},
+	}
+	resp, err := client.Get(brokerURL)
+	Expect(err).ToNot(HaveOccurred())
+	defer resp.Body.Close()
 
 	respData, err := ioutil.ReadAll(resp.Body)
-	Expect(err == nil)
-	resp.Body.Close()
+	Expect(err).ToNot(HaveOccurred())
 	return string(respData)
 }
 
