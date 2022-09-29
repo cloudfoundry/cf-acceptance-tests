@@ -175,7 +175,17 @@ var _ = UserProvidedServicesDescribe("Service Instance Lifecycle", func() {
 					detailsEndpoint := getBindingDetailsEndpoint(appGUID, serviceInstanceGUID)
 
 					fetchBindingDetails := cf.Cf("curl", detailsEndpoint).Wait()
-					Expect(fetchBindingDetails.Out.Contents()).To(MatchJSON(fmt.Sprintf(`{"credentials":{"username": "%s"}}`, username)))
+
+					serviceBindingDetailsResponse := struct {
+						Credentials struct {
+							Username string `json:"username"`
+						} `json:"credentials"`
+					}{}
+
+					err := json.Unmarshal(fetchBindingDetails.Out.Contents(), &serviceBindingDetailsResponse)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(serviceBindingDetailsResponse.Credentials.Username).To(Equal(username))
+
 					Expect(fetchBindingDetails).To(Exit(0), "failed to fetch binding details")
 				})
 
