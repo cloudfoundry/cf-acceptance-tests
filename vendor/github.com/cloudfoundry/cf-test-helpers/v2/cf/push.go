@@ -42,8 +42,6 @@ var Push = func(appName string, args ...string) *gexec.Session {
 			app.Buildpacks = append(app.Buildpacks, args[i+1])
 		case "-c":
 			app.Command = args[i+1]
-		case "-d":
-			app.Routes = append(app.Routes, map[string]string{"route": fmt.Sprintf("%s.%s", appName, args[i+1])})
 		case "-i":
 			instances, err := strconv.Atoi(args[i+1])
 			if err != nil {
