@@ -129,7 +129,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					params := "{\"param1\": \"value\"}"
 
 					It("can rename a service", func() {
-						newname := "newname"
+						newname := random_name.CATSRandomName("SVC-RENAME")
 						updateService := cf.Cf("rename-service", instanceName, newname).Wait()
 						Expect(updateService).To(Exit(0))
 

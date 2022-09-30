@@ -87,7 +87,7 @@ var _ = UserProvidedServicesDescribe("Service Instance Lifecycle", func() {
 				tags := "['tag1', 'tag2']"
 
 				It("can rename a service", func() {
-					newname := "newname"
+					newname := random_name.CATSRandomName("SVC-RENAME")
 					updateService := cf.Cf("rename-service", instanceName, newname).Wait()
 					Expect(updateService).To(Exit(0))
 
