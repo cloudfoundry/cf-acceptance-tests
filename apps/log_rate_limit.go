@@ -1,4 +1,4 @@
-package windows
+package apps
 
 import (
 	"regexp"
@@ -6,19 +6,21 @@ import (
 	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gbytes"
+	. "github.com/onsi/gomega/gexec"
+
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	logshelper "github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
-	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = WindowsDescribe("App Limits", func() {
+var _ = AppsDescribe("log rate limit", func() {
 	var appName string
 
 	BeforeEach(func() {
@@ -26,24 +28,17 @@ var _ = WindowsDescribe("App Limits", func() {
 
 		Expect(cf.Cf("push",
 			appName,
-			"-s", Config.GetWindowsStack(),
-			"-b", Config.GetHwcBuildpackName(),
-			"-m", "256m",
-			"-p", assets.NewAssets().Nora,
+			"-b", Config.GetRubyBuildpackName(),
+			"-m", DEFAULT_MEMORY_LIMIT,
+			"-p", assets.NewAssets().Dora,
 			"-l", "1K",
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("hello i am nora"))
 	})
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).Should(Exit(0))
-	})
-
-	It("does not allow the app to use more memory than allowed", func() {
-		response := helpers.CurlApp(Config, appName, "/leakmemory/300")
-		Expect(response).To(ContainSubstring("Insufficient memory"))
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 	})
 
 	Context("when a log rate limit is defined", func() {
@@ -75,4 +70,5 @@ var _ = WindowsDescribe("App Limits", func() {
 			Consistently(logs).ShouldNot(Say("11111"), "logs above the limit were not dropped")
 		})
 	})
+
 })

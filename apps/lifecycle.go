@@ -225,9 +225,9 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 			})
 
 			Context("is able to retrieve container metrics", func() {
-				// #0   running   2015-06-10 02:22:39 PM   0.0%   48.7M of 2G   14M of 1G
-				var metrics = regexp.MustCompile(`running.*(?:[\d\.]+)%\s+([\d\.]+)[KMG]? of (?:[\d\.]+)[KMG]?\s+([\d\.]+)[KMG]? of (?:[\d\.]+)[KMG]?`)
-				memdisk := func() (float64, float64) {
+				// #0   running   2015-06-10 02:22:39 PM   0.0%   48.7M of 2G   14M of 1G     68B/s of unlimited
+				var metrics = regexp.MustCompile(`running.*(?:[\d\.]+)%\s+([\d\.]+)[KMG]? of (?:[\d\.]+)[KMG]?\s+([\d\.]+)[KMG]? of (?:[\d\.]+)[KMG]?\s+([\d\.]+)[BKMG]?/s of (?:[\d\.]+[BKMG]?/s|unlimited)`)
+				stats := func() (float64, float64, float64) {
 					app := cf.Cf("app", appName)
 					Expect(app.Wait()).To(Exit(0))
 
@@ -238,17 +238,22 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 					Expect(err).ToNot(HaveOccurred())
 					disk, err := strconv.ParseFloat(arr[2], 64)
 					Expect(err).ToNot(HaveOccurred())
-					return mem, disk
+					logs, err := strconv.ParseFloat(arr[3], 64)
+					Expect(err).ToNot(HaveOccurred())
+					return mem, disk, logs
 				}
 
 				It("for memory usage", func() {
-					Eventually(func() float64 { m, _ := memdisk(); return m }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
+					Eventually(func() float64 { m, _, _ := stats(); return m }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
 				})
 				Context("(cf-for-vms)", func() {
 					SkipOnK8s("App disk usage info unavailable")
 
 					It("for disk usage", func() {
-						Eventually(func() float64 { _, d := memdisk(); return d }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
+						Eventually(func() float64 { _, d, _ := stats(); return d }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
+					})
+					It("for log usage", func() {
+						Eventually(func() float64 { _, _, l := stats(); return l }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
 					})
 				})
 			})
