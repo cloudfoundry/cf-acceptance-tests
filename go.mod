@@ -5,7 +5,7 @@ go 1.18
 require (
 	code.cloudfoundry.org/archiver v0.0.0-20150428205605-f598990ddfed
 	code.cloudfoundry.org/go-loggregator/v9 v9.0.2
-	github.com/cloudfoundry/cf-test-helpers/v2 v2.0.0
+	github.com/cloudfoundry/cf-test-helpers/v2 v2.2.0
 	github.com/cloudfoundry/noaa/v2 v2.2.0
 	github.com/cloudfoundry/sonde-go v0.0.0-20220627221915-ff36de9c3435
 	github.com/mholt/archiver v3.1.1+incompatible
