@@ -246,14 +246,20 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				It("for memory usage", func() {
 					Eventually(func() float64 { m, _, _ := stats(); return m }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
 				})
+
 				Context("(cf-for-vms)", func() {
 					SkipOnK8s("App disk usage info unavailable")
 
 					It("for disk usage", func() {
 						Eventually(func() float64 { _, d, _ := stats(); return d }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
 					})
+
 					It("for log usage", func() {
-						Eventually(func() float64 { _, _, l := stats(); return l }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
+						Eventually(func() float64 {
+							helpers.CurlApp(Config, appName, "/logspew/1024")
+							_, _, l := stats()
+							return l
+						}, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
 					})
 				})
 			})
