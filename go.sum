@@ -4,8 +4,8 @@ code.cloudfoundry.org/archiver v0.0.0-20150428205605-f598990ddfed h1:FLGwF3Yyi6q
 code.cloudfoundry.org/archiver v0.0.0-20150428205605-f598990ddfed/go.mod h1:EU/KcUvh4qBVN6ffu/b8t9x7SurDot+AO0HqEZ+9QOg=
 code.cloudfoundry.org/go-diodes v0.0.0-20220325013804-800fb6f70e2f h1:BMwVyadJ0dYvvXTdLNtjxtX3jSCR45rv/apUxuFc6bY=
 code.cloudfoundry.org/go-diodes v0.0.0-20220325013804-800fb6f70e2f/go.mod h1:cCrRt/O3uipyXfV4hZsKe5WyRNgFTgiMHnwAQqFlNjM=
-code.cloudfoundry.org/go-loggregator/v9 v9.0.2 h1:6E1RJTeXy0K0WfWDJBxSBvsMMWsPVYMAZlbn8bPvr6A=
-code.cloudfoundry.org/go-loggregator/v9 v9.0.2/go.mod h1:ZkXKbmi4Z7Ot7TS698AFNPCvMbTMPbWI3KPAcgk4sL0=
+code.cloudfoundry.org/go-loggregator/v9 v9.0.3 h1:+rxFxl+qFN42oVGzh5uhnQRkyMt3H6dPsM9YCrfmpQw=
+code.cloudfoundry.org/go-loggregator/v9 v9.0.3/go.mod h1:M3KaLTzcbSuXf9xRjFk4nexDK2h8/NDsQ+nzh+45cfk=
 code.cloudfoundry.org/tlsconfig v0.0.0-20211123175040-23cc9f05b6b3 h1:fv6SwdaX2uVcQKR8mXZy+6oYdthbKzkgmBzvoxSq/jY=
 code.cloudfoundry.org/tlsconfig v0.0.0-20211123175040-23cc9f05b6b3/go.mod h1:CKI5CV+3MlfcohVSuU3FxXubFyC52lYJGMLnZ2ltvks=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
