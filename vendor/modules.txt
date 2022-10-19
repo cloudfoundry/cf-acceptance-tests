@@ -4,7 +4,7 @@ code.cloudfoundry.org/archiver/extractor/test_helper
 # code.cloudfoundry.org/go-diodes v0.0.0-20220325013804-800fb6f70e2f
 ## explicit; go 1.16
 code.cloudfoundry.org/go-diodes
-# code.cloudfoundry.org/go-loggregator/v9 v9.0.2
+# code.cloudfoundry.org/go-loggregator/v9 v9.0.3
 ## explicit; go 1.18
 code.cloudfoundry.org/go-loggregator/v9
 code.cloudfoundry.org/go-loggregator/v9/rpc/loggregator_v2
