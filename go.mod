@@ -10,7 +10,7 @@ require (
 	github.com/cloudfoundry/sonde-go v0.0.0-20220627221915-ff36de9c3435
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/onsi/ginkgo/v2 v2.4.0
-	github.com/onsi/gomega v1.22.1
+	github.com/onsi/gomega v1.23.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	google.golang.org/grpc v1.50.1
 	google.golang.org/protobuf v1.28.1
@@ -26,7 +26,7 @@ require (
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
+	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
