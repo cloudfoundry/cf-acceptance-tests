@@ -6,7 +6,7 @@ require (
 	code.cloudfoundry.org/clock v1.0.1-0.20220601152104-3983b71fbf93
 	github.com/gorilla/mux v1.8.0
 	github.com/onsi/ginkgo/v2 v2.4.0
-	github.com/onsi/gomega v1.23.0
+	github.com/onsi/gomega v1.24.0
 )
 
 require (
