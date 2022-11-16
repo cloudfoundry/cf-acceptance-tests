@@ -157,7 +157,7 @@ jobs:
       vars-files: relint-envs
     params:
       BBL_STATE_DIR: environments/test/cats/bbl-state
-      SYSTEM_DOMAIN: cats.cf-app.com
+      SYSTEM_DOMAIN: cf.cats.env.wg-ard.ci.cloudfoundry.org
       OPS_FILES: |
         operations/use-compiled-releases.yml
         operations/use-internal-lookup-for-route-services.yml
@@ -237,7 +237,7 @@ jobs:
       bbl-state: relint-envs
     params:
       BBL_STATE_DIR: environments/test/cats/bbl-state
-      SYSTEM_DOMAIN: cats.cf-app.com
+      SYSTEM_DOMAIN: cf.cats.env.wg-ard.ci.cloudfoundry.org
       ENABLED_FEATURE_FLAGS: |
         diego_docker
         task_creation
