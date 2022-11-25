@@ -574,17 +574,24 @@ var _ = Describe("Config", func() {
 		})
 	})
 
-	Context("when providing stacks property", func() {
+	Context("when providing invalid stacks property", func() {
+		BeforeEach(func() {
+			testCfg.Stacks = &[]string{"my-custom-stack"}
+		})
 
 		It("returns error if a stack other than cflinuxfs3 or cflinuxfs4 is provided", func() {
-			testCfg.Stacks = &[]string{"my-custom-stack"}
 			_, err := cfg.NewCatsConfig(tmpFilePath)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(MatchError("* Invalid configuration: unknown stack 'my-custom-stack'. Only 'cflinuxfs3' and 'cflinuxfs4' is supported for the 'stacks' property"))
 		})
+	})
+
+	Context("when providing valid stacks property", func() {
+		BeforeEach(func() {
+			testCfg.Stacks = &[]string{"cflinuxfs3", "cflinuxfs4"}
+		})
 
 		It("is loaded into the config", func() {
-			testCfg.Stacks = &[]string{"cflinuxfs3", "cflinuxfs4"}
 			config, err := cfg.NewCatsConfig(tmpFilePath)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(config.GetStacks()).To(Equal([]string{"cflinuxfs3", "cflinuxfs4"}))
