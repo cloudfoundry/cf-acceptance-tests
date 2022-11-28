@@ -32,68 +32,97 @@ var _ = DetectDescribe("Buildpacks", func() {
 	})
 
 	Describe("ruby", func() {
-		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push",
-				appName,
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().HelloWorld,
-			).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+		for _, stack := range Config.GetStacks() {
+			Context(fmt.Sprintf("when using %s stack", stack), func() {
+				It("makes the app reachable via its bound route", func() {
+					Expect(cf.Cf("push",
+						appName,
+						"-m", DEFAULT_MEMORY_LIMIT,
+						"-p", assets.NewAssets().HelloWorld,
+						"-s", stack,
+					).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
-			Eventually(func() string {
-				return helpers.CurlAppRoot(Config, appName)
-			}).Should(ContainSubstring("Hello, world!"))
-		})
+					Eventually(func() string {
+						return helpers.CurlAppRoot(Config, appName)
+					}).Should(ContainSubstring("Hello, world!"))
+				})
+			})
+		}
 	})
 
 	Describe("node", func() {
-		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assets.NewAssets().Node).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+		for _, stack := range Config.GetStacks() {
+			Context(fmt.Sprintf("when using %s stack", stack), func() {
+				It("makes the app reachable via its bound route", func() {
+					Expect(cf.Cf("push",
+						appName,
+						"-m", DEFAULT_MEMORY_LIMIT,
+						"-p", assets.NewAssets().Node,
+						"-s", stack,
+					).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
-			Eventually(func() string {
-				return helpers.CurlAppRoot(Config, appName)
-			}).Should(ContainSubstring("Hello from a node app!"))
-		})
+					Eventually(func() string {
+						return helpers.CurlAppRoot(Config, appName)
+					}).Should(ContainSubstring("Hello from a node app!"))
+				})
+			})
+		}
 	})
 
 	Describe("java", func() {
-		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName,
-				"-p", assets.NewAssets().Java,
-				"-m", "1024M",
-				"-f", filepath.Join(assets.NewAssets().Java, "manifest.yml"),
-			).Wait(CF_JAVA_TIMEOUT)).To(Exit(0))
+		for _, stack := range Config.GetStacks() {
+			Context(fmt.Sprintf("when using %s stack", stack), func() {
+				It("makes the app reachable via its bound route", func() {
+					Expect(cf.Cf("push", appName,
+						"-p", assets.NewAssets().Java,
+						"-m", "1024M",
+						"-f", filepath.Join(assets.NewAssets().Java, "manifest.yml"),
+						"-s", stack,
+					).Wait(CF_JAVA_TIMEOUT)).To(Exit(0))
 
-			Eventually(func() string {
-				return helpers.CurlAppRoot(Config, appName)
-			}).Should(ContainSubstring("Hello, from your friendly neighborhood Java JSP!"))
-		})
+					Eventually(func() string {
+						return helpers.CurlAppRoot(Config, appName)
+					}).Should(ContainSubstring("Hello, from your friendly neighborhood Java JSP!"))
+				})
+			})
+		}
 	})
 
 	Describe("golang", func() {
-		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName,
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().Golang,
-				"-f", filepath.Join(assets.NewAssets().Golang, "manifest.yml"),
-			).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+		for _, stack := range Config.GetStacks() {
+			Context(fmt.Sprintf("when using %s stack", stack), func() {
+				It("makes the app reachable via its bound route", func() {
+					Expect(cf.Cf("push", appName,
+						"-m", DEFAULT_MEMORY_LIMIT,
+						"-p", assets.NewAssets().Golang,
+						"-f", filepath.Join(assets.NewAssets().Golang, "manifest.yml"),
+						"-s", stack,
+					).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
-			Eventually(func() string {
-				return helpers.CurlAppRoot(Config, appName)
-			}).Should(ContainSubstring("go, world"))
-		})
+					Eventually(func() string {
+						return helpers.CurlAppRoot(Config, appName)
+					}).Should(ContainSubstring("go, world"))
+				})
+			})
+		}
 	})
 
 	Describe("python", func() {
-		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName,
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().Python,
-			).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+		for _, stack := range Config.GetStacks() {
+			Context(fmt.Sprintf("when using %s stack", stack), func() {
+				It("makes the app reachable via its bound route", func() {
+					Expect(cf.Cf("push", appName,
+						"-m", DEFAULT_MEMORY_LIMIT,
+						"-p", assets.NewAssets().Python,
+						"-s", stack,
+					).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
-			Eventually(func() string {
-				return helpers.CurlAppRoot(Config, appName)
-			}).Should(ContainSubstring("python, world"))
-		})
+					Eventually(func() string {
+						return helpers.CurlAppRoot(Config, appName)
+					}).Should(ContainSubstring("python, world"))
+				})
+			})
+		}
 	})
 
 	Describe("php", func() {
@@ -104,16 +133,21 @@ var _ = DetectDescribe("Buildpacks", func() {
 			phpPushTimeout = Config.DetectTimeoutDuration() + 6*time.Minute
 		})
 
-		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName,
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().Php,
-			).Wait(phpPushTimeout)).To(Exit(0))
+		for _, stack := range Config.GetStacks() {
+			Context(fmt.Sprintf("when using %s stack", stack), func() {
+				It("makes the app reachable via its bound route", func() {
+					Expect(cf.Cf("push", appName,
+						"-m", DEFAULT_MEMORY_LIMIT,
+						"-p", assets.NewAssets().Php,
+						"-s", stack,
+					).Wait(phpPushTimeout)).To(Exit(0))
 
-			Eventually(func() string {
-				return helpers.CurlAppRoot(Config, appName)
-			}).Should(ContainSubstring("Hello from php"))
-		})
+					Eventually(func() string {
+						return helpers.CurlAppRoot(Config, appName)
+					}).Should(ContainSubstring("Hello from php"))
+				})
+			})
+		}
 	})
 
 	Describe("dotnet-core", func() {
@@ -135,29 +169,39 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("staticfile", func() {
 		SkipOnK8s("staticfile not yet supported, as currently structured in CATS")
-		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName,
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().Staticfile,
-			).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+		for _, stack := range Config.GetStacks() {
+			Context(fmt.Sprintf("when using %s stack", stack), func() {
+				It("makes the app reachable via its bound route", func() {
+					Expect(cf.Cf("push", appName,
+						"-m", DEFAULT_MEMORY_LIMIT,
+						"-p", assets.NewAssets().Staticfile,
+						"-s", stack,
+					).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
-			Eventually(func() string {
-				return helpers.CurlAppRoot(Config, appName)
-			}).Should(ContainSubstring("Hello from a staticfile"))
-		})
+					Eventually(func() string {
+						return helpers.CurlAppRoot(Config, appName)
+					}).Should(ContainSubstring("Hello from a staticfile"))
+				})
+			})
+		}
 	})
 
 	Describe("binary", func() {
-		It("makes the app reachable via its bound route", func() {
-			Expect(cf.Cf("push", appName,
-				"-b", Config.GetBinaryBuildpackName(),
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().Binary,
-			).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+		for _, stack := range Config.GetStacks() {
+			Context(fmt.Sprintf("when using %s stack", stack), func() {
+				It("makes the app reachable via its bound route", func() {
+					Expect(cf.Cf("push", appName,
+						"-b", Config.GetBinaryBuildpackName(),
+						"-m", DEFAULT_MEMORY_LIMIT,
+						"-p", assets.NewAssets().Binary,
+						"-s", stack,
+					).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
-			Eventually(func() string {
-				return helpers.CurlAppRoot(Config, appName)
-			}).Should(ContainSubstring("Hello from a binary"))
-		})
+					Eventually(func() string {
+						return helpers.CurlAppRoot(Config, appName)
+					}).Should(ContainSubstring("Hello from a binary"))
+				})
+			})
+		}
 	})
 })
