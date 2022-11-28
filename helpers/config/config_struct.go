@@ -708,8 +708,8 @@ func validateStacks(config *config) error {
 	}
 
 	for _, stack := range config.GetStacks() {
-		if stack != "cflinuxfs3" {
-			return fmt.Errorf("* Invalid configuration: unknown stack '%s'. Only 'cflinuxfs3' is supported for the 'stacks' property", stack)
+		if stack != "cflinuxfs3" && stack != "cflinuxfs4" {
+			return fmt.Errorf("* Invalid configuration: unknown stack '%s'. Only 'cflinuxfs3' and 'cflinuxfs4' is supported for the 'stacks' property", stack)
 		}
 	}
 
