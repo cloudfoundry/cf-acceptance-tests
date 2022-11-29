@@ -21,12 +21,14 @@ type Assets struct {
 	LoggregatorLoadGenerator   string
 	LoggregatorLoadGeneratorGo string
 	Python                     string
+	Nginx                      string
 	Node                       string
 	NodeWithProcfile           string
 	Nora                       string
 	Pora                       string
 	Php                        string
 	Proxy                      string
+	R                          string
 	RubySimple                 string
 	SecurityGroupBuildpack     string
 	ServiceBroker              string
@@ -67,6 +69,7 @@ func NewAssets() Assets {
 		JavaUnwriteableZip:         "assets/java-unwriteable-dir/java-unwriteable-dir.jar",
 		LoggregatorLoadGenerator:   "assets/loggregator-load-generator",
 		LoggregatorLoadGeneratorGo: "assets/loggregator-load-generator-go",
+		Nginx:                      "assets/nginx",
 		Node:                       "assets/node",
 		NodeWithProcfile:           "assets/node-with-procfile",
 		Nora:                       "assets/nora/NoraPublished",
@@ -74,6 +77,7 @@ func NewAssets() Assets {
 		Php:                        "assets/php",
 		Proxy:                      "assets/proxy",
 		Python:                     "assets/python",
+		R:                          "assets/r",
 		RubySimple:                 "assets/ruby_simple",
 		SecurityGroupBuildpack:     "assets/security_group_buildpack.zip",
 		ServiceBroker:              "assets/service_broker",

@@ -204,4 +204,40 @@ var _ = DetectDescribe("Buildpacks", func() {
 			})
 		}
 	})
+
+	Describe("nginx", func() {
+		for _, stack := range Config.GetStacks() {
+			Context(fmt.Sprintf("when using %s stack", stack), func() {
+				It("makes the app reachable via its bound route", func() {
+					Expect(cf.Cf("push", appName,
+						"-m", DEFAULT_MEMORY_LIMIT,
+						"-p", assets.NewAssets().Nginx,
+						"-s", stack,
+					).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+
+					Eventually(func() string {
+						return helpers.CurlAppRoot(Config, appName)
+					}).Should(ContainSubstring("Hello NGINX!"))
+				})
+			})
+		}
+	})
+
+	Describe("r", func() {
+		for _, stack := range Config.GetStacks() {
+			Context(fmt.Sprintf("when using %s stack", stack), func() {
+				It("makes the app reachable via its bound route", func() {
+					Expect(cf.Cf("push", appName,
+						"-m", DEFAULT_MEMORY_LIMIT,
+						"-p", assets.NewAssets().R,
+						"-s", stack,
+					).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+
+					Eventually(func() string {
+						return helpers.CurlAppRoot(Config, appName)
+					}).Should(ContainSubstring("Hello R!"))
+				})
+			})
+		}
+	})
 })
