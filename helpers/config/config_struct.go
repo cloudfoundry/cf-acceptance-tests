@@ -56,9 +56,11 @@ type config struct {
 	GoBuildpackName         *string `json:"go_buildpack_name"`
 	HwcBuildpackName        *string `json:"hwc_buildpack_name"`
 	JavaBuildpackName       *string `json:"java_buildpack_name"`
+	NginxBuildpackName      *string `json:"nginx_buildpack_name"`
 	NodejsBuildpackName     *string `json:"nodejs_buildpack_name"`
 	PhpBuildpackName        *string `json:"php_buildpack_name"`
 	PythonBuildpackName     *string `json:"python_buildpack_name"`
+	RBuildpackName          *string `json:"r_buildpack_name"`
 	RubyBuildpackName       *string `json:"ruby_buildpack_name"`
 	StaticFileBuildpackName *string `json:"staticfile_buildpack_name"`
 
@@ -151,9 +153,11 @@ func getDefaults() config {
 	defaults.GoBuildpackName = ptrToString("go_buildpack")
 	defaults.HwcBuildpackName = ptrToString("hwc_buildpack")
 	defaults.JavaBuildpackName = ptrToString("java_buildpack")
+	defaults.NginxBuildpackName = ptrToString("nginx_buildpack")
 	defaults.NodejsBuildpackName = ptrToString("nodejs_buildpack")
 	defaults.PhpBuildpackName = ptrToString("php_buildpack")
 	defaults.PythonBuildpackName = ptrToString("python_buildpack")
+	defaults.RBuildpackName = ptrToString("r_buildpack")
 	defaults.RubyBuildpackName = ptrToString("ruby_buildpack")
 	defaults.StaticFileBuildpackName = ptrToString("staticfile_buildpack")
 
@@ -375,6 +379,9 @@ func validateConfig(config *config) Errors {
 	if config.JavaBuildpackName == nil {
 		errs.Add(fmt.Errorf("* 'java_buildpack_name' must not be null"))
 	}
+	if config.NginxBuildpackName == nil {
+		errs.Add(fmt.Errorf("* 'nginx_buildpack_name' must not be null"))
+	}
 	if config.NodejsBuildpackName == nil {
 		errs.Add(fmt.Errorf("* 'nodejs_buildpack_name' must not be null"))
 	}
@@ -383,6 +390,9 @@ func validateConfig(config *config) Errors {
 	}
 	if config.PythonBuildpackName == nil {
 		errs.Add(fmt.Errorf("* 'python_buildpack_name' must not be null"))
+	}
+	if config.RBuildpackName == nil {
+		errs.Add(fmt.Errorf("* 'r_buildpack_name' must not be null"))
 	}
 	if config.RubyBuildpackName == nil {
 		errs.Add(fmt.Errorf("* 'ruby_buildpack_name' must not be null"))
@@ -991,6 +1001,10 @@ func (c *config) GetIncludeVolumeServices() bool {
 	return *c.IncludeVolumeServices
 }
 
+func (c *config) GetRBuildpackName() string {
+	return *c.RBuildpackName
+}
+
 func (c *config) GetRubyBuildpackName() string {
 	return *c.RubyBuildpackName
 }
@@ -1005,6 +1019,10 @@ func (c *config) GetHwcBuildpackName() string {
 
 func (c *config) GetJavaBuildpackName() string {
 	return *c.JavaBuildpackName
+}
+
+func (c *config) GetNginxBuildpackName() string {
+	return *c.NginxBuildpackName
 }
 
 func (c *config) GetNodejsBuildpackName() string {

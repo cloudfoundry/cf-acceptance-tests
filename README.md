@@ -175,10 +175,12 @@ include_v3
 * `staticfile_buildpack_name` [See below](#buildpack-names)
 * `java_buildpack_name` [See below](#buildpack-names)
 * `ruby_buildpack_name` [See below](#buildpack-names)
+* `nginx_buildpack_name` [See below](#buildpack-names)
 * `nodejs_buildpack_name` [See below](#buildpack-names)
 * `go_buildpack_name` [See below](#buildpack-names)
 * `python_buildpack_name` [See below](#buildpack-names)
 * `php_buildpack_name` [See below](#buildpack-names)
+* `r_buildpack_name` [See below](#buildpack-names)
 * `binary_buildpack_name` [See below](#buildpack-names)
 
 * `include_windows`: Flag to include the tests that run against Windows cells.
@@ -202,10 +204,12 @@ Many tests specify a buildpack when pushing an app, so that on diego the app sta
 * `staticfile_buildpack_name: staticfile_buildpack`
 * `java_buildpack_name: java_buildpack`
 * `ruby_buildpack_name: ruby_buildpack`
+* `nginx_buildpack_name: nginx_buildpack`
 * `nodejs_buildpack_name: nodejs_buildpack`
 * `go_buildpack_name: go_buildpack`
 * `python_buildpack_name: python_buildpack`
 * `php_buildpack_name: php_buildpack`
+* `r_buildpack_name: r_buildpack`
 * `binary_buildpack_name: binary_buildpack`
 * `hwc_buildpack_name: hwc_buildpack`
 
