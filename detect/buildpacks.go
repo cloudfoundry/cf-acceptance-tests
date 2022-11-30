@@ -33,6 +33,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("ruby", func() {
 		for _, stack := range Config.GetStacks() {
+			stack := stack
 			Context(fmt.Sprintf("when using %s stack", stack), func() {
 				It("makes the app reachable via its bound route", func() {
 					Expect(cf.Cf("push",
@@ -52,6 +53,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("node", func() {
 		for _, stack := range Config.GetStacks() {
+			stack := stack
 			Context(fmt.Sprintf("when using %s stack", stack), func() {
 				It("makes the app reachable via its bound route", func() {
 					Expect(cf.Cf("push",
@@ -71,6 +73,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("java", func() {
 		for _, stack := range Config.GetStacks() {
+			stack := stack
 			Context(fmt.Sprintf("when using %s stack", stack), func() {
 				It("makes the app reachable via its bound route", func() {
 					Expect(cf.Cf("push", appName,
@@ -90,6 +93,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("golang", func() {
 		for _, stack := range Config.GetStacks() {
+			stack := stack
 			Context(fmt.Sprintf("when using %s stack", stack), func() {
 				It("makes the app reachable via its bound route", func() {
 					Expect(cf.Cf("push", appName,
@@ -109,6 +113,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("python", func() {
 		for _, stack := range Config.GetStacks() {
+			stack := stack
 			Context(fmt.Sprintf("when using %s stack", stack), func() {
 				It("makes the app reachable via its bound route", func() {
 					Expect(cf.Cf("push", appName,
@@ -134,6 +139,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 		})
 
 		for _, stack := range Config.GetStacks() {
+			stack := stack
 			Context(fmt.Sprintf("when using %s stack", stack), func() {
 				It("makes the app reachable via its bound route", func() {
 					Expect(cf.Cf("push", appName,
@@ -170,6 +176,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 	Describe("staticfile", func() {
 		SkipOnK8s("staticfile not yet supported, as currently structured in CATS")
 		for _, stack := range Config.GetStacks() {
+			stack := stack
 			Context(fmt.Sprintf("when using %s stack", stack), func() {
 				It("makes the app reachable via its bound route", func() {
 					Expect(cf.Cf("push", appName,
@@ -188,6 +195,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("binary", func() {
 		for _, stack := range Config.GetStacks() {
+			stack := stack
 			Context(fmt.Sprintf("when using %s stack", stack), func() {
 				It("makes the app reachable via its bound route", func() {
 					Expect(cf.Cf("push", appName,
@@ -207,6 +215,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("nginx", func() {
 		for _, stack := range Config.GetStacks() {
+			stack := stack
 			Context(fmt.Sprintf("when using %s stack", stack), func() {
 				It("makes the app reachable via its bound route", func() {
 					Expect(cf.Cf("push", appName,
@@ -225,6 +234,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 
 	Describe("r", func() {
 		for _, stack := range Config.GetStacks() {
+			stack := stack
 			Context(fmt.Sprintf("when using %s stack", stack), func() {
 				It("makes the app reachable via its bound route", func() {
 					Expect(cf.Cf("push", appName,
