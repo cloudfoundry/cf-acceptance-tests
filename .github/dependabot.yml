@@ -76,42 +76,43 @@ updates:
     interval: "daily"
 
 - package-ecosystem: "bundler"
-  directory: "/assets/dora/Gemfile"
   vendor: true
+  directory: "/assets/dora"
   schedule:
     interval: "daily"
 
 - package-ecosystem: "bundler"
-  directory: "/assets/go_calls_ruby/Gemfile"
+  vendor: true
+  directory: "/assets/go_calls_ruby"
   schedule:
     interval: "daily"
 
 - package-ecosystem: "bundler"
-  directory: "/assets/hello-routing/Gemfile"
   vendor: true
+  directory: "/assets/hello-routing"
   schedule:
     interval: "daily"
 
 - package-ecosystem: "bundler"
-  directory: "/assets/hello-world/Gemfile"
   vendor: true
+  directory: "/assets/hello-world"
   schedule:
     interval: "daily"
 
 - package-ecosystem: "bundler"
-  directory: "/assets/loggregator-load-generator/Gemfile"
   vendor: true
+  directory: "/assets/loggregator-load-generator"
   schedule:
     interval: "daily"
 
 - package-ecosystem: "bundler"
-  directory: "/assets/ruby_simple/Gemfile"
   vendor: true
+  directory: "/assets/ruby_simple"
   schedule:
     interval: "daily"
 
 - package-ecosystem: "bundler"
-  directory: "/assets/service_broker/Gemfile"
   vendor: true
+  directory: "/assets/service_broker"
   schedule:
     interval: "daily"
