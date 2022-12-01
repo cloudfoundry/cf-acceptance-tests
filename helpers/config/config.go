@@ -66,10 +66,12 @@ type CatsConfig interface {
 	GetIsolationSegmentDomain() string
 	GetJavaBuildpackName() string
 	GetNamePrefix() string
+	GetNginxBuildpackName() string
 	GetNodejsBuildpackName() string
 	GetPrivateDockerRegistryImage() string
 	GetPrivateDockerRegistryUsername() string
 	GetPrivateDockerRegistryPassword() string
+	GetRBuildpackName() string
 	GetRubyBuildpackName() string
 	GetUnallocatedIPForSecurityGroup() string
 	GetRequireProxiedAppTraffic() bool
