@@ -74,9 +74,9 @@ var _ = V3Describe("buildpack", func() {
 
 		It("Stages with a user specified admin buildpack", func() {
 			StageBuildpackPackage(packageGuid, buildpackName)
-			Eventually(func() *Session {
+			Eventually(func() string {
 				return FetchRecentLogs(appGuid, token, Config)
-			}).Should(Say("STAGED WITH CUSTOM BUILDPACK"))
+			}).Should(ContainSubstring("STAGED WITH CUSTOM BUILDPACK"))
 		})
 
 		It("Downloads the correct user specified git buildpack", func() {
@@ -85,9 +85,9 @@ var _ = V3Describe("buildpack", func() {
 			}
 			StageBuildpackPackage(packageGuid, "https://github.com/cloudfoundry/example-git-buildpack")
 
-			Eventually(func() *Session {
+			Eventually(func() string {
 				return FetchRecentLogs(appGuid, token, Config)
-			}).Should(Say("I'm a buildpack!"))
+			}).Should(ContainSubstring("I'm a buildpack!"))
 		})
 
 		It("uses buildpack cache for staging", func() {

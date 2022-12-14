@@ -6,16 +6,18 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
+	logcache "code.cloudfoundry.org/go-log-cache/rpc/logcache_v1"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
-
-	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
+	"google.golang.org/protobuf/encoding/protojson"
+
+	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
 )
 
 const (
@@ -288,12 +290,15 @@ func EntitleOrgToIsolationSegment(orgGuid, isoSegGuid string) {
 	).Should(Exit(0))
 }
 
-func FetchRecentLogs(appGuid, oauthToken string, config config.CatsConfig) *Session {
-	loggregatorEndpoint := getHttpLoggregatorEndpoint()
-	logUrl := fmt.Sprintf("%s/apps/%s/recentlogs", loggregatorEndpoint, appGuid)
-	session := helpers.CurlRedact(oauthToken, Config, logUrl, "-H", fmt.Sprintf("Authorization: %s", oauthToken))
+func FetchRecentLogs(appGuid, oauthToken string, config config.CatsConfig) string {
+	endpoint := getLogCacheEndpoint()
+	reqURL := fmt.Sprintf("%s/api/v1/read/%s?envelope_type=LOG&limit=1000", endpoint, appGuid)
+	session := helpers.CurlRedact(oauthToken, Config, reqURL, "-H", fmt.Sprintf("Authorization: %s", oauthToken))
 	Expect(session.Wait()).To(Exit(0))
-	return session
+	var resp logcache.ReadResponse
+	err := protojson.Unmarshal(session.Buffer().Contents(), &resp)
+	Expect(err).NotTo(HaveOccurred())
+	return resp.String()
 }
 
 func GetAuthToken() string {
@@ -550,22 +555,20 @@ func GetLastAppUseEventForProcess(processType string, state string, afterGUID st
 	return false, ProcessAppUsageEvent{}
 }
 
-//private
+func getLogCacheEndpoint() string {
+	infoCmd := cf.Cf("curl", "/")
+	Expect(infoCmd.Wait()).To(Exit(0))
 
-func getHttpLoggregatorEndpoint() string {
-	infoCommand := cf.Cf("curl", "/")
-	Expect(infoCommand.Wait()).To(Exit(0))
-
-	var response struct {
+	var resp struct {
 		Links struct {
-			Logging struct {
-				Href string `json:"href"`
-			} `json:"logging"`
+			LogCache struct {
+				HREF string `json:"href"`
+			} `json:"log_cache"`
 		} `json:"links"`
 	}
 
-	err := json.Unmarshal(infoCommand.Buffer().Contents(), &response)
+	err := json.Unmarshal(infoCmd.Buffer().Contents(), &resp)
 	Expect(err).NotTo(HaveOccurred())
 
-	return strings.Replace(response.Links.Logging.Href, "ws", "http", 1)
+	return resp.Links.LogCache.HREF
 }
