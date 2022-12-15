@@ -11,7 +11,7 @@ require (
 	github.com/cloudfoundry/sonde-go v0.0.0-20220627221915-ff36de9c3435
 	github.com/mholt/archiver v3.1.1+incompatible
 	github.com/onsi/ginkgo/v2 v2.6.1
-	github.com/onsi/gomega v1.24.1
+	github.com/onsi/gomega v1.24.2
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf v1.28.1
@@ -39,7 +39,7 @@ require (
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
-	golang.org/x/net v0.3.0 // indirect
+	golang.org/x/net v0.4.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect
 	golang.org/x/text v0.5.0 // indirect
 	golang.org/x/tools v0.4.0 // indirect
