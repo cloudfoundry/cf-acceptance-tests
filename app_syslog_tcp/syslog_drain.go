@@ -1,12 +1,14 @@
 package apps
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/tcp_routing"
 
+	"code.cloudfoundry.org/tlsconfig/certtest"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	logshelper "github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
@@ -35,7 +37,6 @@ var _ = AppSyslogTcpDescribe("Syslog Drain over TCP", func() {
 	Describe("Syslog drains", func() {
 		BeforeEach(func() {
 			interrupt = make(chan struct{}, 1)
-
 			domainName = fmt.Sprintf("tcp.%s", Config.GetAppsDomain())
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				routerGroupOutput := string(cf.Cf("router-groups").Wait().Out.Contents())
@@ -108,7 +109,45 @@ var _ = AppSyslogTcpDescribe("Syslog Drain over TCP", func() {
 
 			logs = logshelper.Follow(listenerAppName)
 
-			// Have apps emit logs.
+			go writeLogsUntilInterrupted(interrupt, randomMessage1, logWriterAppName1)
+			go writeLogsUntilInterrupted(interrupt, randomMessage2, logWriterAppName2)
+
+			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(randomMessage1))
+			Consistently(logs, 10).ShouldNot(Say(randomMessage2))
+		})
+
+		It("forwards app messages to registered syslog drains via mtls", func() {
+			ca, err := certtest.BuildCA("test")
+			Expect(err).ToNot(HaveOccurred())
+			cert, err := ca.BuildSignedCertificate(domainName, certtest.WithDomains(domainName))
+			Expect(err).ToNot(HaveOccurred())
+			caPem, err := ca.CertificatePEM()
+			Expect(err).ToNot(HaveOccurred())
+			certPem, keyPem, err := cert.CertificatePEMAndPrivateKey()
+			Expect(err).ToNot(HaveOccurred())
+
+			credentials := struct {
+				CA   string `json:"ca"`
+				Cert string `json:"cert"`
+				Key  string `json:"key"`
+			}{
+				CA:   string(caPem),
+				Cert: string(certPem),
+				Key:  string(keyPem),
+			}
+			credentialsBlock, err := json.Marshal(credentials)
+			Expect(err).ToNot(HaveOccurred())
+
+			Eventually(cf.Cf("set-env", listenerAppName, "MTLS", string(credentialsBlock))).Should(Exit(0), "Failed to set mtls variable on listener app")
+			Eventually(cf.Cf("restage", listenerAppName), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to restage listener app")
+			Eventually(cf.Cf("cups", serviceName, "-l", fmt.Sprintf("syslog-tls://%s:%s", domainName, externalPort), "-p", string(credentialsBlock))).Should(Exit(0), "Failed to create syslog drain service")
+			Eventually(cf.Cf("bind-service", logWriterAppName1, serviceName)).Should(Exit(0), "Failed to bind service")
+
+			randomMessage1 := random_name.CATSRandomName("RANDOM-MESSAGE-A")
+			randomMessage2 := random_name.CATSRandomName("RANDOM-MESSAGE-B")
+
+			logs = logshelper.Follow(listenerAppName)
+
 			go writeLogsUntilInterrupted(interrupt, randomMessage1, logWriterAppName1)
 			go writeLogsUntilInterrupted(interrupt, randomMessage2, logWriterAppName2)
 

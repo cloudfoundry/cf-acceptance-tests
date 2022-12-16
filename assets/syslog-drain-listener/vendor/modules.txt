@@ -1,0 +1,3 @@
+# code.cloudfoundry.org/tlsconfig v0.0.0-20220621140725-0e6fbd869921
+## explicit; go 1.17
+code.cloudfoundry.org/tlsconfig

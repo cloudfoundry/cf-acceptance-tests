@@ -1,17 +1,50 @@
 package main
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net"
 	"os"
+
+	"code.cloudfoundry.org/tlsconfig"
 )
 
 func main() {
 	listenAddress := fmt.Sprintf(":%s", os.Getenv("PORT"))
-	listener, err := net.Listen("tcp", listenAddress)
-	if err != nil {
-		panic(err)
+	var listener net.Listener
+	mtls := getCreds()
+	if len(mtls.CA) != 0 {
+		certPool := x509.NewCertPool()
+		appended := certPool.AppendCertsFromPEM([]byte(mtls.CA))
+		if !appended {
+			panic("cannot append cert to pool")
+		}
+		cert, err := tls.X509KeyPair([]byte(mtls.Cert), []byte(mtls.Key))
+		if err != nil {
+			panic(err)
+		}
+		mtlsConf, err := tlsconfig.Build(
+			tlsconfig.WithExternalServiceDefaults(),
+			tlsconfig.WithIdentity(cert),
+		).Server(
+			tlsconfig.WithClientAuthentication(certPool),
+		)
+		if err != nil {
+			panic(err)
+		}
+		listener, err = tls.Listen("tcp", listenAddress, mtlsConf)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		var err error
+		listener, err = net.Listen("tcp", listenAddress)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	fmt.Println("Listening for new connections")
@@ -22,6 +55,25 @@ func main() {
 		}
 		go handleConnection(conn)
 	}
+}
+
+type Credentials struct {
+	CA   string `json:"ca"`
+	Key  string `json:"key"`
+	Cert string `json:"cert"`
+}
+
+func getCreds() Credentials {
+	mtlsString := os.Getenv("MTLS")
+	if mtlsString == "" {
+		return Credentials{}
+	}
+	var mtls Credentials
+	err := json.Unmarshal([]byte(mtlsString), &mtls)
+	if err != nil {
+		panic(err)
+	}
+	return mtls
 }
 
 func handleConnection(conn net.Conn) {
