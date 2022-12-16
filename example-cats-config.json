@@ -11,6 +11,7 @@ IN DEVELOPMENT
   "skip_ssl_validation": true,
   "timeout_scale": 1,
   "use_http": true,
+  "include_app_syslog_tcp": true,
   "include_apps": true,
   "include_container_networking": true,
   "include_detect": true,

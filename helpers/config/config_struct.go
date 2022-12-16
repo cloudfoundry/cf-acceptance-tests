@@ -68,7 +68,7 @@ type config struct {
 	VolumeServicePlanName     *string `json:"volume_service_plan_name"`
 	VolumeServiceCreateConfig *string `json:"volume_service_create_config"`
 
-	IncludeAppSyslogTcp             *bool `json:"include_app_syslog_tcp"`
+	IncludeAppSyslogTCP             *bool `json:"include_app_syslog_tcp"`
 	IncludeApps                     *bool `json:"include_apps"`
 	IncludeContainerNetworking      *bool `json:"include_container_networking"`
 	IncludeDeployments              *bool `json:"include_deployments"`
@@ -161,7 +161,7 @@ func getDefaults() config {
 	defaults.RubyBuildpackName = ptrToString("ruby_buildpack")
 	defaults.StaticFileBuildpackName = ptrToString("staticfile_buildpack")
 
-	defaults.IncludeAppSyslogTcp = ptrToBool(true)
+	defaults.IncludeAppSyslogTCP = ptrToBool(true)
 	defaults.IncludeApps = ptrToBool(true)
 	defaults.IncludeDetect = ptrToBool(true)
 	defaults.IncludeRouting = ptrToBool(true)
@@ -400,7 +400,7 @@ func validateConfig(config *config) Errors {
 	if config.StaticFileBuildpackName == nil {
 		errs.Add(fmt.Errorf("* 'staticfile_buildpack_name' must not be null"))
 	}
-	if config.IncludeAppSyslogTcp == nil {
+	if config.IncludeAppSyslogTCP == nil {
 		errs.Add(fmt.Errorf("* 'include_app_syslog_tcp' must not be null"))
 	}
 	if config.IncludeApps == nil {
@@ -878,7 +878,7 @@ func (c *config) GetIncludeSsh() bool {
 }
 
 func (c *config) GetIncludeAppSyslogTcp() bool {
-	return *c.IncludeAppSyslogTcp
+	return *c.IncludeAppSyslogTCP
 }
 
 func (c *config) GetIncludeApps() bool {
