@@ -4,13 +4,13 @@ GEM
     mustermann (3.0.0)
       ruby2_keywords (~> 0.0.1)
     rack (2.2.4)
-    rack-protection (3.0.4)
+    rack-protection (3.0.5)
       rack
     ruby2_keywords (0.0.5)
-    sinatra (3.0.4)
+    sinatra (3.0.5)
       mustermann (~> 3.0)
       rack (~> 2.2, >= 2.2.4)
-      rack-protection (= 3.0.4)
+      rack-protection (= 3.0.5)
       tilt (~> 2.0)
     tilt (2.0.11)
 
