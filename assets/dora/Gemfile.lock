@@ -30,6 +30,7 @@ GEM
       rack-protection (= 3.0.5)
       tilt (~> 2.0)
     tilt (2.0.11)
+    webrick (1.7.0)
 
 PLATFORMS
   ruby
@@ -39,3 +40,4 @@ DEPENDENCIES
   rack-test
   rspec
   sinatra
+  webrick

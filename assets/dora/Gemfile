@@ -2,6 +2,7 @@ source "http://rubygems.org"
 
 gem "sinatra"
 gem "json"
+gem "webrick"
 
 group :test, :development do
   gem "rspec"
