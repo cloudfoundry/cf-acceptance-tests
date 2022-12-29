@@ -2,7 +2,6 @@ package config_test
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -175,7 +174,7 @@ var tmpFilePath string
 var testCfg testConfig
 
 func writeConfigFile(updatedConfig interface{}) string {
-	configFile, err := ioutil.TempFile("", "cf-test-helpers-config")
+	configFile, err := os.CreateTemp("", "cf-test-helpers-config")
 	Expect(err).NotTo(HaveOccurred())
 
 	encoder := json.NewEncoder(configFile)

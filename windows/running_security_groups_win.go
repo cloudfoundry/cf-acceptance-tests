@@ -3,7 +3,6 @@ package windows
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
@@ -80,7 +79,7 @@ type Destination struct {
 }
 
 func createSecurityGroup(allowedDestinations ...Destination) string {
-	file, _ := ioutil.TempFile(os.TempDir(), "CATS-sg-rules")
+	file, _ := os.CreateTemp(os.TempDir(), "CATS-sg-rules")
 	defer os.Remove(file.Name())
 	Expect(json.NewEncoder(file).Encode(allowedDestinations)).To(Succeed())
 

@@ -2,7 +2,7 @@ package apps
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 
@@ -25,7 +25,7 @@ import (
 
 var _ = AppsDescribe("Default Environment Variables", func() {
 	var createBuildpack = func() string {
-		tmpPath, err := ioutil.TempDir("", "default-env-var-test")
+		tmpPath, err := os.MkdirTemp("", "default-env-var-test")
 		Expect(err).ToNot(HaveOccurred())
 
 		buildpackArchivePath := path.Join(tmpPath, "buildpack.zip")

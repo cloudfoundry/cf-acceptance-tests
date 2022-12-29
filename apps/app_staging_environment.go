@@ -2,7 +2,6 @@ package apps
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -44,12 +43,12 @@ var _ = AppsDescribe("Buildpack Environment", func() {
 			appName = CATSRandomName("APP")
 
 			var err error
-			tmpdir, err = ioutil.TempDir("", "buildpack_env")
+			tmpdir, err = os.MkdirTemp("", "buildpack_env")
 			Expect(err).ToNot(HaveOccurred())
-			appPath, err = ioutil.TempDir(tmpdir, "matching-app")
+			appPath, err = os.MkdirTemp(tmpdir, "matching-app")
 			Expect(err).ToNot(HaveOccurred())
 
-			buildpackPath, err = ioutil.TempDir(tmpdir, "matching-buildpack")
+			buildpackPath, err = os.MkdirTemp(tmpdir, "matching-buildpack")
 			Expect(err).ToNot(HaveOccurred())
 
 			buildpackArchivePath = path.Join(buildpackPath, "buildpack.zip")

@@ -3,7 +3,7 @@ package ssh
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os/exec"
 	"strings"
 
@@ -117,10 +117,10 @@ var _ = SshDescribe("SSH", func() {
 			err = stdin.Close()
 			Expect(err).NotTo(HaveOccurred())
 
-			output, err := ioutil.ReadAll(stdout)
+			output, err := io.ReadAll(stdout)
 			Expect(err).NotTo(HaveOccurred())
 
-			errOutput, err := ioutil.ReadAll(stderr)
+			errOutput, err := io.ReadAll(stderr)
 			Expect(err).NotTo(HaveOccurred())
 
 			exitErr := envCmd.Wait()

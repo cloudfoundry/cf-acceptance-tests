@@ -4,8 +4,9 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"os"
 	"strings"
 
 	. "github.com/onsi/gomega"
@@ -138,7 +139,7 @@ func (b ServiceBroker) GetApiInfoUrl() string {
 	Expect(err).ToNot(HaveOccurred())
 	defer resp.Body.Close()
 
-	respData, err := ioutil.ReadAll(resp.Body)
+	respData, err := io.ReadAll(resp.Body)
 	Expect(err).ToNot(HaveOccurred())
 	return string(respData)
 }
@@ -190,7 +191,7 @@ func (b ServiceBroker) Destroy() {
 }
 
 func (b ServiceBroker) ToJSON() string {
-	bytes, err := ioutil.ReadFile(assets.NewAssets().ServiceBroker + "/cats.json")
+	bytes, err := os.ReadFile(assets.NewAssets().ServiceBroker + "/cats.json")
 	Expect(err).To(BeNil())
 
 	planSchema, err := json.Marshal(b.SyncPlans[0].Schemas)

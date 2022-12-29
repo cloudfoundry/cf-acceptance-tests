@@ -2,7 +2,6 @@ package routing
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -39,7 +38,7 @@ var _ = RoutingDescribe("Session Affinity", func() {
 				"-p", stickyAsset,
 			).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
 
-			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
+			cookieStore, err := os.CreateTemp("", "cats-sticky-session")
 			Expect(err).ToNot(HaveOccurred())
 			cookieStorePath = cookieStore.Name()
 			cookieStore.Close()
@@ -159,7 +158,7 @@ var _ = RoutingDescribe("Session Affinity", func() {
 			Expect(cf.Cf("map-route", app1, domain, "--hostname", hostname, "--path", app1Path).Wait()).To(gexec.Exit(0))
 			Expect(cf.Cf("map-route", app2, domain, "--hostname", hostname, "--path", app2Path).Wait()).To(gexec.Exit(0))
 
-			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
+			cookieStore, err := os.CreateTemp("", "cats-sticky-session")
 			Expect(err).ToNot(HaveOccurred())
 			cookieStorePath = cookieStore.Name()
 			cookieStore.Close()
@@ -239,7 +238,7 @@ var _ = RoutingDescribe("Session Affinity", func() {
 
 			Expect(cf.Cf("map-route", app2, domain, "--hostname", hostname, "--path", app2Path).Wait()).To(gexec.Exit(0))
 
-			cookieStore, err := ioutil.TempFile("", "cats-sticky-session")
+			cookieStore, err := os.CreateTemp("", "cats-sticky-session")
 			Expect(err).ToNot(HaveOccurred())
 			cookieStorePath = cookieStore.Name()
 			cookieStore.Close()

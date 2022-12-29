@@ -2,7 +2,7 @@ package app_helpers
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 	"time"
 
@@ -30,7 +30,7 @@ func CatnipWithArgs(appName string, args ...string) []string {
 	}
 
 	if Config.RunningOnK8s() {
-		ioutil.WriteFile("assets/catnip/bin/Procfile", []byte("web: ./catnip"), 0644)
+		os.WriteFile("assets/catnip/bin/Procfile", []byte("web: ./catnip"), 0644)
 	}
 
 	pushArgs = append(pushArgs, args...)
@@ -51,7 +51,7 @@ func BinaryWithArgs(appName string, args ...string) []string {
 	}
 
 	if Config.RunningOnK8s() {
-		ioutil.WriteFile("assets/binary/bin/Procfile", []byte("web: ./app"), 0644)
+		os.WriteFile("assets/binary/bin/Procfile", []byte("web: ./app"), 0644)
 	}
 
 	pushArgs = append(pushArgs, args...)

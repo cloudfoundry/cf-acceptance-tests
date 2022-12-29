@@ -3,7 +3,7 @@ package v3
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"time"
 
@@ -177,7 +177,7 @@ var _ = V3Describe("buildpack", func() {
 })
 
 func createBuildpack() string {
-	tmpPath, err := ioutil.TempDir("", "buildpack-cats")
+	tmpPath, err := os.MkdirTemp("", "buildpack-cats")
 	Expect(err).ToNot(HaveOccurred())
 
 	buildpackArchivePath := path.Join(tmpPath, "buildpack.zip")

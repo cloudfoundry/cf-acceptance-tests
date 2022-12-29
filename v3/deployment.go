@@ -2,7 +2,6 @@ package v3
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 	"time"
@@ -218,7 +217,7 @@ func checkAppRemainsAlive(appName string) (chan<- bool, <-chan bool) {
 }
 
 func makeStaticFileZip() {
-	staticFiles, err := ioutil.ReadDir(assets.NewAssets().Staticfile)
+	staticFiles, err := os.ReadDir(assets.NewAssets().Staticfile)
 	Expect(err).NotTo(HaveOccurred())
 
 	var staticFileNames []string

@@ -3,7 +3,7 @@ package apps
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"strconv"
 	"time"
@@ -32,7 +32,7 @@ var _ = AppsDescribe("Environment Variables Groups", func() {
 	}
 
 	var createBuildpack = func(envVarName string) string {
-		tmpPath, err := ioutil.TempDir("", "env-group-staging")
+		tmpPath, err := os.MkdirTemp("", "env-group-staging")
 		Expect(err).ToNot(HaveOccurred())
 
 		buildpackArchivePath := path.Join(tmpPath, "buildpack.zip")
