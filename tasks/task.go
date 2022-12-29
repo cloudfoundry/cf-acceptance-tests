@@ -3,7 +3,6 @@ package tasks
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"os"
 	"strconv"
@@ -90,7 +89,7 @@ func getContainerIP(listenAddresses []string) string {
 }
 
 func createSecurityGroup(allowedDestinations ...Destination) string {
-	file, _ := ioutil.TempFile(os.TempDir(), "CATS-sg-rules")
+	file, _ := os.CreateTemp(os.TempDir(), "CATS-sg-rules")
 	defer os.Remove(file.Name())
 	Expect(json.NewEncoder(file).Encode(allowedDestinations)).To(Succeed())
 

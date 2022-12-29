@@ -2,7 +2,6 @@ package cats_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -89,7 +88,7 @@ func TestCATS(t *testing.T) {
 		err = buildCmd.Run()
 		Expect(err).NotTo(HaveOccurred())
 
-		doraFiles, err := ioutil.ReadDir(assets.NewAssets().Dora)
+		doraFiles, err := os.ReadDir(assets.NewAssets().Dora)
 		Expect(err).NotTo(HaveOccurred())
 
 		var doraFileNames []string

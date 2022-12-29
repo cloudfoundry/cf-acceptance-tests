@@ -3,7 +3,7 @@ package main
 import (
 	"bytes"
 	"crypto/tls"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -43,11 +43,11 @@ func NewProxy(transport http.RoundTripper, skipSslValidation bool) http.Handler 
 			var body []byte
 			var err error
 			if req.Body != nil {
-				body, err = ioutil.ReadAll(req.Body)
+				body, err = io.ReadAll(req.Body)
 				if err != nil {
 					log.Fatalln(err.Error())
 				}
-				req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+				req.Body = io.NopCloser(bytes.NewBuffer(body))
 			}
 			logRequest(forwardedURL, sigHeader, string(body), req.Header, skipSslValidation)
 
@@ -104,7 +104,7 @@ func (lrt *LoggingRoundTripper) RoundTrip(request *http.Request) (*http.Response
 		return nil, err
 	}
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
@@ -113,7 +113,7 @@ func (lrt *LoggingRoundTripper) RoundTrip(request *http.Request) (*http.Response
 	log.Println("")
 	log.Printf("Response Body: %s\n", string(body))
 	log.Println("")
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+	res.Body = io.NopCloser(bytes.NewBuffer(body))
 
 	log.Println("Sending response to GoRouter...")
 

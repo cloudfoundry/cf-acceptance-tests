@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"regexp"
@@ -54,7 +53,7 @@ func SetOauthEndpoints(apiInfoEndpoint string, oAuthConfig *OAuthConfig, config 
 func AuthenticateUser(authorizationEndpoint string, username string, password string) (cookie string) {
 	loginCsrfUri := fmt.Sprintf("%v/login", authorizationEndpoint)
 
-	cookieFile, err := ioutil.TempFile("", random_name.CATSRandomName("CATS-CSRF-COOKIE"))
+	cookieFile, err := os.CreateTemp("", random_name.CATSRandomName("CATS-CSRF-COOKIE"))
 	Expect(err).ToNot(HaveOccurred())
 	cookiePath := cookieFile.Name()
 	defer func() {

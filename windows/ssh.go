@@ -3,7 +3,7 @@ package windows
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os/exec"
 	"strings"
 
@@ -117,7 +117,7 @@ var _ = WindowsDescribe("SSH", func() {
 			err = stdin.Close()
 			Expect(err).NotTo(HaveOccurred())
 
-			output, err := ioutil.ReadAll(stdout)
+			output, err := io.ReadAll(stdout)
 			Expect(err).NotTo(HaveOccurred())
 
 			err = envCmd.Wait()

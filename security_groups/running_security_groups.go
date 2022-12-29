@@ -3,7 +3,6 @@ package security_groups_test
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 	"time"
@@ -99,7 +98,7 @@ type Destination struct {
 }
 
 func createSecurityGroup(allowedDestinations ...Destination) string {
-	file, err := ioutil.TempFile(os.TempDir(), "CATS-sg-rules")
+	file, err := os.CreateTemp(os.TempDir(), "CATS-sg-rules")
 	Expect(err).NotTo(HaveOccurred())
 	defer os.Remove(file.Name())
 

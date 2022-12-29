@@ -2,7 +2,6 @@ package apps
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -69,12 +68,12 @@ var _ = AppsDescribe("Admin Buildpacks", func() {
 			appName = CATSRandomName("APP")
 			appNames = append(appNames, appName)
 
-			tmpdir, err := ioutil.TempDir(os.TempDir(), "matching-app")
+			tmpdir, err := os.MkdirTemp(os.TempDir(), "matching-app")
 			Expect(err).ToNot(HaveOccurred())
 
 			appPath = tmpdir
 
-			tmpdir, err = ioutil.TempDir(os.TempDir(), "matching-buildpack")
+			tmpdir, err = os.MkdirTemp(os.TempDir(), "matching-buildpack")
 			Expect(err).ToNot(HaveOccurred())
 
 			buildpackPath = tmpdir
@@ -140,12 +139,12 @@ EOF
 			appName = CATSRandomName("APP")
 			appNames = append(appNames, appName)
 
-			tmpdir, err := ioutil.TempDir(os.TempDir(), "matching-app")
+			tmpdir, err := os.MkdirTemp(os.TempDir(), "matching-app")
 			Expect(err).ToNot(HaveOccurred())
 
 			appPath = tmpdir
 
-			tmpdir, err = ioutil.TempDir(os.TempDir(), "matching-buildpack")
+			tmpdir, err = os.MkdirTemp(os.TempDir(), "matching-buildpack")
 			Expect(err).ToNot(HaveOccurred())
 
 			buildpackPath = tmpdir
@@ -211,12 +210,12 @@ EOF
 			appName = CATSRandomName("APP")
 			appNames = append(appNames, appName)
 
-			tmpdir, err := ioutil.TempDir(os.TempDir(), "matching-app")
+			tmpdir, err := os.MkdirTemp(os.TempDir(), "matching-app")
 			Expect(err).ToNot(HaveOccurred())
 
 			appPath = tmpdir
 
-			tmpdir, err = ioutil.TempDir(os.TempDir(), "matching-buildpack")
+			tmpdir, err = os.MkdirTemp(os.TempDir(), "matching-buildpack")
 			Expect(err).ToNot(HaveOccurred())
 
 			buildpackPath = tmpdir

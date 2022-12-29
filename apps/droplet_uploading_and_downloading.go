@@ -1,7 +1,6 @@
 package apps
 
 import (
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -29,7 +28,7 @@ func appGuid(appName string) string {
 
 func makeTempDir() string {
 	// This defers from the typical way temp directories are created (using the OS default), because the GNUWin32 tar.exe does not allow file paths to be prefixed with a drive letter.
-	tmpdir, err := ioutil.TempDir(".", "droplet-download")
+	tmpdir, err := os.MkdirTemp(".", "droplet-download")
 	Expect(err).ToNot(HaveOccurred())
 	return tmpdir
 }

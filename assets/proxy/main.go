@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -77,7 +77,7 @@ func handleRequest(destination string, resp http.ResponseWriter, req *http.Reque
 	}
 	defer getResp.Body.Close()
 
-	readBytes, err := ioutil.ReadAll(getResp.Body)
+	readBytes, err := io.ReadAll(getResp.Body)
 	if err != nil {
 		resp.WriteHeader(http.StatusInternalServerError)
 		_, _ = resp.Write([]byte(fmt.Sprintf("read body failed: %s", err)))

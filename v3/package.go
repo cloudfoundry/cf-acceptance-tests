@@ -3,7 +3,6 @@ package v3
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 
@@ -79,7 +78,7 @@ var _ = V3Describe("package features", func() {
 
 			WaitForPackageToBeReady(copiedPackageGuid)
 
-			tmpdir, err := ioutil.TempDir(os.TempDir(), "package-download")
+			tmpdir, err := os.MkdirTemp(os.TempDir(), "package-download")
 			Expect(err).ToNot(HaveOccurred())
 			app_package_path := path.Join(tmpdir, destinationAppName)
 

@@ -3,7 +3,7 @@ package security_groups_test
 import (
 	"crypto/tls"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 
@@ -65,7 +65,7 @@ var _ = Describe("Dynamic ASGs", func() {
 		resp, err := client.Get(proxyRequestURL)
 		Expect(err).NotTo(HaveOccurred())
 
-		respBytes, err := ioutil.ReadAll(resp.Body)
+		respBytes, err := io.ReadAll(resp.Body)
 		Expect(err).ToNot(HaveOccurred())
 		resp.Body.Close()
 		Expect(respBytes).To(MatchRegexp("refused"))
@@ -84,7 +84,7 @@ var _ = Describe("Dynamic ASGs", func() {
 			resp, err = client.Get(proxyRequestURL)
 			Expect(err).NotTo(HaveOccurred())
 
-			respBytes, err = ioutil.ReadAll(resp.Body)
+			respBytes, err = io.ReadAll(resp.Body)
 			Expect(err).ToNot(HaveOccurred())
 			resp.Body.Close()
 			return respBytes
@@ -98,7 +98,7 @@ var _ = Describe("Dynamic ASGs", func() {
 			resp, err = client.Get(proxyRequestURL)
 			Expect(err).NotTo(HaveOccurred())
 
-			respBytes, err = ioutil.ReadAll(resp.Body)
+			respBytes, err = io.ReadAll(resp.Body)
 			Expect(err).ToNot(HaveOccurred())
 			resp.Body.Close()
 			return respBytes

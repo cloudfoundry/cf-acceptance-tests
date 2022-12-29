@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
@@ -79,13 +78,13 @@ func write(res http.ResponseWriter, req *http.Request) {
 	mountPointPath := getPath() + "/poratest-" + randomString(10)
 
 	d1 := []byte("Hello Persistent World!\n")
-	err := ioutil.WriteFile(mountPointPath, d1, 0644)
+	err := os.WriteFile(mountPointPath, d1, 0644)
 	if err != nil {
 		writeError(res, "Writing \n", err)
 		return
 	}
 
-	body, err := ioutil.ReadFile(mountPointPath)
+	body, err := os.ReadFile(mountPointPath)
 	if err != nil {
 		writeError(res, "Reading \n", err)
 		return
@@ -107,7 +106,7 @@ func dataLoad(res http.ResponseWriter, req *http.Request) {
 	mountPointPath := getPath() + "/poraload-" + randomString(10)
 
 	d1 := []byte("Hello Persistent World!\n")
-	err := ioutil.WriteFile(mountPointPath, d1, 0644)
+	err := os.WriteFile(mountPointPath, d1, 0644)
 	if err != nil {
 		writeError(res, "Writing \n", err)
 		return
@@ -116,12 +115,12 @@ func dataLoad(res http.ResponseWriter, req *http.Request) {
 	var totalIO int
 	for startTime := time.Now(); time.Since(startTime) < 4*time.Second; {
 		d2 := []byte(randomString(1048576))
-		err := ioutil.WriteFile(mountPointPath, d2, 0644)
+		err := os.WriteFile(mountPointPath, d2, 0644)
 		if err != nil {
 			writeError(res, "Writing Load\n", err)
 			return
 		}
-		body, err := ioutil.ReadFile(mountPointPath)
+		body, err := os.ReadFile(mountPointPath)
 		if err != nil {
 			writeError(res, "Reading Load\n", err)
 			return
@@ -159,13 +158,13 @@ func backgroundLoad() {
 		filePath := filepath.Join(dirPath, "poraload-"+os.Getenv("INSTANCE_INDEX"))
 
 		d2 := []byte(randomString(1048576))
-		err := ioutil.WriteFile(filePath, d2, 0644)
+		err := os.WriteFile(filePath, d2, 0644)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 
-		body, err := ioutil.ReadFile(filePath)
+		body, err := os.ReadFile(filePath)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -207,7 +206,7 @@ func createFile(res http.ResponseWriter, _ *http.Request) {
 	mountPointPath := filepath.Join(getPath(), fileName)
 
 	d1 := []byte("Hello Persistent World!\n")
-	err := ioutil.WriteFile(mountPointPath, d1, 0644)
+	err := os.WriteFile(mountPointPath, d1, 0644)
 	if err != nil {
 		writeError(res, "Writing \n", err)
 		return
@@ -236,7 +235,7 @@ func readFile(res http.ResponseWriter, req *http.Request) {
 	fileName := parts[len(parts)-1]
 	mountPointPath := filepath.Join(getPath(), fileName)
 
-	body, err := ioutil.ReadFile(mountPointPath)
+	body, err := os.ReadFile(mountPointPath)
 	if err != nil {
 		res.WriteHeader(http.StatusNotFound)
 		res.Write([]byte(err.Error()))

@@ -2,7 +2,6 @@ package apps
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"time"
@@ -43,12 +42,12 @@ var _ = AppsDescribe("Buildpack cache", func() {
 			BuildpackName = CATSRandomName("BPK")
 			appName = CATSRandomName("APP")
 
-			tmpdir, err := ioutil.TempDir(os.TempDir(), "matching-app")
+			tmpdir, err := os.MkdirTemp(os.TempDir(), "matching-app")
 			Expect(err).ToNot(HaveOccurred())
 
 			appPath = tmpdir
 
-			tmpdir, err = ioutil.TempDir(os.TempDir(), "matching-buildpack")
+			tmpdir, err = os.MkdirTemp(os.TempDir(), "matching-buildpack")
 			Expect(err).ToNot(HaveOccurred())
 
 			buildpackPath = tmpdir
