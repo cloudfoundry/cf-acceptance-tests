@@ -38,11 +38,9 @@ func MakeSleepHandler(w io.Writer, clock clock.Clock) func(http.ResponseWriter, 
 		ticker := clock.NewTicker(time.Duration(logSpeed) * time.Microsecond)
 		go func() {
 			for {
-				select {
-				case t := <-ticker.C():
-					fmt.Fprintf(w, "Log: %s Muahaha...%d...%s\n", req.Host, sequence, t.Format(time.RFC3339))
-					sequence++
-				}
+				t := <-ticker.C()
+				fmt.Fprintf(w, "Log: %s Muahaha...%d...%s\n", req.Host, sequence, t.Format(time.RFC3339))
+				sequence++
 			}
 		}()
 	}
