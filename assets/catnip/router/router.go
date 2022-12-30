@@ -5,7 +5,8 @@ import (
 	"net/http"
 
 	"code.cloudfoundry.org/clock"
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/env"
 	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/health"
@@ -16,24 +17,27 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/text"
 )
 
-func New(out io.Writer, clock clock.Clock) *mux.Router {
-	r := mux.NewRouter()
+func New(out io.Writer, clock clock.Clock) *chi.Mux {
+	r := chi.NewRouter()
 
-	r.HandleFunc("/", HomeHandler).Methods(http.MethodGet)
-	r.HandleFunc("/id", env.InstanceGuidHandler).Methods(http.MethodGet)
-	r.HandleFunc("/myip", linux.MyIPHandler).Methods(http.MethodGet)
-	r.HandleFunc("/health", health.HealthHander).Methods(http.MethodGet)
-	r.HandleFunc("/session", session.StickyHandler).Methods(http.MethodPost)
-	r.HandleFunc("/env.json", env.JSONHandler).Methods(http.MethodGet)
-	r.HandleFunc("/env/{name}", env.NameHandler).Methods(http.MethodGet)
-	r.HandleFunc("/lsb_release", linux.ReleaseHandler).Methods(http.MethodGet)
-	r.HandleFunc("/sigterm/KILL", signal.KillHandler).Methods(http.MethodGet)
-	r.HandleFunc("/logspew/{kbytes}", log.MakeSpewHandler(out)).Methods(http.MethodGet)
-	r.HandleFunc("/largetext/{kbytes}", text.LargeHandler).Methods(http.MethodGet)
-	r.HandleFunc("/log/sleep/{logspeed}", log.MakeSleepHandler(out, clock)).Methods(http.MethodGet)
-	r.HandleFunc("/curl/{host}", linux.CurlHandler).Methods(http.MethodGet)
-	r.HandleFunc("/curl/{host}/", linux.CurlHandler).Methods(http.MethodGet)
-	r.HandleFunc("/curl/{host}/{port}", linux.CurlHandler).Methods(http.MethodGet)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+
+	r.Get("/", HomeHandler)
+	r.Get("/id", env.InstanceGuidHandler)
+	r.Get("/myip", linux.MyIPHandler)
+	r.Get("/health", health.HealthHander)
+	r.Post("/session", session.StickyHandler)
+	r.Get("/env.json", env.JSONHandler)
+	r.Get("/env/{name}", env.NameHandler)
+	r.Get("/lsb_release", linux.ReleaseHandler)
+	r.Get("/sigterm/KILL", signal.KillHandler)
+	r.Get("/logspew/{kbytes}", log.MakeSpewHandler(out))
+	r.Get("/largetext/{kbytes}", text.LargeHandler)
+	r.Get("/log/sleep/{logspeed}", log.MakeSleepHandler(out, clock))
+	r.Get("/curl/{host}", linux.CurlHandler)
+	r.Get("/curl/{host}/", linux.CurlHandler)
+	r.Get("/curl/{host}/{port}", linux.CurlHandler)
 
 	return r
 }

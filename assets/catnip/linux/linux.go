@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"syscall"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 )
 
 func ReleaseHandler(res http.ResponseWriter, req *http.Request) {
@@ -28,8 +28,8 @@ func MyIPHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func CurlHandler(res http.ResponseWriter, req *http.Request) {
-	host := mux.Vars(req)["host"]
-	port := mux.Vars(req)["port"]
+	host := chi.URLParam(req, "host")
+	port := chi.URLParam(req, "port")
 	if port == "" {
 		port = "80"
 	}
