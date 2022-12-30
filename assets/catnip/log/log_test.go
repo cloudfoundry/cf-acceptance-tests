@@ -12,19 +12,20 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 )
 
 var _ = Describe("Log", func() {
 	var (
 		fakeClock *fakeclock.FakeClock
-		logBuf    *bytes.Buffer
+		logBuf    *gbytes.Buffer
 
 		server *httptest.Server
 	)
 
 	BeforeEach(func() {
 		fakeClock = fakeclock.NewFakeClock(time.Now())
-		logBuf = bytes.NewBuffer([]byte{})
+		logBuf = gbytes.NewBuffer()
 
 		server = httptest.NewServer(router.New(logBuf, fakeClock))
 	})
@@ -39,7 +40,7 @@ var _ = Describe("Log", func() {
 			Expect(err).NotTo(HaveOccurred())
 			defer res.Body.Close()
 
-			Expect(logBuf.Len()).To(Equal(4100))
+			Expect(len(logBuf.Contents())).To(Equal(4100))
 		})
 
 		It("Returns how many kb is spewed", func() {
@@ -60,11 +61,11 @@ var _ = Describe("Log", func() {
 			Expect(err).NotTo(HaveOccurred())
 			defer res.Body.Close()
 
-			Eventually(logBuf.String).Should(ContainSubstring("Muahaha... let's go. Waiting 0.000004 seconds between loglines. Logging 'Muahaha...' every time."))
+			Eventually(logBuf).Should(gbytes.Say("Muahaha... let's go. Waiting 0.000004 seconds between loglines. Logging 'Muahaha...' every time."))
 			fakeClock.Increment(4 * time.Microsecond)
-			Eventually(logBuf.String).Should(ContainSubstring("Muahaha...1"))
+			Eventually(logBuf).Should(gbytes.Say("Muahaha...1"))
 			fakeClock.Increment(4 * time.Microsecond)
-			Eventually(logBuf.String).Should(ContainSubstring("Muahaha...2"))
+			Eventually(logBuf).Should(gbytes.Say("Muahaha...2"))
 		})
 	})
 })
