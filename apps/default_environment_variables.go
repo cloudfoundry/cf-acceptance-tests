@@ -114,7 +114,7 @@ exit 1
 			Eventually(cf.Cf(
 				"push", appName,
 				"-p", assets.NewAssets().Binary,
-				"-b", "binary_buildpack",
+				"-b", Config.GetBinaryBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 			),
 				Config.CfPushTimeoutDuration(),

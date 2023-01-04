@@ -341,7 +341,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				found, matchingEvent := lastAppUsageEventWithParentAppName(appName, "BUILDPACK_SET")
 
 				Expect(found).To(BeTrue())
-				Expect(matchingEvent.Buildpack.Name).To(Equal("binary_buildpack"))
+				Expect(matchingEvent.Buildpack.Name).To(Equal(Config.GetBinaryBuildpackName()))
 				Expect(matchingEvent.Buildpack.Guid).ToNot(BeZero())
 			})
 		})

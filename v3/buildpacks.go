@@ -146,14 +146,14 @@ var _ = V3Describe("buildpack", func() {
 			Expect(len(droplet.Buildpacks)).To(Equal(2))
 			i := 0
 			j := 1
-			if droplet.Buildpacks[0].Name == "go_buildpack" {
+			if droplet.Buildpacks[0].Name == Config.GetGoBuildpackName() {
 				i, j = j, i
 			}
-			Expect(droplet.Buildpacks[i].Name).To(Equal("ruby_buildpack"))
+			Expect(droplet.Buildpacks[i].Name).To(Equal(Config.GetRubyBuildpackName()))
 			Expect(droplet.Buildpacks[i].DetectOutput).To(Equal(""))
 			Expect(droplet.Buildpacks[i].BuildpackName).To(Equal("ruby"))
 			Expect(droplet.Buildpacks[i].Version).ToNot(BeEmpty())
-			Expect(droplet.Buildpacks[j].Name).To(Equal("go_buildpack"))
+			Expect(droplet.Buildpacks[j].Name).To(Equal(Config.GetGoBuildpackName()))
 			Expect(droplet.Buildpacks[j].DetectOutput).To(Equal("go"))
 			Expect(droplet.Buildpacks[j].BuildpackName).To(Equal("go"))
 			Expect(droplet.Buildpacks[j].Version).ToNot(BeEmpty())
