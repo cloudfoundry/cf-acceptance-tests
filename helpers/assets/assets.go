@@ -63,7 +63,7 @@ func NewAssets() Assets {
 		HelloWorld:                 "assets/hello-world",
 		HTTP2:                      "assets/http2",
 		Java:                       "assets/java",
-		JavaSpringZip:              "assets/java-spring/java-spring.jar",
+		JavaSpringZip:              "assets/java-spring/target/spring-boot-trivial-app-0.0.1.jar",
 		JavaUnwriteableZip:         "assets/java-unwriteable-dir/java-unwriteable-dir.jar",
 		LoggregatorLoadGenerator:   "assets/loggregator-load-generator",
 		LoggregatorLoadGeneratorGo: "assets/loggregator-load-generator-go",
