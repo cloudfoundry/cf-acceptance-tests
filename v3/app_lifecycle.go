@@ -48,7 +48,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 		DeleteApp(appGuid)
 	})
 
-	Context("with a ruby_buildpack", func() {
+	Context("with a ruby buildpack", func() {
 		BeforeEach(func() {
 			UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
 			WaitForPackageToBeReady(packageGuid)
@@ -151,7 +151,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 		})
 	})
 
-	Context("with a java_buildpack", func() {
+	Context("with a java buildpack", func() {
 		BeforeEach(func() {
 			UploadPackage(uploadUrl, assets.NewAssets().JavaSpringZip, token)
 			WaitForPackageToBeReady(packageGuid)

@@ -96,7 +96,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 					"push", appName,
 					"-p", assets.NewAssets().Binary,
 					"-m", DEFAULT_MEMORY_LIMIT,
-					"-b", "binary_buildpack",
+					"-b", Config.GetBinaryBuildpackName(),
 					"-c", "./app"),
 					Config.CfPushTimeoutDuration()).Should(Exit(0))
 
@@ -123,7 +123,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 					appName,
 					"-p", assets.NewAssets().Binary,
 					"-m", DEFAULT_MEMORY_LIMIT,
-					"-b", "binary_buildpack",
+					"-b", Config.GetBinaryBuildpackName(),
 					"-d", isoSegDomain,
 					"-c", "./app"),
 					Config.CfPushTimeoutDuration()).Should(Exit(0))
@@ -170,7 +170,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 					appName,
 					"-p", assets.NewAssets().Binary,
 					"-m", DEFAULT_MEMORY_LIMIT,
-					"-b", "binary_buildpack",
+					"-b", Config.GetBinaryBuildpackName(),
 					"-d", isoSegDomain,
 					"-c", "./app"),
 					Config.CfPushTimeoutDuration()).Should(Exit(1))
@@ -221,7 +221,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 					appName,
 					"-p", assets.NewAssets().Binary,
 					"-m", DEFAULT_MEMORY_LIMIT,
-					"-b", "binary_buildpack",
+					"-b", Config.GetBinaryBuildpackName(),
 					"-d", isoSegDomain,
 					"-c", "./app"),
 					Config.CfPushTimeoutDuration()).Should(Exit(0))

@@ -83,7 +83,7 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 					"push", appName,
 					"-p", assets.NewAssets().Binary,
 					"-m", DEFAULT_MEMORY_LIMIT,
-					"-b", "binary_buildpack",
+					"-b", Config.GetBinaryBuildpackName(),
 					"-c", "./app"),
 					Config.CfPushTimeoutDuration()).Should(Exit(0))
 			})
@@ -128,7 +128,7 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 					appName,
 					"-p", assets.NewAssets().Binary,
 					"-m", DEFAULT_MEMORY_LIMIT,
-					"-b", "binary_buildpack",
+					"-b", Config.GetBinaryBuildpackName(),
 					"-d", isoSegDomain,
 					"-c", "./app"),
 					Config.CfPushTimeoutDuration()).Should(Exit(0))
