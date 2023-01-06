@@ -8,7 +8,6 @@ type Assets struct {
 	Dora                       string
 	DoraZip                    string
 	DotnetCore                 map[string]string
-	Fuse                       string
 	GoCallsRubyZip             string
 	Golang                     string
 	GRPC                       string
@@ -57,7 +56,6 @@ func NewAssets() Assets {
 			"cflinuxfs3": "assets/dotnet-core/cflinuxfs3",
 			"cflinuxfs4": "assets/dotnet-core/cflinuxfs4",
 		},
-		Fuse:                       "assets/fuse-mount",
 		GoCallsRubyZip:             "assets/go_calls_ruby.zip",
 		Golang:                     "assets/golang",
 		GRPC:                       "assets/grpc",
