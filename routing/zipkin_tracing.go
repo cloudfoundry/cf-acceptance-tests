@@ -66,7 +66,7 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 			It("the sleuth error response has no error", func() {
 				traceID := "fee1f7ba6aeec41c"
 
-				header1 := fmt.Sprintf(`X-B3-TraceId: %s `, traceID)
+				header1 := fmt.Sprintf(`X-B3-TraceId: %s`, traceID)
 				header2 := `X-B3-SpanId: 579b36fd31cd8714`
 
 				var curlOutput string
