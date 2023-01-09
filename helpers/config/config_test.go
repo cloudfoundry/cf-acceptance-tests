@@ -24,12 +24,7 @@ type requiredConfig struct {
 
 type testConfig struct {
 	// required
-	ApiEndpoint       *string `json:"api"`
-	AdminUser         *string `json:"admin_user"`
-	AdminPassword     *string `json:"admin_password"`
-	SkipSSLValidation *bool   `json:"skip_ssl_validation"`
-	AppsDomain        *string `json:"apps_domain"`
-	UseHttp           *bool   `json:"use_http,omitempty"`
+	requiredConfig
 
 	// timeouts
 	DefaultTimeout               *int `json:"default_timeout,omitempty"`
@@ -212,6 +207,7 @@ var _ = Describe("Config", func() {
 		testCfg.AdminPassword = ptrToString("admin")
 		testCfg.SkipSSLValidation = ptrToBool(true)
 		testCfg.AppsDomain = ptrToString("cf-app.bosh-lite.com")
+		testCfg.UseHttp = ptrToBool(false)
 		testCfg.Infrastructure = ptrToString("vms")
 	})
 
