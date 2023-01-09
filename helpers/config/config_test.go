@@ -69,7 +69,7 @@ type testConfig struct {
 	Infrastructure *string `json:"infrastructure"`
 }
 
-type allConfig struct {
+type nullConfig struct {
 	ApiEndpoint *string `json:"api"`
 	AppsDomain  *string `json:"apps_domain"`
 	UseHttp     *bool   `json:"use_http"`
@@ -317,8 +317,8 @@ var _ = Describe("Config", func() {
 
 	Context("when all values are null", func() {
 		It("returns an error", func() {
-			allCfgFilePath := writeConfigFile(&allConfig{})
-			_, err := cfg.NewCatsConfig(allCfgFilePath)
+			nullConfigFilePath := writeConfigFile(&nullConfig{})
+			_, err := cfg.NewCatsConfig(nullConfigFilePath)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("'api' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'apps_domain' must not be null"))
