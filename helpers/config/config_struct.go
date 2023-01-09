@@ -686,6 +686,10 @@ func validateCredHubSettings(config *config) error {
 }
 
 func validateVolumeServices(config *config) error {
+	if config.IncludeVolumeServices == nil {
+		return nil
+	}
+
 	if !config.GetIncludeVolumeServices() {
 		return nil
 	}

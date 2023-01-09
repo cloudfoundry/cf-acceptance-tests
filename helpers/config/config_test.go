@@ -141,6 +141,9 @@ type nullConfig struct {
 	IncludeHTTP2Routing             *bool `json:"include_http2_routing"`
 	IncludeTCPRouting               *bool `json:"include_tcp_routing"`
 	IncludeServiceDiscovery         *bool `json:"include_service_discovery"`
+	IncludeVolumeServices           *bool `json:"include_volume_services"`
+	IncludeTCPIsolationSegments     *bool `json:"include_tcp_isolation_segments"`
+	IncludeAppSyslogTcp             *bool `json:"include_app_syslog_tcp"`
 
 	CredhubMode         *string `json:"credhub_mode"`
 	CredhubLocation     *string `json:"credhub_location"`
@@ -157,6 +160,11 @@ type nullConfig struct {
 	Stacks *[]string `json:"stacks"`
 
 	Infrastructure *string `json:"infrastructure"`
+
+	UnallocatedIPForSecurityGroup *string `json:"unallocated_ip_for_security_group"`
+	RequireProxiedAppTraffic      *bool   `json:"require_proxied_app_traffic"`
+	UseWindowsContextPath         *bool   `json:"use_windows_context_path"`
+	UseWindowsTestTask            *bool   `json:"use_windows_test_task"`
 }
 
 type testReporterConfig struct {
@@ -383,8 +391,11 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_zipkin' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_isolation_segments' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_routing_isolation_segments' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_tcp_isolation_segments' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_windows' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_service_discovery' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_app_syslog_tcp' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'public_docker_app_image' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_image' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_username' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_password' must not be null"))
@@ -394,6 +405,15 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'stacks' must not be null"))
 
 			Expect(err.Error()).To(ContainSubstring("'infrastructure' must not be null"))
+
+			// These values are allowed to be null
+			Expect(err.Error()).NotTo(ContainSubstring("unallocated_ip_for_security_group"))
+			Expect(err.Error()).NotTo(ContainSubstring("require_proxied_app_traffic"))
+			Expect(err.Error()).NotTo(ContainSubstring("use_windows_context_path"))
+			Expect(err.Error()).NotTo(ContainSubstring("reporter_config"))
+			Expect(err.Error()).NotTo(ContainSubstring("use_windows_test_task"))
+			Expect(err.Error()).NotTo(ContainSubstring("include_volume_services"))
+			Expect(err.Error()).NotTo(ContainSubstring("include_deployments"))
 		})
 	})
 
