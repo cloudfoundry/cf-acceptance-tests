@@ -7,11 +7,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 )
 
 func NameHandler(res http.ResponseWriter, req *http.Request) {
-	io.WriteString(res, os.Getenv(mux.Vars(req)["name"]))
+	io.WriteString(res, os.Getenv(chi.URLParam(req, "name")))
 }
 
 func JSONHandler(res http.ResponseWriter, req *http.Request) {

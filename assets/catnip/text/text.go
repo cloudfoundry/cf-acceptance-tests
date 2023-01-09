@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 )
 
 func LargeHandler(res http.ResponseWriter, req *http.Request) {
-	kbytes, _ := strconv.Atoi(mux.Vars(req)["kbytes"])
+	kbytes, _ := strconv.Atoi(chi.URLParam(req, "kbytes"))
 
 	k := make([]byte, 1024)
 	for i := range k {

@@ -1,6 +1,0 @@
----
-applications:
-- name: catnip
-  processes:
-  - type: worker
-    command: start-worker.sh

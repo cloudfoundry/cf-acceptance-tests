@@ -8,12 +8,12 @@ import (
 	"time"
 
 	"code.cloudfoundry.org/clock"
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 )
 
 func MakeSpewHandler(w io.Writer) func(http.ResponseWriter, *http.Request) {
 	return func(res http.ResponseWriter, req *http.Request) {
-		kbytes, _ := strconv.Atoi(mux.Vars(req)["kbytes"])
+		kbytes, _ := strconv.Atoi(chi.URLParam(req, "kbytes"))
 
 		k := make([]byte, 1024)
 		for i := range k {
@@ -30,7 +30,7 @@ func MakeSpewHandler(w io.Writer) func(http.ResponseWriter, *http.Request) {
 
 func MakeSleepHandler(w io.Writer, clock clock.Clock) func(http.ResponseWriter, *http.Request) {
 	return func(res http.ResponseWriter, req *http.Request) {
-		logSpeed, _ := strconv.Atoi(mux.Vars(req)["logspeed"])
+		logSpeed, _ := strconv.Atoi(chi.URLParam(req, "logspeed"))
 
 		fmt.Fprintf(w, "Muahaha... let's go. Waiting %f seconds between loglines. Logging 'Muahaha...' every time.\n", float64(logSpeed)/1000000.0)
 
@@ -38,11 +38,9 @@ func MakeSleepHandler(w io.Writer, clock clock.Clock) func(http.ResponseWriter, 
 		ticker := clock.NewTicker(time.Duration(logSpeed) * time.Microsecond)
 		go func() {
 			for {
-				select {
-				case t := <-ticker.C():
-					fmt.Fprintf(w, "Log: %s Muahaha...%d...%s\n", req.Host, sequence, t.Format(time.RFC3339))
-					sequence++
-				}
+				t := <-ticker.C()
+				fmt.Fprintf(w, "Log: %s Muahaha...%d...%s\n", req.Host, sequence, t.Format(time.RFC3339))
+				sequence++
 			}
 		}()
 	}
