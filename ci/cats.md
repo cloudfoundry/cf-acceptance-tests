@@ -48,7 +48,6 @@ With the development of cf-for-k8s, we discovered different behavior in Kubernet
 "go_buildpack_name": "paketo-buildpacks/go",
 "java_buildpack_name": "paketo-buildpacks/java",
 "nodejs_buildpack_name": "paketo-buildpacks/nodejs",
-"php_buildpack_name": "paketo-buildpacks/php",
 "binary_buildpack_name": "paketo-buildpacks/procfile"
 ```
 

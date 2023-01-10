@@ -173,7 +173,6 @@ include_v3
 * `nodejs_buildpack_name` [See below](#buildpack-names)
 * `go_buildpack_name` [See below](#buildpack-names)
 * `python_buildpack_name` [See below](#buildpack-names)
-* `php_buildpack_name` [See below](#buildpack-names)
 * `r_buildpack_name` [See below](#buildpack-names)
 * `binary_buildpack_name` [See below](#buildpack-names)
 
@@ -202,7 +201,6 @@ Many tests specify a buildpack when pushing an app, so that on diego the app sta
 * `nodejs_buildpack_name: nodejs_buildpack`
 * `go_buildpack_name: go_buildpack`
 * `python_buildpack_name: python_buildpack`
-* `php_buildpack_name: php_buildpack`
 * `r_buildpack_name: r_buildpack`
 * `binary_buildpack_name: binary_buildpack`
 * `hwc_buildpack_name: hwc_buildpack`
