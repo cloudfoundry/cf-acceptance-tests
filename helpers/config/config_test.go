@@ -38,35 +38,57 @@ type testConfig struct {
 	TimeoutScale *float64 `json:"timeout_scale,omitempty"`
 
 	// optional
-	IncludePrivateDockerRegistry  *bool   `json:"include_private_docker_registry,omitempty"`
 	PrivateDockerRegistryImage    *string `json:"private_docker_registry_image,omitempty"`
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username,omitempty"`
 	PrivateDockerRegistryPassword *string `json:"private_docker_registry_password,omitempty"`
 	PublicDockerAppImage          *string `json:"public_docker_app_image,omitempty"`
 
-	IncludeIsolationSegments        *bool   `json:"include_isolation_segments,omitempty"`
-	IncludeRoutingIsolationSegments *bool   `json:"include_routing_isolation_segments,omitempty"`
-	IsolationSegmentName            *string `json:"isolation_segment_name,omitempty"`
-	IsolationSegmentDomain          *string `json:"isolation_segment_domain,omitempty"`
+	IsolationSegmentName   *string `json:"isolation_segment_name,omitempty"`
+	IsolationSegmentDomain *string `json:"isolation_segment_domain,omitempty"`
 
 	UnallocatedIPForSecurityGroup *string `json:"unallocated_ip_for_security_group"`
 	RequireProxiedAppTraffic      *bool   `json:"require_proxied_app_traffic"`
 
-	IncludeWindows        *bool   `json:"include_windows,omitempty"`
 	UseWindowsTestTask    *bool   `json:"use_windows_test_task,omitempty"`
 	UseWindowsContextPath *bool   `json:"use_windows_context_path,omitempty"`
 	WindowsStack          *string `json:"windows_stack,omitempty"`
-
-	IncludeServiceDiscovery *bool `json:"include_service_discovery,omitempty"`
-
-	IncludeHTTP2Routing *bool `json:"include_http2_routing,omitempty"`
-	IncludeTCPRouting   *bool `json:"include_tcp_routing,omitempty"`
 
 	ReporterConfig *testReporterConfig `json:"reporter_config"`
 
 	Stacks *[]string `json:"stacks,omitempty"`
 
 	Infrastructure *string `json:"infrastructure"`
+
+	VolumeServiceName     *string `json:"volume_service_name,omitempty"`
+	VolumeServicePlanName *string `json:"volume_service_plan_name,omitempty"`
+
+	IncludeAppSyslogTcp             *bool `json:"include_app_syslog_tcp,omitempty"`
+	IncludeApps                     *bool `json:"include_apps,omitempty"`
+	IncludeContainerNetworking      *bool `json:"include_container_networking,omitempty"`
+	IncludeDeployments              *bool `json:"include_deployments,omitempty"`
+	IncludeDetect                   *bool `json:"include_detect,omitempty"`
+	IncludeDocker                   *bool `json:"include_docker,omitempty"`
+	IncludeInternetDependent        *bool `json:"include_internet_dependent,omitempty"`
+	IncludeIsolationSegments        *bool `json:"include_isolation_segments,omitempty"`
+	IncludePrivateDockerRegistry    *bool `json:"include_private_docker_registry,omitempty"`
+	IncludeRouteServices            *bool `json:"include_route_services,omitempty"`
+	IncludeRouting                  *bool `json:"include_routing,omitempty"`
+	IncludeRoutingIsolationSegments *bool `json:"include_routing_isolation_segments,omitempty"`
+	IncludeSSO                      *bool `json:"include_sso,omitempty"`
+	IncludeSecurityGroups           *bool `json:"include_security_groups,omitempty"`
+	IncludeServiceDiscovery         *bool `json:"include_service_discovery,omitempty"`
+	IncludeServiceInstanceSharing   *bool `json:"include_service_instance_sharing,omitempty"`
+	IncludeServices                 *bool `json:"include_services,omitempty"`
+	IncludeUserProvidedServices     *bool `json:"include_user_provided_services,omitempty"`
+	IncludeSsh                      *bool `json:"include_ssh,omitempty"`
+	IncludeTCPIsolationSegments     *bool `json:"include_tcp_isolation_segments,omitempty"`
+	IncludeHTTP2Routing             *bool `json:"include_http2_routing,omitempty"`
+	IncludeTCPRouting               *bool `json:"include_tcp_routing,omitempty"`
+	IncludeTasks                    *bool `json:"include_tasks,omitempty"`
+	IncludeV3                       *bool `json:"include_v3,omitempty"`
+	IncludeVolumeServices           *bool `json:"include_volume_services,omitempty"`
+	IncludeZipkin                   *bool `json:"include_zipkin,omitempty"`
+	IncludeWindows                  *bool `json:"include_windows,omitempty"`
 }
 
 type nullConfig struct {
@@ -430,6 +452,43 @@ var _ = Describe("Config", func() {
 			testCfg.UnallocatedIPForSecurityGroup = ptrToString("192.168.0.1")
 			testCfg.RequireProxiedAppTraffic = ptrToBool(true)
 			testCfg.Infrastructure = ptrToString("kubernetes")
+
+			testCfg.IncludeAppSyslogTcp = ptrToBool(false)
+			testCfg.IncludeApps = ptrToBool(false)
+			testCfg.IncludeContainerNetworking = ptrToBool(true)
+			testCfg.IncludeDeployments = ptrToBool(true)
+			testCfg.IncludeDetect = ptrToBool(false)
+			testCfg.IncludeDocker = ptrToBool(true)
+			testCfg.IncludeInternetDependent = ptrToBool(true)
+			testCfg.IncludeIsolationSegments = ptrToBool(true)
+			testCfg.IncludePrivateDockerRegistry = ptrToBool(true)
+			testCfg.IncludeRouteServices = ptrToBool(true)
+			testCfg.IncludeRouting = ptrToBool(false)
+			testCfg.IncludeRoutingIsolationSegments = ptrToBool(true)
+			testCfg.IncludeSSO = ptrToBool(true)
+			testCfg.IncludeSecurityGroups = ptrToBool(true)
+			testCfg.IncludeServiceDiscovery = ptrToBool(true)
+			testCfg.IncludeServiceInstanceSharing = ptrToBool(true)
+			testCfg.IncludeServices = ptrToBool(true)
+			testCfg.IncludeUserProvidedServices = ptrToBool(true)
+			testCfg.IncludeSsh = ptrToBool(true)
+			testCfg.IncludeTCPIsolationSegments = ptrToBool(true)
+			testCfg.IncludeHTTP2Routing = ptrToBool(true)
+			testCfg.IncludeTCPRouting = ptrToBool(true)
+			testCfg.IncludeTasks = ptrToBool(true)
+			testCfg.IncludeV3 = ptrToBool(false)
+			testCfg.IncludeVolumeServices = ptrToBool(true)
+			testCfg.IncludeZipkin = ptrToBool(true)
+			testCfg.IncludeWindows = ptrToBool(true)
+
+			// These values are set so as not to trigger validation errors associated with the overrides provided above
+			testCfg.PrivateDockerRegistryImage = ptrToString("avoid-validation-errors-by-setting-dummy-value")
+			testCfg.PrivateDockerRegistryUsername = ptrToString("avoid-validation-errors-by-setting-dummy-value")
+			testCfg.PrivateDockerRegistryPassword = ptrToString("avoid-validation-errors-by-setting-dummy-value")
+			testCfg.IsolationSegmentName = ptrToString("avoid-validation-errors-by-setting-dummy-value")
+			testCfg.IsolationSegmentDomain = ptrToString("avoid-validation-errors-by-setting-dummy-value")
+			testCfg.VolumeServiceName = ptrToString("avoid-validation-errors-by-setting-dummy-value")
+			testCfg.VolumeServicePlanName = ptrToString("avoid-validation-errors-by-setting-dummy-value")
 		})
 
 		It("respects the overriden values", func() {
@@ -447,6 +506,34 @@ var _ = Describe("Config", func() {
 			Expect(config.GetUnallocatedIPForSecurityGroup()).To(Equal("192.168.0.1"))
 			Expect(config.GetRequireProxiedAppTraffic()).To(BeTrue())
 			Expect(config.RunningOnK8s()).To(BeTrue(), "RunningOnK8s should be true")
+
+			Expect(config.GetIncludeAppSyslogTcp()).To(BeFalse())
+			Expect(config.GetIncludeApps()).To(BeFalse())
+			Expect(config.GetIncludeContainerNetworking()).To(BeTrue())
+			Expect(config.GetIncludeDeployments()).To(BeTrue())
+			Expect(config.GetIncludeDetect()).To(BeFalse())
+			Expect(config.GetIncludeDocker()).To(BeTrue())
+			Expect(config.GetIncludeInternetDependent()).To(BeTrue())
+			Expect(config.GetIncludeIsolationSegments()).To(BeTrue())
+			Expect(config.GetIncludePrivateDockerRegistry()).To(BeTrue())
+			Expect(config.GetIncludeRouteServices()).To(BeTrue())
+			Expect(config.GetIncludeRouting()).To(BeFalse())
+			Expect(config.GetIncludeRoutingIsolationSegments()).To(BeTrue())
+			Expect(config.GetIncludeSSO()).To(BeTrue())
+			Expect(config.GetIncludeSecurityGroups()).To(BeTrue())
+			Expect(config.GetIncludeServiceDiscovery()).To(BeTrue())
+			Expect(config.GetIncludeServiceInstanceSharing()).To(BeTrue())
+			Expect(config.GetIncludeServices()).To(BeTrue())
+			Expect(config.GetIncludeUserProvidedServices()).To(BeTrue())
+			Expect(config.GetIncludeSsh()).To(BeTrue())
+			Expect(config.GetIncludeTCPIsolationSegments()).To(BeTrue())
+			Expect(config.GetIncludeHTTP2Routing()).To(BeTrue())
+			Expect(config.GetIncludeTCPRouting()).To(BeTrue())
+			Expect(config.GetIncludeTasks()).To(BeTrue())
+			Expect(config.GetIncludeV3()).To(BeFalse())
+			Expect(config.GetIncludeVolumeServices()).To(BeTrue())
+			Expect(config.GetIncludeZipkin()).To(BeTrue())
+			Expect(config.GetIncludeWindows()).To(BeTrue())
 		})
 	})
 
