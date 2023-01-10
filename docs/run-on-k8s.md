@@ -33,7 +33,6 @@ The sample configuration will run CATS in an apps suite only mode, with addition
   "include_v3": false,
   "infrastructure": "kubernetes",
   "ruby_buildpack_name": "paketo-community/ruby",
-  "python_buildpack_name": "paketo-community/python",
   "go_buildpack_name": "paketo-buildpacks/go",
   "java_buildpack_name": "paketo-buildpacks/java",
   "nodejs_buildpack_name": "paketo-buildpacks/nodejs",

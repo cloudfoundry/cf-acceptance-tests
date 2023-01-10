@@ -142,7 +142,6 @@ type nullConfig struct {
 	JavaBuildpackName       *string `json:"java_buildpack_name"`
 	NginxBuildpackName      *string `json:"nginx_buildpack_name"`
 	NodejsBuildpackName     *string `json:"nodejs_buildpack_name"`
-	PythonBuildpackName     *string `json:"python_buildpack_name"`
 	RBuildpackName          *string `json:"r_buildpack_name"`
 	RubyBuildpackName       *string `json:"ruby_buildpack_name"`
 	StaticFileBuildpackName *string `json:"staticfile_buildpack_name"`
@@ -410,7 +409,6 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'go_buildpack_name' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'java_buildpack_name' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'nodejs_buildpack_name' must not be null"))
-			Expect(err.Error()).To(ContainSubstring("'python_buildpack_name' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'ruby_buildpack_name' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'staticfile_buildpack_name' must not be null"))
 
