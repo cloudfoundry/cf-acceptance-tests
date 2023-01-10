@@ -89,6 +89,16 @@ type testConfig struct {
 	IncludeVolumeServices           *bool `json:"include_volume_services,omitempty"`
 	IncludeZipkin                   *bool `json:"include_zipkin,omitempty"`
 	IncludeWindows                  *bool `json:"include_windows,omitempty"`
+
+	BinaryBuildpackName     *string `json:"binary_buildpack_name,omitempty"`
+	GoBuildpackName         *string `json:"go_buildpack_name,omitempty"`
+	HwcBuildpackName        *string `json:"hwc_buildpack_name,omitempty"`
+	JavaBuildpackName       *string `json:"java_buildpack_name,omitempty"`
+	NginxBuildpackName      *string `json:"nginx_buildpack_name,omitempty"`
+	NodejsBuildpackName     *string `json:"nodejs_buildpack_name,omitempty"`
+	RBuildpackName          *string `json:"r_buildpack_name,omitempty"`
+	RubyBuildpackName       *string `json:"ruby_buildpack_name,omitempty"`
+	StaticFileBuildpackName *string `json:"staticfile_buildpack_name,omitempty"`
 }
 
 type nullConfig struct {
@@ -347,6 +357,16 @@ var _ = Describe("Config", func() {
 		Expect(config.GetStacks()).To(ConsistOf("cflinuxfs3"))
 
 		Expect(config.RunningOnK8s()).To(BeFalse(), "RunningOnK8s should be false")
+
+		Expect(config.GetBinaryBuildpackName()).To(Equal("binary_buildpack"))
+		Expect(config.GetGoBuildpackName()).To(Equal("go_buildpack"))
+		Expect(config.GetHwcBuildpackName()).To(Equal("hwc_buildpack"))
+		Expect(config.GetJavaBuildpackName()).To(Equal("java_buildpack"))
+		Expect(config.GetNginxBuildpackName()).To(Equal("nginx_buildpack"))
+		Expect(config.GetNodejsBuildpackName()).To(Equal("nodejs_buildpack"))
+		Expect(config.GetRBuildpackName()).To(Equal("r_buildpack"))
+		Expect(config.GetRubyBuildpackName()).To(Equal("ruby_buildpack"))
+		Expect(config.GetStaticFileBuildpackName()).To(Equal("staticfile_buildpack"))
 	})
 
 	Context("when all values are null", func() {
@@ -485,6 +505,16 @@ var _ = Describe("Config", func() {
 			testCfg.IncludeZipkin = ptrToBool(true)
 			testCfg.IncludeWindows = ptrToBool(true)
 
+			testCfg.BinaryBuildpackName = ptrToString("binary_buildpack_override")
+			testCfg.GoBuildpackName = ptrToString("go_buildpack_override")
+			testCfg.HwcBuildpackName = ptrToString("hwc_buildpack_override")
+			testCfg.JavaBuildpackName = ptrToString("java_buildpack_override")
+			testCfg.NginxBuildpackName = ptrToString("nginx_buildpack_override")
+			testCfg.NodejsBuildpackName = ptrToString("nodejs_buildpack_override")
+			testCfg.RBuildpackName = ptrToString("r_buildpack_override")
+			testCfg.RubyBuildpackName = ptrToString("ruby_buildpack_override")
+			testCfg.StaticFileBuildpackName = ptrToString("staticfile_buildpack_override")
+
 			// These values are set so as not to trigger validation errors associated with the overrides provided above
 			testCfg.PrivateDockerRegistryImage = ptrToString("avoid-validation-errors-by-setting-dummy-value")
 			testCfg.PrivateDockerRegistryUsername = ptrToString("avoid-validation-errors-by-setting-dummy-value")
@@ -538,6 +568,16 @@ var _ = Describe("Config", func() {
 			Expect(config.GetIncludeVolumeServices()).To(BeTrue())
 			Expect(config.GetIncludeZipkin()).To(BeTrue())
 			Expect(config.GetIncludeWindows()).To(BeTrue())
+
+			Expect(config.GetBinaryBuildpackName()).To(Equal("binary_buildpack_override"))
+			Expect(config.GetGoBuildpackName()).To(Equal("go_buildpack_override"))
+			Expect(config.GetHwcBuildpackName()).To(Equal("hwc_buildpack_override"))
+			Expect(config.GetJavaBuildpackName()).To(Equal("java_buildpack_override"))
+			Expect(config.GetNginxBuildpackName()).To(Equal("nginx_buildpack_override"))
+			Expect(config.GetNodejsBuildpackName()).To(Equal("nodejs_buildpack_override"))
+			Expect(config.GetRBuildpackName()).To(Equal("r_buildpack_override"))
+			Expect(config.GetRubyBuildpackName()).To(Equal("ruby_buildpack_override"))
+			Expect(config.GetStaticFileBuildpackName()).To(Equal("staticfile_buildpack_override"))
 		})
 	})
 
