@@ -58,7 +58,6 @@ type config struct {
 	JavaBuildpackName       *string `json:"java_buildpack_name"`
 	NginxBuildpackName      *string `json:"nginx_buildpack_name"`
 	NodejsBuildpackName     *string `json:"nodejs_buildpack_name"`
-	PythonBuildpackName     *string `json:"python_buildpack_name"`
 	RBuildpackName          *string `json:"r_buildpack_name"`
 	RubyBuildpackName       *string `json:"ruby_buildpack_name"`
 	StaticFileBuildpackName *string `json:"staticfile_buildpack_name"`
@@ -154,7 +153,6 @@ func getDefaults() config {
 	defaults.JavaBuildpackName = ptrToString("java_buildpack")
 	defaults.NginxBuildpackName = ptrToString("nginx_buildpack")
 	defaults.NodejsBuildpackName = ptrToString("nodejs_buildpack")
-	defaults.PythonBuildpackName = ptrToString("python_buildpack")
 	defaults.RBuildpackName = ptrToString("r_buildpack")
 	defaults.RubyBuildpackName = ptrToString("ruby_buildpack")
 	defaults.StaticFileBuildpackName = ptrToString("staticfile_buildpack")
@@ -382,9 +380,6 @@ func validateConfig(config *config) Errors {
 	}
 	if config.NodejsBuildpackName == nil {
 		errs.Add(fmt.Errorf("* 'nodejs_buildpack_name' must not be null"))
-	}
-	if config.PythonBuildpackName == nil {
-		errs.Add(fmt.Errorf("* 'python_buildpack_name' must not be null"))
 	}
 	if config.RBuildpackName == nil {
 		errs.Add(fmt.Errorf("* 'r_buildpack_name' must not be null"))

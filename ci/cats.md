@@ -44,7 +44,6 @@ With the development of cf-for-k8s, we discovered different behavior in Kubernet
 ```
 "infrastructure": "kubernetes",
 "ruby_buildpack_name": "paketo-buildpacks/ruby",
-"python_buildpack_name": "paketo-community/python",
 "go_buildpack_name": "paketo-buildpacks/go",
 "java_buildpack_name": "paketo-buildpacks/java",
 "nodejs_buildpack_name": "paketo-buildpacks/nodejs",
