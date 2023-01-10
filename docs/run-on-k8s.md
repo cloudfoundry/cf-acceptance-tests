@@ -37,7 +37,6 @@ The sample configuration will run CATS in an apps suite only mode, with addition
   "go_buildpack_name": "paketo-buildpacks/go",
   "java_buildpack_name": "paketo-buildpacks/java",
   "nodejs_buildpack_name": "paketo-buildpacks/nodejs",
-  "php_buildpack_name": "paketo-buildpacks/php",
   "binary_buildpack_name": "paketo-buildpacks/procfile"
 }
 ```
