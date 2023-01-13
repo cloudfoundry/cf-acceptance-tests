@@ -1,10 +1,11 @@
 #!/bin/bash
 
-go build -v -o bin/ginkgo github.com/cloudfoundry/cf-acceptance-tests/vendor/github.com/onsi/ginkgo/v2/ginkgo
-export PATH=$(pwd)/bin:$PATH
+set -e
 
+CATS_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
+export CATS_ROOT
 
-pushd helpers > /dev/null
-  echo "Using $(ginkgo version)"
-  ginkgo -r
+pushd "${CATS_ROOT}" > /dev/null
+  echo "Using $(go run github.com/onsi/ginkgo/v2/ginkgo version)"
+  go run github.com/onsi/ginkgo/v2/ginkgo -r -p --randomize-all --randomize-suites --fail-on-pending --keep-going --race helpers
 popd > /dev/null

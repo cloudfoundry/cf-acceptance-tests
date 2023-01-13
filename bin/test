@@ -1,9 +1,6 @@
 #!/bin/bash
 
-set -e -x
-
-export GO111MODULE=on
-export GOFLAGS="-mod=vendor"
+set -e
 
 if [ ! -f "${CONFIG}" ]; then
   echo "FAIL: \$CONFIG must be set to the path of an integration config JSON file"
@@ -11,23 +8,17 @@ if [ ! -f "${CONFIG}" ]; then
 fi
 
 echo "Printing sanitized \$CONFIG"
-grep -v -e password -e private_docker_registry_ -e credhub_secret -e honeycomb_write_key $CONFIG
+grep -v -e password -e private_docker_registry_ -e credhub_secret -e honeycomb_write_key "${CONFIG}"
 
-bin_dir=$(dirname "${BASH_SOURCE[0]}")
-project_go_root="${bin_dir}/../../../../../"
+CATS_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
+export CATS_ROOT
 
-pushd "${project_go_root}" > /dev/null
-  project_gopath=$PWD
-popd > /dev/null
-
-export GOPATH="${project_gopath}"
-
-export RUN_ID=$(openssl rand -hex 16)
+RUN_ID=$(openssl rand -hex 16)
+export RUN_ID
 
 export CF_PLUGIN_HOME=$HOME
 
-go build -v -o bin/ginkgo github.com/cloudfoundry/cf-acceptance-tests/vendor/github.com/onsi/ginkgo/v2/ginkgo
-export PATH=$PWD/bin:$PATH
-
-echo "Using $(ginkgo version)" > /dev/null
-ginkgo "$@"
+pushd "${CATS_ROOT}" > /dev/null
+  echo "Using $(go run github.com/onsi/ginkgo/v2/ginkgo version)"
+  go run github.com/onsi/ginkgo/v2/ginkgo "$@"
+popd > /dev/null
