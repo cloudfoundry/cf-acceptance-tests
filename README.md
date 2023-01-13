@@ -288,20 +288,21 @@ When a test fails, look for the test group name (`[services]` in the example bel
 If you set a value for `artifacts_directory` in your `$CONFIG` file, then you will be able to capture `cf` trace output from failed test runs, this output may be useful in cases where the normal test output is not enough to debug an issue.  The `cf` trace output for the tests in these specs will be found in `CF-TRACE-Applications-*.txt` in the `artifacts_directory`.
 
 ## Test Execution
-To execute all test groups, run the following from the root directory of cf-acceptance-tests:
-```bash
-./bin/test
-```
+To execute tests according to your configuration, run the [bin/test](./bin/test)
+script with `$CONFIG` set to your
+[`integration_config.json`](#test-configuration) file path.
 
 ##### Parallel execution
-It's possible execute all test groups, and have tests run in parallel across multiple processes.
-This parallelization can significantly decrease CATs runtime.
+It's possible to execute all test groups, and have tests run in parallel across
+multiple processes. This parallelization can significantly decrease CATs
+runtime.
 
-_However_, be careful with this number, as it's effectively "how many apps to push at once", as nearly every example pushes an app.
+_However_, be careful with this number, as it's effectively "how many apps to
+push at once", as nearly every example pushes an app.
 
-In order to run 12 processes in parallel run the following:
+Use the `--procs` flag to set the number of parallel processes, e.g.:
 ```bash
-./bin/test -nodes=12
+./bin/test --procs=12
 ```
 
 For reference here's how many parallel processes the Release Integration team runs with:
@@ -338,7 +339,7 @@ To see verbose output from `ginkgo`, use the `-v` flag.
 ./bin/test -v
 ```
 
-You can of course combine the `-v` flag with the `-nodes=N` flag.
+You can of course combine the `-v` flag with the `--procs=N` flag.
 
 ## Explanation of Test Groups
 
