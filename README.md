@@ -51,12 +51,6 @@ in such a way as to impact other tests.
 
 - Install [curl](http://curl.haxx.se/)
 - Check out a copy of `cf-acceptance-tests`. It uses Go modules, so there is no need to put it in `$GOPATH`.
-- Ensure all submodules are checked out to the correct SHA.
-  The easiest way to do this is by running:
-
-  ```bash
-  ./bin/update_submodules
-  ```
 
 - Install a running Cloud Foundry deployment
   to run these acceptance tests against.
