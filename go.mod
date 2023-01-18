@@ -7,7 +7,7 @@ require (
 	code.cloudfoundry.org/go-log-cache v1.0.1-0.20221213011450-a2b53c020677
 	code.cloudfoundry.org/go-loggregator/v9 v9.0.3
 	code.cloudfoundry.org/tlsconfig v0.0.0-20220621140725-0e6fbd869921
-	github.com/cloudfoundry/cf-test-helpers/v2 v2.3.0
+	github.com/cloudfoundry/cf-test-helpers/v2 v2.4.0
 	github.com/cloudfoundry/noaa/v2 v2.2.0
 	github.com/cloudfoundry/sonde-go v0.0.0-20220627221915-ff36de9c3435
 	github.com/mholt/archiver v3.1.1+incompatible
