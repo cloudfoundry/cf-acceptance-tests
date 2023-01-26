@@ -3,7 +3,7 @@ module github.com/cloudfoundry/cf-acceptance-tests/assets/grpc
 go 1.18
 
 require (
-	google.golang.org/grpc v1.52.1
+	google.golang.org/grpc v1.52.3
 	google.golang.org/protobuf v1.28.1
 )
 
