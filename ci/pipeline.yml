@@ -82,13 +82,6 @@ resources:
     git_user: "CF MEGA BOT <cf-mega@pivotal.io>"
     file: cats-version
 
-- name: deliver-tracker-story
-  type: tracker
-  source:
-    token: ((cf_relint_tracker_api_token))
-    project_id: "1382120"
-    tracker_url: https://www.pivotaltracker.com
-
 jobs:
 - name: run-unit-tests
   serial: true
@@ -271,10 +264,6 @@ jobs:
     params:
       repository: cf-acceptance-tests-develop
 
-  - put: deliver-tracker-story
-    params:
-      repos:
-        - cf-acceptance-tests-develop
   - task: update-cats-cfd-branch
     file: runtime-ci/tasks/update-cats-branch-with-cf-deployment-version/task.yml
     input_mapping:
