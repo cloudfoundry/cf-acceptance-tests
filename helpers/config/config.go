@@ -88,6 +88,7 @@ type CatsConfig interface {
 	GetVolumeServiceCreateConfig() string
 
 	GetReporterConfig() reporterConfig
+	GetDynamicASGTestConfig() dynamicASGTestConfig
 
 	AsyncServiceOperationTimeoutDuration() time.Duration
 	BrokerStartTimeoutDuration() time.Duration
