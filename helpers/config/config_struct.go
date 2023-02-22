@@ -112,6 +112,8 @@ type config struct {
 	UnallocatedIPForSecurityGroup *string `json:"unallocated_ip_for_security_group"`
 	RequireProxiedAppTraffic      *bool   `json:"require_proxied_app_traffic"`
 
+	DynamicASGsEnabled *bool `json:"dynamic_asgs_enabled"`
+
 	NamePrefix *string `json:"name_prefix"`
 
 	ReporterConfig *reporterConfig `json:"reporter_config"`
@@ -227,6 +229,8 @@ func getDefaults() config {
 
 	defaults.UnallocatedIPForSecurityGroup = ptrToString("10.0.244.255")
 	defaults.RequireProxiedAppTraffic = ptrToBool(false)
+
+	defaults.DynamicASGsEnabled = ptrToBool(true)
 
 	defaults.NamePrefix = ptrToString("CATS")
 
@@ -919,6 +923,9 @@ func (c *config) GetIncludeSecurityGroups() bool {
 	return *c.IncludeSecurityGroups
 }
 
+func (c *config) GetDynamicASGsEnabled() bool {
+	return *c.DynamicASGsEnabled
+}
 func (c *config) GetIncludeServices() bool {
 	return *c.IncludeServices
 }
