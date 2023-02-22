@@ -117,7 +117,8 @@ include_v3
 * `include_app_syslog_tcp`: Flag to include the app syslog drain over TCP test group.
 * `include_apps`: Flag to include the apps test group.
 * `include_container_networking`: Flag to include tests related to container networking.
-  `include_security_groups` must also be set for tests to run. [See below](#container-networking-and-application-security-groups)
+* `include_security_groups` must also be set for tests to run. [See below](#container-networking-and-application-security-groups)
+* `dynamic_asgs_enabled`: Defaults to `true`. Set to false if dynamic ASGs are disabled in the test environment.
 * `credhub_mode`: Valid values are `assisted` or `non-assisted`. [See below](#credhub-modes).
 * `credhub_location`: Location of CredHub instance; default is `https://credhub.service.cf.internal:8844`
 * `credhub_client`: UAA client credential for Service Broker write access to CredHub (required for CredHub tests); default is `credhub_admin_client`.

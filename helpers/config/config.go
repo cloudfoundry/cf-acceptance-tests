@@ -75,6 +75,7 @@ type CatsConfig interface {
 	GetRubyBuildpackName() string
 	GetUnallocatedIPForSecurityGroup() string
 	GetRequireProxiedAppTraffic() bool
+	GetDynamicASGsEnabled() bool
 	Protocol() string
 
 	GetStacks() []string

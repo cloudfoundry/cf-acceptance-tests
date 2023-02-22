@@ -50,7 +50,7 @@ var _ = Describe("Dynamic ASGs", func() {
 		deleteSecurityGroup(securityGroupName)
 	})
 
-	It("applies ASGs wihout app restart", func() {
+	It("applies ASGs without app restart", func() {
 		proxyRequestURL := fmt.Sprintf("%s%s.%s/https_proxy/cloud-controller-ng.service.cf.internal:9024/v2/info", Config.Protocol(), appName, Config.GetAppsDomain())
 
 		client := &http.Client{
@@ -68,7 +68,7 @@ var _ = Describe("Dynamic ASGs", func() {
 		respBytes, err := io.ReadAll(resp.Body)
 		Expect(err).ToNot(HaveOccurred())
 		resp.Body.Close()
-		Expect(respBytes).To(MatchRegexp("refused"))
+		Expect(string(respBytes)).To(MatchRegexp("refused"))
 
 		By("binding a new security group")
 		dest := Destination{
@@ -79,29 +79,59 @@ var _ = Describe("Dynamic ASGs", func() {
 		securityGroupName = createSecurityGroup(dest)
 		bindSecurityGroup(securityGroupName, orgName, spaceName)
 
+		if !Config.GetDynamicASGsEnabled() {
+			By("if dynamic asgs are not enabled, validating an app restart is required")
+			Consistently(func() string {
+				resp, err = http.Get(proxyRequestURL)
+				Expect(err).NotTo(HaveOccurred())
+
+				respBytes, err = io.ReadAll(resp.Body)
+				Expect(err).ToNot(HaveOccurred())
+				resp.Body.Close()
+				return string(respBytes)
+			}, 2*time.Minute).Should(MatchRegexp("refused"))
+
+			Expect(cf.Cf("restart", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		}
+
 		By("checking that our app can now reach cloud controller over internal address")
-		Eventually(func() []byte {
+		Eventually(func() string {
 			resp, err = client.Get(proxyRequestURL)
 			Expect(err).NotTo(HaveOccurred())
 
 			respBytes, err = io.ReadAll(resp.Body)
 			Expect(err).ToNot(HaveOccurred())
 			resp.Body.Close()
-			return respBytes
+			return string(respBytes)
 		}, 3*time.Minute).Should(MatchRegexp("api_version"))
 
 		By("unbinding the security group")
 		unbindSecurityGroup(securityGroupName, orgName, spaceName)
 
+		if !Config.GetDynamicASGsEnabled() {
+			By("if dynamic asgs are not enabled, validating an app restart is required")
+			Consistently(func() string {
+				resp, err = http.Get(proxyRequestURL)
+				Expect(err).NotTo(HaveOccurred())
+
+				respBytes, err = io.ReadAll(resp.Body)
+				Expect(err).ToNot(HaveOccurred())
+				resp.Body.Close()
+				return string(respBytes)
+			}, 2*time.Minute).Should(MatchRegexp("api_version"))
+
+			Expect(cf.Cf("restart", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		}
+
 		By("checking that our app can no longer reach cloud controller over internal address")
-		Eventually(func() []byte {
+		Eventually(func() string {
 			resp, err = client.Get(proxyRequestURL)
 			Expect(err).NotTo(HaveOccurred())
 
 			respBytes, err = io.ReadAll(resp.Body)
 			Expect(err).ToNot(HaveOccurred())
 			resp.Body.Close()
-			return respBytes
+			return string(respBytes)
 		}, 3*time.Minute).Should(MatchRegexp("refused"))
 	})
 })
