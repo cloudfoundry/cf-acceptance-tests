@@ -12,6 +12,7 @@ import (
 	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
@@ -75,7 +76,7 @@ var _ = V3Describe("buildpack", func() {
 		It("Stages with a user specified admin buildpack", func() {
 			StageBuildpackPackage(packageGuid, buildpackName)
 			Eventually(func() string {
-				return FetchRecentLogs(appGuid, token, Config)
+				return logs.RecentEnvelopes(appGuid, token, Config).String()
 			}).Should(ContainSubstring("STAGED WITH CUSTOM BUILDPACK"))
 		})
 
@@ -86,7 +87,7 @@ var _ = V3Describe("buildpack", func() {
 			StageBuildpackPackage(packageGuid, "https://github.com/cloudfoundry/example-git-buildpack")
 
 			Eventually(func() string {
-				return FetchRecentLogs(appGuid, token, Config)
+				return logs.RecentEnvelopes(appGuid, token, Config).String()
 			}).Should(ContainSubstring("I'm a buildpack!"))
 		})
 
