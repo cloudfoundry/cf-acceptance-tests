@@ -4,4 +4,4 @@ go 1.18
 
 require golang.org/x/net v0.0.0-20210614182718-04defd469f4e
 
-require golang.org/x/text v0.3.6 // indirect
+require golang.org/x/text v0.3.8 // indirect
