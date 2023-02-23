@@ -79,6 +79,7 @@ func TestCATS(t *testing.T) {
 		buildCmd := exec.Command("go", "build", "-o", "bin/catnip")
 		buildCmd.Dir = "assets/catnip"
 		buildCmd.Env = append(os.Environ(),
+			"CGO_ENABLED=0",
 			"GOOS=linux",
 			"GOARCH=amd64",
 		)
