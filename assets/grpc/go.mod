@@ -1,6 +1,6 @@
 module github.com/cloudfoundry/cf-acceptance-tests/assets/grpc
 
-go 1.18
+go 1.19
 
 require (
 	google.golang.org/grpc v1.53.0

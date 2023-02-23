@@ -1,3 +1,3 @@
 module github.com/cloudfoundry/cf-acceptance-tests/assets/worker
 
-go 1.18
+go 1.19
