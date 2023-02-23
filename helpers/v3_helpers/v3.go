@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"strings"
 
-	logcache "code.cloudfoundry.org/go-log-cache/rpc/logcache_v1"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
 	"github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers"
@@ -14,10 +13,8 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
-	"google.golang.org/protobuf/encoding/protojson"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
 )
 
 const (
@@ -290,17 +287,6 @@ func EntitleOrgToIsolationSegment(orgGuid, isoSegGuid string) {
 	).Should(Exit(0))
 }
 
-func FetchRecentLogs(appGuid, oauthToken string, config config.CatsConfig) string {
-	endpoint := getLogCacheEndpoint()
-	reqURL := fmt.Sprintf("%s/api/v1/read/%s?envelope_type=LOG&limit=1000", endpoint, appGuid)
-	session := helpers.CurlRedact(oauthToken, Config, reqURL, "-H", fmt.Sprintf("Authorization: %s", oauthToken))
-	Expect(session.Wait()).To(Exit(0))
-	var resp logcache.ReadResponse
-	err := protojson.Unmarshal(session.Buffer().Contents(), &resp)
-	Expect(err).NotTo(HaveOccurred())
-	return resp.String()
-}
-
 func GetAuthToken() string {
 	session := cf.CfSilent("oauth-token")
 	bytes := session.Wait().Out.Contents()
@@ -553,22 +539,4 @@ func GetLastAppUseEventForProcess(processType string, state string, afterGUID st
 	}
 
 	return false, ProcessAppUsageEvent{}
-}
-
-func getLogCacheEndpoint() string {
-	infoCmd := cf.Cf("curl", "/")
-	Expect(infoCmd.Wait()).To(Exit(0))
-
-	var resp struct {
-		Links struct {
-			LogCache struct {
-				HREF string `json:"href"`
-			} `json:"log_cache"`
-		} `json:"links"`
-	}
-
-	err := json.Unmarshal(infoCmd.Buffer().Contents(), &resp)
-	Expect(err).NotTo(HaveOccurred())
-
-	return resp.Links.LogCache.HREF
 }
