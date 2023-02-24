@@ -778,6 +778,30 @@ var _ = Describe("Config", func() {
 		})
 	})
 
+	Context("when including a timeout scale", func() {
+		Context("when the timeout scale is zero", func() {
+			BeforeEach(func() {
+				testCfg.TimeoutScale = ptrToFloat(0.0)
+			})
+
+			It("returns an error", func() {
+				_, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).To(MatchError("* 'timeout_scale' must be greater than zero"))
+			})
+		})
+
+		Context("when the timeout scale is less than zero", func() {
+			BeforeEach(func() {
+				testCfg.TimeoutScale = ptrToFloat(-1.0)
+			})
+
+			It("returns an error", func() {
+				_, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).To(MatchError("* 'timeout_scale' must be greater than zero"))
+			})
+		})
+	})
+
 	Describe("error aggregation", func() {
 		BeforeEach(func() {
 			testCfg.AdminPassword = nil
