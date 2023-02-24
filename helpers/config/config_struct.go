@@ -319,6 +319,11 @@ func validateConfig(config *config) Errors {
 		errs.Add(err)
 	}
 
+	err = validateTimeoutScale(config)
+	if err != nil {
+		errs.Add(err)
+	}
+
 	if config.UseHttp == nil {
 		errs.Add(fmt.Errorf("* 'use_http' must not be null"))
 	}
@@ -363,9 +368,6 @@ func validateConfig(config *config) Errors {
 	}
 	if config.SleepTimeout == nil {
 		errs.Add(fmt.Errorf("* 'sleep_timeout' must not be null"))
-	}
-	if config.TimeoutScale == nil {
-		errs.Add(fmt.Errorf("* 'timeout_scale' must not be null"))
 	}
 	if config.BinaryBuildpackName == nil {
 		errs.Add(fmt.Errorf("* 'binary_buildpack_name' must not be null"))
@@ -724,24 +726,28 @@ func validateStacks(config *config) error {
 	return nil
 }
 
+func validateTimeoutScale(config *config) error {
+	if config.TimeoutScale == nil {
+		return fmt.Errorf("* 'timeout_scale' must not be null")
+	}
+
+	if *config.TimeoutScale <= 0 {
+		return fmt.Errorf("* 'timeout_scale' must be greater than zero")
+	}
+
+	return nil
+}
+
 func load(path string, config *config) Errors {
 	errs := Errors{}
+
 	err := loadConfigFromPath(path, config)
 	if err != nil {
 		errs.Add(fmt.Errorf("* Failed to unmarshal: %s", err))
 		return errs
 	}
 
-	errs = validateConfig(config)
-	if !errs.Empty() {
-		return errs
-	}
-
-	if *config.TimeoutScale <= 0 {
-		*config.TimeoutScale = 1.0
-	}
-
-	return errs
+	return validateConfig(config)
 }
 
 func loadConfigFromPath(path string, config interface{}) error {
