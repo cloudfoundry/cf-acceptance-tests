@@ -47,97 +47,91 @@ import (
 const minCliVersion = "8.5.0"
 
 func TestCATS(t *testing.T) {
-	RegisterFailHandler(Fail)
-
 	var validationError error
-
 	Config, validationError = config.NewCatsConfig(os.Getenv("CONFIG"))
 	if validationError != nil {
-		defer GinkgoRecover()
 		fmt.Println("Invalid configuration.  ")
 		fmt.Println(validationError)
 		fmt.Println("Please fix the contents of $CONFIG:\n  " + os.Getenv("CONFIG") + "\nbefore proceeding.")
-		t.Fail()
+		t.FailNow()
 	}
-
-	var _ = SynchronizedBeforeSuite(func() []byte {
-		installedVersion, err := GetInstalledCliVersionString()
-
-		Expect(err).ToNot(HaveOccurred(), "Error trying to determine CF CLI version")
-		fmt.Println("Running CATs with CF CLI version ", installedVersion)
-
-		Expect(ParseRawCliVersionString(installedVersion).AtLeast(ParseRawCliVersionString(minCliVersion))).To(BeTrue(), "CLI version "+minCliVersion+" is required")
-
-		if Config.GetIncludeSsh() {
-			ScpPath, err = exec.LookPath("scp")
-			Expect(err).NotTo(HaveOccurred())
-
-			SftpPath, err = exec.LookPath("sftp")
-			Expect(err).NotTo(HaveOccurred())
-		}
-
-		buildCmd := exec.Command("go", "build", "-o", "bin/catnip")
-		buildCmd.Dir = "assets/catnip"
-		buildCmd.Env = append(os.Environ(),
-			"CGO_ENABLED=0",
-			"GOOS=linux",
-			"GOARCH=amd64",
-		)
-		buildCmd.Stdout = GinkgoWriter
-		buildCmd.Stderr = GinkgoWriter
-
-		err = buildCmd.Run()
-		Expect(err).NotTo(HaveOccurred())
-
-		doraFiles, err := os.ReadDir(assets.NewAssets().Dora)
-		Expect(err).NotTo(HaveOccurred())
-
-		var doraFileNames []string
-		for _, doraFile := range doraFiles {
-			doraFileNames = append(doraFileNames, assets.NewAssets().Dora+"/"+doraFile.Name())
-		}
-		zip := archiver.NewZip()
-		err = zip.Archive(doraFileNames, assets.NewAssets().DoraZip)
-		Expect(err).NotTo(HaveOccurred())
-
-		return []byte{}
-	}, func([]byte) {
-		SetDefaultEventuallyTimeout(Config.DefaultTimeoutDuration())
-		SetDefaultEventuallyPollingInterval(1 * time.Second)
-
-		TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
-
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.GetScaledTimeout(1*time.Minute), func() {
-			buildpacksSession := cf.Cf("buildpacks").Wait()
-			Expect(buildpacksSession).To(Exit(0))
-			buildpacks := string(buildpacksSession.Out.Contents())
-
-			Expect(buildpacks).To(ContainSubstring(Config.GetBinaryBuildpackName()), "Missing the binary buildpack specified in the integration_config.json. There may be other missing buildpacks as well; please double-check your configuration against the buildpacks listed below.")
-			Expect(buildpacks).To(ContainSubstring(Config.GetGoBuildpackName()), "Missing the go buildpack specified in the integration_config.json. There may be other missing buildpacks as well; please double-check your configuration against the buildpacks listed below.")
-			Expect(buildpacks).To(ContainSubstring(Config.GetJavaBuildpackName()), "Missing the java buildpack specified in the integration_config.json. There may be other missing buildpacks as well; please double-check your configuration against the buildpacks listed below.")
-			Expect(buildpacks).To(ContainSubstring(Config.GetNodejsBuildpackName()), "Missing the NodeJS buildpack specified in the integration_config.json. There may be other missing buildpacks as well; please double-check your configuration against the buildpacks listed below.")
-			Expect(buildpacks).To(ContainSubstring(Config.GetRubyBuildpackName()), "Missing the ruby buildpack specified in the integration_config.json. There may be other missing buildpacks as well; please double-check your configuration against the buildpacks listed below.")
-		})
-
-		TestSetup.Setup()
-	})
-
-	SynchronizedAfterSuite(func() {
-		if TestSetup != nil {
-			TestSetup.Teardown()
-		}
-	}, func() {
-		os.Remove(assets.NewAssets().DoraZip)
-	})
 
 	_, rc := GinkgoConfiguration()
-
-	if validationError == nil {
-		if Config.GetArtifactsDirectory() != "" {
-			helpers.EnableCFTrace(Config, "CATS")
-			rc.JUnitReport = filepath.Join(Config.GetArtifactsDirectory(), fmt.Sprintf("junit-%s-%d.xml", "CATS", GinkgoParallelProcess()))
-		}
+	if Config.GetArtifactsDirectory() != "" {
+		helpers.EnableCFTrace(Config, "CATS")
+		rc.JUnitReport = filepath.Join(Config.GetArtifactsDirectory(), fmt.Sprintf("junit-%s-%d.xml", "CATS", GinkgoParallelProcess()))
 	}
 
+	RegisterFailHandler(Fail)
 	RunSpecs(t, "CATS", rc)
 }
+
+var _ = SynchronizedBeforeSuite(func() []byte {
+	installedVersion, err := GetInstalledCliVersionString()
+
+	Expect(err).ToNot(HaveOccurred(), "Error trying to determine CF CLI version")
+	fmt.Println("Running CATs with CF CLI version ", installedVersion)
+
+	Expect(ParseRawCliVersionString(installedVersion).AtLeast(ParseRawCliVersionString(minCliVersion))).To(BeTrue(), "CLI version "+minCliVersion+" is required")
+
+	if Config.GetIncludeSsh() {
+		ScpPath, err = exec.LookPath("scp")
+		Expect(err).NotTo(HaveOccurred())
+
+		SftpPath, err = exec.LookPath("sftp")
+		Expect(err).NotTo(HaveOccurred())
+	}
+
+	buildCmd := exec.Command("go", "build", "-o", "bin/catnip")
+	buildCmd.Dir = "assets/catnip"
+	buildCmd.Env = append(os.Environ(),
+		"CGO_ENABLED=0",
+		"GOOS=linux",
+		"GOARCH=amd64",
+	)
+	buildCmd.Stdout = GinkgoWriter
+	buildCmd.Stderr = GinkgoWriter
+
+	err = buildCmd.Run()
+	Expect(err).NotTo(HaveOccurred())
+
+	doraFiles, err := os.ReadDir(assets.NewAssets().Dora)
+	Expect(err).NotTo(HaveOccurred())
+
+	var doraFileNames []string
+	for _, doraFile := range doraFiles {
+		doraFileNames = append(doraFileNames, assets.NewAssets().Dora+"/"+doraFile.Name())
+	}
+	zip := archiver.NewZip()
+	err = zip.Archive(doraFileNames, assets.NewAssets().DoraZip)
+	Expect(err).NotTo(HaveOccurred())
+
+	return []byte{}
+}, func([]byte) {
+	SetDefaultEventuallyTimeout(Config.DefaultTimeoutDuration())
+	SetDefaultEventuallyPollingInterval(1 * time.Second)
+
+	TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
+
+	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.GetScaledTimeout(1*time.Minute), func() {
+		buildpacksSession := cf.Cf("buildpacks").Wait()
+		Expect(buildpacksSession).To(Exit(0))
+		buildpacks := string(buildpacksSession.Out.Contents())
+
+		Expect(buildpacks).To(ContainSubstring(Config.GetBinaryBuildpackName()), "Missing the binary buildpack specified in the integration_config.json. There may be other missing buildpacks as well; please double-check your configuration against the buildpacks listed below.")
+		Expect(buildpacks).To(ContainSubstring(Config.GetGoBuildpackName()), "Missing the go buildpack specified in the integration_config.json. There may be other missing buildpacks as well; please double-check your configuration against the buildpacks listed below.")
+		Expect(buildpacks).To(ContainSubstring(Config.GetJavaBuildpackName()), "Missing the java buildpack specified in the integration_config.json. There may be other missing buildpacks as well; please double-check your configuration against the buildpacks listed below.")
+		Expect(buildpacks).To(ContainSubstring(Config.GetNodejsBuildpackName()), "Missing the NodeJS buildpack specified in the integration_config.json. There may be other missing buildpacks as well; please double-check your configuration against the buildpacks listed below.")
+		Expect(buildpacks).To(ContainSubstring(Config.GetRubyBuildpackName()), "Missing the ruby buildpack specified in the integration_config.json. There may be other missing buildpacks as well; please double-check your configuration against the buildpacks listed below.")
+	})
+
+	TestSetup.Setup()
+})
+
+var _ = SynchronizedAfterSuite(func() {
+	if TestSetup != nil {
+		TestSetup.Teardown()
+	}
+}, func() {
+	os.Remove(assets.NewAssets().DoraZip)
+})
