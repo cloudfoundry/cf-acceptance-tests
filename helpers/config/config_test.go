@@ -591,8 +591,7 @@ var _ = Describe("Config", func() {
 			})
 
 			It("returns an error", func() {
-				config, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(config).To(BeNil())
+				_, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(err).To(MatchError("* Invalid configuration: 'private_docker_registry_image' must be provided if 'include_private_docker_registry' is true"))
 			})
 		})
@@ -603,8 +602,7 @@ var _ = Describe("Config", func() {
 			})
 
 			It("returns an error", func() {
-				config, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(config).To(BeNil())
+				_, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(err).To(MatchError("* Invalid configuration: 'private_docker_registry_username' must be provided if 'include_private_docker_registry' is true"))
 			})
 		})
@@ -615,8 +613,7 @@ var _ = Describe("Config", func() {
 			})
 
 			It("returns an error", func() {
-				config, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(config).To(BeNil())
+				_, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(err).To(MatchError("* Invalid configuration: 'private_docker_registry_password' must be provided if 'include_private_docker_registry' is true"))
 			})
 		})
@@ -642,8 +639,7 @@ var _ = Describe("Config", func() {
 			})
 
 			It("returns an error", func() {
-				config, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(config).To(BeNil())
+				_, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(err).To(MatchError("* Invalid configuration: 'public_docker_app_image' must be set to a valid image source"))
 			})
 		})
@@ -661,8 +657,7 @@ var _ = Describe("Config", func() {
 			})
 
 			It("returns an error", func() {
-				config, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(config).To(BeNil())
+				_, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(err).To(MatchError("* Invalid configuration: 'isolation_segment_name' must be provided if 'include_isolation_segments' is true"))
 			})
 		})
@@ -699,8 +694,7 @@ var _ = Describe("Config", func() {
 			})
 
 			It("returns an error", func() {
-				config, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(config).To(BeNil())
+				_, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(err).To(MatchError("* Invalid configuration: 'isolation_segment_name' must be provided if 'include_routing_isolation_segments' is true"))
 			})
 		})
@@ -711,8 +705,7 @@ var _ = Describe("Config", func() {
 			})
 
 			It("returns an error", func() {
-				config, err := cfg.NewCatsConfig(tmpFilePath)
-				Expect(config).To(BeNil())
+				_, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(err).To(MatchError("* Invalid configuration: 'isolation_segment_domain' must be provided if 'include_routing_isolation_segments' is true"))
 			})
 		})
@@ -809,10 +802,8 @@ var _ = Describe("Config", func() {
 		})
 
 		It("aggregates all errors", func() {
-			config, err := cfg.NewCatsConfig(tmpFilePath)
-			Expect(config).To(BeNil())
+			_, err := cfg.NewCatsConfig(tmpFilePath)
 			Expect(err).To(HaveOccurred())
-
 			Expect(err.Error()).To(ContainSubstring("* 'admin_password' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("* Invalid configuration for 'api' <invalid-url.asdf>"))
 		})
