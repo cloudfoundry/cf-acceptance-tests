@@ -17,7 +17,7 @@ require (
 	github.com/onsi/gomega v1.19.0 // indirect
 	golang.org/x/crypto v0.0.0-20180211211603-9de5f2eaf759 // indirect
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
-	golang.org/x/sys v0.0.0-20220319134239-a9b59b0215f8 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
