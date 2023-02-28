@@ -3,13 +3,14 @@ Package credhub is a client library for interacting with a CredHub server.
 
 More information on CredHub can be found at https://code.cloudfoundry.org/credhub
 
-Server HTTP API specification can be found at http://credhub-api.cfapps.io
+Server HTTP API specification can be found at https://docs.cloudfoundry.org/api/credhub/
 */
 package credhub
 
 import (
 	"net/http"
 	"net/url"
+	"time"
 
 	"crypto/tls"
 	"crypto/x509"
@@ -47,4 +48,7 @@ type CredHub struct {
 
 	// Version of the server to make API requests against. Some methods will hit alternate endpoints based on this value
 	cachedServerVersion string
+
+	// Timeout for http client
+	httpTimeout *time.Duration
 }

@@ -158,7 +158,11 @@ func (u *Client) RefreshTokenGrant(clientId, clientSecret, refreshToken string) 
 func (u *Client) tokenGrantRequest(headers url.Values) (token, error) {
 	var t token
 
-	request, _ := http.NewRequest("POST", u.AuthURL+"/oauth/token", bytes.NewBufferString(headers.Encode()))
+	request, err := http.NewRequest("POST", u.AuthURL+"/oauth/token", bytes.NewBufferString(headers.Encode()))
+	if err != nil {
+		return t, err
+	}
+
 	request.Header.Add("Accept", "application/json")
 	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
