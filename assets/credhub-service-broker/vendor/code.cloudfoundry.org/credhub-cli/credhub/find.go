@@ -43,7 +43,6 @@ func (ch *CredHub) find(key, value string) ([]byte, error) {
 	}
 
 	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
 
-	return body, nil
+	return ioutil.ReadAll(resp.Body)
 }
