@@ -10,6 +10,8 @@ import (
 	"code.cloudfoundry.org/credhub-cli/credhub/credentials/generate"
 )
 
+type GenerateOption func(*GenerateOptions) error
+
 // GeneratePassword generates a password credential based on the provided parameters.
 func (ch *CredHub) GeneratePassword(name string, gen generate.Password, overwrite Mode) (credentials.Password, error) {
 	var cred credentials.Password
@@ -46,31 +48,61 @@ func (ch *CredHub) GenerateSSH(name string, gen generate.SSH, overwrite Mode) (c
 }
 
 // GenerateCredential generates any credential type based on the credType given provided parameters.
-func (ch *CredHub) GenerateCredential(name, credType string, gen interface{}, overwrite Mode) (credentials.Credential, error) {
+func (ch *CredHub) GenerateCredential(name, credType string, gen interface{}, overwrite Mode, options ...GenerateOption) (credentials.Credential, error) {
 	var cred credentials.Credential
-	err := ch.generateCredential(name, credType, gen, overwrite, &cred)
+	err := ch.generateCredential(name, credType, gen, overwrite, &cred, options...)
 	return cred, err
 }
 
-func (ch *CredHub) generateCredential(name, credType string, gen interface{}, overwrite Mode, cred interface{}) error {
+type generateRequest struct {
+	Name       string      `json:"name"`
+	Type       string      `json:"type"`
+	Value      interface{} `json:"value,omitempty"`
+	Parameters interface{} `json:"parameters"`
+	Mode       string      `json:"mode,omitempty"`
+	Overwrite  bool        `json:"overwrite"`
+	GenerateOptions
+}
+
+type GenerateOptions struct {
+	Metadata credentials.Metadata `json:"metadata,omitempty"`
+}
+
+func (ch *CredHub) generateCredential(name, credType string, gen interface{}, overwrite Mode, cred interface{}, options ...GenerateOption) error {
 	isOverwrite := overwrite == Overwrite
 
-	requestBody := map[string]interface{}{}
-	requestBody["name"] = name
-	requestBody["type"] = credType
-	requestBody["parameters"] = gen
+	request := generateRequest{
+		Name:       name,
+		Type:       credType,
+		Parameters: gen,
+	}
 
 	if overwrite == Converge {
-		requestBody["mode"] = overwrite
+		request.Mode = string(overwrite)
 	} else {
-		requestBody["overwrite"] = isOverwrite
+		request.Overwrite = isOverwrite
 	}
 
 	if user, ok := gen.(generate.User); ok {
-		requestBody["value"] = map[string]string{"username": user.Username}
+		request.Value = map[string]string{"username": user.Username}
 	}
 
-	resp, err := ch.Request(http.MethodPost, "/api/v1/data", nil, requestBody, true)
+	for _, option := range options {
+		if err := option(&request.GenerateOptions); err != nil {
+			return err
+		}
+	}
+
+	serverVersion, err := ch.ServerVersion()
+	if err != nil {
+		return err
+	}
+
+	if request.Metadata != nil && !supportsMetadata(serverVersion) {
+		return ServerDoesNotSupportMetadataError
+	}
+
+	resp, err := ch.Request(http.MethodPost, "/api/v1/data", nil, request, true)
 
 	if err != nil {
 		return err
@@ -83,6 +115,5 @@ func (ch *CredHub) generateCredential(name, credType string, gen interface{}, ov
 	if err := ch.checkForServerError(resp); err != nil {
 		return err
 	}
-
 	return dec.Decode(&cred)
 }

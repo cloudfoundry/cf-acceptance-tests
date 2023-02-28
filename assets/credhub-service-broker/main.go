@@ -12,10 +12,9 @@ import (
 	"code.cloudfoundry.org/credhub-cli/credhub"
 	"code.cloudfoundry.org/credhub-cli/credhub/auth"
 	"code.cloudfoundry.org/credhub-cli/credhub/credentials/values"
-	"code.cloudfoundry.org/credhub-cli/credhub/permissions"
 	"code.cloudfoundry.org/credhub-cli/util"
 	"github.com/gorilla/mux"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 func main() {
@@ -130,11 +129,7 @@ func (s *ServiceBroker) Bind(w http.ResponseWriter, r *http.Request) {
 	s.NameMap[pathVariables["service_binding_guid"]] = name
 
 	if body.AppGuid != "" {
-		_, err = ch.AddPermissions(cred.Name, []permissions.Permission{{
-			Actor:      "mtls-app:" + body.AppGuid,
-			Operations: []string{"read"},
-			Path: cred.Name,
-		}})
+		_, err = ch.AddPermission(cred.Name, "mtls-app:"+body.AppGuid, []string{"read"})
 		handleError(err)
 	}
 

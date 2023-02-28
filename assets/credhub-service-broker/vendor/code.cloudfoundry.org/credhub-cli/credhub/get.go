@@ -122,14 +122,14 @@ func (ch *CredHub) makeCredentialGetRequest(query url.Values, cred interface{}) 
 	response := make(map[string][]json.RawMessage)
 
 	if err := dec.Decode(&response); err != nil {
-		return err
+		return errors.New("The response body could not be decoded: " + err.Error())
 	}
 
 	var ok bool
 	var data []json.RawMessage
 
 	if data, ok = response["data"]; !ok || len(data) == 0 {
-		return errors.New("response did not contain any credentials")
+		return newCredhubError("response did not contain any credentials", "")
 	}
 
 	rawMessage := data[0]
@@ -149,7 +149,7 @@ func (ch *CredHub) makeCredentialGetByIdRequest(id string, cred *credentials.Cre
 	dec := json.NewDecoder(resp.Body)
 
 	if err := dec.Decode(cred); err != nil {
-		return err
+		return errors.New("The response body could not be decoded: " + err.Error())
 	}
 
 	return nil
@@ -176,13 +176,15 @@ func (ch *CredHub) makeMultiCredentialGetRequest(query url.Values) ([]credential
 
 	response := make(map[string][]credentials.Credential)
 
-	dec.Decode(&response)
+	if err := dec.Decode(&response); err != nil {
+		return nil, errors.New("The response body could not be decoded: " + err.Error())
+	}
 
 	var ok bool
 	var data []credentials.Credential
 
 	if data, ok = response["data"]; !ok || len(data) == 0 {
-		return nil, errors.New("response did not contain any credentials")
+		return nil, newCredhubError("response did not contain any credentials", "")
 	}
 
 	return data, nil
