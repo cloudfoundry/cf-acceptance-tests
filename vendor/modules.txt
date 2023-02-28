@@ -1,5 +1,5 @@
-# code.cloudfoundry.org/archiver v0.0.0-20150428205605-f598990ddfed
-## explicit
+# code.cloudfoundry.org/archiver v0.0.0-20230220125704-e06c77649d28
+## explicit; go 1.17
 code.cloudfoundry.org/archiver/extractor/test_helper
 # code.cloudfoundry.org/go-diodes v0.0.0-20220325013804-800fb6f70e2f
 ## explicit; go 1.16

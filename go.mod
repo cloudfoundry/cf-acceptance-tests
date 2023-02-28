@@ -3,7 +3,7 @@ module github.com/cloudfoundry/cf-acceptance-tests
 go 1.19
 
 require (
-	code.cloudfoundry.org/archiver v0.0.0-20150428205605-f598990ddfed
+	code.cloudfoundry.org/archiver v0.0.0-20230220125704-e06c77649d28
 	code.cloudfoundry.org/go-log-cache v1.0.1-0.20221213011450-a2b53c020677
 	code.cloudfoundry.org/go-loggregator/v9 v9.0.4
 	code.cloudfoundry.org/tlsconfig v0.0.0-20220621140725-0e6fbd869921
