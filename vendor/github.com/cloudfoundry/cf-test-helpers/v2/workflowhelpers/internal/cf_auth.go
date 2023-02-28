@@ -13,8 +13,13 @@ import (
 const VerboseAuth = "RELINT_VERBOSE_AUTH"
 const CFAuthRetries = 2
 
-func CfAuth(cmdStarter internal.Starter, reporter internal.Reporter, user string, password string, timeout time.Duration) error {
+func CfAuth(cmdStarter internal.Starter, reporter internal.Reporter, user string, password string, origin string, timeout time.Duration) error {
 	args := []string{"auth", user, password}
+
+	if origin != "" {
+		args = append(args, "--origin", origin)
+	}
+
 	if os.Getenv(VerboseAuth) == "true" {
 		args = append(args, "-v")
 	}
