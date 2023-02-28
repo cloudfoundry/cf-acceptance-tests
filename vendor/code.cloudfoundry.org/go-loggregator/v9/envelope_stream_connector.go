@@ -3,7 +3,7 @@ package loggregator
 import (
 	"context"
 	"crypto/tls"
-	"io/ioutil"
+	"io"
 	"log"
 	"time"
 
@@ -41,7 +41,7 @@ func NewEnvelopeStreamConnector(
 		addr:    addr,
 		tlsConf: t,
 
-		log: log.New(ioutil.Discard, "", 0),
+		log: log.New(io.Discard, "", 0),
 	}
 
 	for _, o := range opts {

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -33,7 +32,7 @@ type GatewayLogger interface {
 func NewRLPGatewayClient(addr string, opts ...RLPGatewayClientOption) *RLPGatewayClient {
 	c := &RLPGatewayClient{
 		addr:       addr,
-		log:        log.New(ioutil.Discard, "", 0),
+		log:        log.New(io.Discard, "", 0),
 		doer:       http.DefaultClient,
 		maxRetries: 10,
 	}
@@ -159,12 +158,12 @@ func (c *RLPGatewayClient) connect(
 	}
 
 	defer func() {
-		_, _ = io.Copy(ioutil.Discard, resp.Body)
+		_, _ = io.Copy(io.Discard, resp.Body)
 		_ = resp.Body.Close()
 	}()
 
 	if resp.StatusCode != http.StatusOK {
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			c.log.Printf("failed to read body: %s", err)
 			return false
