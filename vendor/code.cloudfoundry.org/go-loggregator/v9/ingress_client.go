@@ -3,7 +3,7 @@ package loggregator
 import (
 	"crypto/tls"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"strconv"
 	"time"
@@ -121,7 +121,7 @@ func NewIngressClient(tlsConfig *tls.Config, opts ...IngressOption) (*IngressCli
 		batchMaxSize:       100,
 		batchFlushInterval: 100 * time.Millisecond,
 		addr:               "localhost:3458",
-		logger:             log.New(ioutil.Discard, "", 0),
+		logger:             log.New(io.Discard, "", 0),
 		closeErrors:        make(chan error),
 		ctx:                context.Background(),
 	}
