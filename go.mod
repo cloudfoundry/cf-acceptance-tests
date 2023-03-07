@@ -1,6 +1,6 @@
 module github.com/cloudfoundry/cf-acceptance-tests
 
-go 1.19
+go 1.20
 
 require (
 	code.cloudfoundry.org/archiver v0.0.0-20230220125704-e06c77649d28

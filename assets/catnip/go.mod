@@ -1,6 +1,6 @@
 module github.com/cloudfoundry/cf-acceptance-tests/assets/catnip
 
-go 1.19
+go 1.20
 
 require (
 	code.cloudfoundry.org/clock v1.0.1-0.20220601152104-3983b71fbf93
