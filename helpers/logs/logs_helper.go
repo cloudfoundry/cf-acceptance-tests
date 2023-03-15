@@ -17,7 +17,7 @@ import (
 func RecentEnvelopes(appGuid, oauthToken string, config config.CatsConfig) *logcache.ReadResponse {
 	GinkgoHelper()
 	endpoint := getLogCacheEndpoint()
-	reqURL := fmt.Sprintf("%s/api/v1/read/%s?envelope_type=LOG&limit=1000", endpoint, appGuid)
+	reqURL := fmt.Sprintf("%s/api/v1/read/%s?envelope_type=LOG&limit=1000&descending=true", endpoint, appGuid)
 	session := helpers.CurlRedact(oauthToken, config, reqURL, "-H", fmt.Sprintf("Authorization: %s", oauthToken))
 	Expect(session.Wait()).To(gexec.Exit(0))
 	var resp logcache.ReadResponse
