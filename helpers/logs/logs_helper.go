@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	logcache "code.cloudfoundry.org/go-log-cache/rpc/logcache_v1"
+	logcache "code.cloudfoundry.org/go-log-cache/v2/rpc/logcache_v1"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/config"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
