@@ -853,6 +853,10 @@ func (c *config) GetExistingUserPassword() string {
 	return *c.ExistingUserPassword
 }
 
+func (c *config) GetUserOrigin() string {
+	return ""
+}
+
 func (c *config) GetConfigurableTestPassword() string {
 	return *c.ConfigurableTestPassword
 }
@@ -871,6 +875,10 @@ func (c *config) GetAdminUser() string {
 
 func (c *config) GetAdminPassword() string {
 	return *c.AdminPassword
+}
+
+func (c *config) GetAdminOrigin() string {
+	return ""
 }
 
 func (c *config) GetApiEndpoint() string {
