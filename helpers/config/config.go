@@ -41,6 +41,7 @@ type CatsConfig interface {
 	GetAddExistingUserToExistingSpace() bool
 	GetAdminPassword() string
 	GetAdminUser() string
+	GetAdminOrigin() string
 	GetAdminClient() string
 	GetAdminClientSecret() string
 	GetApiEndpoint() string
@@ -58,6 +59,7 @@ type CatsConfig interface {
 	GetUseExistingSpace() bool
 	GetExistingUser() string
 	GetExistingUserPassword() string
+	GetUserOrigin() string
 	GetExistingClient() string
 	GetExistingClientSecret() string
 	GetGoBuildpackName() string
