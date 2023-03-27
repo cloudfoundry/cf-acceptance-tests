@@ -270,7 +270,7 @@ jobs:
       cf-acceptance-tests: cf-acceptance-tests-rc
     params:
       CATS_BRANCH: release-candidate
-      DEPLOY_KEY: ((cf_acceptance_tests_readwrite_deploy_key.private_key))
+      DEPLOY_KEY: ((ard_wg_gitbot_ssh_key.private_key))
 
 - name: cleanup-cats
   serial: true
