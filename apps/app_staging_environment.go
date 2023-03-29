@@ -60,8 +60,8 @@ var _ = AppsDescribe("Buildpack Environment", func() {
 
 sleep 5
 
-echo RUBY_LOCATION=$(which ruby)
-echo RUBY_VERSION=$(ruby --version)
+echo APT_LOCATION=$(which apt)
+echo APT_VERSION=$(apt --version)
 
 sleep 10
 `,
@@ -120,13 +120,13 @@ EOF
 		os.RemoveAll(tmpdir)
 	})
 
-	It("uses a ruby binary for staging", func() {
+	It("uses an apt binary for staging", func() {
 		push := cf.Cf("push", appName,
 			"-b", BuildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", appPath,
 		).Wait(Config.CfPushTimeoutDuration())
 		Expect(push).To(Exit(0))
-		Expect(push).To(Say("RUBY_LOCATION=/usr/bin/ruby"))
+		Expect(push).To(Say("APT_LOCATION=/usr/bin/apt"))
 	})
 })
