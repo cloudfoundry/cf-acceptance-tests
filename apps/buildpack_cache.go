@@ -12,7 +12,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
-	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
+	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 	"github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -130,17 +130,22 @@ EOF
 			"-p", appPath,
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-		Eventually(func() string {
-			return helpers.CurlAppRoot(Config, appName)
-		}).Should(ContainSubstring("custom buildpack contents - cache not found"))
+		appGuid := app_helpers.GetAppGuid(appName)
+
+		processes := GetProcesses(appGuid, appName)
+		// start command is redacted on list fetch
+		process := GetProcessByGuid(processes[0].Guid)
+		Expect(process.Command).Should(ContainSubstring("custom buildpack contents - cache not found"))
 
 		time.Sleep(Config.SleepTimeoutDuration())
 
 		restage := cf.Cf("restage", appName).Wait(Config.CfPushTimeoutDuration())
 		Expect(restage).To(Exit(0))
 
-		Eventually(func() string {
-			return helpers.CurlAppRoot(Config, appName)
-		}).Should(ContainSubstring("custom buildpack contents - here's a cache"))
+		processes = GetProcesses(appGuid, appName)
+		process = GetProcessByGuid(processes[0].Guid)
+
+		Expect(process.Command).Should(ContainSubstring("custom buildpack contents - here's a cache"))
+
 	})
 })
