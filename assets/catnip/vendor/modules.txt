@@ -1,5 +1,5 @@
-# code.cloudfoundry.org/clock v1.0.1-0.20220601152104-3983b71fbf93
-## explicit; go 1.16
+# code.cloudfoundry.org/clock v1.1.0
+## explicit; go 1.20
 code.cloudfoundry.org/clock
 code.cloudfoundry.org/clock/fakeclock
 # github.com/go-chi/chi/v5 v5.0.8
