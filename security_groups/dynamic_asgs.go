@@ -110,15 +110,15 @@ var _ = Describe("Dynamic ASGs", func() {
 
 		if !Config.GetDynamicASGsEnabled() {
 			By("if dynamic asgs are not enabled, validating an app restart is required")
-			Consistently(func() string {
-				resp, err = http.Get(proxyRequestURL)
-				Expect(err).NotTo(HaveOccurred())
+			time.Sleep(10 * time.Second)
+			resp, err = http.Get(proxyRequestURL)
+			Expect(err).NotTo(HaveOccurred())
 
-				respBytes, err = io.ReadAll(resp.Body)
-				Expect(err).ToNot(HaveOccurred())
-				resp.Body.Close()
-				return string(respBytes)
-			}, 2*time.Minute).Should(MatchRegexp("api_version"))
+			respBytes, err = io.ReadAll(resp.Body)
+			Expect(err).ToNot(HaveOccurred())
+			resp.Body.Close()
+			response := string(respBytes)
+			Expect(response).To(MatchRegexp("api_version"))
 
 			Expect(cf.Cf("restart", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		}
