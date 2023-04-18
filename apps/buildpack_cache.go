@@ -125,7 +125,7 @@ EOF
 
 	It("uses the buildpack cache after first staging", func() {
 		Expect(cf.Cf("push", appName,
-			"-t", fmt.Sprintf("%d", Config.CfPushTimeoutDuration()),
+			"-t", "120",
 			"-b", BuildpackName,
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", appPath,
