@@ -36,6 +36,6 @@ IN DEVELOPMENT
   "include_zipkin": true,
   "include_volume_services": false,
   "stacks": [
-    "cflinuxfs3"
+    "cflinuxfs4"
   ]
 }
