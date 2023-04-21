@@ -352,7 +352,7 @@ var _ = Describe("Config", func() {
 
 		Expect(config.GetRequireProxiedAppTraffic()).To(BeFalse())
 
-		Expect(config.GetStacks()).To(ConsistOf("cflinuxfs3"))
+		Expect(config.GetStacks()).To(ConsistOf("cflinuxfs4"))
 
 		Expect(config.RunningOnK8s()).To(BeFalse(), "RunningOnK8s should be false")
 

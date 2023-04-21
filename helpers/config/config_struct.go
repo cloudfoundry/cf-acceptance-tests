@@ -233,7 +233,7 @@ func getDefaults() config {
 
 	defaults.NamePrefix = ptrToString("CATS")
 
-	defaults.Stacks = &[]string{"cflinuxfs3"}
+	defaults.Stacks = &[]string{"cflinuxfs4"}
 
 	defaults.Infrastructure = ptrToString("vms")
 	return defaults
