@@ -15,11 +15,10 @@ import (
 
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 )
 
-var _ = Describe("Dynamic ASGs", func() {
+var _ = SecurityGroupsDescribe("ASGs", func() {
 	var (
 		orgName           string
 		spaceName         string
@@ -28,10 +27,6 @@ var _ = Describe("Dynamic ASGs", func() {
 	)
 
 	BeforeEach(func() {
-		if !Config.GetIncludeSecurityGroups() {
-			Skip(skip_messages.SkipSecurityGroupsMessage)
-		}
-
 		orgName = TestSetup.RegularUserContext().Org
 		spaceName = TestSetup.RegularUserContext().Space
 		appName = random_name.CATSRandomName("APP")
@@ -50,7 +45,7 @@ var _ = Describe("Dynamic ASGs", func() {
 		deleteSecurityGroup(securityGroupName)
 	})
 
-	It("applies ASGs without app restart", func() {
+	It("manages whether apps can reach certain IP addresses per ASG configuration", func() {
 		proxyRequestURL := fmt.Sprintf("%s%s.%s/https_proxy/cloud-controller-ng.service.cf.internal:9024/v2/info", Config.Protocol(), appName, Config.GetAppsDomain())
 
 		client := &http.Client{
@@ -62,76 +57,106 @@ var _ = Describe("Dynamic ASGs", func() {
 		}
 
 		By("checking that our app can't initially reach cloud controller over internal address")
+		assertAppCannotConnect(client, proxyRequestURL)
+
+		By("binding a new security group")
+		securityGroupName = bindCCSecurityGroup(orgName, spaceName)
+
+		if Config.GetDynamicASGsEnabled() {
+			By("checking that our app can eventually reach cloud controller over internal address")
+			assertEventuallyAppCanConnect(client, proxyRequestURL)
+		} else {
+			By("because dynamic asgs are not enabled, validating an app restart is required")
+			assertAppRestartRequiredForConnect(client, proxyRequestURL, appName)
+		}
+
+		By("unbinding the security group")
+		unbindSecurityGroup(securityGroupName, orgName, spaceName)
+
+		if Config.GetDynamicASGsEnabled() {
+			By("checking that our app eventually cannot reach cloud controller over internal address")
+			assertEventuallyAppCannotConnect(client, proxyRequestURL)
+		} else {
+			By("because dynamic asgs are not enabled, validating an app restart is required")
+			assertAppRestartRequiredForDisconnect(client, proxyRequestURL, appName)
+		}
+	})
+})
+
+func assertAppRestartRequiredForConnect(client *http.Client, proxyRequestURL, appName string) {
+	assertAppCannotConnect(client, proxyRequestURL)
+
+	By("restarting the app")
+	Expect(cf.Cf("restart", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+	By("checking that our app can now reach cloud controller over internal address")
+	assertAppCanConnect(client, proxyRequestURL)
+}
+
+func assertAppRestartRequiredForDisconnect(client *http.Client, proxyRequestURL, appName string) {
+	assertAppCanConnect(client, proxyRequestURL)
+
+	By("restarting the app")
+	Expect(cf.Cf("restart", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+	By("checking that our app can no longer reach cloud controller over internal address")
+	assertAppCannotConnect(client, proxyRequestURL)
+}
+
+func assertAppCannotConnect(client *http.Client, proxyRequestURL string) {
+	resp, err := client.Get(proxyRequestURL)
+	Expect(err).NotTo(HaveOccurred())
+
+	respBytes, err := io.ReadAll(resp.Body)
+	Expect(err).ToNot(HaveOccurred())
+	resp.Body.Close()
+	Expect(string(respBytes)).To(MatchRegexp("refused"))
+}
+
+func assertEventuallyAppCannotConnect(client *http.Client, proxyRequestURL string) {
+	Eventually(func() string {
 		resp, err := client.Get(proxyRequestURL)
 		Expect(err).NotTo(HaveOccurred())
 
 		respBytes, err := io.ReadAll(resp.Body)
 		Expect(err).ToNot(HaveOccurred())
 		resp.Body.Close()
-		Expect(string(respBytes)).To(MatchRegexp("refused"))
+		return string(respBytes)
+	}, 3*time.Minute).Should(MatchRegexp("refused"))
+}
 
-		By("binding a new security group")
-		dest := Destination{
-			IP:       "10.0.0.0/0",
-			Ports:    "9024", // internal cc port
-			Protocol: "tcp",
-		}
-		securityGroupName = createSecurityGroup(dest)
-		bindSecurityGroup(securityGroupName, orgName, spaceName)
+func assertAppCanConnect(client *http.Client, proxyRequestURL string) {
+	Eventually(func() string {
+		resp, err := client.Get(proxyRequestURL)
+		Expect(err).NotTo(HaveOccurred())
 
-		if !Config.GetDynamicASGsEnabled() {
-			By("if dynamic asgs are not enabled, validating an app restart is required")
-			Consistently(func() string {
-				resp, err = http.Get(proxyRequestURL)
-				Expect(err).NotTo(HaveOccurred())
+		respBytes, err := io.ReadAll(resp.Body)
+		Expect(err).ToNot(HaveOccurred())
+		resp.Body.Close()
+		return string(respBytes)
+	}, 1*time.Minute, 1*time.Second).Should(MatchRegexp("api_version"))
+}
 
-				respBytes, err = io.ReadAll(resp.Body)
-				Expect(err).ToNot(HaveOccurred())
-				resp.Body.Close()
-				return string(respBytes)
-			}, 2*time.Minute).Should(MatchRegexp("refused"))
+func assertEventuallyAppCanConnect(client *http.Client, proxyRequestURL string) {
+	Eventually(func() string {
+		resp, err := client.Get(proxyRequestURL)
+		Expect(err).NotTo(HaveOccurred())
 
-			Expect(cf.Cf("restart", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-		}
+		respBytes, err := io.ReadAll(resp.Body)
+		Expect(err).ToNot(HaveOccurred())
+		resp.Body.Close()
+		return string(respBytes)
+	}, 3*time.Minute, 1*time.Second).Should(MatchRegexp("api_version"))
+}
 
-		By("checking that our app can now reach cloud controller over internal address")
-		Eventually(func() string {
-			resp, err = client.Get(proxyRequestURL)
-			Expect(err).NotTo(HaveOccurred())
+func bindCCSecurityGroup(orgName, spaceName string) string {
+	dest := Destination{
+		IP:       "10.0.0.0/0",
+		Ports:    "9024", // internal cc port
+		Protocol: "tcp",
+	}
+	securityGroupName := createSecurityGroup(dest)
+	bindSecurityGroup(securityGroupName, orgName, spaceName)
 
-			respBytes, err = io.ReadAll(resp.Body)
-			Expect(err).ToNot(HaveOccurred())
-			resp.Body.Close()
-			return string(respBytes)
-		}, 3*time.Minute).Should(MatchRegexp("api_version"))
-
-		By("unbinding the security group")
-		unbindSecurityGroup(securityGroupName, orgName, spaceName)
-
-		if !Config.GetDynamicASGsEnabled() {
-			By("if dynamic asgs are not enabled, validating an app restart is required")
-			time.Sleep(10 * time.Second)
-			resp, err = http.Get(proxyRequestURL)
-			Expect(err).NotTo(HaveOccurred())
-
-			respBytes, err = io.ReadAll(resp.Body)
-			Expect(err).ToNot(HaveOccurred())
-			resp.Body.Close()
-			response := string(respBytes)
-			Expect(response).To(MatchRegexp("api_version"))
-
-			Expect(cf.Cf("restart", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-		}
-
-		By("checking that our app can no longer reach cloud controller over internal address")
-		Eventually(func() string {
-			resp, err = client.Get(proxyRequestURL)
-			Expect(err).NotTo(HaveOccurred())
-
-			respBytes, err = io.ReadAll(resp.Body)
-			Expect(err).ToNot(HaveOccurred())
-			resp.Body.Close()
-			return string(respBytes)
-		}, 3*time.Minute).Should(MatchRegexp("refused"))
-	})
-})
+	return securityGroupName
+}
