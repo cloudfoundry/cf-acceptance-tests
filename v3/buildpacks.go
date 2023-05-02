@@ -172,7 +172,7 @@ var _ = V3Describe("buildpack", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, webProcess.Name)
-			}).Should(ContainSubstring("The bundler version is"))
+			}, Config.CfPushTimeoutDuration()).Should(ContainSubstring("The bundler version is"))
 		})
 	})
 })

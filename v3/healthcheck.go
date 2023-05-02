@@ -62,7 +62,7 @@ var _ = V3Describe("Healthcheck", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}).Should(ContainSubstring("Hi, I'm Dora!"))
+			}, Config.CfPushTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 	})
 
@@ -79,7 +79,7 @@ var _ = V3Describe("Healthcheck", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}).Should(ContainSubstring("Hi, I'm Dora!"))
+			}, Config.CfPushTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 	})
 
@@ -96,7 +96,7 @@ var _ = V3Describe("Healthcheck", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, appName)
-			}).Should(ContainSubstring("Hi, I'm Dora!"))
+			}, Config.CfPushTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 		})
 	})
 })
