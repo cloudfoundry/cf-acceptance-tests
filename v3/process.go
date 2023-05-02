@@ -72,7 +72,7 @@ var _ = V3Describe("process", func() {
 
 			Eventually(func() string {
 				return helpers.CurlAppRoot(Config, webProcess.Name)
-			}).Should(ContainSubstring("Hi, I'm Dora!"))
+			}, Config.CfPushTimeoutDuration()).Should(ContainSubstring("Hi, I'm Dora!"))
 
 			Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 		})
@@ -104,7 +104,7 @@ var _ = V3Describe("process", func() {
 					statsBodyAfter := cf.Cf("curl", statsUrl).Wait().Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
 					return statsJSON.Instance[0].State
-				}, V3_PROCESS_TIMEOUT, 1*time.Second).Should(Equal("RUNNING"))
+				}, Config.CfPushTimeoutDuration(), 1*time.Second).Should(Equal("RUNNING"))
 			})
 		})
 
@@ -135,7 +135,7 @@ var _ = V3Describe("process", func() {
 					statsBodyAfter := cf.Cf("curl", statsUrl).Wait().Out.Contents()
 					json.Unmarshal(statsBodyAfter, &statsJSON)
 					return statsJSON.Instance[0].State
-				}, V3_PROCESS_TIMEOUT, 1*time.Second).Should(Equal("RUNNING"))
+				}, Config.CfPushTimeoutDuration(), 1*time.Second).Should(Equal("RUNNING"))
 			})
 		})
 	})

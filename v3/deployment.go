@@ -67,7 +67,7 @@ var _ = V3Describe("deployment", func() {
 			guid := GetProcessGuidForType(appGuid, "web")
 			Expect(guid).ToNot(BeEmpty())
 			return GetRunningInstancesStats(guid)
-		}).Should(Equal(instances))
+		}, Config.CfPushTimeoutDuration()).Should(Equal(instances))
 
 		By("Creating a second droplet for the app")
 		makeStaticFileZip()
@@ -103,7 +103,7 @@ var _ = V3Describe("deployment", func() {
 			deploymentGuid := CreateDeployment(appGuid)
 			Expect(deploymentGuid).ToNot(BeEmpty())
 
-			Eventually(func() int { return len(GetProcessGuidsForType(appGuid, "web")) }).
+			Eventually(func() int { return len(GetProcessGuidsForType(appGuid, "web")) }, Config.CfPushTimeoutDuration()).
 				Should(BeNumerically(">", 1))
 
 			intermediateProcessGuid := GetProcessGuidsForType(appGuid, "web")[1]
@@ -111,7 +111,7 @@ var _ = V3Describe("deployment", func() {
 			secondDeploymentGuid := CreateDeployment(appGuid)
 			Expect(secondDeploymentGuid).ToNot(BeEmpty())
 
-			Eventually(func() int { return GetRunningInstancesStats(originalProcessGuid) }).
+			Eventually(func() int { return GetRunningInstancesStats(originalProcessGuid) }, Config.CfPushTimeoutDuration()).
 				Should(BeNumerically("<", instances))
 
 			Eventually(func() []string {
@@ -158,7 +158,7 @@ var _ = V3Describe("deployment", func() {
 			Expect(deploymentGuid).ToNot(BeEmpty())
 
 			By("waiting until there is a second web process  with instances before canceling")
-			Eventually(func() int { return len(GetProcessGuidsForType(appGuid, "web")) }).
+			Eventually(func() int { return len(GetProcessGuidsForType(appGuid, "web")) }, Config.CfPushTimeoutDuration()).
 				Should(BeNumerically(">", 1))
 
 			intermediateProcessGuid := GetProcessGuidsForType(appGuid, "web")[1]
