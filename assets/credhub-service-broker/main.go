@@ -13,7 +13,8 @@ import (
 	"code.cloudfoundry.org/credhub-cli/credhub/auth"
 	"code.cloudfoundry.org/credhub-cli/credhub/credentials/values"
 	"code.cloudfoundry.org/credhub-cli/util"
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -35,17 +36,24 @@ type bindRequest struct {
 }
 
 func (s *Server) Start() {
-	router := mux.NewRouter()
+	router := chi.NewRouter()
+	router.Use(middleware.Recoverer)
 
 	s.sb = &ServiceBroker{
 		NameMap: make(map[string]string),
 	}
 
-	router.HandleFunc("/v2/catalog", s.sb.Catalog).Methods("GET")
-	router.HandleFunc("/v2/service_instances/{service_instance_guid}", s.sb.CreateServiceInstance).Methods("PUT")
-	router.HandleFunc("/v2/service_instances/{service_instance_guid}", s.sb.RemoveServiceInstance).Methods("DELETE")
-	router.HandleFunc("/v2/service_instances/{service_instance_guid}/service_bindings/{service_binding_guid}", s.sb.Bind).Methods("PUT")
-	router.HandleFunc("/v2/service_instances/{service_instance_guid}/service_bindings/{service_binding_guid}", s.sb.UnBind).Methods("DELETE")
+	router.Get("/v2/catalog", s.sb.Catalog)
+
+	router.Route("/v2/service_instances", func(r chi.Router) {
+		r.Put("/{service_instance_guid}", s.sb.CreateServiceInstance)
+		r.Delete("/{service_instance_guid}", s.sb.RemoveServiceInstance)
+
+		r.Route("/{service_instance_guid}/service_bindings", func(r chi.Router) {
+			r.Put("/{service_binding_guid}", s.sb.Bind)
+			r.Delete("/{service_binding_guid}", s.sb.UnBind)
+		})
+	})
 
 	http.Handle("/", router)
 
@@ -62,7 +70,7 @@ type ServiceBroker struct {
 
 func WriteResponse(w http.ResponseWriter, code int, response string) {
 	w.WriteHeader(code)
-	fmt.Fprintf(w, string(response))
+	fmt.Fprint(w, string(response))
 }
 
 func (s *ServiceBroker) Catalog(w http.ResponseWriter, r *http.Request) {
@@ -125,8 +133,7 @@ func (s *ServiceBroker) Bind(w http.ResponseWriter, r *http.Request) {
 	cred, err := ch.SetJSON(name, storedJson)
 	handleError(err)
 
-	pathVariables := mux.Vars(r)
-	s.NameMap[pathVariables["service_binding_guid"]] = name
+	s.NameMap[chi.URLParam(r, "service_binding_guid")] = name
 
 	if body.AppGuid != "" {
 		_, err = ch.AddPermission(cred.Name, "mtls-app:"+body.AppGuid, []string{"read"})
@@ -153,8 +160,7 @@ func (s *ServiceBroker) UnBind(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("credhub client configuration failed: " + err.Error())
 	}
 
-	pathVariables := mux.Vars(r)
-	name := s.NameMap[pathVariables["service_binding_guid"]]
+	name := s.NameMap[chi.URLParam(r, "service_binding_guid")]
 
 	err = ch.Delete(name)
 
