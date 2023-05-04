@@ -11,7 +11,7 @@ require (
 	github.com/cloudfoundry/noaa/v2 v2.2.0
 	github.com/cloudfoundry/sonde-go v0.0.0-20220627221915-ff36de9c3435
 	github.com/mholt/archiver v3.1.1+incompatible
-	github.com/onsi/ginkgo/v2 v2.9.3
+	github.com/onsi/ginkgo/v2 v2.9.4
 	github.com/onsi/gomega v1.27.6
 	golang.org/x/crypto v0.8.0
 	google.golang.org/grpc v1.54.0
