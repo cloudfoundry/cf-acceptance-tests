@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	code.cloudfoundry.org/archiver v0.0.0-20230220125704-e06c77649d28
-	code.cloudfoundry.org/go-log-cache/v2 v2.0.0
+	code.cloudfoundry.org/go-log-cache/v2 v2.0.1
 	code.cloudfoundry.org/go-loggregator/v9 v9.0.4
 	code.cloudfoundry.org/tlsconfig v0.0.0-20220621140725-0e6fbd869921
 	github.com/cloudfoundry/cf-test-helpers/v2 v2.5.0
@@ -30,7 +30,7 @@ require (
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.0 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.2 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/nwaples/rardecode v0.0.0-20171029023500-e06696f847ae // indirect
