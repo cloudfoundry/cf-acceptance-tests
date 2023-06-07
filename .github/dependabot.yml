@@ -144,3 +144,9 @@ updates:
   target-branch: "develop"
   schedule:
     interval: "daily"
+
+- package-ecosystem: "gradle"
+  directory: "/assets/credhub-enabled-app"
+  target-branch: "develop"
+  schedule:
+    interval: "daily"
