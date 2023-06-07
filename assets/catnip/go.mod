@@ -6,7 +6,7 @@ require (
 	code.cloudfoundry.org/clock v1.1.0
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/onsi/ginkgo/v2 v2.10.0
-	github.com/onsi/gomega v1.27.7
+	github.com/onsi/gomega v1.27.8
 )
 
 require (
