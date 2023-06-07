@@ -138,3 +138,9 @@ updates:
   target-branch: "develop"
   schedule:
     interval: "daily"
+
+- package-ecosystem: "maven"
+  directory: "/assets/java-spring"
+  target-branch: "develop"
+  schedule:
+    interval: "daily"
