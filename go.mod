@@ -5,13 +5,13 @@ go 1.20
 require (
 	code.cloudfoundry.org/archiver v0.0.0-20230220125704-e06c77649d28
 	code.cloudfoundry.org/go-log-cache/v2 v2.0.1
-	code.cloudfoundry.org/go-loggregator/v9 v9.0.5
+	code.cloudfoundry.org/go-loggregator/v9 v9.0.6
 	code.cloudfoundry.org/tlsconfig v0.0.0-20220621140725-0e6fbd869921
 	github.com/cloudfoundry/cf-test-helpers/v2 v2.5.0
 	github.com/cloudfoundry/noaa/v2 v2.2.0
 	github.com/cloudfoundry/sonde-go v0.0.0-20220627221915-ff36de9c3435
 	github.com/mholt/archiver v3.1.1+incompatible
-	github.com/onsi/ginkgo/v2 v2.10.0
+	github.com/onsi/ginkgo/v2 v2.11.0
 	github.com/onsi/gomega v1.27.8
 	golang.org/x/crypto v0.10.0
 	google.golang.org/grpc v1.56.0
