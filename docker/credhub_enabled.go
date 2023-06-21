@@ -30,10 +30,10 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 			chBrokerName = random_name.CATSRandomName("BRKR-CH")
 
 			pushBroker := cf.Cf("push", chBrokerName,
+				"--no-start",
 				"-b", Config.GetGoBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().CredHubServiceBroker,
-				"-f", assets.NewAssets().CredHubServiceBroker+"/manifest.yml",
 			).Wait(Config.CfPushTimeoutDuration())
 			Expect(pushBroker).To(Exit(0), "failed pushing credhub-enabled service broker")
 
@@ -60,8 +60,8 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 			setServiceName := cf.Cf("set-env", chBrokerName, "SERVICE_NAME", chServiceName).Wait()
 			Expect(setServiceName).To(Exit(0), "failed setting SERVICE_NAME env var on credhub-enabled service broker")
 
-			restartBroker := cf.Cf("restart", chBrokerName).Wait(Config.CfPushTimeoutDuration())
-			Expect(restartBroker).To(Exit(0), "failed restarting credhub-enabled service broker")
+			startBroker := cf.Cf("start", chBrokerName).Wait(Config.CfPushTimeoutDuration())
+			Expect(startBroker).To(Exit(0), "failed starting credhub-enabled service broker")
 
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				serviceUrl := "https://" + chBrokerName + "." + Config.GetAppsDomain()

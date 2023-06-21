@@ -32,10 +32,10 @@ var _ = CredhubDescribe("service keys", func() {
 
 		Expect(cf.Cf(
 			"push", chBrokerAppName,
+			"--no-start",
 			"-b", Config.GetGoBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().CredHubServiceBroker,
-			"-f", assets.NewAssets().CredHubServiceBroker+"/manifest.yml",
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed pushing credhub-enabled service broker")
 
 		existingEnvVar := string(cf.Cf("running-environment-variable-group").Wait().Out.Contents())
@@ -64,8 +64,8 @@ var _ = CredhubDescribe("service keys", func() {
 		).Wait()).To(Exit(0), "failed setting CREDHUB_SECRET env var on credhub-enabled service broker")
 
 		Expect(cf.Cf(
-			"restart", chBrokerAppName,
-		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed restarting credhub-enabled service broker")
+			"start", chBrokerAppName,
+		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed starting credhub-enabled service broker")
 
 		serviceUrl := "https://" + chBrokerAppName + "." + Config.GetAppsDomain()
 		createServiceBroker := cf.Cf("create-service-broker", chBrokerAppName, "a-user", "a-password", serviceUrl, "--space-scoped").Wait()
