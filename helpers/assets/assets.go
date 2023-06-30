@@ -38,8 +38,7 @@ type Assets struct {
 	TCPListener                string
 	Wcf                        string
 	WindowsWebapp              string
-	WindowsWorker              string
-	WorkerApp                  string
+	Worker                     string
 	MultiPortApp               string
 	SpringSleuthZip            string
 }
@@ -86,8 +85,7 @@ func NewAssets() Assets {
 		TCPListener:                "assets/tcp-listener",
 		Wcf:                        "assets/wcf/Hello.Service.IIS",
 		WindowsWebapp:              "assets/webapp",
-		WorkerApp:                  "assets/worker-app",
-		WindowsWorker:              "assets/worker",
+		Worker:                     "assets/worker",
 		MultiPortApp:               "assets/multi-port-app",
 		SpringSleuthZip:            "assets/spring-sleuth/spring-sleuth.jar",
 	}

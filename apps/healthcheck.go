@@ -10,8 +10,6 @@ import (
 	"github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
 
-	"path/filepath"
-
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
@@ -34,8 +32,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 			By("pushing it")
 			Eventually(cf.Cf(
 				"push", appName,
-				"-p", assets.NewAssets().WorkerApp,
-				"-f", filepath.Join(assets.NewAssets().WorkerApp, "manifest.yml"),
+				"-p", assets.NewAssets().Worker,
 				"-b", Config.GetGoBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-i", "1",
@@ -48,7 +45,7 @@ var _ = AppsDescribe("Healthcheck", func() {
 				appLogsSession := logs.Recent(appName)
 				Expect(appLogsSession.Wait()).To(Exit(0))
 				return appLogsSession
-			}).Should(gbytes.Say("I am working at"))
+			}).Should(gbytes.Say("Running Worker"))
 		})
 	})
 
