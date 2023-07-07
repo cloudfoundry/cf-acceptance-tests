@@ -24,7 +24,7 @@ var _ = WindowsDescribe("apps without a port", func() {
 	)
 
 	BeforeEach(func() {
-		workerPath, err := BuildWithEnvironment(filepath.Join(assets.NewAssets().WindowsWorker, "worker.go"),
+		workerPath, err := BuildWithEnvironment(filepath.Join(assets.NewAssets().Worker, "worker.go"),
 			[]string{"GOARCH=amd64", "GOOS=windows"})
 		Expect(err).NotTo(HaveOccurred())
 

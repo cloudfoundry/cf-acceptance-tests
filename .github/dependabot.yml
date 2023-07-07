@@ -73,12 +73,6 @@ updates:
     interval: "daily"
 
 - package-ecosystem: "gomod"
-  directory: "/assets/worker-app"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
-
-- package-ecosystem: "gomod"
   directory: "/assets/worker"
   target-branch: "develop"
   schedule:
