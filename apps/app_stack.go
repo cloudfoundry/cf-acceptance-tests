@@ -133,8 +133,6 @@ EOF
 
 				var expectedLSBRelease string
 				switch stackName {
-				case "cflinuxfs3":
-					expectedLSBRelease = "DISTRIB_CODENAME=bionic"
 				case "cflinuxfs4":
 					expectedLSBRelease = "DISTRIB_CODENAME=jammy"
 				}
