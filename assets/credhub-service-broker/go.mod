@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	code.cloudfoundry.org/credhub-cli v0.0.0-20230320130818-a7d5420b283b
-	github.com/go-chi/chi/v5 v5.0.8
+	github.com/go-chi/chi/v5 v5.0.10
 	github.com/satori/go.uuid v1.2.0
 )
 
