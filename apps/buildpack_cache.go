@@ -11,8 +11,8 @@ import (
 	archive_helpers "code.cloudfoundry.org/archiver/extractor/test_helper"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
+	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -30,8 +30,6 @@ var _ = AppsDescribe("Buildpack cache", func() {
 		buildpackPath        string
 		buildpackArchivePath string
 	)
-
-	SkipOnK8s("Custom buildpacks not yet supported")
 
 	matchingFilename := func(appName string) string {
 		return fmt.Sprintf("buildpack-for-buildpack-cache-test-%s", appName)

@@ -52,5 +52,3 @@ const SkipNoAlternateStacksMessage = `Skipping this test because config.Stacks i
 const SkipVolumeServicesMessage = `Skipping this test because config.IncludeVolumeServices is set to 'false'.
 NOTE: Ensure that volume services are enabled on your platform and volume service broker is registered before running this test.`
 const SkipVolumeServicesDockerEnabledMessage = `Skipping this test because config.IncludeDocker is set to 'true'`
-const SkipK8sMessage = `Skipping this test because config.Infrastructure is set to 'kubernetes': %s`
-const SkipVMsMessage = `Skipping this test because config.Infrastructure is set to 'vms': %s`

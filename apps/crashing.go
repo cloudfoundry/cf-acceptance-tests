@@ -27,7 +27,6 @@ var _ = AppsDescribe("Crashing", func() {
 	})
 
 	Describe("a continuously crashing app", func() {
-		SkipOnK8s("Multi-buildpack apps not supported")
 		It("emits crash events and reports as 'crashed' after enough crashes", func() {
 			Expect(cf.Cf(
 				"push",

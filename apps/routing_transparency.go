@@ -38,14 +38,8 @@ var _ = AppsDescribe("Routing Transparency", func() {
 		curlResponse := helpers.CurlApp(Config, appName, "/requesturi/%21%7E%5E%24%20%27%28%29?foo=bar+baz%20bing")
 		Expect(curlResponse).To(ContainSubstring("Request"))
 
-		if Config.RunningOnK8s() {
-			By("decoding unsafe characters like ~")
-			Expect(curlResponse).To(ContainSubstring("/requesturi/%21~%5E%24%20%27%28%29"))
-		} else {
-			By("preserving all characters")
-			Expect(curlResponse).To(ContainSubstring("/requesturi/%21%7E%5E%24%20%27%28%29"))
-		}
-
+		By("preserving all characters")
+		Expect(curlResponse).To(ContainSubstring("/requesturi/%21%7E%5E%24%20%27%28%29"))
 		Expect(curlResponse).To(ContainSubstring("Query String is [foo=bar+baz%20bing]"))
 	})
 
@@ -53,14 +47,8 @@ var _ = AppsDescribe("Routing Transparency", func() {
 		curlResponse := helpers.CurlApp(Config, appName, "/requesturi/!~^'()$\"?!'()$#!'")
 		Expect(curlResponse).To(ContainSubstring("Request"))
 
-		if Config.RunningOnK8s() {
-			By("normalizing unsafe characters such as ^ and \" in the path")
-			Expect(curlResponse).To(ContainSubstring("/requesturi/!~%5E'()$%22"))
-		} else {
-			By("preserving all characters")
-			Expect(curlResponse).To(ContainSubstring("/requesturi/!~^'()$\""))
-		}
-
+		By("preserving all characters")
+		Expect(curlResponse).To(ContainSubstring("/requesturi/!~^'()$\""))
 		Expect(curlResponse).To(ContainSubstring("Query String is [!'()$]"))
 	})
 })

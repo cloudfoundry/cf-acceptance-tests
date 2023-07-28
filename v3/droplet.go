@@ -44,8 +44,6 @@ var _ = V3Describe("droplet features", func() {
 			sourceDropletGuid  string
 		)
 
-		SkipOnK8s("App droplets not supported")
-
 		BeforeEach(func() {
 			buildGuid := StageBuildpackPackage(packageGuid, Config.GetRubyBuildpackName())
 			WaitForBuildToStage(buildGuid)
