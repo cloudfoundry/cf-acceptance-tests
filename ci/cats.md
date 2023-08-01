@@ -1,4 +1,4 @@
-# CATs
+# cats
 
 ## Purpose
 
@@ -8,7 +8,7 @@ This pipeline validates changes to `cf-acceptance-tests` for compatibility with 
 
 ### Unit Testing
 
-As a blocking step before running acceptance test suites, we run a separate suite of unit tests to validate the configuration interface and cf cli integration. Currently, the suites are located in the `helpers/config`, `helpers/download` and `helpers/cli_version_check` directories.
+As a blocking step before running acceptance test suites, we run a separate suite of unit tests to validate the configuration interface and cf cli integration. Currently, the suites are located in the `helpers/config` and `helpers/cli_version_check` directories.
 
 ### Acceptance Testing
 
@@ -17,6 +17,7 @@ We validate every test suite but windows, using the following config to enable t
 ```
   "include_apps": true,
   "include_backend_compatibility": true,
+  "include_capi_no_bridge": true,
   "include_container_networking": true,
   "include_detect": true,
   "include_docker": true,
@@ -57,7 +58,7 @@ This pipeline claims infrastructure provisioned by other pipelines through conco
 
 For CF on VMs, we deploy the latest [cf-deployment](https://github.com/cloudfoundry/cf-deployment) release with an isolation segment enabled. The Bosh director is provisioned by a separate infrastructure pipeline that uses the bosh-bootloader utility.
 
-The deployment is managed by the `deploy-cf` and `delete-cf` jobs which deploy and clean up cf-deployment respectively.
+The deployment is managed by the `deploy-cf` and `cleanup-cats` jobs which deploy and clean up cf-deployment respectively.
 
 ### Kubernetes
 
@@ -65,7 +66,17 @@ For CF on Kubernetes, we deploy the latest [cf-for-k8s](https://github.com/cloud
 
 ## Release Management
 
-See the `CATS-release` team wiki page for the full release management documentation: https://github.com/cloudfoundry/cf-acceptance-tests/wiki/Releasing
+Release management is a manual process and consists of the following steps:
+
+1. Manually generate release notes based on the current diff between the `release-candidate` and `main` branches
+1. Choose whether the next release is going to be a major, minor or patch
+   release.
+1. Run the corresponding `ship-it-*` job based on the release type identified in the previous step to promote the changes on the `release-candidate` branch and create a new release tag on the `main` branch.
+1. Use the newly created release tag and your release notes to create a new github release
+
+See the `CATS-release` team wiki page for more details on release notes conventions.
+
+Note that at the time of writing, when a new version of cf-acceptance-tests is released, a [job in the cf-deployment pipeline](https://release-integration.ci.cf-app.com/teams/main/pipelines/cf-deployment/jobs/stable-update-cats-cfd-branch) also creates a new branch at the release tag that freezes the versions of cf-deployment and cf-acceptance-tests.
 
 ## Pipeline management
 
