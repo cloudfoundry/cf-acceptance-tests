@@ -57,8 +57,6 @@ type testConfig struct {
 
 	Stacks *[]string `json:"stacks,omitempty"`
 
-	Infrastructure *string `json:"infrastructure"`
-
 	VolumeServiceName     *string `json:"volume_service_name,omitempty"`
 	VolumeServicePlanName *string `json:"volume_service_plan_name,omitempty"`
 
@@ -189,8 +187,6 @@ type nullConfig struct {
 
 	Stacks *[]string `json:"stacks"`
 
-	Infrastructure *string `json:"infrastructure"`
-
 	UnallocatedIPForSecurityGroup *string `json:"unallocated_ip_for_security_group"`
 	RequireProxiedAppTraffic      *bool   `json:"require_proxied_app_traffic"`
 	UseWindowsContextPath         *bool   `json:"use_windows_context_path"`
@@ -246,7 +242,6 @@ var _ = Describe("Config", func() {
 		testCfg.SkipSSLValidation = ptrToBool(true)
 		testCfg.AppsDomain = ptrToString("cf-app.bosh-lite.com")
 		testCfg.UseHttp = ptrToBool(false)
-		testCfg.Infrastructure = ptrToString("vms")
 	})
 
 	JustBeforeEach(func() {
@@ -354,8 +349,6 @@ var _ = Describe("Config", func() {
 
 		Expect(config.GetStacks()).To(ConsistOf("cflinuxfs4"))
 
-		Expect(config.RunningOnK8s()).To(BeFalse(), "RunningOnK8s should be false")
-
 		Expect(config.GetBinaryBuildpackName()).To(Equal("binary_buildpack"))
 		Expect(config.GetGoBuildpackName()).To(Equal("go_buildpack"))
 		Expect(config.GetHwcBuildpackName()).To(Equal("hwc_buildpack"))
@@ -446,8 +439,6 @@ var _ = Describe("Config", func() {
 
 			Expect(err.Error()).To(ContainSubstring("'stacks' must not be null"))
 
-			Expect(err.Error()).To(ContainSubstring("'infrastructure' must not be null"))
-
 			// These values are allowed to be null
 			Expect(err.Error()).NotTo(ContainSubstring("unallocated_ip_for_security_group"))
 			Expect(err.Error()).NotTo(ContainSubstring("require_proxied_app_traffic"))
@@ -471,7 +462,6 @@ var _ = Describe("Config", func() {
 			testCfg.TimeoutScale = ptrToFloat(1.0)
 			testCfg.UnallocatedIPForSecurityGroup = ptrToString("192.168.0.1")
 			testCfg.RequireProxiedAppTraffic = ptrToBool(true)
-			testCfg.Infrastructure = ptrToString("kubernetes")
 
 			testCfg.IncludeAppSyslogTcp = ptrToBool(false)
 			testCfg.IncludeApps = ptrToBool(false)
@@ -535,7 +525,6 @@ var _ = Describe("Config", func() {
 			Expect(config.SleepTimeoutDuration()).To(Equal(101 * time.Second))
 			Expect(config.GetUnallocatedIPForSecurityGroup()).To(Equal("192.168.0.1"))
 			Expect(config.GetRequireProxiedAppTraffic()).To(BeTrue())
-			Expect(config.RunningOnK8s()).To(BeTrue(), "RunningOnK8s should be true")
 
 			Expect(config.GetIncludeAppSyslogTcp()).To(BeFalse())
 			Expect(config.GetIncludeApps()).To(BeFalse())

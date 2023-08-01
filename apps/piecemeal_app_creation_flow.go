@@ -22,8 +22,6 @@ var _ = AppsDescribe("Piecemeal App Creation", func() {
 		appName string
 	)
 
-	SkipOnK8s("App droplets not supported")
-
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 	})

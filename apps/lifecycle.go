@@ -248,8 +248,6 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				})
 
 				Context("(cf-for-vms)", func() {
-					SkipOnK8s("App disk usage info unavailable")
-
 					It("for disk usage", func() {
 						Eventually(func() float64 { _, d, _ := stats(); return d }, Config.CfPushTimeoutDuration()).Should(BeNumerically(">", 0.0))
 					})
@@ -275,8 +273,6 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 		})
 
 		Context("makes system environment variables available", func() {
-			SkipOnK8s("App instance index not available")
-
 			It("and validates", func() {
 				Expect(cf.Cf(app_helpers.CatnipWithArgs(
 					appName,
@@ -331,8 +327,6 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 		})
 
 		Context("generates an app usage 'buildpack_set' event", func() {
-			SkipOnK8s("BUILDPACK_SET not emitted")
-
 			It("in cf-for-vms", func() {
 				Expect(cf.Cf(app_helpers.CatnipWithArgs(
 					appName,
@@ -388,8 +382,6 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 	})
 
 	Describe("updating", func() {
-		SkipOnK8s("Buildpack update workflow no longer supported")
-
 		BeforeEach(func() {
 			Expect(cf.Cf(app_helpers.CatnipWithArgs(
 				appName,

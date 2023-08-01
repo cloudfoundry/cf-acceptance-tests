@@ -18,8 +18,6 @@ import (
 )
 
 var _ = ZipkinDescribe("Zipkin Tracing", func() {
-	SkipOnK8s("Not yet supported in CF-for-K8s")
-
 	var (
 		app1              string
 		helloRoutingAsset = assets.NewAssets().SpringSleuthZip

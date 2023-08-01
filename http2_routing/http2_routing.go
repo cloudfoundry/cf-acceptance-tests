@@ -21,8 +21,6 @@ import (
 )
 
 var _ = HTTP2RoutingDescribe("HTTP/2 Routing", func() {
-	SkipOnK8s("Not yet supported in CF-for-K8s")
-
 	Context("when a destination only supports HTTP/2", func() {
 		It("routes traffic to that destination over HTTP/2", func() {
 			appName := random_name.CATSRandomName("APP")

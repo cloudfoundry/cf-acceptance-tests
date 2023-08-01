@@ -14,8 +14,6 @@ import (
 
 var _ = AppsDescribe("Getting instance information", func() {
 	Describe("scaling memory", func() {
-		SkipOnK8s("CF-for-K8s generates a timeout instead of the expected error message")
-
 		var appName string
 		var runawayTestSetup *workflowhelpers.ReproducibleTestSuiteSetup
 
@@ -41,10 +39,6 @@ var _ = AppsDescribe("Getting instance information", func() {
 		It("fails with insufficient resources", func() {
 			scale := cf.Cf("scale", appName, "-m", workflowhelpers.RUNAWAY_QUOTA_MEM_LIMIT, "-f")
 			scaleMatch := "insufficient"
-
-			if Config.RunningOnK8s() {
-				scaleMatch = "Insufficient"
-			}
 
 			Eventually(scale).Should(Or(Say(scaleMatch), Say("down")))
 			scale.Kill()

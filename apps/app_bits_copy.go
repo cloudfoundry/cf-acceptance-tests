@@ -14,8 +14,6 @@ import (
 )
 
 var _ = AppsDescribe("Copy app bits", func() {
-	SkipOnK8s("Currently broken. Captured by https://github.com/cloudfoundry/cloud_controller_ng/issues/1857")
-
 	var golangAppName string
 	var helloWorldAppName string
 

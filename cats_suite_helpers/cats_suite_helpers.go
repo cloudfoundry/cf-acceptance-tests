@@ -31,14 +31,6 @@ var (
 	SftpPath  string
 )
 
-func SkipOnK8s(reason string) {
-	BeforeEach(func() {
-		if Config.RunningOnK8s() {
-			Skip(fmt.Sprintf(skip_messages.SkipK8sMessage, reason))
-		}
-	})
-}
-
 func AppSyslogTcpDescribe(description string, callback func()) bool {
 	return Describe("[app_syslog_tcp]", func() {
 		BeforeEach(func() {
@@ -290,7 +282,6 @@ func CredhubDescribe(description string, callback func()) bool {
 				Skip(skip_messages.SkipCredhubMessage)
 			}
 		})
-		SkipOnK8s("Credhub not supported")
 		Describe(description, callback)
 	})
 }
@@ -327,7 +318,6 @@ func WindowsCredhubDescribe(description string, callback func()) bool {
 				Skip(skip_messages.SkipCredhubMessage)
 			}
 		})
-		SkipOnK8s("Windows not supported")
 		Describe(description, callback)
 	})
 }
@@ -361,7 +351,6 @@ func WindowsDescribe(description string, callback func()) bool {
 				Skip(skip_messages.SkipWindowsMessage)
 			}
 		})
-		SkipOnK8s("Windows not supported")
 		Describe(description, callback)
 	})
 }
