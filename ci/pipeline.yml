@@ -90,25 +90,19 @@ jobs:
     - get: cf-acceptance-tests-develop
       trigger: true
     - get: runtime-ci
-    - get: cf-deployment-main
-      passed:
-      - smoke-tests
-      trigger: true
 
   - task: run-cats-unit-tests
     file: runtime-ci/tasks/run-cats-unit-tests/task.yml
     input_mapping:
       cf-acceptance-tests: cf-acceptance-tests-develop
 
-  - put: cats-pool
-    params:
-      claim: cats
-
-- name: acquire-pool-deploy
+- name: acquire-pool-cats
   public: true
   serial: true
   plan:
-  - get: cf-deployment-main
+  - get: cf-acceptance-tests-develop
+    passed:
+      - run-unit-tests
     trigger: true
 
   - put: cats-pool
@@ -131,14 +125,23 @@ jobs:
   - in_parallel:
     - get: cats-pool
       passed:
-      - acquire-pool-deploy
+        - acquire-pool-cats
       trigger: true
+    - get: cf-acceptance-tests-develop
+      passed:
+        - acquire-pool-cats
     - get: runtime-ci
     - get: cf-deployment-concourse-tasks
     - get: cf-deployment-main
-      passed:
-      - acquire-pool-deploy
     - get: relint-envs
+
+  - task: guarantee-no-existing-cf-deployment
+    file: cf-deployment-concourse-tasks/bosh-delete-deployment/task.yml
+    input_mapping:
+      bbl-state: relint-envs
+    params:
+      BBL_STATE_DIR: environments/test/cats/bbl-state
+      IGNORE_ERRORS: true
 
   - task: bosh-deploy-cf
     file: cf-deployment-concourse-tasks/bosh-deploy/task.yml
@@ -156,13 +159,6 @@ jobs:
         operations/windows2019-cell.yml
         operations/use-online-windows2019fs.yml
         operations/experimental/use-compiled-releases-windows.yml
-
-  - task: run-bosh-cleanup
-    file: cf-deployment-concourse-tasks/bosh-cleanup/task.yml
-    input_mapping:
-      bbl-state: relint-envs
-    params:
-      BBL_STATE_DIR: environments/test/cats/bbl-state
 
   - task: update-integration-configs
     file: cf-deployment-concourse-tasks/update-integration-configs/task.yml
@@ -184,12 +180,14 @@ jobs:
   - in_parallel:
     - get: cats-pool
       passed:
-      - deploy-cf
+        - deploy-cf
       trigger: true
-    - get: relint-envs
-    - get: cf-deployment-main
+    - get: cf-acceptance-tests-develop
       passed:
-      - deploy-cf
+        - deploy-cf
+    - get: relint-envs
+      passed:
+        - deploy-cf
     - get: cf-deployment-concourse-tasks
 
   - task: bosh-run-errand-smoke-tests
@@ -200,10 +198,6 @@ jobs:
       BBL_STATE_DIR: environments/test/cats/bbl-state
       ERRAND_NAME: smoke_tests
 
-  - put: cats-pool
-    params:
-      release: cats-pool
-
 - name: run-cats-vms
   serial: true
   public: true
@@ -211,16 +205,15 @@ jobs:
   - in_parallel:
     - get: cats-pool
       passed:
-      - run-unit-tests
+        - smoke-tests
       trigger: true
-    - get: cf-deployment-concourse-tasks
     - get: cf-acceptance-tests-develop
       passed:
-      - run-unit-tests
+        - smoke-tests
+    - get: cf-deployment-concourse-tasks
     - get: relint-envs
-    - get: cf-deployment-main
       passed:
-      - run-unit-tests
+        - smoke-tests
 
   - task: enable-docker-and-tasks
     file: cf-deployment-concourse-tasks/set-feature-flags/task.yml
@@ -252,12 +245,9 @@ jobs:
     - get: runtime-ci
     - get: cf-acceptance-tests-develop
       passed:
-      - run-cats-vms
+        - run-cats-vms
       trigger: true
     - get: cf-deployment-main
-      passed:
-      - run-cats-vms
-      trigger: true
 
   - put: cf-acceptance-tests-rc
     params:
@@ -279,10 +269,12 @@ jobs:
   - in_parallel:
     - get: cats-pool
       passed:
-      - run-cats-vms
+        - run-cats-vms
       trigger: true
     - get: runtime-ci
     - get: relint-envs
+      passed:
+        - run-cats-vms
 
   - task: cleanup-cats
     file: runtime-ci/tasks/cleanup-after-cats/task.yml
@@ -291,9 +283,40 @@ jobs:
     params:
       CONFIG_FILE_PATH: environments/test/cats/integration_config.json
 
-  - put: cats-pool
-    params:
-      release: cats-pool
+- name: delete-cf
+  serial: true
+  public: true
+  plan:
+    - timeout: 4h
+      do:
+      - in_parallel:
+        - get: cats-pool
+          trigger: true
+          passed:
+            - cleanup-cats
+        - get: cf-deployment-concourse-tasks
+        - get: relint-envs
+          passed:
+            - cleanup-cats
+
+    - task: delete-deployment-cf
+      file: cf-deployment-concourse-tasks/bosh-delete-deployment/task.yml
+      input_mapping:
+        bbl-state: relint-envs
+      params:
+        BBL_STATE_DIR: environments/test/cats/bbl-state
+        IGNORE_ERRORS: true
+
+    - task: run-bosh-cleanup
+      file: cf-deployment-concourse-tasks/bosh-cleanup/task.yml
+      input_mapping:
+        bbl-state: relint-envs
+      params:
+        BBL_STATE_DIR: environments/test/cats/bbl-state
+
+    - put: cats-pool
+      params:
+        release: cats-pool
 
 - name: ship-it-patch
   public: true
