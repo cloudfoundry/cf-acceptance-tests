@@ -17,6 +17,7 @@ $stdout.sync = true
 $stderr.sync = true
 $counter = 0
 $start_time = Time.now
+$ready = true
 
 class Dora < Sinatra::Base
   use Instances
@@ -102,12 +103,27 @@ class Dora < Sinatra::Base
     ENV.to_hash.to_s
   end
 
+  get '/ready' do
+    unless $ready == 'false'
+      status 200
+      return "200 - ready"
+    end
+
+    status 500
+    "500 - not ready"
+  end
+
+  get '/ready/:new_ready_state' do
+    $ready = params[:new_ready_state]
+  end
+
   get '/env.json' do
     ENV.to_hash.to_json
   end
 
   get '/myip' do
-    `ip route get 1 | awk '{print $NF;exit}'`
+    ip = `ip route get 1 | awk '{print $7;exit}'`
+    ip.delete("\n")
   end
 
   get '/largetext/:kbytes' do
