@@ -19,21 +19,24 @@ import (
 
 var _ = V3Describe("v3 buildpack app lifecycle", func() {
 	var (
-		appName                         string
-		appGuid                         string
-		packageGuid                     string
-		spaceGuid                       string
-		appCreationEnvironmentVariables string
-		token                           string
-		uploadUrl                       string
-		expectedNullResponse            string
+		appName              string
+		appGuid              string
+		packageGuid          string
+		spaceGuid            string
+		appCreateEnvVars     string
+		token                string
+		uploadUrl            string
+		expectedNullResponse string
 	)
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 		spaceGuid = GetSpaceGuidFromName(TestSetup.RegularUserContext().Space)
-		appCreationEnvironmentVariables = `"foo"=>"bar"`
-		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
+		appCreateEnvVars = `{"foo":"bar"}`
+	})
+
+	JustBeforeEach(func() {
+		appGuid = CreateApp(appName, spaceGuid, appCreateEnvVars)
 		packageGuid = CreatePackage(appGuid)
 		token = GetAuthToken()
 		uploadUrl = fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.GetApiEndpoint(), packageGuid)
@@ -49,7 +52,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 	})
 
 	Context("with a ruby buildpack", func() {
-		BeforeEach(func() {
+		JustBeforeEach(func() {
 			UploadPackage(uploadUrl, assets.NewAssets().DoraZip, token)
 			WaitForPackageToBeReady(packageGuid)
 		})
@@ -98,7 +101,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			output := helpers.CurlApp(Config, webProcess.Name, "/env")
 			Expect(output).To(ContainSubstring(fmt.Sprintf("application_name\\\":\\\"%s", appName)))
-			Expect(output).To(ContainSubstring(appCreationEnvironmentVariables))
+			Expect(output).To(ContainSubstring(`"foo"=>"bar"`))
 
 			Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 			Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", workerProcess.Name)))
@@ -153,6 +156,10 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 	Context("with a java buildpack", func() {
 		BeforeEach(func() {
+			appCreateEnvVars = `{"JBP_CONFIG_OPEN_JDK_JRE":"{\"jre\": { version: 17.+ } }"}`
+		})
+
+		JustBeforeEach(func() {
 			UploadPackage(uploadUrl, assets.NewAssets().JavaSpringZip, token)
 			WaitForPackageToBeReady(packageGuid)
 		})
