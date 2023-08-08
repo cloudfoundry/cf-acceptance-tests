@@ -13,6 +13,8 @@ IN DEVELOPMENT
   "use_http": true,
   "include_app_syslog_tcp": true,
   "include_apps": true,
+  "dynamic_asgs_enabled": true,
+  "readiness_health_check_enabled": true,
   "include_container_networking": true,
   "include_detect": true,
   "include_docker": true,

@@ -116,9 +116,8 @@ include_v3
 `include_*` parameters are used to specify whether to skip tests based on how a deployment is configured.
 * `include_app_syslog_tcp`: Flag to include the app syslog drain over TCP test group.
 * `include_apps`: Flag to include the apps test group.
+* `readiness_health_checks_enabled`: Defaults to `true`. Set to false if you are using an environment without readiness health checks.
 * `include_container_networking`: Flag to include tests related to container networking.
-* `include_security_groups` must also be set for tests to run. [See below](#container-networking-and-application-security-groups)
-* `dynamic_asgs_enabled`: Defaults to `true`. Set to false if dynamic ASGs are disabled in the test environment.
 * `credhub_mode`: Valid values are `assisted` or `non-assisted`. [See below](#credhub-modes).
 * `credhub_location`: Location of CredHub instance; default is `https://credhub.service.cf.internal:8844`
 * `credhub_client`: UAA client credential for Service Broker write access to CredHub (required for CredHub tests); default is `credhub_admin_client`.
@@ -134,6 +133,7 @@ include_v3
 * `include_routing`: Flag to include the routing tests.
 * `include_routing_isolation_segments`: Flag to include routing isolation segments tests. [See below](#routing-isolation-segments). Cannot be run together with logging isolation segments tests.
 * `include_security_groups`: Flag to include tests for security groups. [See below](#container-networking-and-application-security-groups)
+* `dynamic_asgs_enabled`: Defaults to `true`. Set to false if dynamic ASGs are disabled in the test environment.
 * `include_services`: Flag to include test for the services API.
 * `include_service_instance_sharing`: Flag to include tests for service instance sharing between spaces. `include_services` must be set for these tests to run. The `service_instance_sharing` feature flag must also be enabled for these tests to pass.
 * `include_ssh`: Flag to include tests for Diego container ssh feature.
