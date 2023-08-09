@@ -24,11 +24,14 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
+		// On Aug 9, 2023, increased readiness timeout from default (1 min) to 2
+		// mins to try and avoid frequent flakes when pushing this app.
 		Expect(cf.Cf("push",
 			appName,
 			"-b", Config.GetJavaBuildpackName(),
 			"-m", "1024M",
 			"-p", assetPath,
+			"-t", "120",
 		).Wait(CF_JAVA_TIMEOUT)).To(gexec.Exit(0))
 	})
 
