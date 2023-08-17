@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Web.Http;
+using System.Web.Http.Results;
 using nora.Controllers;
 using Newtonsoft.Json;
 using NSpec;
@@ -123,6 +124,42 @@ namespace nora.Tests.Controllers
                         json.Result.Contains("\"return_code\":2").should_be_true();
                     };
                 };
+            };
+
+            describe["Get /ready"] = () =>
+            {
+                it["should return true by default"] = () =>
+                {
+                    var response = instancesController.Ready();
+                    var result = response.ExecuteAsync(new CancellationToken()).Result.Content.ReadAsStringAsync();
+                    result.Wait();
+                    result.Result.Contains("200 - ready").should_be_true();
+                };
+
+                it["should return false when readiness is disabled"] = () =>
+                {
+                    InstancesController.ReadyState = false;
+                    var response = instancesController.Ready();
+                    var result = response.ExecuteAsync(new CancellationToken()).Result;
+                    result.IsSuccessStatusCode.should_be_false();
+                };
+                describe["Get /ready/:state"] = () =>
+                {
+                    it["should set a false state when asked"] = () =>
+                    {
+                        InstancesController.ReadyState = true;
+                        instancesController.Ready(false);
+                        InstancesController.ReadyState.should_be_false();
+                    };
+                    it["should set a true state when asked"] = () =>
+                    {
+                        InstancesController.ReadyState = false;
+                        instancesController.Ready(true);
+                        InstancesController.ReadyState.should_be_true();
+
+                    };
+                };
+
             };
         }
     }

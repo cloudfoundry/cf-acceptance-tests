@@ -1,0 +1,16 @@
+C:\Users\gfranks\source\repos\cf-acceptance-tests\assets\nora\Nora\bin\Nora.dll
+C:\Users\gfranks\source\repos\cf-acceptance-tests\assets\nora\Nora\bin\Nora.pdb
+C:\Users\gfranks\source\repos\cf-acceptance-tests\assets\nora\Nora\bin\MySql.Data.dll
+C:\Users\gfranks\source\repos\cf-acceptance-tests\assets\nora\Nora\bin\Newtonsoft.Json.dll
+C:\Users\gfranks\source\repos\cf-acceptance-tests\assets\nora\Nora\bin\System.Net.Http.Formatting.dll
+C:\Users\gfranks\source\repos\cf-acceptance-tests\assets\nora\Nora\bin\System.Web.Http.dll
+C:\Users\gfranks\source\repos\cf-acceptance-tests\assets\nora\Nora\bin\System.Web.Http.WebHost.dll
+C:\Users\gfranks\source\repos\cf-acceptance-tests\assets\nora\Nora\bin\System.Net.Http.Formatting.xml
+C:\Users\gfranks\source\repos\cf-acceptance-tests\assets\nora\Nora\bin\System.Web.Http.xml
+C:\Users\gfranks\source\repos\cf-acceptance-tests\assets\nora\Nora\bin\System.Web.Http.WebHost.xml
+C:\Users\gfranks\source\repos\cf-acceptance-tests\assets\nora\Nora\obj\Release\Nora.csproj.AssemblyReference.cache
+C:\Users\gfranks\source\repos\cf-acceptance-tests\assets\nora\Nora\obj\Release\Nora.csproj.CoreCompileInputs.cache
+C:\Users\gfranks\source\repos\cf-acceptance-tests\assets\nora\Nora\obj\Release\Nora.csproj.CopyComplete
+C:\Users\gfranks\source\repos\cf-acceptance-tests\assets\nora\Nora\obj\Release\Nora.dll
+C:\Users\gfranks\source\repos\cf-acceptance-tests\assets\nora\Nora\obj\Release\Nora.pdb
+C:\Users\gfranks\source\repos\cf-acceptance-tests\assets\nora\Nora\bin\Newtonsoft.Json.xml
