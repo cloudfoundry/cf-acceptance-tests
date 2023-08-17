@@ -13,8 +13,8 @@ github.com/apoydence/eachers v0.0.0-20181020210610-23942921fe77 h1:afT88tB6u9JCK
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
-github.com/cloudfoundry/cf-test-helpers/v2 v2.6.0 h1:7Qg0kpKz8uDpYO9ekoV6r0/tA2Yxp15TOFottL4puyU=
-github.com/cloudfoundry/cf-test-helpers/v2 v2.6.0/go.mod h1:F9lO5YQLrrF7xf5liS/pRTE9uuyZ8TQ8N2ft/mR5hv8=
+github.com/cloudfoundry/cf-test-helpers/v2 v2.7.0 h1:QYPAI6JCL62F8ht6Tz9sDWKwTdoWTV5tKKvDDCZwoJ0=
+github.com/cloudfoundry/cf-test-helpers/v2 v2.7.0/go.mod h1:F9lO5YQLrrF7xf5liS/pRTE9uuyZ8TQ8N2ft/mR5hv8=
 github.com/cloudfoundry/noaa/v2 v2.3.0 h1:+f//s7zTaiTtjz/Vf1LFKKfJb/6x2hRenTXlSb4dU5g=
 github.com/cloudfoundry/noaa/v2 v2.3.0/go.mod h1:W9uqRvqZMmwLB8P4hFsUrb0jKKdWPhmCSeRhQaOawGk=
 github.com/cloudfoundry/sonde-go v0.0.0-20230710164515-a0a43d1dbbf8 h1:IpMHKJul/Wr6Rae9VXO+1K0TuORVyhKFjpqkY5ClEAM=
