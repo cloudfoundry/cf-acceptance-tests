@@ -11,3 +11,4 @@ applications:
     health-check-type: port
     readiness-health-check-type: http
     readiness-health-check-http-endpoint: /ready
+    readiness-health-check-interval: 1

@@ -12,6 +12,7 @@ applications:
     health-check-http-endpoint: /
     readiness-health-check-type: http
     readiness-health-check-http-endpoint: /ready
+    readiness-health-check-interval: 1
   - type: worker
     instances: 0
     memory: 1024M
