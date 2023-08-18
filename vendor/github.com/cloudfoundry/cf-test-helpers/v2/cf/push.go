@@ -17,16 +17,13 @@ type Manifest struct {
 }
 
 type Application struct {
-	Buildpacks                       []string `yaml:",omitempty"`
-	Command                          string   `yaml:",omitempty"`
-	Instances                        int      `yaml:",omitempty"`
-	Memory                           string   `yaml:",omitempty"`
-	Name                             string
-	Path                             string              `yaml:",omitempty"`
-	ReadinessHealthCheckHTTPEndpoint string              `yaml:"readiness-health-check-http-endpoint,omitempty"`
-	ReadinessHealthCheckInterval     string              `yaml:"readiness-health-check-interval,omitempty"`
-	ReadinessHealthCheckType         string              `yaml:"readiness-health-check-type,omitempty"`
-	Routes                           []map[string]string `yaml:",omitempty"`
+	Buildpacks []string `yaml:",omitempty"`
+	Command    string   `yaml:",omitempty"`
+	Instances  int      `yaml:",omitempty"`
+	Memory     string   `yaml:",omitempty"`
+	Name       string
+	Path       string              `yaml:",omitempty"`
+	Routes     []map[string]string `yaml:",omitempty"`
 }
 
 var Push = func(appName string, args ...string) *gexec.Session {
@@ -61,12 +58,6 @@ var Push = func(appName string, args ...string) *gexec.Session {
 				panic(err)
 			}
 			app.Path = path
-		case "--readiness-endpoint":
-			app.ReadinessHealthCheckHTTPEndpoint = args[i+1]
-		case "--readiness-health-check-type":
-			app.ReadinessHealthCheckType = args[i+1]
-		case "--readiness-health-check-interval":
-			app.ReadinessHealthCheckInterval = args[i+1]
 		}
 	}
 
