@@ -1,0 +1,5 @@
+---
+applications:
+- path: target/spring-boot-trivial-app-0.0.1.jar
+  env:
+    JBP_CONFIG_OPEN_JDK_JRE: '{ "jre": { version: 17.+ } }'

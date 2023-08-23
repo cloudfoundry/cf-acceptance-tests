@@ -94,8 +94,6 @@ var _ = AppsDescribe("loggregator", func() {
 	})
 
 	Context("firehose data", func() {
-		SkipOnK8s("Not yet supported")
-
 		It("shows logs and metrics", func() {
 			c := consumer.New(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.GetSkipSSLValidation()}, nil)
 			msgChan, _ := c.Firehose(CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken())
@@ -110,8 +108,6 @@ var _ = AppsDescribe("loggregator", func() {
 	})
 
 	Context("reverse log proxy", func() {
-		SkipOnK8s("Not yet supported")
-
 		It("streams logs", func() {
 			rlpClient := loggregator.NewRLPGatewayClient(
 				getLogStreamEndpoint(),

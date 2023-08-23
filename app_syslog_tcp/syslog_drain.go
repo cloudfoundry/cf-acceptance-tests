@@ -32,8 +32,6 @@ var _ = AppSyslogTcpDescribe("Syslog Drain over TCP", func() {
 	var interrupt chan struct{}
 	var serviceName string
 
-	SkipOnK8s("Not yet supported")
-
 	Describe("Syslog drains", func() {
 		BeforeEach(func() {
 			interrupt = make(chan struct{}, 1)

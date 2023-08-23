@@ -2,7 +2,6 @@ package routing
 
 import (
 	"fmt"
-	"regexp"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
@@ -14,87 +13,67 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
-	. "github.com/onsi/gomega/gexec"
+	"github.com/onsi/gomega/gexec"
 )
 
 var _ = ZipkinDescribe("Zipkin Tracing", func() {
-	SkipOnK8s("Not yet supported in CF-for-K8s")
-
 	var (
-		app1              string
-		helloRoutingAsset = assets.NewAssets().SpringSleuthZip
-		hostname          string
+		appName   string
+		assetPath = assets.NewAssets().SpringSleuthZip
 	)
 
 	BeforeEach(func() {
-		app1 = random_name.CATSRandomName("APP")
+		appName = random_name.CATSRandomName("APP")
+		// On Aug 9, 2023, increased readiness timeout from default (1 min) to 2
+		// mins to try and avoid frequent flakes when pushing this app.
 		Expect(cf.Cf("push",
-			app1,
+			appName,
 			"-b", Config.GetJavaBuildpackName(),
 			"-m", "1024M",
-			"-p", helloRoutingAsset,
-		).Wait(CF_JAVA_TIMEOUT)).To(Exit(0))
-
-		hostname = app1
+			"-p", assetPath,
+			"-t", "120",
+		).Wait(CF_JAVA_TIMEOUT)).To(gexec.Exit(0))
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(app1)
-		Expect(cf.Cf("delete", app1, "-f", "-r").Wait()).To(Exit(0))
+		app_helpers.AppReport(appName)
+		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(gexec.Exit(0))
 	})
 
-	Context("when zipkin tracing is enabled", func() {
-		Context("when zipkin headers are not in the request", func() {
-			It("the sleuth error response has no error", func() {
-				// when req does not have headers
-				Eventually(func() string {
-					curlOutput := cf_helpers.CurlAppRoot(Config, hostname)
-					return curlOutput
-				}).Should(ContainSubstring("parents:"))
+	Context("when Zipkin headers are not included in a request to an app", func() {
+		It("GoRouter adds some Zipkin headers", func() {
+			Eventually(func() string {
+				return cf_helpers.CurlAppRoot(Config, appName)
+			}).Should(ContainSubstring("parents:"))
 
-				var parentSpanID string
-				Eventually(func() *gbytes.Buffer {
-					appLogsSession := logs.Recent(app1).Wait()
-					parentSpanID = getID(`x_b3_parentspanid:"([0-9a-fA-F-]*)"`, string(appLogsSession.Out.Contents()))
-					return appLogsSession.Out
-				}).Should(gbytes.Say("x_b3_traceid"))
-				Expect(parentSpanID).To(Equal("-"))
-			})
+			Eventually(func() *gbytes.Buffer {
+				return logs.Recent(appName).Wait().Out
+			}).Should(And(gbytes.Say(`x_b3_spanid:"([0-9a-fA-F]*)"`), gbytes.Say(`x_b3_parentspanid:"-"`)))
 		})
+	})
 
-		Context("when zipkin headers are in the request", func() {
-			It("the sleuth error response has no error", func() {
-				traceID := "fee1f7ba6aeec41c"
+	Context("when Zipkin headers are included in a request to a Zipkin-enabled app", func() {
+		var (
+			traceID = "fee1f7ba6aeec41c"
+			spanID  = "579b36fd31cd8714"
+		)
 
-				header1 := fmt.Sprintf(`X-B3-TraceId: %s`, traceID)
-				header2 := `X-B3-SpanId: 579b36fd31cd8714`
+		It("GoRouter passes the provided Zipkin headers through", func() {
+			var (
+				traceHeader = fmt.Sprintf("X-B3-TraceId: %s", traceID)
+				spanHeader  = fmt.Sprintf("X-B3-SpanId: %s", spanID)
+			)
+			Eventually(func() string {
+				return cf_helpers.CurlApp(Config, appName, "/", "-H", traceHeader, "-H", spanHeader)
+			}).Should(MatchRegexp("current span: [Trace: %s.*parents: [%s]", traceID, spanID))
 
-				var curlOutput string
-				Eventually(func() string {
-					curlOutput = cf_helpers.CurlApp(Config, hostname, "/", "-H", header1, "-H", header2)
-					return curlOutput
-				}).Should(ContainSubstring("parents:"))
-
-				var appLogSpanID string
-				Eventually(func() *gbytes.Buffer {
-					appLogsSession := logs.Recent(hostname).Wait()
-					spanIDRegex := fmt.Sprintf("x_b3_traceid:\"%s\" x_b3_spanid:\"([0-9a-fA-F]*)\"", traceID)
-					appLogSpanID = getID(spanIDRegex, string(appLogsSession.Out.Contents()))
-					return appLogsSession.Out
-				}).Should(gbytes.Say(fmt.Sprintf(`x_b3_traceid:"%s"`, traceID)))
-
-				Expect(curlOutput).To(ContainSubstring(traceID))
-				Expect(curlOutput).To(ContainSubstring(fmt.Sprintf("parents: [%s]", appLogSpanID)))
-			})
+			var (
+				traceRegex = `x_b3_traceid:"%s"`
+				spanRegex  = `x_b3_spanid:"%s"`
+			)
+			Eventually(func() *gbytes.Buffer {
+				return logs.Recent(appName).Wait().Out
+			}).Should(And(gbytes.Say(traceRegex, traceID), gbytes.Say(spanRegex, spanID)))
 		})
 	})
 })
-
-func getID(logRegex, logLines string) string {
-	matches := regexp.MustCompile(logRegex).FindStringSubmatch(logLines)
-	if len(matches) != 2 {
-		return ""
-	}
-
-	return matches[1]
-}

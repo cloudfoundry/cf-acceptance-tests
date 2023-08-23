@@ -32,12 +32,7 @@ var _ = AppsDescribe("An application being staged", func() {
 		Expect(push).To(Exit(0))
 
 		output := string(push.Out.Contents())
-		var expected []string
-		if !Config.RunningOnK8s() {
-			expected = []string{"Installing dependencies", "Uploading droplet", "App started"}
-		} else {
-			expected = []string{"Paketo Procfile Buildpack", "Build successful"}
-		}
+		expected := []string{"Installing dependencies", "Uploading droplet", "App started"}
 		found := false
 		for _, value := range expected {
 			if strings.Contains(output, value) {

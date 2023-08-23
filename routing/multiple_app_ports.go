@@ -18,8 +18,6 @@ import (
 )
 
 var _ = RoutingDescribe("Multiple App Ports", func() {
-	SkipOnK8s("Not yet supported in CF-for-K8s")
-
 	var (
 		appName             string
 		secondRouteHostname string

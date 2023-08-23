@@ -54,8 +54,6 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 	var appName string
 	var otherAppName string
 
-	SkipOnK8s("App droplets not supported")
-
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
 		app_helpers.AppReport(otherAppName)

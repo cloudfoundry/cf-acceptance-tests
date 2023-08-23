@@ -103,8 +103,6 @@ type CatsConfig interface {
 	SleepTimeoutDuration() time.Duration
 
 	GetPublicDockerAppImage() string
-
-	RunningOnK8s() bool
 }
 
 func NewCatsConfig(path string) (CatsConfig, error) {

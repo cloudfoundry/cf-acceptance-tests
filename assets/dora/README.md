@@ -39,8 +39,7 @@ with sticky sessions in the browser.
 
 ## Sticky Sessions
 In order to initiate a sticky session on cf for vms, an app must set the `JSESSIONID` cookie on a response. When the Gorouter sees this
-cookie set on a request, then the Gorouter sets the `VCAP_ID` cookie. This `VCAP_ID` cookie is the app instance guid. Note that sticky sessions
-for apps are not currently supported in cf-for-k8s.
+cookie set on a request, then the Gorouter sets the `VCAP_ID` cookie. This `VCAP_ID` cookie is the app instance guid.
 
 In subsequent requests if the client wants sticky sessions, the client must send these cookies in the request.
 When Gorouter gets a request with a `VCAP_ID` cookie set then it will route to that app instance if it is available.

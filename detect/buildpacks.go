@@ -174,7 +174,6 @@ var _ = DetectDescribe("Buildpacks", func() {
 	})
 
 	Describe("staticfile", func() {
-		SkipOnK8s("staticfile not yet supported, as currently structured in CATS")
 		for _, stack := range Config.GetStacks() {
 			stack := stack
 			Context(fmt.Sprintf("when using %s stack", stack), func() {

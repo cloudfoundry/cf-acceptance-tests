@@ -10,10 +10,9 @@ A pre-built JAR is included so that no Java toolchain is needed when running cat
 
 ## Building
 
-The application JAR can be rebuilt by running `mvn package` provided a JDK is
-available and Maven version  `3.5+` is in installed.
+The application JAR can be rebuilt by running `mvn package` provided a JDK and Maven are installed.
 
 ## Context
 
-The app is build using SpringBoot 2.7.7, following the instructions found
-[here](https://docs.spring.io/spring-boot/docs/2.7.7/reference/html/getting-started.html#getting-started.first-application).
+The app is build using SpringBoot 3.1.2, following the instructions found
+[here](https://docs.spring.io/spring-boot/docs/3.1.2/reference/html/getting-started.html#getting-started.first-application).

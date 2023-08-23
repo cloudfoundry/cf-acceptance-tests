@@ -18,8 +18,6 @@ var _ = InternetDependentDescribe("GitBuildpack", func() {
 		appName string
 	)
 
-	SkipOnK8s("URL-based buildpacks not yet supported.")
-
 	It("uses a buildpack from a git url", func() {
 		appName = random_name.CATSRandomName("APP")
 		Expect(cf.Cf("push", appName,

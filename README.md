@@ -182,14 +182,12 @@ include_v3
 * `windows_stack`: Windows stack to run tests against. Must be `windows`.
 
 * `include_service_discovery`: Flag to include test for the service discovery. These tests use `apps.internal` domain, which is the default in `cf-networking-release`. The internal domain is currently not configurable.
-* `stacks`: An array of stacks to test against. Currently only `cflinuxfs4` is supported. Default is `[cflinuxfs4]`.
+* `stacks`: An array of stacks to test against. Default is `[cflinuxfs4]`.
 
 * `include_volume_services`: Flag to include the tests for volume services. The following requirements must be met to run this suite: tcp-routing must be deployed.
 * `volume_service_name`: The name of the volume service provided by the volume service broker.
 * `volume_service_plan_name`: The name of the plan of the service provided by the volume service broker.
 * `volume_service_create_config`: The JSON configuration that is used when volume service is created.
-
-* `infrastructure`: The name of the infrastructure for the environment that the tests will run against. Must be either "vms" or "kubernetes". Defaults to "vms".
 
 #### Buildpack Names
 Many tests specify a buildpack when pushing an app, so that on diego the app staging process completes in less time. The default names for the buildpacks are as follows; if you have buildpacks with different names, you can override them by setting different names:
