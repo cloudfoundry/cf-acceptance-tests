@@ -1,7 +1,6 @@
 ---
 applications:
 - name: nora
-  stack: windows
   processes:
   - type: web
     instances: 1
