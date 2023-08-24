@@ -1,7 +1,6 @@
 ---
 applications:
 - name: dora
-  stack: cflinuxfs3
   processes:
   - type: web
     instances: 1

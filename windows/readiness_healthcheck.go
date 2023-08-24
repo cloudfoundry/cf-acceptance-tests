@@ -39,6 +39,7 @@ var _ = WindowsDescribe("Readiness Healthcheck", func() {
 				appName,
 				"-f", assets.NewAssets().Nora+"/../readiness_manifest.yml",
 				"-p", assets.NewAssets().Nora,
+				"-s", Config.GetWindowsStack(),
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 			By("verifying the app starts")
