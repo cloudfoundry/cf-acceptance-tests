@@ -1,0 +1,14 @@
+---
+applications:
+- name: nora
+  stack: windows
+  processes:
+  - type: web
+    instances: 1
+    memory: 1024M
+    disk_quota: 1024M
+    log-rate-limit-per-second: 16K
+    health-check-type: port
+    readiness-health-check-type: http
+    readiness-health-check-http-endpoint: /ready
+    readiness-health-check-interval: 1

@@ -19,6 +19,7 @@ namespace nora.Controllers
     public class InstancesController : ApiController
     {
         private static Services services;
+        public static bool ReadyState;
 
         static InstancesController()
         {
@@ -27,6 +28,7 @@ namespace nora.Controllers
             {
                 services = JsonConvert.DeserializeObject<Services>(env);
             }
+            ReadyState = true;
         }
 
         private static string FileAccessStatus(string path)
@@ -315,6 +317,23 @@ namespace nora.Controllers
             return Ok();
         }
 
+        [Route("~/ready")]
+        [HttpGet]
+        public IHttpActionResult Ready()
+        {
+            if (ReadyState)
+                return Ok("200 - ready");
+            else
+                return InternalServerError();
+        }
+
+        [Route("~/ready/{state}")]
+        [HttpGet]
+        public IHttpActionResult Ready(bool state)
+        {
+            ReadyState = state;
+            return Ok(ReadyState);
+        }
 
 
         private static List<string> UsersFromService(Service service)

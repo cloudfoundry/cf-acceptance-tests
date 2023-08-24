@@ -29,6 +29,8 @@ with sticky sessions in the browser.
 1. `GET /env.json` Prints out the entire environment as a JSON object
 1. `GET /largetext/:kbytes` Returns a dummy response of size `:kbytes`. For testing large payloads.
 1. `GET /health` Returns 500 the first 3 times you call it, "I'm alive" thereafter
+1. `GET /ready` Returns 200 by default. Use `GET /ready/false` to make it return 500. Use `GET /ready/true` to make it return 200 again.
+1. `GET /ready/:new_ready_state` When `new_ready_state` is false, `GET /ready` will respond with status code 500. When `new_ready_state` is true, `GET /ready` will respond with status code 200.
 1. `GET /ping/:address` Pings the given address 4 times
 1. `GET /lsb_release` Returns information about the Linux distribution of the container
 1. `GET /dpkg/:package` Returns the output of `dpkg -l` for the given packange
