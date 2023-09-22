@@ -20,5 +20,5 @@ export CF_PLUGIN_HOME=$HOME
 
 pushd "${CATS_ROOT}" > /dev/null
   echo "Using $(go run github.com/onsi/ginkgo/v2/ginkgo version)"
-  go run github.com/onsi/ginkgo/v2/ginkgo "$@"
+  go run github.com/onsi/ginkgo/v2/ginkgo --randomize-all --keep-going "$@"
 popd > /dev/null
