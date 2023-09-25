@@ -5,7 +5,7 @@ go 1.20
 require (
 	code.cloudfoundry.org/archiver v0.0.0-20230220125704-e06c77649d28
 	code.cloudfoundry.org/go-log-cache/v2 v2.0.3
-	code.cloudfoundry.org/go-loggregator/v9 v9.0.7
+	code.cloudfoundry.org/go-loggregator/v9 v9.0.8
 	code.cloudfoundry.org/tlsconfig v0.0.0-20220621140725-0e6fbd869921
 	github.com/cloudfoundry/cf-test-helpers/v2 v2.7.0
 	github.com/cloudfoundry/noaa/v2 v2.3.0
@@ -38,7 +38,7 @@ require (
 	github.com/square/certstrap v1.2.0 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
-	golang.org/x/net v0.14.0 // indirect
+	golang.org/x/net v0.15.0 // indirect
 	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/tools v0.12.0 // indirect
