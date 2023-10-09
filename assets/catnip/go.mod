@@ -5,7 +5,7 @@ go 1.20
 require (
 	code.cloudfoundry.org/clock v1.1.0
 	github.com/go-chi/chi/v5 v5.0.10
-	github.com/onsi/ginkgo/v2 v2.12.1
+	github.com/onsi/ginkgo/v2 v2.13.0
 	github.com/onsi/gomega v1.28.0
 )
 
