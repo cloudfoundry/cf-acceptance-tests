@@ -18,6 +18,9 @@ code.cloudfoundry.org/tlsconfig/certtest
 # github.com/andybalholm/brotli v1.0.1
 ## explicit; go 1.12
 github.com/andybalholm/brotli
+# github.com/cloudfoundry/cf-acceptance-tests/assets/grpc v0.0.0-20230824190001-4c85c4bbb446
+## explicit; go 1.20
+github.com/cloudfoundry/cf-acceptance-tests/assets/grpc/test
 # github.com/cloudfoundry/cf-test-helpers/v2 v2.8.0
 ## explicit; go 1.18
 github.com/cloudfoundry/cf-test-helpers/v2/cf

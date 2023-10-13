@@ -7,6 +7,7 @@ require (
 	code.cloudfoundry.org/go-log-cache/v2 v2.0.5
 	code.cloudfoundry.org/go-loggregator/v9 v9.0.8
 	code.cloudfoundry.org/tlsconfig v0.0.0-20220621140725-0e6fbd869921
+	github.com/cloudfoundry/cf-acceptance-tests/assets/grpc v0.0.0-20230824190001-4c85c4bbb446
 	github.com/cloudfoundry/cf-test-helpers/v2 v2.8.0
 	github.com/cloudfoundry/noaa/v2 v2.3.0
 	github.com/cloudfoundry/sonde-go v0.0.0-20230710164515-a0a43d1dbbf8
