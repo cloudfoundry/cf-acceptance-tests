@@ -208,7 +208,7 @@ func checkAppRemainsAlive(appName string) (chan<- bool, <-chan bool) {
 				appCheckerIsDone <- true
 				return
 			case <-tickerChannel:
-				Expect(helpers.CurlAppRoot(Config, appName)).ToNot(ContainSubstring("404 Not Found"))
+				Expect(helpers.CurlAppRoot(Config, appName)).ToNot(ContainSubstring("404"))
 			}
 		}
 	}()

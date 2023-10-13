@@ -69,7 +69,7 @@ var _ = AppsDescribe("Readiness Healthcheck", func() {
 			By("verifying the app is removed from the routing table")
 			Eventually(func() string {
 				return helpers.CurlApp(Config, appName, "/ready")
-			}, readinessHealthCheckTimeout).Should(ContainSubstring("404 Not Found"))
+			}, readinessHealthCheckTimeout).Should(ContainSubstring("404"))
 
 			By("verifying that the app hasn't restarted")
 			Consistently(cf.Cf("events", appName)).ShouldNot(Say("audit.app.process.crash"))

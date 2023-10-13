@@ -58,7 +58,7 @@ var _ = AppsDescribe("Rolling deploys", func() {
 					return
 				case <-tickerChannel:
 					appResponse := helpers.CurlAppRoot(Config, appName)
-					Expect(appResponse).ToNot(ContainSubstring("404 Not Found"))
+					Expect(appResponse).ToNot(ContainSubstring("404"))
 					Expect(appResponse).To(ContainSubstring("Hi, I'm Dora!"))
 				}
 			}
