@@ -15,6 +15,9 @@ code.cloudfoundry.org/go-loggregator/v9/rpc/loggregator_v2
 ## explicit; go 1.17
 code.cloudfoundry.org/tlsconfig
 code.cloudfoundry.org/tlsconfig/certtest
+# github.com/andybalholm/brotli v1.0.1
+## explicit; go 1.12
+github.com/andybalholm/brotli
 # github.com/cloudfoundry/cf-test-helpers/v2 v2.7.0
 ## explicit; go 1.18
 github.com/cloudfoundry/cf-test-helpers/v2/cf
@@ -36,16 +39,14 @@ github.com/cloudfoundry/noaa/v2/errors
 # github.com/cloudfoundry/sonde-go v0.0.0-20230710164515-a0a43d1dbbf8
 ## explicit; go 1.17
 github.com/cloudfoundry/sonde-go/events
-# github.com/dsnet/compress v0.0.0-20171208185109-cc9eb1d7ad76
-## explicit
+# github.com/dsnet/compress v0.0.2-0.20210315054119-f66993602bf5
+## explicit; go 1.9
 github.com/dsnet/compress
 github.com/dsnet/compress/bzip2
 github.com/dsnet/compress/bzip2/internal/sais
 github.com/dsnet/compress/internal
 github.com/dsnet/compress/internal/errors
 github.com/dsnet/compress/internal/prefix
-# github.com/frankban/quicktest v1.14.2
-## explicit; go 1.13
 # github.com/fsnotify/fsnotify v1.6.0
 ## explicit; go 1.16
 github.com/fsnotify/fsnotify
@@ -85,10 +86,25 @@ github.com/gorilla/websocket
 github.com/grpc-ecosystem/grpc-gateway/v2/internal/httprule
 github.com/grpc-ecosystem/grpc-gateway/v2/runtime
 github.com/grpc-ecosystem/grpc-gateway/v2/utilities
-# github.com/mholt/archiver v3.1.1+incompatible
+# github.com/klauspost/compress v1.11.4
+## explicit; go 1.13
+github.com/klauspost/compress/flate
+github.com/klauspost/compress/fse
+github.com/klauspost/compress/gzip
+github.com/klauspost/compress/huff0
+github.com/klauspost/compress/snappy
+github.com/klauspost/compress/zip
+github.com/klauspost/compress/zstd
+github.com/klauspost/compress/zstd/internal/xxhash
+# github.com/klauspost/pgzip v1.2.5
 ## explicit
-github.com/mholt/archiver
-# github.com/nwaples/rardecode v0.0.0-20171029023500-e06696f847ae
+github.com/klauspost/pgzip
+# github.com/kr/text v0.2.0
+## explicit
+# github.com/mholt/archiver/v3 v3.5.1
+## explicit; go 1.13
+github.com/mholt/archiver/v3
+# github.com/nwaples/rardecode v1.1.0
 ## explicit
 github.com/nwaples/rardecode
 # github.com/nxadm/tail v1.4.8
@@ -159,10 +175,13 @@ github.com/onsi/gomega/matchers/support/goraph/edge
 github.com/onsi/gomega/matchers/support/goraph/node
 github.com/onsi/gomega/matchers/support/goraph/util
 github.com/onsi/gomega/types
-# github.com/pierrec/lz4 v2.6.1+incompatible
-## explicit
-github.com/pierrec/lz4
-github.com/pierrec/lz4/internal/xxh32
+# github.com/pierrec/lz4/v4 v4.1.2
+## explicit; go 1.14
+github.com/pierrec/lz4/v4
+github.com/pierrec/lz4/v4/internal/lz4block
+github.com/pierrec/lz4/v4/internal/lz4errors
+github.com/pierrec/lz4/v4/internal/lz4stream
+github.com/pierrec/lz4/v4/internal/xxh32
 # github.com/square/certstrap v1.2.0
 ## explicit
 github.com/square/certstrap/pkix
