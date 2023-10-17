@@ -10,7 +10,7 @@ import (
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
-	"github.com/mholt/archiver"
+	"github.com/mholt/archiver/v3"
 
 	_ "github.com/cloudfoundry/cf-acceptance-tests/app_syslog_tcp"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/apps"

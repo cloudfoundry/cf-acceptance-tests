@@ -15,7 +15,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
-	"github.com/mholt/archiver"
+	"github.com/mholt/archiver/v3"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
