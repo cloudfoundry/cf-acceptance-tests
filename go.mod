@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	code.cloudfoundry.org/archiver v0.0.0-20230220125704-e06c77649d28
-	code.cloudfoundry.org/go-log-cache/v2 v2.0.4
+	code.cloudfoundry.org/go-log-cache/v2 v2.0.5
 	code.cloudfoundry.org/go-loggregator/v9 v9.0.8
 	code.cloudfoundry.org/tlsconfig v0.0.0-20220621140725-0e6fbd869921
 	github.com/cloudfoundry/cf-test-helpers/v2 v2.8.0
