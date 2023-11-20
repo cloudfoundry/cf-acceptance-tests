@@ -96,13 +96,16 @@ var _ = AppsDescribe("loggregator", func() {
 	Context("firehose data", func() {
 		It("shows logs and metrics", func() {
 			c := consumer.New(getDopplerEndpoint(), &tls.Config{InsecureSkipVerify: Config.GetSkipSSLValidation()}, nil)
-			msgChan, _ := c.Firehose(CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken())
+			msgChan, errChan := c.Firehose(CATSRandomName("SUBSCRIPTION-ID"), getAdminUserAccessToken())
 			defer c.Close()
 
 			Eventually(func() string {
 				return helpers.CurlApp(Config, appName, fmt.Sprintf("/log/sleep/%d", oneSecond))
 			}).Should(ContainSubstring("Muahaha"))
 
+			if len(errChan) == 1 {
+				Expect(<-errChan).ToNot(HaveOccurred(), "Failed to establish firehose websocket connection. On AWS you may need to reconfigure the doppler ports.")
+			}
 			Eventually(msgChan, Config.DefaultTimeoutDuration(), time.Millisecond).Should(Receive(EnvelopeContainingMessageLike("Muahaha")), "To enable the logging & metrics firehose feature, please ask your CF administrator to add the 'doppler.firehose' scope to your CF admin user.")
 		})
 	})
