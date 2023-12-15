@@ -15,6 +15,8 @@ github.com/apoydence/eachers v0.0.0-20181020210610-23942921fe77 h1:afT88tB6u9JCK
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=
+github.com/cloudfoundry/cf-acceptance-tests/assets/grpc v0.0.0-20230824190001-4c85c4bbb446 h1:4facUUCYYaYnim1KjZNAT9sMZQ4R/NZxluF1HZ1+ZOo=
+github.com/cloudfoundry/cf-acceptance-tests/assets/grpc v0.0.0-20230824190001-4c85c4bbb446/go.mod h1:gL/bbKHqFbidhYuyA/zRSshyem4vWRzYjMePgf5V9wk=
 github.com/cloudfoundry/cf-test-helpers/v2 v2.8.0 h1:aEuDiAhQdwwY2tu3ivfm4KHQBG0Kzp2m+qCNjaWDB+0=
 github.com/cloudfoundry/cf-test-helpers/v2 v2.8.0/go.mod h1:wrmHE+cHE6J72feYGE98GmsyLkYEUbK9OOkD96XK7FA=
 github.com/cloudfoundry/noaa/v2 v2.3.0 h1:+f//s7zTaiTtjz/Vf1LFKKfJb/6x2hRenTXlSb4dU5g=

@@ -5,7 +5,7 @@ import (
 	"crypto/tls"
 	"time"
 
-	protobuff "github.com/cloudfoundry/cf-acceptance-tests/helpers/assets/test"
+	protobuff "github.com/cloudfoundry/cf-acceptance-tests/assets/grpc/test"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
