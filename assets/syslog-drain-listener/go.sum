@@ -1,3 +1,4 @@
 code.cloudfoundry.org/tlsconfig v0.0.0-20220621140725-0e6fbd869921 h1:1PLAuQR56K2pw0lnlcXe+37uOaGg939W1Lqv8wxYpu4=
 code.cloudfoundry.org/tlsconfig v0.0.0-20220621140725-0e6fbd869921/go.mod h1:oItDsgL/IixCV1BTTY9XqyhGojI5wyEgyPcBwXfKbvs=
 github.com/square/certstrap v1.2.0 h1:ecgyABrbFLr8jSbOC6oTBmBek0t/HqtgrMUZCPuyfdw=
+github.com/square/certstrap v1.2.0/go.mod h1:CUHqV+fxJW0Y5UQFnnbYwQ7bpKXO1AKbic9g73799yw=
