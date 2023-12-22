@@ -1,3 +1,3 @@
 module github.com/cloudfoundry/cf-acceptance-tests/assets/binary
 
-go 1.20
+go 1.21
