@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	code.cloudfoundry.org/archiver v0.0.0-20230220125704-e06c77649d28
-	code.cloudfoundry.org/go-log-cache/v2 v2.0.5
+	code.cloudfoundry.org/go-log-cache/v2 v2.0.6
 	code.cloudfoundry.org/go-loggregator/v9 v9.0.8
 	code.cloudfoundry.org/tlsconfig v0.0.0-20220621140725-0e6fbd869921
 	github.com/cloudfoundry/cf-test-helpers/v2 v2.8.0
@@ -30,7 +30,7 @@ require (
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.0 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.1 // indirect
 	github.com/klauspost/compress v1.11.4 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/kr/text v0.2.0 // indirect
@@ -45,9 +45,9 @@ require (
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.14.0 // indirect
-	google.golang.org/genproto v0.0.0-20231002182017-d307bd883b97 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20231002182017-d307bd883b97 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20231002182017-d307bd883b97 // indirect
+	google.golang.org/genproto v0.0.0-20231030173426-d783a09b4405 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20231106174013-bbf56f31fb17 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20231030173426-d783a09b4405 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
