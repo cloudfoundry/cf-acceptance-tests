@@ -4,6 +4,7 @@ gem 'sinatra'
 gem 'json'
 gem 'rainbow'
 gem 'webrick'
+gem 'rackup'
 
 group :test, :development do
   gem 'rspec'
