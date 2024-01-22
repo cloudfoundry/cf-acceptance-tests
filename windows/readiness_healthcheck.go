@@ -52,8 +52,7 @@ var _ = WindowsDescribe("Readiness Healthcheck", func() {
 				return helpers.CurlApp(Config, appName, "/ready")
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("200 - ready"))
 
-			// TODO: only include this when audit events are built
-			// Eventually(cf.Cf("events", appName)).Should(Say("app.ready"))
+			Eventually(cf.Cf("events", appName)).Should(Say("app.process.ready"))
 
 			Expect(logs.Recent(appName).Wait()).To(Say("Container passed the readiness health check"))
 
@@ -62,8 +61,7 @@ var _ = WindowsDescribe("Readiness Healthcheck", func() {
 
 			By("verifying the app is marked as not ready")
 
-			// TODO: only include this when audit events are built
-			// Eventually(cf.Cf("events", appName)).Should(Say("app.notready"))
+			Eventually(cf.Cf("events", appName)).Should(Say("app.process.not-ready"))
 
 			Eventually(func() BufferProvider { return logs.Recent(appName).Wait() }, readinessHealthCheckTimeout).Should(Say("Container failed the readiness health check"))
 
