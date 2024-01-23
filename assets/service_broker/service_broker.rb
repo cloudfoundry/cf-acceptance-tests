@@ -195,7 +195,7 @@ class ServiceBroker < Sinatra::Base
   end
 
   def cf_respond_with_api_info_location(cf_api_info_location)
-    if cf_api_info_location.empty?
+    if cf_api_info_location.nil? || cf_api_info_location.empty?
       status 503
       log_response(status, JSON.pretty_generate({
         error: true,
