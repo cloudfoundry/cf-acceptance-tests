@@ -59,11 +59,10 @@ var _ = WindowsDescribe("Readiness Healthcheck", func() {
 			By("triggering the app to make the /ready endpoint fail")
 			helpers.CurlApp(Config, appName, "/ready/false")
 
-			By("verifying the app is marked as not ready")
-
-			Eventually(cf.Cf("events", appName)).Should(Say("app.process.not-ready"))
-
 			Eventually(func() BufferProvider { return logs.Recent(appName).Wait() }, readinessHealthCheckTimeout).Should(Say("Container failed the readiness health check"))
+
+			By("verifying the app is marked as not ready")
+			Eventually(cf.Cf("events", appName)).Should(Say("app.process.not-ready"))
 
 			By("verifying the app is removed from the routing table")
 			Eventually(func() string {
