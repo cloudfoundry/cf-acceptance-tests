@@ -70,7 +70,10 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	installedVersion, err := GetInstalledCliVersionString()
 
 	Expect(err).ToNot(HaveOccurred(), "Error trying to determine CF CLI version")
+
+	PauseOutputInterception()
 	fmt.Println("Running CATs with CF CLI version ", installedVersion)
+	ResumeOutputInterception()
 
 	Expect(ParseRawCliVersionString(installedVersion).AtLeast(ParseRawCliVersionString(minCliVersion))).To(BeTrue(), "CLI version "+minCliVersion+" is required")
 
