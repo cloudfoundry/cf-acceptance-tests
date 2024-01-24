@@ -53,6 +53,39 @@ class ServiceInstance
   end
 end
 
+class ServiceBinding
+  attr_reader :binding_data, :instance_id, :fetch_count, :deleted
+
+  def initialize(opts={})
+    @binding_data = opts.fetch(:binding_data)
+    @instance_id = opts.fetch(:instance_id)
+    @fetch_count = opts.fetch(:fetch_count, 0)
+    @deleted = opts.fetch(:deleted, false)
+  end
+
+  def plan_id
+    @binding_data['plan_id']
+  end
+
+  def delete!
+    @deleted = true
+    @fetch_count = 0
+    self
+  end
+
+  def increment_fetch_count
+    @fetch_count += 1
+  end
+
+  def to_json(opts={})
+    {
+      binding_data: binding_data,
+      fetch_count: fetch_count,
+      deleted: deleted
+    }.to_json(opts)
+  end
+end
+
 class DataSource
   attr_reader :data
 
@@ -62,6 +95,10 @@ class DataSource
 
   def max_fetch_service_instance_requests
     @data['max_fetch_service_instance_requests'] || 1
+  end
+
+  def max_fetch_service_binding_requests
+    @data['max_fetch_service_binding_requests'] || 1
   end
 
   def service_instance_by_id(cc_id)
@@ -78,15 +115,23 @@ class DataSource
     service_instance
   end
 
+  def service_binding_by_id(cc_id)
+    @data['service_bindings'][cc_id]
+  end
+
   def create_service_binding(instance_id, binding_id, binding_data)
-    @data['service_instances'][binding_id] = {
-      'binding_data' => binding_data,
-      'instance_id' => instance_id,
-    }
+    service_binding = ServiceBinding.new(
+      binding_data: binding_data,
+      instance_id: instance_id
+    )
+
+    @data['service_bindings'][binding_id] = service_binding
+
+    service_binding
   end
 
   def delete_service_binding(binding_id)
-    @data['service_instances'].delete(binding_id)
+    @data['service_bindings'].delete(binding_id)
   end
 
   def merge!(data)
@@ -195,7 +240,7 @@ class ServiceBroker < Sinatra::Base
   end
 
   def cf_respond_with_api_info_location(cf_api_info_location)
-    if cf_api_info_location.empty?
+    if cf_api_info_location.nil?
       status 503
       log_response(status, JSON.pretty_generate({
         error: true,
@@ -225,7 +270,7 @@ class ServiceBroker < Sinatra::Base
     respond_with_behavior($datasource.behavior_for_type(:provision, service_instance.plan_id), params['accepts_incomplete'])
   end
 
-  # fetch service instance
+  # fetch service instance last operation
   get '/v2/service_instances/:id/last_operation/?' do |id|
     service_instance = $datasource.service_instance_by_id(id)
     if service_instance
@@ -237,7 +282,7 @@ class ServiceBroker < Sinatra::Base
         state = 'in_progress'
       end
 
-      behavior = $datasource.behavior_for_type('fetch', plan_id)[state]
+      behavior = $datasource.behavior_for_type('fetch_service_instance_last_operation', plan_id)[state]
       sleep behavior['sleep_seconds']
       status behavior['status']
 
@@ -246,22 +291,42 @@ class ServiceBroker < Sinatra::Base
       else
         log_response(status, behavior['raw_body'])
       end
-    else
-      status 200
-      log_response(status, {
-        state: 'failed',
-        description: "Broker could not find service instance by the given id #{id}",
-      }.to_json)
+    else # service instance does not exist
+      status 410
+      log_response(status, "Broker could not find service instance by the given id #{id}")
     end
   end
 
-  # fetch service binding
+  # fetch service binding last operation
   get '/v2/service_instances/:instance_id/service_bindings/:binding_id/last_operation/?' do |instance_id, binding_id|
-    status 200
-    log_response(status, {
-      state: 'succeeded',
-      description: '100%',
-    }.to_json)
+    service_binding = $datasource.service_binding_by_id(binding_id)
+    if service_binding
+      if service_binding.instance_id == instance_id
+        plan_id = service_binding.plan_id
+
+        if service_binding.increment_fetch_count > $datasource.max_fetch_service_binding_requests
+          state = 'finished'
+        else
+          state = 'in_progress'
+        end
+
+        behavior = $datasource.behavior_for_type('fetch_service_binding_last_operation', plan_id)[state]
+        sleep behavior['sleep_seconds']
+        status behavior['status']
+
+        if behavior['body']
+          log_response(status, behavior['body'].to_json)
+        else
+          log_response(status, behavior['raw_body'])
+        end
+      else # service binding is not associated with the given instance_id
+        status 410
+        log_response(status, "Broker could not find the service binding `#{binding_id}` for service instance `#{instance_id}`")
+      end
+    else # service binding does not exist
+      status 410
+      log_response(status, "Broker could not find the service binding `#{binding_id}` for service instance `#{instance_id}`")
+    end
   end
 
   # update service instance
@@ -294,32 +359,68 @@ class ServiceBroker < Sinatra::Base
     content_type :json
     json_body = JSON.parse(request.body.read)
 
-    service_binding = $datasource.create_service_binding(instance_id, binding_id, json_body)
-    respond_with_behavior($datasource.behavior_for_type(:bind, service_binding['binding_data']['plan_id']), params[:accepts_incomplete])
+    service_instance = $datasource.service_instance_by_id(instance_id)
+    if service_instance
+      service_binding = $datasource.create_service_binding(instance_id, binding_id, json_body)
+      respond_with_behavior($datasource.behavior_for_type(:bind, service_binding.plan_id), params[:accepts_incomplete])
+    else
+      status 400
+      log_response(status, "Broker could not find service instance by the given id #{instance_id}")
+    end
   end
 
   # delete service binding
   delete '/v2/service_instances/:instance_id/service_bindings/:id' do |instance_id, binding_id|
     content_type :json
 
-    service_binding = $datasource.delete_service_binding(binding_id)
+    service_binding = $datasource.service_binding_by_id(binding_id)
     if service_binding
-      respond_with_behavior($datasource.behavior_for_type(:unbind, service_binding['binding_data']['plan_id']), params[:accepts_incomplete])
+      service_binding.delete!
+      respond_with_behavior($datasource.behavior_for_type(:unbind, service_binding.plan_id), params[:accepts_incomplete])
     else
       respond_with_behavior($datasource.behavior_for_type(:unbind, nil), params[:accepts_incomplete])
     end
   end
 
+  # fetch service instance
   get '/v2/service_instances/:instance_id' do |instance_id|
-    status 200
-    log_response(status, JSON.pretty_generate($datasource.data['service_instances'][instance_id].provision_data))
+    service_instance = $datasource.service_instance_by_id(instance_id)
+    if service_instance
+      behaviour = $datasource.behavior_for_type(:fetch_service_instance, service_instance.plan_id).clone
+
+      provision_data = service_instance.provision_data.clone
+      if behaviour["body"]
+        behaviour["body"] = provision_data.merge!(behaviour["body"])
+      end
+
+      respond_with_behavior(behaviour)
+    else # service instance does not exist
+      status 404
+      log_response(status, "Broker could not find service instance by the given id #{instance_id}")
+    end
   end
 
+  # fetch service binding
   get '/v2/service_instances/:instance_id/service_bindings/:id' do |instance_id, binding_id|
-    binding_data = $datasource.data['service_instances'][binding_id]['binding_data']
-    response_body = $datasource.behavior_for_type(:fetch_service_binding, binding_data['plan_id'])
-    response_body['body'].merge!(binding_data)
-    respond_with_behavior(response_body)
+    service_binding = $datasource.service_binding_by_id(binding_id)
+    if service_binding
+      if service_binding.instance_id == instance_id
+        behaviour = $datasource.behavior_for_type(:fetch_service_binding, service_binding.plan_id).clone
+
+        binding_data = service_binding.binding_data.clone
+        if behaviour["body"]
+          behaviour["body"] = binding_data.merge!(behaviour["body"])
+        end
+
+        respond_with_behavior(behaviour)
+      else # service binding is not associated with the given instance_id
+        status 404
+        log_response(status, "Broker could not find the service binding `#{binding_id}` for service instance `#{instance_id}`")
+      end
+    else # service binding does not exist
+      status 404
+      log_response(status, "Broker could not find the service binding `#{binding_id}` for service instance `#{instance_id}`")
+    end
   end
 
   get '/config/all/?' do
