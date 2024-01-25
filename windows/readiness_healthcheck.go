@@ -52,9 +52,9 @@ var _ = WindowsDescribe("Readiness Healthcheck", func() {
 				return helpers.CurlApp(Config, appName, "/ready")
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("200 - ready"))
 
-			Eventually(cf.Cf("events", appName)).Should(Say("app.process.ready"))
-
 			Expect(logs.Recent(appName).Wait()).To(Say("Container passed the readiness health check"))
+
+			Eventually(cf.Cf("events", appName)).Should(Say("app.process.ready"))
 
 			By("triggering the app to make the /ready endpoint fail")
 			helpers.CurlApp(Config, appName, "/ready/false")
