@@ -51,18 +51,16 @@ var _ = AppsDescribe("Readiness Healthcheck", func() {
 				return helpers.CurlApp(Config, appName, "/ready")
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("200 - ready"))
 
-			Eventually(cf.Cf("events", appName)).Should(Say("app.process.ready"))
-
 			Expect(logs.Recent(appName).Wait()).To(Say("Container passed the readiness health check"))
+
+			Eventually(cf.Cf("events", appName)).Should(Say("app.process.ready"))
 
 			By("triggering the app to make the /ready endpoint fail")
 			helpers.CurlApp(Config, appName, "/ready/false")
 
 			By("verifying the app is marked as not ready")
-
-			Eventually(cf.Cf("events", appName)).Should(Say("app.process.not-ready"))
-
 			Eventually(func() BufferProvider { return logs.Recent(appName).Wait() }, readinessHealthCheckTimeout).Should(Say("Container failed the readiness health check"))
+			Eventually(cf.Cf("events", appName)).Should(Say("app.process.not-ready"))
 
 			By("verifying the app is removed from the routing table")
 			Eventually(func() string {
