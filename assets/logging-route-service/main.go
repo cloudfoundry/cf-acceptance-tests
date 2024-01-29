@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"crypto/tls"
 	"io"
 	"log"
 	"net/http"
@@ -86,9 +85,8 @@ type LoggingRoundTripper struct {
 }
 
 func NewLoggingRoundTripper(skipSslValidation bool) *LoggingRoundTripper {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: skipSslValidation},
-	}
+	tr := http.DefaultTransport.(*http.Transport).Clone()
+	tr.TLSClientConfig.InsecureSkipVerify = skipSslValidation
 	return &LoggingRoundTripper{
 		transport: tr,
 	}
