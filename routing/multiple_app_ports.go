@@ -26,7 +26,7 @@ var _ = RoutingDescribe("Multiple App Ports", func() {
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
-		cmd := "go-online --ports=7777,8888,8080"
+		cmd := "multi-port-app --ports=7777,8888,8080"
 
 		Expect(cf.Cf("push",
 			appName,
