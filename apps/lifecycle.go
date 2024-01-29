@@ -278,8 +278,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 					appName,
 					"-m", DEFAULT_MEMORY_LIMIT)...).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-				var envOutput string
-				envOutput = helpers.CurlApp(Config, appName, "/env.json")
+				envOutput := helpers.CurlApp(Config, appName, "/env.json")
 				Expect(envOutput).ToNot(BeEmpty())
 				type env struct {
 					Index      string `json:"CF_INSTANCE_INDEX"`
@@ -291,7 +290,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				}
 				var envValues env
 				err := json.Unmarshal([]byte(envOutput), &envValues)
-				fmt.Printf("envValues: %v", envValues)
+				fmt.Fprintf(GinkgoWriter, "envValues: %v", envValues)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(envValues.Index).To(Equal("0"))
 				Expect(envValues.IP).To(MatchRegexp(`[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+`))
