@@ -2,3 +2,4 @@
 applications:
 - env:
     GOPACKAGENAME: tcp-listener
+    GOVERSION: go1.21
