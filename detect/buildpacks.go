@@ -237,7 +237,7 @@ var _ = DetectDescribe("Buildpacks", func() {
 			Context(fmt.Sprintf("when using %s stack", stack), func() {
 				It("makes the app reachable via its bound route", func() {
 					Expect(cf.Cf("push", appName,
-						"-m", DEFAULT_MEMORY_LIMIT,
+						"-m", "2G",
 						"-p", assets.NewAssets().R,
 						"-s", stack,
 					).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
