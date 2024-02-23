@@ -110,7 +110,7 @@ func assertAppCannotConnect(client *http.Client, proxyRequestURL string) {
 	respBytes, err := io.ReadAll(resp.Body)
 	Expect(err).ToNot(HaveOccurred())
 	resp.Body.Close()
-	Expect(string(respBytes)).To(MatchRegexp("refused"))
+	Expect(string(respBytes)).To(MatchRegexp("i/o timeout|connection refused"))
 }
 
 func assertEventuallyAppCannotConnect(client *http.Client, proxyRequestURL string) {
@@ -122,7 +122,7 @@ func assertEventuallyAppCannotConnect(client *http.Client, proxyRequestURL strin
 		Expect(err).ToNot(HaveOccurred())
 		resp.Body.Close()
 		return string(respBytes)
-	}, 3*time.Minute).Should(MatchRegexp("refused"))
+	}, 3*time.Minute).Should(MatchRegexp("i/o timeout|refused"))
 }
 
 func assertAppCanConnect(client *http.Client, proxyRequestURL string) {
@@ -150,12 +150,20 @@ func assertEventuallyAppCanConnect(client *http.Client, proxyRequestURL string) 
 }
 
 func bindCCSecurityGroup(orgName, spaceName string) string {
-	dest := Destination{
-		IP:       "10.0.0.0/0",
+	destinations := []Destination{{
+		IP:       "10.0.0.0/8",
 		Ports:    "9024", // internal cc port
 		Protocol: "tcp",
-	}
-	securityGroupName := createSecurityGroup(dest)
+	}, {
+		IP:       "192.168.0.0/16",
+		Ports:    "9024", // internal cc port
+		Protocol: "tcp",
+	}, {
+		IP:       "172.16.0.0/12",
+		Ports:    "9024", // internal cc port
+		Protocol: "tcp",
+	}}
+	securityGroupName := createSecurityGroup(destinations...)
 	bindSecurityGroup(securityGroupName, orgName, spaceName)
 
 	return securityGroupName
