@@ -330,6 +330,19 @@ To see verbose output from `ginkgo`, use the `-v` flag.
 
 You can of course combine the `-v` flag with the `--procs=N` flag.
 
+##### Overall Test Timeout Setting
+From Ginkgo 2.0, the default timeout for the entire test has been changed to 1 hour (refer to: [Ginkgo 2.0 Migration Guide - Timeout Behavior](https://onsi.github.io/ginkgo/MIGRATING_TO_V2#timeout-behavior)).
+
+Tests may run longer than an hour depending on their environment and parallelism, with the possibility of failure.
+
+Adjust the test timeout as needed with the `--timeout` flag:
+
+```bash
+./bin/test --timeout=24h
+```
+
+For individual timeouts, such as the timeout for `cf push`, refer to [Test Configuration](#test-configuration).
+
 ## Explanation of Test Groups
 
 Test Group Name| Description
