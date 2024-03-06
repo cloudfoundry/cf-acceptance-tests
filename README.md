@@ -41,7 +41,7 @@ in such a way as to impact other tests.
 ### Prerequisites for running CATS
 - Install golang >= `1.21`. Set up your golang development environment, per
   [golang.org](http://golang.org/doc/install).
-- Install the [`cf CLI`](https://github.com/cloudfoundry/cli).
+- Install the [`cf CLI`](https://github.com/cloudfoundry/cli) >= `8.5.0`.
   Make sure that it is accessible in your `$PATH`.
 - Install the `log-cache` plugin with:
 
