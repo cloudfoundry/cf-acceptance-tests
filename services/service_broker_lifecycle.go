@@ -25,6 +25,7 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 		var output []byte
 		var oldServiceName string
 		var oldPlanName string
+		var otherOrgName string
 
 		BeforeEach(func() {
 			broker = NewServiceBroker(
@@ -141,13 +142,28 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 			Describe("enabling", func() {
 				BeforeEach(func() {
 					workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
+						otherOrgName = random_name.CATSRandomName("ORG")
+						createOrg := cf.Cf("create-org", otherOrgName).Wait()
+						Expect(createOrg).To(Exit(0), "failed to create org")
+
+						addOrgManager := cf.Cf("set-org-role", TestSetup.RegularUserContext().Username, otherOrgName, "OrgManager").Wait()
+						Expect(addOrgManager).To(Exit(0), "failed to add org manager role")
+
 						commandResult := cf.Cf("enable-service-access", broker.Service.Name, "-p", globallyPublicPlan.Name).Wait()
 						Expect(commandResult).To(Exit(0))
 						commandResult = cf.Cf("enable-service-access", broker.Service.Name, "-p", orgPublicPlan.Name, "-o", TestSetup.RegularUserContext().Org).Wait()
 						Expect(commandResult).To(Exit(0))
+						commandResult = cf.Cf("enable-service-access", broker.Service.Name, "-p", orgPublicPlan.Name, "-o", otherOrgName).Wait()
+						Expect(commandResult).To(Exit(0))
 					})
 				})
 				It("is visible to a regular user", func() {
+					var plansResponse ServicesPlansResponse
+					workflowhelpers.ApiRequest("GET", fmt.Sprintf("/v3/service_plans?service_offering_names=%s", broker.Service.Name), &plansResponse, Config.DefaultTimeoutDuration())
+					// Ensure that there no duplicates
+					Expect(len(plansResponse.Resources)).To(Equal(2))
+					Expect(plansResponse.Resources[0].Name).To(Equal(globallyPublicPlan.Name))
+					Expect(plansResponse.Resources[1].Name).To(Equal(orgPublicPlan.Name))
 					plans := cf.Cf("marketplace").Wait()
 					Expect(plans).To(Exit(0))
 					Expect(plans).To(Say(broker.Service.Name))
