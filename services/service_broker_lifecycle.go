@@ -3,14 +3,7 @@ package services_test
 import (
 	"encoding/json"
 	"fmt"
-
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
-
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
-	. "github.com/onsi/gomega/gexec"
-
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -18,6 +11,10 @@ import (
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
 	"github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gbytes"
+	. "github.com/onsi/gomega/gexec"
 )
 
 var _ = ServicesDescribe("Service Broker Lifecycle", func() {
@@ -142,14 +139,15 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 			})
 
 			Describe("enabling", func() {
-				It("is visible to a regular user", func() {
+				BeforeEach(func() {
 					workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 						commandResult := cf.Cf("enable-service-access", broker.Service.Name, "-p", globallyPublicPlan.Name).Wait()
 						Expect(commandResult).To(Exit(0))
 						commandResult = cf.Cf("enable-service-access", broker.Service.Name, "-p", orgPublicPlan.Name, "-o", TestSetup.RegularUserContext().Org).Wait()
 						Expect(commandResult).To(Exit(0))
 					})
-
+				})
+				It("is visible to a regular user", func() {
 					plans := cf.Cf("marketplace").Wait()
 					Expect(plans).To(Exit(0))
 					Expect(plans).To(Say(broker.Service.Name))
@@ -160,11 +158,6 @@ var _ = ServicesDescribe("Service Broker Lifecycle", func() {
 
 				It("is visible to an admin user", func() {
 					workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
-						commandResult := cf.Cf("enable-service-access", broker.Service.Name, "-p", globallyPublicPlan.Name).Wait()
-						Expect(commandResult).To(Exit(0))
-						commandResult = cf.Cf("enable-service-access", broker.Service.Name, "-p", orgPublicPlan.Name, "-o", TestSetup.RegularUserContext().Org).Wait()
-						Expect(commandResult).To(Exit(0))
-
 						acls = cf.Cf("service-access", "-e", broker.Service.Name).Wait()
 						Expect(acls).To(Exit(0))
 						output = acls.Out.Contents()
