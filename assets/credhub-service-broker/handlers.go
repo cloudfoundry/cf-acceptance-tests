@@ -9,7 +9,9 @@ import (
 	"time"
 
 	"code.cloudfoundry.org/credhub-cli/credhub"
+	"code.cloudfoundry.org/credhub-cli/credhub/credentials"
 	"code.cloudfoundry.org/credhub-cli/credhub/credentials/values"
+	"code.cloudfoundry.org/credhub-cli/credhub/permissions"
 	"github.com/go-chi/chi/v5"
 	uuid "github.com/satori/go.uuid"
 )
@@ -29,57 +31,17 @@ func init() {
 	PLAN_UUID = uuid.NewV4().String()
 }
 
-func catalogHandler(w http.ResponseWriter, r *http.Request) {
-	// Create a new catalog response
-	type Plans struct {
-		Name        string `json:"name"`
-		ID          string `json:"id"`
-		Description string `json:"description"`
-	}
-	type Services struct {
-		Name        string  `json:"name"`
-		ID          string  `json:"id"`
-		Description string  `json:"description"`
-		Bindable    bool    `json:"bindable"`
-		Plans       []Plans `json:"plans"`
-	}
-	catalog := struct {
-		Services []Services `json:"services"`
-	}{
-		Services: []Services{
-			{
-				Name:        SERVICE_NAME,
-				ID:          SERVICE_UUID,
-				Description: "credhub read service for tests",
-				Bindable:    true,
-				Plans: []Plans{
-					{
-						Name:        "credhub-read-plan",
-						ID:          PLAN_UUID,
-						Description: "credhub read plan for tests",
-					},
-				},
-			},
-		},
-	}
-
-	// Marshal the catalog response to JSON
-	catalogJSON, err := json.Marshal(catalog)
-	if err != nil {
-		log.Println("Failed to marshal catalog response: ", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	// Write the catalog response to the response writer
-	w.WriteHeader(http.StatusOK)
-	w.Write(catalogJSON) //nolint:errcheck
+type CredhubClient interface {
+	SetJSON(name string, value values.JSON, options ...credhub.SetOption) (credentials.JSON, error)
+	AddPermission(path string, actor string, ops []string) (*permissions.Permission, error)
+	Delete(name string) error
 }
 
-func bindHandler(ch *credhub.CredHub, bindings map[string]string) http.HandlerFunc {
+func bindHandler(ch CredhubClient, bindings map[string]string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Parse URL parameters
-		sbGUID := chi.URLParam(r, "service_binding_guid")
+		sbGUID := r.PathValue("binding_id")
+		// sbGUID := chi.URLParam(r, "service_binding_guid")
 		if sbGUID == "" {
 			log.Println("Missing service binding GUID")
 			w.WriteHeader(http.StatusBadRequest)
