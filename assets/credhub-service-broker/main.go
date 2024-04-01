@@ -10,6 +10,7 @@ import (
 	"code.cloudfoundry.org/credhub-cli/credhub"
 	"code.cloudfoundry.org/credhub-cli/credhub/auth"
 	"code.cloudfoundry.org/credhub-cli/util"
+	"github.com/cloudfoundry/cf-acceptance-tests/assets/credhub-service-broker/internal/catalog"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -28,11 +29,13 @@ func main() {
 	// Create a map of service binding GUIDs to track the registered service instances
 	bindings := make(map[string]string)
 
+	// Create a new catalog
+	c := catalog.New(SERVICE_NAME, SERVICE_UUID, PLAN_UUID)
+
 	// Create a router and register the service broker handlers
 	router := chi.NewRouter()
 	router.Use(middleware.Recoverer)
-
-	router.Get("/v2/catalog", catalogHandler)
+	router.Get("/v2/catalog", c.ServeHTTP)
 	router.Route("/v2/service_instances", func(r chi.Router) {
 		r.Put("/{service_instance_guid}", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("{}"))
