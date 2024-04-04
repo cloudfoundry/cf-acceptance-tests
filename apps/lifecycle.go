@@ -226,7 +226,7 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 
 			Context("is able to retrieve container metrics", func() {
 				// #0   running   2015-06-10 02:22:39 PM   0.0%   48.7M of 2G   14M of 1G     68B/s of unlimited
-				var metrics = regexp.MustCompile(`running.*(?:[\d\.]+)%\s+([\d\.]+)[KMG]? of (?:[\d\.]+)[KMG]?\s+([\d\.]+)[KMG]? of (?:[\d\.]+)[KMG]?\s+([\d\.]+)[BKMG]?/s of (?:[\d\.]+[BKMG]?/s|unlimited)`)
+				var metrics = regexp.MustCompile(`running.*(?:[\d\.]+)%\s+([\d\.]+)[BKMG]? of (?:[\d\.]+)[BKMG]?\s+([\d\.]+)[BKMG]? of (?:[\d\.]+)[BKMG]?\s+([\d\.]+)[BKMG]?/s of (?:[\d\.]+[BKMG]?/s|unlimited)`)
 				stats := func() (float64, float64, float64) {
 					app := cf.Cf("app", appName)
 					Expect(app.Wait()).To(Exit(0))
