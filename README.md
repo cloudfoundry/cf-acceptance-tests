@@ -41,20 +41,13 @@ in such a way as to impact other tests.
 ### Prerequisites for running CATS
 - Install golang >= `1.21`. Set up your golang development environment, per
   [golang.org](http://golang.org/doc/install).
-- Install the [`cf CLI`](https://github.com/cloudfoundry/cli) >= `8.5.0`.
-  Make sure that it is accessible in your `$PATH`.
-- Install the `log-cache` plugin with:
-
-  ```bash
-  cf install-plugin -r CF-Community "log-cache"
-  ```
-
+- Install the [`cf CLI`](https://github.com/cloudfoundry/cli) >= `8.5.0`. Make
+  sure that it is accessible in your `$PATH`.
 - Install [curl](http://curl.haxx.se/)
-- Check out a copy of `cf-acceptance-tests`. It uses Go modules, so there is no need to put it in `$GOPATH`.
-
-- Install a running Cloud Foundry deployment
-  to run these acceptance tests against.
-  For example, bosh-lite.
+- Check out a copy of `cf-acceptance-tests`. It uses Go modules, so there is no
+  need to put it in `$GOPATH`.
+- Install a running Cloud Foundry deployment to run these acceptance tests
+  against. For example, bosh-lite.
 
 ### Updating `go` dependencies
 All `go` dependencies required by CATs
