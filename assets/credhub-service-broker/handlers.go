@@ -4,76 +4,61 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
 	"code.cloudfoundry.org/credhub-cli/credhub"
 	"code.cloudfoundry.org/credhub-cli/credhub/credentials/values"
 	"github.com/go-chi/chi/v5"
-	uuid "github.com/satori/go.uuid"
 )
 
-var (
-	SERVICE_NAME string
-	SERVICE_UUID string
-	PLAN_UUID    string
-)
-
-func init() {
-	SERVICE_NAME = os.Getenv("SERVICE_NAME")
-	if SERVICE_NAME == "" {
-		SERVICE_NAME = "credhub-read"
-	}
-	SERVICE_UUID = uuid.NewV4().String()
-	PLAN_UUID = uuid.NewV4().String()
-}
-
-func catalogHandler(w http.ResponseWriter, r *http.Request) {
-	// Create a new catalog response
-	type Plans struct {
-		Name        string `json:"name"`
-		ID          string `json:"id"`
-		Description string `json:"description"`
-	}
-	type Services struct {
-		Name        string  `json:"name"`
-		ID          string  `json:"id"`
-		Description string  `json:"description"`
-		Bindable    bool    `json:"bindable"`
-		Plans       []Plans `json:"plans"`
-	}
-	catalog := struct {
-		Services []Services `json:"services"`
-	}{
-		Services: []Services{
-			{
-				Name:        SERVICE_NAME,
-				ID:          SERVICE_UUID,
-				Description: "credhub read service for tests",
-				Bindable:    true,
-				Plans: []Plans{
-					{
-						Name:        "credhub-read-plan",
-						ID:          PLAN_UUID,
-						Description: "credhub read plan for tests",
+func catalogHandler(cfg Config) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Create a new catalog response
+		type Plans struct {
+			Name        string `json:"name"`
+			ID          string `json:"id"`
+			Description string `json:"description"`
+		}
+		type Services struct {
+			Name        string  `json:"name"`
+			ID          string  `json:"id"`
+			Description string  `json:"description"`
+			Bindable    bool    `json:"bindable"`
+			Plans       []Plans `json:"plans"`
+		}
+		catalog := struct {
+			Services []Services `json:"services"`
+		}{
+			Services: []Services{
+				{
+					Name:        cfg.ServiceName,
+					ID:          cfg.ServiceUUID,
+					Description: "credhub read service for tests",
+					Bindable:    true,
+					Plans: []Plans{
+						{
+							Name:        "credhub-read-plan",
+							ID:          cfg.PlanUUID,
+							Description: "credhub read plan for tests",
+						},
 					},
 				},
 			},
-		},
-	}
+		}
 
-	// Marshal the catalog response to JSON
-	catalogJSON, err := json.Marshal(catalog)
-	if err != nil {
-		log.Println("Failed to marshal catalog response: ", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+		// Marshal the catalog response to JSON
+		catalogJSON, err := json.Marshal(catalog)
+		if err != nil {
+			log.Println("Failed to marshal catalog response: ", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 
-	// Write the catalog response to the response writer
-	w.WriteHeader(http.StatusOK)
-	w.Write(catalogJSON) //nolint:errcheck
+		// Write the catalog response to the response writer
+		w.WriteHeader(http.StatusOK)
+		w.Write(catalogJSON) //nolint:errcheck
+	}
 }
 
 func bindHandler(ch *credhub.CredHub, bindings map[string]string) http.HandlerFunc {

@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"strconv"
 
 	"code.cloudfoundry.org/credhub-cli/credhub"
 	"code.cloudfoundry.org/credhub-cli/credhub/auth"
@@ -15,14 +13,17 @@ import (
 )
 
 func main() {
+	// Load configuration
+	cfg := LoadConfig()
+
 	// Create a new CredHub client
 	ch, err := credhub.New(
-		util.AddDefaultSchemeIfNecessary(os.Getenv("CREDHUB_API")),
+		util.AddDefaultSchemeIfNecessary(cfg.Credhub.API),
 		credhub.SkipTLSValidation(true),
-		credhub.Auth(auth.UaaClientCredentials(os.Getenv("CREDHUB_CLIENT"), os.Getenv("CREDHUB_SECRET"))),
+		credhub.Auth(auth.UaaClientCredentials(cfg.Credhub.Client, cfg.Credhub.Secret)),
 	)
 	if err != nil {
-		log.Fatal("Failed to create CredHub client: ", err)
+		log.Panic("Failed to create CredHub client: ", err)
 	}
 
 	// Create a map of service binding GUIDs to track the registered service instances
@@ -32,7 +33,7 @@ func main() {
 	router := chi.NewRouter()
 	router.Use(middleware.Recoverer)
 
-	router.Get("/v2/catalog", catalogHandler)
+	router.Get("/v2/catalog", catalogHandler(cfg))
 	router.Route("/v2/service_instances", func(r chi.Router) {
 		r.Put("/{service_instance_guid}", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("{}"))
@@ -46,13 +47,7 @@ func main() {
 		})
 	})
 
-	// Retrieve the port to listen on from the environment
-	port, err := strconv.Atoi(os.Getenv("PORT"))
-	if err != nil {
-		log.Fatal("Failed to parse PORT: ", err)
-	}
-
 	// Start the HTTP server
-	log.Printf("Server starting, listening on port %d...", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), router))
+	log.Printf("Server starting, listening on port %d...", cfg.Port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), router))
 }
