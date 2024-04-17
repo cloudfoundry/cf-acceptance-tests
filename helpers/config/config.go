@@ -12,6 +12,7 @@ type CatsConfig interface {
 	GetIncludeCredhubNonAssisted() bool
 	GetIncludeDetect() bool
 	GetIncludeDocker() bool
+	GetIncludeCNB() bool
 	GetIncludeInternetDependent() bool
 	GetIncludePrivateDockerRegistry() bool
 	GetIncludeRouteServices() bool
@@ -70,6 +71,7 @@ type CatsConfig interface {
 	GetNamePrefix() string
 	GetNginxBuildpackName() string
 	GetNodejsBuildpackName() string
+	GetCNBNodejsBuildpackName() string
 	GetPrivateDockerRegistryImage() string
 	GetPrivateDockerRegistryUsername() string
 	GetPrivateDockerRegistryPassword() string

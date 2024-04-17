@@ -22,6 +22,7 @@ type Assets struct {
 	Python                     string
 	Nginx                      string
 	Node                       string
+	CNBNode                    string
 	NodeWithProcfile           string
 	Nora                       string
 	Pora                       string
@@ -67,6 +68,7 @@ func NewAssets() Assets {
 		LoggregatorLoadGeneratorGo: "assets/loggregator-load-generator-go",
 		Nginx:                      "assets/nginx",
 		Node:                       "assets/node",
+		CNBNode:                    "assets/cnb-node",
 		NodeWithProcfile:           "assets/node-with-procfile",
 		Nora:                       "assets/nora/NoraPublished",
 		Pora:                       "assets/pora",
