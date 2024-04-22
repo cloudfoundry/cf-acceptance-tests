@@ -7,7 +7,7 @@ code.cloudfoundry.org/go-diodes
 # code.cloudfoundry.org/go-log-cache/v2 v2.0.7
 ## explicit; go 1.21
 code.cloudfoundry.org/go-log-cache/v2/rpc/logcache_v1
-# code.cloudfoundry.org/go-loggregator/v9 v9.2.0
+# code.cloudfoundry.org/go-loggregator/v9 v9.2.1
 ## explicit; go 1.21
 code.cloudfoundry.org/go-loggregator/v9
 code.cloudfoundry.org/go-loggregator/v9/rpc/loggregator_v2
@@ -196,7 +196,7 @@ golang.org/x/crypto/internal/alias
 golang.org/x/crypto/internal/poly1305
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
-# golang.org/x/net v0.23.0
+# golang.org/x/net v0.24.0
 ## explicit; go 1.18
 golang.org/x/net/context
 golang.org/x/net/html
