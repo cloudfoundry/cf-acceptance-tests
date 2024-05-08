@@ -5,7 +5,7 @@ go 1.21
 require (
 	code.cloudfoundry.org/clock v1.1.0
 	github.com/go-chi/chi/v5 v5.0.12
-	github.com/onsi/ginkgo/v2 v2.17.2
+	github.com/onsi/ginkgo/v2 v2.17.3
 	github.com/onsi/gomega v1.33.1
 )
 
