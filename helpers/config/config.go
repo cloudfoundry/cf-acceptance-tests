@@ -78,6 +78,7 @@ type CatsConfig interface {
 	GetUnallocatedIPForSecurityGroup() string
 	GetRequireProxiedAppTraffic() bool
 	GetDynamicASGsEnabled() bool
+	GetCommaDelimitedASGsEnabled() bool
 	GetReadinessHealthChecksEnabled() bool
 	Protocol() string
 

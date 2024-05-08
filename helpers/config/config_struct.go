@@ -112,6 +112,7 @@ type config struct {
 	RequireProxiedAppTraffic      *bool   `json:"require_proxied_app_traffic"`
 
 	DynamicASGsEnabled           *bool `json:"dynamic_asgs_enabled"`
+	CommaDelimitedASGsEnabled    *bool `json:"comma_delim_asgs_enabled"`
 	ReadinessHealthChecksEnabled *bool `json:"readiness_health_checks_enabled"`
 
 	NamePrefix *string `json:"name_prefix"`
@@ -229,6 +230,7 @@ func getDefaults() config {
 	defaults.RequireProxiedAppTraffic = ptrToBool(false)
 
 	defaults.DynamicASGsEnabled = ptrToBool(true)
+	defaults.CommaDelimitedASGsEnabled = ptrToBool(true)
 	defaults.ReadinessHealthChecksEnabled = ptrToBool(true)
 
 	defaults.NamePrefix = ptrToString("CATS")
@@ -931,6 +933,10 @@ func (c *config) GetIncludeSecurityGroups() bool {
 
 func (c *config) GetDynamicASGsEnabled() bool {
 	return *c.DynamicASGsEnabled
+}
+
+func (c *config) GetCommaDelimitedASGsEnabled() bool {
+	return *c.CommaDelimitedASGsEnabled
 }
 
 func (c *config) GetReadinessHealthChecksEnabled() bool {

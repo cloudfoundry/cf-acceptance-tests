@@ -189,6 +189,17 @@ func SecurityGroupsDescribe(description string, callback func()) bool {
 	})
 }
 
+func CommaDelimitedSecurityGroupsDescribe(description string, callback func()) bool {
+	return Describe("[comma_delimited_security_groups]", func() {
+		BeforeEach(func() {
+			if !Config.GetCommaDelimitedASGsEnabled() {
+				Skip(skip_messages.SkipCommaDelimitedSecurityGroupsMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
 func ServiceDiscoveryDescribe(description string, callback func()) bool {
 	return Describe("[service discovery]", func() {
 		BeforeEach(func() {

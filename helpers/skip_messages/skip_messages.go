@@ -25,6 +25,8 @@ const SkipHTTP2RoutingMessage = `Skipping this test because config.IncludeHTTP2R
 const SkipTCPRoutingMessage = `Skipping this test because config.IncludeTCPRouting is set to 'false'.`
 const SkipSecurityGroupsMessage = `Skipping this test because config.IncludeSecurityGroups is set to 'false'.
 NOTE: Ensure that your platform restricts internal network traffic by default in order to run this test.`
+const SkipCommaDelimitedSecurityGroupsMessage = `Skipping this test because config.CommaDelimitedASGsEnabled is set to 'false'.
+NOTE: Ensure that your platform restricts internal network traffic by default in order to run this test.`
 const SkipServicesMessage = `Skipping this test because config.IncludeServices is set to 'false'.`
 const SkipUserProvidedServicesMessage = `Skipping this test because config.IncludeUserProvidedServices is set to 'false'.`
 const SkipSSHMessage = `Skipping this test because config.IncludeSsh is set to 'false'.

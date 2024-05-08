@@ -13,6 +13,7 @@ IN DEVELOPMENT
   "use_http": true,
   "include_app_syslog_tcp": true,
   "include_apps": true,
+  "comma_delim_asgs_enabled": false,
   "dynamic_asgs_enabled": true,
   "readiness_health_check_enabled": true,
   "include_container_networking": true,

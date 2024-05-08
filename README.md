@@ -134,6 +134,7 @@ include_v3
 * `include_routing_isolation_segments`: Flag to include routing isolation segments tests. [See below](#routing-isolation-segments). Cannot be run together with logging isolation segments tests.
 * `include_security_groups`: Flag to include tests for security groups. [See below](#container-networking-and-application-security-groups)
 * `dynamic_asgs_enabled`: Defaults to `true`. Set to false if dynamic ASGs are disabled in the test environment.
+* `comma_delim_asgs_enabled`: Defaults to `false`. Set to true if comma delimited ASG destinations are enabled in the test environment.
 * `include_services`: Flag to include test for the services API.
 * `include_service_instance_sharing`: Flag to include tests for service instance sharing between spaces. `include_services` must be set for these tests to run. The `service_instance_sharing` feature flag must also be enabled for these tests to pass.
 * `include_ssh`: Flag to include tests for Diego container ssh feature.
