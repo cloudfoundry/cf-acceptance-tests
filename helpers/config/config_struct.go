@@ -230,7 +230,7 @@ func getDefaults() config {
 	defaults.RequireProxiedAppTraffic = ptrToBool(false)
 
 	defaults.DynamicASGsEnabled = ptrToBool(true)
-	defaults.CommaDelimitedASGsEnabled = ptrToBool(true)
+	defaults.CommaDelimitedASGsEnabled = ptrToBool(false)
 	defaults.ReadinessHealthChecksEnabled = ptrToBool(true)
 
 	defaults.NamePrefix = ptrToString("CATS")
