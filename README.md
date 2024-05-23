@@ -95,6 +95,7 @@ include_apps
 include_detect
 include_routing
 include_v3
+include_app_syslog_tcp
 ```
 
 #### The full set of config parameters is explained below:
