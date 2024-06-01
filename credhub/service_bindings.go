@@ -98,6 +98,7 @@ var _ = CredhubDescribe("service bindings", func() {
 
 			Expect(cf.Cf("purge-service-instance", instanceName, "-f").Wait()).To(Exit(0))
 			Expect(cf.Cf("delete-service-broker", chBrokerAppName, "-f").Wait()).To(Exit(0))
+			Expect(cf.Cf("delete", chBrokerAppName, "-f", "-r").Wait()).To(Exit(0))
 		})
 	})
 
