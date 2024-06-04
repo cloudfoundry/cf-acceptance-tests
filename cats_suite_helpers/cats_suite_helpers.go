@@ -97,6 +97,17 @@ func DockerDescribe(description string, callback func()) bool {
 	})
 }
 
+func CNBDescribe(description string, callback func()) bool {
+	return Describe("[cnb]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeCNB() {
+				Skip(skip_messages.SkipCNBMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
 func InternetDependentDescribe(description string, callback func()) bool {
 	return Describe("[internet_dependent]", func() {
 		BeforeEach(func() {
