@@ -273,8 +273,8 @@ func createServiceBroker(brokerName, brokerAppName, serviceName string) {
 
 func deleteServiceBroker(brokerName string) {
 	workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
-		responseBuffer := cf.Cf("delete-service-broker", brokerName, "-f")
-		Expect(responseBuffer.Wait()).To(Exit(0))
+		Expect(cf.Cf("delete-service-broker", brokerName, "-f").Wait()).To(Exit(0))
+		Expect(cf.Cf("delete", brokerName, "-f", "-r").Wait()).To(Exit(0))
 	})
 }
 

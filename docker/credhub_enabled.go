@@ -85,6 +85,7 @@ var _ = DockerDescribe("Docker App Lifecycle CredHub Integration", func() {
 				Expect(cf.Cf("delete-service", instanceName, "-f").Wait()).To(Exit(0))
 				Expect(cf.Cf("purge-service-offering", chServiceName, "-f").Wait()).To(Exit(0))
 				Expect(cf.Cf("delete-service-broker", chBrokerName, "-f").Wait()).To(Exit(0))
+				Expect(cf.Cf("delete", chBrokerName, "-f", "-r").Wait()).To(Exit(0))
 			})
 		})
 
