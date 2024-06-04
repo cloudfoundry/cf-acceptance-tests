@@ -117,6 +117,7 @@ include_v3
 * `include_app_syslog_tcp`: Flag to include the app syslog drain over TCP test group.
 * `include_apps`: Flag to include the apps test group.
 * `readiness_health_checks_enabled`: Defaults to `true`. Set to false if you are using an environment without readiness health checks.
+* `include_cnb`: Flag to include tests related to building apps using Cloud Native Buildpacks. Diego must be deployed and the CC API diego_cnb feature flag must be enabled for these tests to pass.
 * `include_container_networking`: Flag to include tests related to container networking.
 * `credhub_mode`: Valid values are `assisted` or `non-assisted`. [See below](#credhub-modes).
 * `credhub_location`: Location of CredHub instance; default is `https://credhub.service.cf.internal:8844`
@@ -124,7 +125,7 @@ include_v3
 * `credhub_secret`: UAA client secret for Service Broker write access to CredHub (required for CredHub tests).
 * `include_deployments`: Flag to include tests for the cloud controller rolling deployments. V3 must also be enabled.
 * `include_detect`: Flag to include tests in the detect group.
-* `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API docker_diego feature flag must be enabled for these tests to pass.
+* `include_docker`: Flag to include tests related to running Docker apps on Diego. Diego must be deployed and the CC API diego_docker feature flag must be enabled for these tests to pass.
 * `include_http2_routing`: Flag to include the HTTP/2 Routing tests.
 * `include_internet_dependent`: Flag to include tests that require the deployment to have internet access.
 * `include_isolation_segments`: Flag to include isolation segment tests.
@@ -175,6 +176,7 @@ include_v3
 * `go_buildpack_name` [See below](#buildpack-names)
 * `r_buildpack_name` [See below](#buildpack-names)
 * `binary_buildpack_name` [See below](#buildpack-names)
+* `cnb_nodejs_buildpack_name` [See below](#buildpack-names)
 
 * `include_windows`: Flag to include the tests that run against Windows cells.
 * `use_windows_test_task`: Flag to include the tasks tests on Windows cells. Default is `false`.
@@ -201,6 +203,10 @@ Many tests specify a buildpack when pushing an app, so that on diego the app sta
 * `r_buildpack_name: r_buildpack`
 * `binary_buildpack_name: binary_buildpack`
 * `hwc_buildpack_name: hwc_buildpack`
+
+For the Cloud Native Buildpacks lifecycle, you can override them by setting different names:
+
+* `cnb_nodejs_buildpack_name: docker://gcr.io/paketo-buildpacks/nodejs:latest`
 
 #### Route Services Test Group Setup
 The `route_services` test group pushes applications which must be able to reach the load balancer of your Cloud Foundry deployment. This requires configuring application security groups to support this. Your deployment manifest should include the following data if you are running the `route_services` group:

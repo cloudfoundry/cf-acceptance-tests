@@ -1,6 +1,3 @@
-//go:build !noInternet && !noCNB
-// +build !noInternet,!noCNB
-
 package cnb
 
 import (
