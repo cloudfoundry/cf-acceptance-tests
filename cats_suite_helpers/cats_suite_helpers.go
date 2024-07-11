@@ -414,6 +414,9 @@ func SendAndReceive(addr string, externalPort string) (string, error) {
 		return "", err
 	}
 
+	// see https://github.com/cloudfoundry/cf-acceptance-tests/issues/1173
+	time.Sleep(2 * time.Second)
+
 	buff := make([]byte, 1024)
 	_, err = conn.Read(buff)
 	if err != nil {
