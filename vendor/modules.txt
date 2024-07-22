@@ -4,13 +4,13 @@ code.cloudfoundry.org/archiver/extractor/test_helper
 # code.cloudfoundry.org/go-diodes v0.0.0-20220325013804-800fb6f70e2f
 ## explicit; go 1.16
 code.cloudfoundry.org/go-diodes
-# code.cloudfoundry.org/go-log-cache/v2 v2.0.7
+# code.cloudfoundry.org/go-log-cache/v3 v3.0.1
 ## explicit; go 1.21
-code.cloudfoundry.org/go-log-cache/v2/rpc/logcache_v1
-# code.cloudfoundry.org/go-loggregator/v9 v9.2.1
+code.cloudfoundry.org/go-log-cache/v3/rpc/logcache_v1
+# code.cloudfoundry.org/go-loggregator/v10 v10.0.0
 ## explicit; go 1.21
-code.cloudfoundry.org/go-loggregator/v9
-code.cloudfoundry.org/go-loggregator/v9/rpc/loggregator_v2
+code.cloudfoundry.org/go-loggregator/v10
+code.cloudfoundry.org/go-loggregator/v10/rpc/loggregator_v2
 # code.cloudfoundry.org/tlsconfig v0.0.0-20220621140725-0e6fbd869921
 ## explicit; go 1.17
 code.cloudfoundry.org/tlsconfig
@@ -198,7 +198,7 @@ golang.org/x/crypto/internal/alias
 golang.org/x/crypto/internal/poly1305
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
-# golang.org/x/net v0.25.0
+# golang.org/x/net v0.26.0
 ## explicit; go 1.18
 golang.org/x/net/context
 golang.org/x/net/html
