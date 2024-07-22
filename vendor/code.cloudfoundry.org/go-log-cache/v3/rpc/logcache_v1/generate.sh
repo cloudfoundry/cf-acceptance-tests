@@ -20,6 +20,7 @@ export GOBIN="${TMP_DIR}/hack/bin"
 export PATH="${GOBIN}:${PATH}"
 go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest
 
 pushd "${REPO_ROOT}/.." > /dev/null
   mkdir -p "${TMP_DIR}/go-log-cache/api"
@@ -32,5 +33,5 @@ pushd "${REPO_ROOT}/.." > /dev/null
     --grpc-gateway_out=$TMP_DIR \
     $TMP_DIR/go-log-cache/api/v1/*.proto
 
-  mv $TMP_DIR/code.cloudfoundry.org/go-log-cache/v2/rpc/logcache_v1/* $REPO_ROOT/rpc/logcache_v1
+  mv $TMP_DIR/code.cloudfoundry.org/go-log-cache/v3/rpc/logcache_v1/* $REPO_ROOT/rpc/logcache_v1/
 popd > /dev/null

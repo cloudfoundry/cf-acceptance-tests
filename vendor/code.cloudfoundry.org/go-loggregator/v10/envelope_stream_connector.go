@@ -8,7 +8,7 @@ import (
 	"time"
 
 	gendiodes "code.cloudfoundry.org/go-diodes"
-	"code.cloudfoundry.org/go-loggregator/v9/rpc/loggregator_v2"
+	"code.cloudfoundry.org/go-loggregator/v10/rpc/loggregator_v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -132,7 +132,7 @@ func newStream(
 	log Logger,
 ) *stream {
 	opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(c)))
-	conn, err := grpc.Dial(
+	conn, err := grpc.NewClient(
 		addr,
 		opts...,
 	)

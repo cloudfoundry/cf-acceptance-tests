@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"code.cloudfoundry.org/go-loggregator/v9/rpc/loggregator_v2"
+	"code.cloudfoundry.org/go-loggregator/v10/rpc/loggregator_v2"
 )
 
 // IngressOption is the type of a configurable client option.
@@ -134,7 +134,7 @@ func NewIngressClient(tlsConfig *tls.Config, opts ...IngressOption) (*IngressCli
 
 	c.dialOpts = append(c.dialOpts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
 
-	conn, err := grpc.Dial(
+	conn, err := grpc.NewClient(
 		c.addr,
 		c.dialOpts...,
 	)
