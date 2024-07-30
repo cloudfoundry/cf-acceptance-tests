@@ -12,7 +12,7 @@ require (
 	github.com/cloudfoundry/sonde-go v0.0.0-20230710164515-a0a43d1dbbf8
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/onsi/ginkgo/v2 v2.19.0
-	github.com/onsi/gomega v1.33.1
+	github.com/onsi/gomega v1.34.1
 	golang.org/x/crypto v0.25.0
 	google.golang.org/grpc v1.65.0
 	google.golang.org/protobuf v1.34.2
@@ -41,10 +41,11 @@ require (
 	github.com/square/certstrap v1.2.0 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
-	golang.org/x/net v0.26.0 // indirect
+	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
+	golang.org/x/net v0.27.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
-	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
+	golang.org/x/tools v0.23.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240528184218-531527333157 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
