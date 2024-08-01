@@ -1,5 +1,5 @@
 ---
 applications:
-- env:
-    GOPACKAGENAME: go-online
-    GOVERSION: go1.21
+  - env:
+      GOPACKAGENAME: go-online
+      GOVERSION: go1.22
