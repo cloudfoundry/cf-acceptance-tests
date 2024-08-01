@@ -1,6 +1,6 @@
 ---
 applications:
-- name: syslog-drain-listener
-  env:
-    GOPACKAGENAME: main
-    GOVERSION: go1.21
+  - name: syslog-drain-listener
+    env:
+      GOPACKAGENAME: main
+      GOVERSION: go1.22

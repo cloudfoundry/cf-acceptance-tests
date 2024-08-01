@@ -1,8 +1,8 @@
 ---
 applications:
-- name: pora
-  buildpacks:
-  - go_buildpack
-  env:
-    GOPACKAGENAME: pora
-    GOVERSION: go1.21
+  - name: pora
+    buildpacks:
+      - go_buildpack
+    env:
+      GOPACKAGENAME: pora
+      GOVERSION: go1.22
