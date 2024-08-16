@@ -2,6 +2,8 @@ module github.com/cloudfoundry/cf-acceptance-tests/assets/catnip
 
 go 1.22
 
+toolchain go1.22.0
+
 require (
 	code.cloudfoundry.org/clock v1.2.0
 	github.com/go-chi/chi/v5 v5.1.0
