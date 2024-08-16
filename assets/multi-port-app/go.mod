@@ -1,3 +1,3 @@
 module github.com/cloudfoundry/cf-acceptance-tests/assets/multi-port-app
 
-go 1.22.0
+go 1.22
