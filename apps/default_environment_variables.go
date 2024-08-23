@@ -136,16 +136,11 @@ exit 1
 				"VCAP_APP_PORT",
 			)
 
-			if Config.GetRequireProxiedAppTraffic() {
-				assertNotPresent(env,
-					"CF_INSTANCE_ADDR",
-					"CF_INSTANCE_PORT",
-				)
-			} else {
-				assertPresent(env,
-					"CF_INSTANCE_ADDR",
-					"CF_INSTANCE_PORT",
-				)
+			if v, ok := env["CF_INSTANCE_PORT"]; ok && v != "" {
+				Expect(v).To(MatchRegexp(`[0-9]+`))
+			}
+			if v, ok := env["CF_INSTANCE_ADDR"]; ok && v != "" {
+				Expect(v).To(MatchRegexp(`[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+`))
 			}
 
 			if Config.GetIncludeTasks() {

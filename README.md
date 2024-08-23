@@ -161,8 +161,6 @@ include_app_syslog_tcp
 * `private_docker_registry_password`: Password to access the private docker repository. [See below](#private-docker)
 * `unallocated_ip_for_security_group`: An unused IP address in the private network used by CF. Defaults to 10.0.244.255. [See below](#container-networking-and-application-security-groups)
 
-* `require_proxied_app_traffic`: Set this to `true` if Diego was configured to require proxied port mappings, i.e. if `containers.proxy.enable_unproxied_port_mappings` is set to `false`.
-
 * `staticfile_buildpack_name` [See below](#buildpack-names)
 * `java_buildpack_name` [See below](#buildpack-names)
 * `ruby_buildpack_name` [See below](#buildpack-names)

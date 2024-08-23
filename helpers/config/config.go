@@ -78,7 +78,6 @@ type CatsConfig interface {
 	GetRBuildpackName() string
 	GetRubyBuildpackName() string
 	GetUnallocatedIPForSecurityGroup() string
-	GetRequireProxiedAppTraffic() bool
 	GetDynamicASGsEnabled() bool
 	GetCommaDelimitedASGsEnabled() bool
 	GetReadinessHealthChecksEnabled() bool
