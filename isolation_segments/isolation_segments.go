@@ -241,7 +241,7 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 		var domainName string
 
 		BeforeEach(func() {
-			domainName = fmt.Sprintf("tcp.%s", isoSegDomain)
+			domainName = Config.GetIsolationSegmentTCPDomain()
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
 				session := cf.Cf("curl", fmt.Sprintf("/v3/spaces?names=%s", spaceName))
@@ -346,10 +346,13 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 				})
 
 				It("maps single external port to both applications", func() {
-					serverResponses, err := GetNServerResponses(10, domainName, externalPort1)
-					Expect(err).ToNot(HaveOccurred())
-					Expect(serverResponses).To(ContainElement(ContainSubstring(serverId1)))
-					Expect(serverResponses).To(ContainElement(ContainSubstring(serverId2)))
+					getServerResponses := func() []string {
+						serverResponses, err := GetNServerResponses(10, domainName, externalPort1)
+						Expect(err).ToNot(HaveOccurred())
+						return serverResponses
+					}
+					Eventually(getServerResponses, 30).Should(ContainElement(ContainSubstring(serverId1)))
+					Eventually(getServerResponses, 30).Should(ContainElement(ContainSubstring(serverId2)))
 				})
 			})
 

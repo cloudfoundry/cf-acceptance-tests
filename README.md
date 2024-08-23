@@ -136,6 +136,7 @@ include_app_syslog_tcp
 * `include_sso`: Flag to include the services tests that integrate with Single Sign On. `include_services` must also be set for tests to run.
 * `include_tasks`: Flag to include the v3 task tests. `include_v3` must also be set for tests to run. The CC API task_creation feature flag must be enabled for these tests to pass.
 * `include_tcp_routing`: Flag to include the TCP Routing tests. These tests are equivalent to the [TCP Routing tests](https://github.com/cloudfoundry/routing-acceptance-tests/blob/master/tcp_routing/tcp_routing_test.go) from the Routing Acceptance Tests.
+* `tcp_domain`: Domain that will be used for apps with TCP routes
 * `include_user_provided_services`: Flag to include test for user-provided services.
 * `include_v3`: Flag to include tests for the v3 API.
 * `include_zipkin`: Flag to include tests for Zipkin tracing. `include_routing` must also be set for tests to run. CF must be deployed with `router.tracing.enable_zipkin` set for tests to pass.
@@ -156,6 +157,8 @@ include_app_syslog_tcp
 * `timeout_scale`: Used primarily to scale default timeouts for test setup and teardown actions (e.g. creating an org) as opposed to main test actions (e.g. pushing an app).
 * `isolation_segment_name`: Name of the isolation segment to use for the isolation segments test.
 * `isolation_segment_domain`: Domain that will route to the isolated router in the isolation segments and routing isolation segments tests. [See below](#routing-isolation-segments)
+* `include_tcp_isolation_segments`: Flag to include the TCP Routing tests on Isolation Segments. These tests are equivalent to the [TCP Routing tests](https://github.com/cloudfoundry/routing-acceptance-tests/blob/master/tcp_routing/tcp_routing_test.go) from the Routing Acceptance Tests.
+* `isolation_segment_tcp_domain`: Domain that will be used for isolated apps with TCP routes
 * `private_docker_registry_image`: Name of the private docker image to use when testing private docker registries. [See below](#private-docker)
 * `private_docker_registry_username`: Username to access the private docker repository. [See below](#private-docker)
 * `private_docker_registry_password`: Password to access the private docker repository. [See below](#private-docker)

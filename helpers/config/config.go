@@ -47,6 +47,7 @@ type CatsConfig interface {
 	GetAdminClientSecret() string
 	GetApiEndpoint() string
 	GetAppsDomain() string
+	GetTCPDomain() string
 	GetArtifactsDirectory() string
 	GetBinaryBuildpackName() string
 	GetStaticFileBuildpackName() string
@@ -67,6 +68,7 @@ type CatsConfig interface {
 	GetHwcBuildpackName() string
 	GetIsolationSegmentName() string
 	GetIsolationSegmentDomain() string
+	GetIsolationSegmentTCPDomain() string
 	GetJavaBuildpackName() string
 	GetNamePrefix() string
 	GetNginxBuildpackName() string
