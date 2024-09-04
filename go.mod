@@ -13,7 +13,7 @@ require (
 	github.com/cloudfoundry/noaa/v2 v2.4.0
 	github.com/cloudfoundry/sonde-go v0.0.0-20230710164515-a0a43d1dbbf8
 	github.com/mholt/archiver/v3 v3.5.1
-	github.com/onsi/ginkgo/v2 v2.20.1
+	github.com/onsi/ginkgo/v2 v2.20.2
 	github.com/onsi/gomega v1.34.2
 	golang.org/x/crypto v0.26.0
 	google.golang.org/grpc v1.66.0
