@@ -1,4 +1,4 @@
-# code.cloudfoundry.org/clock v1.10.0
+# code.cloudfoundry.org/clock v1.11.0
 ## explicit; go 1.22
 code.cloudfoundry.org/clock
 code.cloudfoundry.org/clock/fakeclock
@@ -60,7 +60,7 @@ github.com/onsi/gomega/matchers/support/goraph/edge
 github.com/onsi/gomega/matchers/support/goraph/node
 github.com/onsi/gomega/matchers/support/goraph/util
 github.com/onsi/gomega/types
-# golang.org/x/net v0.28.0
+# golang.org/x/net v0.29.0
 ## explicit; go 1.18
 golang.org/x/net/context
 golang.org/x/net/html
