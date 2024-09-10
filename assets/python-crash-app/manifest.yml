@@ -1,0 +1,7 @@
+---
+applications:
+  - name: python-crash-app
+    memory: 256M
+    instances: 3
+    buildpacks:
+      - python_buildpack
