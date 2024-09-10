@@ -13,14 +13,8 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
-	"strings"
 	"time"
 )
-
-func getAppGuid(appName string) string {
-	guid := cf.Cf("app", appName, "--guid").Wait().Out.Contents()
-	return strings.TrimSpace(string(guid))
-}
 
 var _ = AppsDescribe("Crashing", func() {
 	var appName string
@@ -68,7 +62,7 @@ var _ = AppsDescribe("Crashing", func() {
 			Eventually(cf.Cf("app", appName)).Should(Say("running"))
 
 			By("Waiting until one instance crashes")
-			appGuid := getAppGuid(appName)
+			appGuid := app_helpers.GetAppGuid(appName)
 			processStatsPath := fmt.Sprintf("/v3/apps/%s/processes/web/stats", appGuid)
 
 			// Poll until at least one instance has crashed
