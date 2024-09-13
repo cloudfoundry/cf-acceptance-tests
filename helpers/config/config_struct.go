@@ -19,6 +19,7 @@ const (
 type config struct {
 	ApiEndpoint *string `json:"api"`
 	AppsDomain  *string `json:"apps_domain"`
+	TCPDomain   *string `json:"tcp_domain"`
 	UseHttp     *bool   `json:"use_http"`
 
 	AdminPassword *string `json:"admin_password"`
@@ -34,8 +35,9 @@ type config struct {
 
 	ConfigurableTestPassword *string `json:"test_password"`
 
-	IsolationSegmentName   *string `json:"isolation_segment_name"`
-	IsolationSegmentDomain *string `json:"isolation_segment_domain"`
+	IsolationSegmentName      *string `json:"isolation_segment_name"`
+	IsolationSegmentDomain    *string `json:"isolation_segment_domain"`
+	IsolationSegmentTCPDomain *string `json:"isolation_segment_tcp_domain"`
 
 	SkipSSLValidation *bool `json:"skip_ssl_validation"`
 
@@ -811,6 +813,14 @@ func (c *config) GetAppsDomain() string {
 	return *c.AppsDomain
 }
 
+func (c *config) GetTCPDomain() string {
+	if c.TCPDomain == nil || *c.TCPDomain == "" {
+		return fmt.Sprintf("tcp.%s", *c.AppsDomain)
+	}
+
+	return *c.TCPDomain
+}
+
 func (c *config) GetSkipSSLValidation() bool {
 	return *c.SkipSSLValidation
 }
@@ -825,6 +835,10 @@ func (c *config) GetIsolationSegmentName() string {
 
 func (c *config) GetIsolationSegmentDomain() string {
 	return *c.IsolationSegmentDomain
+}
+
+func (c *config) GetIsolationSegmentTCPDomain() string {
+	return *c.IsolationSegmentTCPDomain
 }
 
 func (c *config) GetNamePrefix() string {

@@ -1,6 +1,7 @@
 package cats_suite_helpers
 
 import (
+	"bytes"
 	"fmt"
 	"net"
 	"regexp"
@@ -56,7 +57,7 @@ func AppsDescribe(description string, callback func()) bool {
 func IsolatedTCPRoutingDescribe(description string, callback func()) bool {
 	return Describe("[isolated tcp routing]", func() {
 		BeforeEach(func() {
-			if Config.GetIncludeRoutingIsolationSegments() || !Config.GetIncludeTCPIsolationSegments() {
+			if !Config.GetIncludeTCPIsolationSegments() {
 				Skip(skip_messages.SkipIsolatedTCPRoutingMessage)
 			}
 		})
@@ -377,6 +378,17 @@ func WindowsDescribe(description string, callback func()) bool {
 	})
 }
 
+func WindowsTCPRoutingDescribe(description string, callback func()) bool {
+	return Describe("[windows routing]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeTCPRouting() || !Config.GetIncludeWindows() {
+				Skip(skip_messages.SkipTCPRoutingMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
 func VolumeServicesDescribe(description string, callback func()) bool {
 	return Describe("[volume_services]", func() {
 		BeforeEach(func() {
@@ -451,5 +463,12 @@ func SendAndReceive(addr string, externalPort string) (string, error) {
 		return "", err
 	}
 
-	return string(buff), nil
+	// only grab up to the first null byte of a message since we have a predefined slice length that may not be full
+	i := len(buff)
+
+	if j := bytes.IndexByte(buff, 0); j > 0 {
+		i = j
+	}
+
+	return string(buff[:i]), nil
 }

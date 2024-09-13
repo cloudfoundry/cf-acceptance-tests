@@ -1,7 +1,8 @@
-package tcp_routing
+package windows
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -12,13 +13,15 @@ import (
 	"github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gexec"
 	. "github.com/onsi/gomega/gexec"
 )
 
 const DefaultRouterGroupName = "default-tcp"
 
-var _ = TCPRoutingDescribe("TCP Routing", func() {
+var _ = WindowsTCPRoutingDescribe("Windows TCP Routing", func() {
 	var domainName string
+	var compiledApp string
 
 	BeforeEach(func() {
 		domainName = Config.GetTCPDomain()
@@ -34,6 +37,15 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 				"--router-group", DefaultRouterGroupName,
 			).Wait()).To(Exit())
 		})
+
+		originalDir, err := os.Getwd()
+		Expect(err).NotTo(HaveOccurred())
+		err = os.Chdir(assets.NewAssets().TCPListener)
+		Expect(err).NotTo(HaveOccurred())
+		compiledApp, err = gexec.BuildWithEnvironment(".", []string{"GOOS=windows"})
+		Expect(err).NotTo(HaveOccurred())
+		err = os.Chdir(originalDir)
+		Expect(err).NotTo(HaveOccurred())
 	})
 
 	Context("external ports", func() {
@@ -52,8 +64,9 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 				"--no-route",
 				"--no-start",
 				appName,
-				"-p", tcpDropletReceiver,
-				"-b", Config.GetGoBuildpackName(),
+				"-p", compiledApp,
+				"-b", Config.GetBinaryBuildpackName(),
+				"-s", "windows",
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-f", filepath.Join(tcpDropletReceiver, "manifest.yml"),
 				"-c", cmd,
@@ -87,8 +100,9 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 					"--no-route",
 					"--no-start",
 					secondAppName,
-					"-p", tcpDropletReceiver,
-					"-b", Config.GetGoBuildpackName(),
+					"-p", compiledApp,
+					"-s", "windows",
+					"-b", Config.GetBinaryBuildpackName(),
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-f", filepath.Join(tcpDropletReceiver, "manifest.yml"),
 					"-c", cmd,
