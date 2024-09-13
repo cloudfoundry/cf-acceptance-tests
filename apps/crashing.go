@@ -16,6 +16,32 @@ import (
 	"time"
 )
 
+func hasOneInstanceInState(appName, processPath, desiredState string) bool {
+	// Perform the CF curl command to get process stats
+	session := cf.Cf("curl", processPath).Wait()
+
+	// Parse the JSON response
+	instancesJson := struct {
+		Resources []struct {
+			Type  string `json:"type"`
+			State string `json:"state"`
+		} `json:"resources"`
+	}{}
+
+	// Read the session output and unmarshal the JSON data
+	bytes := session.Wait().Out.Contents()
+	err := json.Unmarshal(bytes, &instancesJson)
+	Expect(err).ToNot(HaveOccurred(), "Error unmarshalling process stats JSON")
+
+	// Check if any instance is in the desired state
+	for _, instance := range instancesJson.Resources {
+		if instance.State == desiredState {
+			return true
+		}
+	}
+	return false
+}
+
 var _ = AppsDescribe("Crashing", func() {
 	var appName string
 
@@ -67,46 +93,13 @@ var _ = AppsDescribe("Crashing", func() {
 
 			// Poll until at least one instance has crashed
 			Eventually(func() bool {
-				session := cf.Cf("curl", processStatsPath).Wait()
-				instancesJson := struct {
-					Resources []struct {
-						Type  string `json:"type"`
-						State string `json:"state"`
-					} `json:"resources"`
-				}{}
-
-				bytes := session.Wait().Out.Contents()
-				err := json.Unmarshal(bytes, &instancesJson)
-				Expect(err).ToNot(HaveOccurred())
-
-				for _, instance := range instancesJson.Resources {
-					if instance.State == "CRASHED" {
-						return true
-					}
-				}
-				return false
+				return hasOneInstanceInState(appName, processStatsPath, "CRASHED")
 			}, 60*time.Second, 5*time.Second).Should(BeTrue(), "At least one instance should be in the CRASHED state")
 
 			By("Verifying at least one instance is still running")
-			session := cf.Cf("curl", processStatsPath).Wait()
-			instancesJson := struct {
-				Resources []struct {
-					Type  string `json:"type"`
-					State string `json:"state"`
-				} `json:"resources"`
-			}{}
-
-			bytes := session.Wait().Out.Contents()
-			json.Unmarshal(bytes, &instancesJson)
-
-			foundRunning := false
-			for _, instance := range instancesJson.Resources {
-				if instance.State == "RUNNING" {
-					foundRunning = true
-					break
-				}
-			}
+			foundRunning := hasOneInstanceInState(appName, processStatsPath, "RUNNING")
 			Expect(foundRunning).To(BeTrue(), "At least one instance should still be in the RUNNING state")
+
 		})
 	})
 
