@@ -1,18 +1,46 @@
 package apps
 
 import (
+	"encoding/json"
+	"fmt"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
-	. "github.com/onsi/gomega/gexec"
-
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	. "github.com/onsi/gomega/gbytes"
+	. "github.com/onsi/gomega/gexec"
+	"time"
 )
+
+func hasOneInstanceInState(processPath, desiredState string) bool {
+	// Perform the CF curl command to get process stats
+	session := cf.Cf("curl", processPath).Wait()
+
+	// Parse the JSON response
+	instancesJson := struct {
+		Resources []struct {
+			Type  string `json:"type"`
+			State string `json:"state"`
+		} `json:"resources"`
+	}{}
+
+	// Read the session output and unmarshal the JSON data
+	bytes := session.Wait().Out.Contents()
+	err := json.Unmarshal(bytes, &instancesJson)
+	Expect(err).ToNot(HaveOccurred(), "Error unmarshalling process stats JSON")
+
+	// Check if any instance is in the desired state
+	for _, instance := range instancesJson.Resources {
+		if instance.State == desiredState {
+			return true
+		}
+	}
+	return false
+}
 
 var _ = AppsDescribe("Crashing", func() {
 	var appName string
@@ -42,6 +70,36 @@ var _ = AppsDescribe("Crashing", func() {
 			}).Should(MatchRegexp("app.crash"))
 
 			Eventually(cf.Cf("app", appName)).Should(Say("crashed"))
+		})
+	})
+
+	Describe("an app with three instances, two running and one crashing", func() {
+		It("keeps two instances running while another crashes", func() {
+			By("Pushing the app with three instances")
+			Expect(cf.Cf(
+				"push", appName,
+				"-b", "python_buildpack",
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().PythonCrashApp,
+				"-i", "3", // Setting three instances
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+			By("Checking that the app is up and running")
+			Eventually(cf.Cf("app", appName)).Should(Say("running"))
+
+			By("Waiting until one instance crashes")
+			appGuid := app_helpers.GetAppGuid(appName)
+			processStatsPath := fmt.Sprintf("/v3/apps/%s/processes/web/stats", appGuid)
+
+			// Poll until at least one instance has crashed
+			Eventually(func() bool {
+				return hasOneInstanceInState(processStatsPath, "CRASHED")
+			}, 60*time.Second, 5*time.Second).Should(BeTrue(), "At least one instance should be in the CRASHED state")
+
+			By("Verifying at least one instance is still running")
+			foundRunning := hasOneInstanceInState(processStatsPath, "RUNNING")
+			Expect(foundRunning).To(BeTrue(), "At least one instance should still be in the RUNNING state")
+
 		})
 	})
 
