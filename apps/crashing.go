@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-func hasOneInstanceInState(appName, processPath, desiredState string) bool {
+func hasOneInstanceInState(processPath, desiredState string) bool {
 	// Perform the CF curl command to get process stats
 	session := cf.Cf("curl", processPath).Wait()
 
@@ -93,11 +93,11 @@ var _ = AppsDescribe("Crashing", func() {
 
 			// Poll until at least one instance has crashed
 			Eventually(func() bool {
-				return hasOneInstanceInState(appName, processStatsPath, "CRASHED")
+				return hasOneInstanceInState(processStatsPath, "CRASHED")
 			}, 60*time.Second, 5*time.Second).Should(BeTrue(), "At least one instance should be in the CRASHED state")
 
 			By("Verifying at least one instance is still running")
-			foundRunning := hasOneInstanceInState(appName, processStatsPath, "RUNNING")
+			foundRunning := hasOneInstanceInState(processStatsPath, "RUNNING")
 			Expect(foundRunning).To(BeTrue(), "At least one instance should still be in the RUNNING state")
 
 		})
