@@ -30,3 +30,6 @@ DEPENDENCIES
   rackup
   sinatra
   webrick
+
+BUNDLED WITH
+   2.4.10
