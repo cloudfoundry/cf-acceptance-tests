@@ -3,7 +3,7 @@ updates:
 - package-ecosystem: "gomod"
   target-branch: "develop"
   schedule:
-    interval: "daily"
+    interval: "weekly"
   directories:
   - "/"
   - "/assets/catnip"
@@ -23,13 +23,13 @@ updates:
   directory: "/assets/pora"
   target-branch: "develop"
   schedule:
-    interval: "daily"
+    interval: "weekly"
 
 - package-ecosystem: "bundler"
   vendor: true
   target-branch: "develop"
   schedule:
-    interval: "daily"
+    interval: "weekly"
   directories:
   - "/assets/dora"
   - "/assets/go_calls_ruby"
@@ -43,10 +43,10 @@ updates:
   directory: "/assets/java-spring"
   target-branch: "develop"
   schedule:
-    interval: "daily"
+    interval: "weekly"
 
 - package-ecosystem: "gradle"
   directory: "/assets/credhub-enabled-app"
   target-branch: "develop"
   schedule:
-    interval: "daily"
+    interval: "weekly"
