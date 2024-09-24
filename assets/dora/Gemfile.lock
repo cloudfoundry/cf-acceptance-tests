@@ -50,3 +50,6 @@ DEPENDENCIES
   rspec
   sinatra
   webrick
+
+BUNDLED WITH
+   2.5.20

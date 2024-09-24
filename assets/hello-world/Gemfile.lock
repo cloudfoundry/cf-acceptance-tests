@@ -10,3 +10,6 @@ PLATFORMS
 DEPENDENCIES
   rack
   webrick
+
+BUNDLED WITH
+   2.5.20
