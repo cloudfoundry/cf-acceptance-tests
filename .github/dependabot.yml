@@ -1,146 +1,52 @@
 version: 2
 updates:
 - package-ecosystem: "gomod"
-  directory: "/"
   target-branch: "develop"
   schedule:
-    interval: "daily"
-
-- package-ecosystem: "gomod"
-  directory: "/assets/catnip"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
-
-- package-ecosystem: "gomod"
-  directory: "/assets/credhub-service-broker"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
-
-- package-ecosystem: "gomod"
-  directory: "/assets/go_calls_ruby"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
-
-- package-ecosystem: "gomod"
-  directory: "/assets/golang"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
-
-- package-ecosystem: "gomod"
-  directory: "/assets/grpc"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
-
-- package-ecosystem: "gomod"
-  directory: "/assets/http2"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
-
-- package-ecosystem: "gomod"
-  directory: "/assets/logging-route-service"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
-
-- package-ecosystem: "gomod"
-  directory: "/assets/pora"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
-
-- package-ecosystem: "gomod"
-  directory: "/assets/proxy"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
-
-- package-ecosystem: "gomod"
-  directory: "/assets/syslog-drain-listener"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
-
-- package-ecosystem: "gomod"
-  directory: "/assets/tcp-listener"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
-
-- package-ecosystem: "gomod"
-  directory: "/assets/worker"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
+    interval: "weekly"
+  directories:
+  - "/"
+  - "/assets/catnip"
+  - "/assets/credhub-service-broker"
+  - "/assets/go_calls_ruby"
+  - "/assets/golang"
+  - "/assets/grpc"
+  - "/assets/http2"
+  - "/assets/logging-route-service"
+  - "/assets/pora"
+  - "/assets/proxy"
+  - "/assets/syslog-drain-listener"
+  - "/assets/tcp-listener"
+  - "/assets/worker"
 
 - package-ecosystem: "docker"
   directory: "/assets/pora"
   target-branch: "develop"
   schedule:
-    interval: "daily"
+    interval: "weekly"
 
 - package-ecosystem: "bundler"
   vendor: true
-  directory: "/assets/dora"
   target-branch: "develop"
   schedule:
-    interval: "daily"
-
-- package-ecosystem: "bundler"
-  vendor: true
-  directory: "/assets/go_calls_ruby"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
-
-- package-ecosystem: "bundler"
-  vendor: true
-  directory: "/assets/hello-routing"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
-
-- package-ecosystem: "bundler"
-  vendor: true
-  directory: "/assets/hello-world"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
-
-- package-ecosystem: "bundler"
-  vendor: true
-  directory: "/assets/loggregator-load-generator"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
-
-- package-ecosystem: "bundler"
-  vendor: true
-  directory: "/assets/ruby_simple"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
-
-- package-ecosystem: "bundler"
-  vendor: true
-  directory: "/assets/service_broker"
-  target-branch: "develop"
-  schedule:
-    interval: "daily"
+    interval: "weekly"
+  directories:
+  - "/assets/dora"
+  - "/assets/go_calls_ruby"
+  - "/assets/hello-routing"
+  - "/assets/hello-world"
+  - "/assets/loggregator-load-generator"
+  - "/assets/ruby_simple"
+  - "/assets/service_broker"
 
 - package-ecosystem: "maven"
   directory: "/assets/java-spring"
   target-branch: "develop"
   schedule:
-    interval: "daily"
+    interval: "weekly"
 
 - package-ecosystem: "gradle"
   directory: "/assets/credhub-enabled-app"
   target-branch: "develop"
   schedule:
-    interval: "daily"
+    interval: "weekly"
