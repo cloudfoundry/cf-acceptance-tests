@@ -26,7 +26,6 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		poraAsset           = assets.NewAssets().Pora
 		routerGroupGuid     string
 		reservablePorts     string
-		nfsPort             = "2049"
 		tcpDomain           string
 	)
 
@@ -36,10 +35,7 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		appName = random_name.CATSRandomName("APP")
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
-			session := cf.Cf("enable-feature-flag", "diego_docker").Wait()
-			Expect(session).To(Exit(0), "cannot enable diego_docker feature flag")
-
-			session = cf.Cf("curl", "/routing/v1/router_groups").Wait()
+			session := cf.Cf("curl", "/routing/v1/router_groups").Wait()
 			Expect(session).To(Exit(0), "cannot retrieve current router groups")
 
 			routerGroupGuid, reservablePorts = routerGroupIdAndPorts(session.Out.Contents())
@@ -60,31 +56,6 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 				), "can not create shared tcp domain >>>"+contents)
 
 		})
-
-		By("pushing an nfs server")
-		Expect(cf.Cf("push", "nfs", "--docker-image", "cfpersi/nfs-cats", "--health-check-type", "process", "--no-start").
-			Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "cannot push the nfs server app")
-
-		session := cf.Cf("create-route", tcpDomain, "--port", nfsPort).Wait()
-		Expect(session).To(Exit(0), "cannot create a tcp route for the nfs server app")
-
-		nfsGuid := GuidForAppName("nfs")
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
-			session := cf.Cf("curl", "/v3/routes").Wait()
-			Expect(session).To(Exit(0), "cannot retrieve current routes")
-
-			routes := &Routes{}
-			err := json.Unmarshal(session.Out.Contents(), routes)
-			Expect(err).NotTo(HaveOccurred())
-
-			routeId := nfsRouteGuid(routes)
-
-			session = cf.Cf("curl", fmt.Sprintf("/v3/routes/%s/destinations", routeId), "-X", "POST", "-d", fmt.Sprintf(`{"destinations": [{"app": {"guid": "%s"}, "port": %s}]}`, nfsGuid, nfsPort)).Wait()
-			Expect(session).To(Exit(0), "cannot create a tcp route mapping to the nfs server app")
-		})
-
-		session = cf.Cf("start", "nfs").Wait(Config.CfPushTimeoutDuration())
-		Expect(session).To(Exit(0), "cannot start the nfs server app")
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 			session := cf.Cf("enable-service-access", serviceName, "-o", TestSetup.RegularUserContext().Org).Wait()
@@ -112,15 +83,15 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 
 		By("binding the service")
 		var bindSession *Session
-		if Config.GetVolumeServiceCreateConfig() != "" {
-			bindSession = cf.Cf("bind-service", appName, serviceInstanceName)
+		if Config.GetVolumeServiceBindConfig() == "" {
+			bindSession = cf.Cf("bind-service", appName, serviceInstanceName, "-c", `{"uid": "1000", "gid": "1000"}`)
 		} else {
-			bindSession = cf.Cf("bind-service", appName, serviceInstanceName, "-c", `{"uid": "2000", "gid": "2000"}`)
+			bindSession = cf.Cf("bind-service", appName, serviceInstanceName, "-c", Config.GetVolumeServiceBindConfig())
 		}
 		Expect(bindSession.Wait(TestSetup.ShortTimeout())).To(Exit(0), "cannot bind the nfs service instance to the test app")
 
 		By("starting the app")
-		session = cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
+		session := cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())
 		Eventually(session).Should(Exit())
 		if session.ExitCode() != 0 {
 			cf.Cf("logs", appName, "--recent")
@@ -133,9 +104,6 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 			payload := fmt.Sprintf(`{ "reservable_ports":"%s", "name":"default-tcp", "type": "tcp"}`, reservablePorts)
 			session := cf.Cf("curl", fmt.Sprintf("/routing/v1/router_groups/%s", routerGroupGuid), "-X", "PUT", "-d", payload).Wait()
 			Expect(session).To(Exit(0), "cannot retrieve current router groups")
-
-			session = cf.Cf("disable-feature-flag", "diego_docker").Wait()
-			Expect(session).To(Exit(0), "cannot disable diego_docker feature flag")
 		})
 	})
 
@@ -143,16 +111,6 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		Expect(helpers.CurlApp(Config, appName, "/write")).To(ContainSubstring("Hello Persistent World"))
 	})
 })
-
-func nfsRouteGuid(routes *Routes) string {
-	for _, resource := range routes.Resources {
-		if resource.Port != 0 && resource.Port == 2049 {
-			return resource.GUID
-		}
-	}
-	Fail("Unable to find a valid tcp route for port 2049")
-	return ""
-}
 
 func routerGroupIdAndPorts(routerGroupOutput []byte) (guid, ports string) {
 	routerGroups := &[]RouterGroup{}
