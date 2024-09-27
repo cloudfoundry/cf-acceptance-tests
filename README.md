@@ -186,6 +186,7 @@ include_app_syslog_tcp
 * `volume_service_name`: The name of the volume service provided by the volume service broker.
 * `volume_service_plan_name`: The name of the plan of the service provided by the volume service broker.
 * `volume_service_create_config`: The JSON configuration that is used when volume service is created.
+* `volume_service_bind_config`: The JSON configuration for the volume service binding configuration.
 
 #### Buildpack Names
 Many tests specify a buildpack when pushing an app, so that on diego the app staging process completes in less time. The default names for the buildpacks are as follows; if you have buildpacks with different names, you can override them by setting different names:
