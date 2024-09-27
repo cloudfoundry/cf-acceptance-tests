@@ -44,7 +44,7 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 			session = cf.Cf("curl", fmt.Sprintf("/routing/v1/router_groups/%s", routerGroupGuid), "-X", "PUT", "-d", payload).Wait()
 			Expect(session).To(Exit(0), "cannot update tcp router group to allow nfs traffic")
 
-			tcpDomain = fmt.Sprintf("tcp.%s", Config.GetAppsDomain())
+			tcpDomain = Config.GetTCPDomain()
 
 			session = cf.Cf("create-shared-domain", tcpDomain, "--router-group", "default-tcp").Wait()
 			Eventually(session).Should(Exit())
@@ -74,10 +74,10 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 
 		By("creating a service")
 		var createServiceSession *Session
-		if Config.GetVolumeServiceCreateConfig() != "" {
-			createServiceSession = cf.Cf("create-service", serviceName, Config.GetVolumeServicePlanName(), serviceInstanceName, "-c", Config.GetVolumeServiceCreateConfig())
-		} else {
+		if Config.GetVolumeServiceCreateConfig() == "" {
 			createServiceSession = cf.Cf("create-service", serviceName, Config.GetVolumeServicePlanName(), serviceInstanceName, "-c", fmt.Sprintf(`{"share": "%s/"}`, tcpDomain))
+		} else {
+			createServiceSession = cf.Cf("create-service", serviceName, Config.GetVolumeServicePlanName(), serviceInstanceName, "-c", Config.GetVolumeServiceCreateConfig())
 		}
 		Expect(createServiceSession.Wait(TestSetup.ShortTimeout())).To(Exit(0), "cannot create an nfs service instance")
 
