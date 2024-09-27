@@ -304,12 +304,10 @@ var _ = AppsDescribe("Application Lifecycle", func() {
 				Expect(len(ports)).NotTo(BeZero())
 				Expect(ports[0].Internal).NotTo(BeZero())
 
-				if Config.GetRequireProxiedAppTraffic() {
-					Expect(ports[0].External).To(BeNil())
+				if ports[0].External == nil {
 					Expect(envValues.Port).To(BeZero())
 					Expect(envValues.Addr).To(BeZero())
 				} else {
-					Expect(ports[0].External).NotTo(BeNil())
 					Expect(*ports[0].External).NotTo(BeZero())
 					Expect(envValues.Port).To(MatchRegexp(`[0-9]+`))
 					Expect(envValues.Addr).To(MatchRegexp(`[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+`))

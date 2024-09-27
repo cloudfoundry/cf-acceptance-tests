@@ -47,7 +47,6 @@ type testConfig struct {
 	IsolationSegmentDomain *string `json:"isolation_segment_domain,omitempty"`
 
 	UnallocatedIPForSecurityGroup *string `json:"unallocated_ip_for_security_group"`
-	RequireProxiedAppTraffic      *bool   `json:"require_proxied_app_traffic"`
 
 	UseWindowsTestTask    *bool   `json:"use_windows_test_task,omitempty"`
 	UseWindowsContextPath *bool   `json:"use_windows_context_path,omitempty"`
@@ -188,7 +187,6 @@ type nullConfig struct {
 	Stacks *[]string `json:"stacks"`
 
 	UnallocatedIPForSecurityGroup *string `json:"unallocated_ip_for_security_group"`
-	RequireProxiedAppTraffic      *bool   `json:"require_proxied_app_traffic"`
 	UseWindowsContextPath         *bool   `json:"use_windows_context_path"`
 	UseWindowsTestTask            *bool   `json:"use_windows_test_task"`
 }
@@ -345,8 +343,6 @@ var _ = Describe("Config", func() {
 		Expect(config.GetCredHubBrokerClientCredential()).To(Equal("credhub_admin_client"))
 		Expect(config.GetCredHubLocation()).To(Equal("https://credhub.service.cf.internal:8844"))
 
-		Expect(config.GetRequireProxiedAppTraffic()).To(BeFalse())
-
 		Expect(config.GetStacks()).To(ConsistOf("cflinuxfs4"))
 
 		Expect(config.GetBinaryBuildpackName()).To(Equal("binary_buildpack"))
@@ -441,7 +437,6 @@ var _ = Describe("Config", func() {
 
 			// These values are allowed to be null
 			Expect(err.Error()).NotTo(ContainSubstring("unallocated_ip_for_security_group"))
-			Expect(err.Error()).NotTo(ContainSubstring("require_proxied_app_traffic"))
 			Expect(err.Error()).NotTo(ContainSubstring("use_windows_context_path"))
 			Expect(err.Error()).NotTo(ContainSubstring("reporter_config"))
 			Expect(err.Error()).NotTo(ContainSubstring("use_windows_test_task"))
@@ -461,7 +456,6 @@ var _ = Describe("Config", func() {
 			testCfg.SleepTimeout = ptrToInt(101)
 			testCfg.TimeoutScale = ptrToFloat(1.0)
 			testCfg.UnallocatedIPForSecurityGroup = ptrToString("192.168.0.1")
-			testCfg.RequireProxiedAppTraffic = ptrToBool(true)
 
 			testCfg.IncludeAppSyslogTcp = ptrToBool(false)
 			testCfg.IncludeApps = ptrToBool(false)
@@ -524,7 +518,6 @@ var _ = Describe("Config", func() {
 			Expect(config.SleepTimeoutDuration()).To(Equal(101 * time.Second))
 			Expect(config.SleepTimeoutDuration()).To(Equal(101 * time.Second))
 			Expect(config.GetUnallocatedIPForSecurityGroup()).To(Equal("192.168.0.1"))
-			Expect(config.GetRequireProxiedAppTraffic()).To(BeTrue())
 
 			Expect(config.GetIncludeAppSyslogTcp()).To(BeFalse())
 			Expect(config.GetIncludeApps()).To(BeFalse())

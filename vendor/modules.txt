@@ -1,4 +1,4 @@
-# code.cloudfoundry.org/archiver v0.10.0
+# code.cloudfoundry.org/archiver v0.11.0
 ## explicit; go 1.22.0
 code.cloudfoundry.org/archiver/extractor/test_helper
 # code.cloudfoundry.org/go-diodes v0.0.0-20220325013804-800fb6f70e2f
@@ -271,7 +271,7 @@ google.golang.org/genproto/googleapis/api/httpbody
 # google.golang.org/genproto/googleapis/rpc v0.0.0-20240823204242-4ba0660f739c
 ## explicit; go 1.21
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.66.2
+# google.golang.org/grpc v1.67.0
 ## explicit; go 1.21
 google.golang.org/grpc
 google.golang.org/grpc/attributes

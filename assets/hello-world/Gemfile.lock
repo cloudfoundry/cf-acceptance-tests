@@ -2,7 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     rack (2.2.9)
-    webrick (1.8.1)
+    webrick (1.8.2)
 
 PLATFORMS
   ruby
@@ -10,3 +10,6 @@ PLATFORMS
 DEPENDENCIES
   rack
   webrick
+
+BUNDLED WITH
+   2.5.20

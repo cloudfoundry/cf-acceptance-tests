@@ -20,6 +20,7 @@ type Assets struct {
 	LoggregatorLoadGenerator   string
 	LoggregatorLoadGeneratorGo string
 	Python                     string
+	PythonCrashApp             string
 	Nginx                      string
 	Node                       string
 	CNBNode                    string
@@ -75,6 +76,7 @@ func NewAssets() Assets {
 		Php:                        "assets/php",
 		Proxy:                      "assets/proxy",
 		Python:                     "assets/python",
+		PythonCrashApp:             "assets/python-crash-app",
 		R:                          "assets/r",
 		RubySimple:                 "assets/ruby_simple",
 		SecurityGroupBuildpack:     "assets/security_group_buildpack.zip",
