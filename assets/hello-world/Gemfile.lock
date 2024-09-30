@@ -1,14 +1,17 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    rack (2.2.9)
+    rack (3.1.7)
+    rackup (2.1.0)
+      rack (>= 3)
+      webrick (~> 1.8)
     webrick (1.8.2)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  rack
+  rackup
   webrick
 
 BUNDLED WITH
