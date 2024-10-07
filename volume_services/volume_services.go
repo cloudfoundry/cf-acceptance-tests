@@ -75,9 +75,9 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		By("creating a service")
 		var createServiceSession *Session
 		if Config.GetVolumeServiceCreateConfig() == "" {
-			createServiceSession = cf.Cf("create-service", serviceName, Config.GetVolumeServicePlanName(), serviceInstanceName, "-c", fmt.Sprintf(`{"share": "%s/"}`, tcpDomain))
+			createServiceSession = cf.Cf("create-service", serviceName, Config.GetVolumeServicePlanName(), serviceInstanceName, "-b", Config.GetVolumeServiceBrokerName(), "-c", fmt.Sprintf(`{"share": "%s/"}`, tcpDomain))
 		} else {
-			createServiceSession = cf.Cf("create-service", serviceName, Config.GetVolumeServicePlanName(), serviceInstanceName, "-c", Config.GetVolumeServiceCreateConfig())
+			createServiceSession = cf.Cf("create-service", serviceName, Config.GetVolumeServicePlanName(), serviceInstanceName, "-b", Config.GetVolumeServiceBrokerName(), "-c", Config.GetVolumeServiceCreateConfig())
 		}
 		Expect(createServiceSession.Wait(TestSetup.ShortTimeout())).To(Exit(0), "cannot create an nfs service instance")
 

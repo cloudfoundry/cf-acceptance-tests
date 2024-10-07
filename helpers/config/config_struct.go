@@ -69,6 +69,7 @@ type config struct {
 	VolumeServicePlanName     *string `json:"volume_service_plan_name"`
 	VolumeServiceCreateConfig *string `json:"volume_service_create_config"`
 	VolumeServiceBindConfig   *string `json:"volume_service_bind_config"`
+	VolumeServiceBrokerName   *string `json:"volume_service_broker_name"`
 
 	IncludeAppSyslogTCP             *bool `json:"include_app_syslog_tcp"`
 	IncludeApps                     *bool `json:"include_apps"`
@@ -206,6 +207,7 @@ func getDefaults() config {
 	defaults.VolumeServicePlanName = ptrToString("")
 	defaults.VolumeServiceCreateConfig = ptrToString("")
 	defaults.VolumeServiceBindConfig = ptrToString("")
+	defaults.VolumeServiceBrokerName = ptrToString("")
 
 	defaults.ReporterConfig = &reporterConfig{}
 
@@ -1139,6 +1141,10 @@ func (c *config) GetVolumeServiceCreateConfig() string {
 
 func (c *config) GetVolumeServiceBindConfig() string {
 	return *c.VolumeServiceBindConfig
+}
+
+func (c *config) GetVolumeServiceBrokerName() string {
+	return *c.VolumeServiceBrokerName
 }
 
 func (c *config) GetAdminClient() string {
