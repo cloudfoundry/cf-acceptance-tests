@@ -58,7 +58,7 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		})
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
-			session := cf.Cf("enable-service-access", serviceName, "-o", TestSetup.RegularUserContext().Org).Wait()
+			session := cf.Cf("enable-service-access", serviceName, "-b", Config.GetVolumeServiceBrokerName(), "-o", TestSetup.RegularUserContext().Org).Wait()
 			Expect(session).To(Exit(0), "cannot enable nfs service access")
 		})
 
