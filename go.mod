@@ -4,7 +4,7 @@ go 1.22
 toolchain go1.22.5
 
 require (
-	code.cloudfoundry.org/archiver v0.11.0
+	code.cloudfoundry.org/archiver v0.12.0
 	code.cloudfoundry.org/go-log-cache/v3 v3.0.3
 	code.cloudfoundry.org/go-loggregator/v10 v10.0.1
 	code.cloudfoundry.org/tlsconfig v0.5.0
@@ -30,7 +30,7 @@ require (
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
-	github.com/google/pprof v0.0.0-20240910150728-a0b0bb1d4134 // indirect
+	github.com/google/pprof v0.0.0-20240929191954-255acd752d31 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0 // indirect
 	github.com/klauspost/compress v1.11.4 // indirect

@@ -1,5 +1,5 @@
-code.cloudfoundry.org/archiver v0.11.0 h1:uqxO1DZRPLQaXIujOYE5vhXCDZ0V/4s0j06P3lNIRbo=
-code.cloudfoundry.org/archiver v0.11.0/go.mod h1:6hoWxOtelkKGOwheZ33a5oS61WaH98lLJivIgmbijSc=
+code.cloudfoundry.org/archiver v0.12.0 h1:zx6DzA05jojEIbsi10iaAkti23y8oFbWiS+/c+ymhuE=
+code.cloudfoundry.org/archiver v0.12.0/go.mod h1:vjCsJGWFcxLhMusv8/qPQmFZIFeFtEz4ShWnL/LTXSs=
 code.cloudfoundry.org/go-diodes v0.0.0-20220325013804-800fb6f70e2f h1:BMwVyadJ0dYvvXTdLNtjxtX3jSCR45rv/apUxuFc6bY=
 code.cloudfoundry.org/go-diodes v0.0.0-20220325013804-800fb6f70e2f/go.mod h1:cCrRt/O3uipyXfV4hZsKe5WyRNgFTgiMHnwAQqFlNjM=
 code.cloudfoundry.org/go-log-cache/v3 v3.0.3 h1:lmmGxF13Lxxc4bV1BfQkf7i4Dz5VVFPoBHNOp2FHdZg=
@@ -64,8 +64,8 @@ github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
 github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
 github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38/go.mod h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE=
-github.com/google/pprof v0.0.0-20240910150728-a0b0bb1d4134 h1:c5FlPPgxOn7kJz3VoPLkQYQXGBS3EklQ4Zfi57uOuqQ=
-github.com/google/pprof v0.0.0-20240910150728-a0b0bb1d4134/go.mod h1:vavhavw2zAxS5dIdcRluK6cSGGPlZynqzFM8NdvU144=
+github.com/google/pprof v0.0.0-20240929191954-255acd752d31 h1:LcRdQWywSgfi5jPsYZ1r2avbbs5IQ5wtyhMBCcokyo4=
+github.com/google/pprof v0.0.0-20240929191954-255acd752d31/go.mod h1:vavhavw2zAxS5dIdcRluK6cSGGPlZynqzFM8NdvU144=
 github.com/gorilla/websocket v1.5.3 h1:saDtZ6Pbx/0u+bgYQ3q96pZgCzfhKXGPqt7kZ72aNNg=
 github.com/gorilla/websocket v1.5.3/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0 h1:asbCHRVmodnJTuQ3qamDwqVOIjwqUPTYmYuemVOx+Ys=
