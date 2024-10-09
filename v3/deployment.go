@@ -1,8 +1,6 @@
 package v3
 
 import (
-	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -12,29 +10,18 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
-	"github.com/mholt/archiver/v3"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-)
-
-var (
-	staticFileZip = "assets/staticfile.zip"
+	. "github.com/onsi/gomega/gbytes"
+	. "github.com/onsi/gomega/gexec"
 )
 
 var _ = V3Describe("deployment", func() {
 
 	var (
 		appName              string
-		appGuid              string
-		dropletGuid          string
-		spaceGuid            string
-		spaceName            string
-		token                string
-		instances            int
-		webProcess           Process
 		stopCheckingAppAlive chan<- bool
 		appCheckerIsDone     <-chan bool
 	)
@@ -43,47 +30,26 @@ var _ = V3Describe("deployment", func() {
 		if !Config.GetIncludeDeployments() {
 			Skip(skip_messages.SkipDeploymentsMessage)
 		}
-
 		appName = random_name.CATSRandomName("APP")
-		spaceName = TestSetup.RegularUserContext().Space
-		spaceGuid = GetSpaceGuidFromName(spaceName)
-		appGuid = CreateApp(appName, spaceGuid, `{"foo":"bar"}`)
-		token = GetAuthToken()
-		dropletGuid = uploadDroplet(appGuid, assets.NewAssets().DoraZip, Config.GetRubyBuildpackName(), token)
-		AssignDropletToApp(appGuid, dropletGuid)
-
-		processes := GetProcesses(appGuid, appName)
-		webProcess = GetProcessByType(processes, "web")
-
-		CreateAndMapRoute(appGuid, Config.GetAppsDomain(), appName)
-		instances = 2
-		ScaleApp(appGuid, instances)
-
-		StartApp(appGuid)
-		Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
+		Expect(cf.Cf("push", appName, "-i", "3", "-b", Config.GetRubyBuildpackName(), "-p", assets.NewAssets().DoraZip).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		By("waiting until all instances are running")
-		Eventually(func() int {
-			guid := GetProcessGuidForType(appGuid, "web")
-			Expect(guid).ToNot(BeEmpty())
-			return GetRunningInstancesStats(guid)
-		}, Config.CfPushTimeoutDuration()).Should(Equal(instances))
-
-		By("Creating a second droplet for the app")
-		makeStaticFileZip()
-		dropletGuid = uploadDroplet(appGuid, staticFileZip, Config.GetStaticFileBuildpackName(), token)
+		Eventually(func(g Gomega) {
+			session := cf.Cf("app", appName).Wait()
+			g.Expect(session).Should(Say(`instances:\s+3/3`))
+		})
+		Eventually(func() string {
+			return helpers.CurlAppRoot(Config, appName)
+		}).Should(ContainSubstring("Hi, I'm Dora"))
 	})
 
 	AfterEach(func() {
 		app_helpers.AppReport(appName)
-		DeleteApp(appGuid)
-		os.Remove("assets/staticfile.zip")
+		Expect(cf.Cf("delete", appName, "-f").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 	})
 
-	Describe("Deployment", func() {
+	Describe("Rolling Deployments", func() {
 		BeforeEach(func() {
-			By("Assigning a second droplet for the app")
-			AssignDropletToApp(appGuid, dropletGuid)
 			stopCheckingAppAlive, appCheckerIsDone = checkAppRemainsAlive(appName)
 		})
 
@@ -93,44 +59,22 @@ var _ = V3Describe("deployment", func() {
 		})
 
 		It("deploys an app with no downtime", func() {
-			Eventually(func() string {
-				return helpers.CurlAppRoot(Config, appName)
-			}).Should(ContainSubstring("Hi, I'm Dora"))
+			By("Pushing a rolling deployment")
+			Expect(cf.Cf("push", appName, "--strategy", "rolling", "--no-wait", "-b", Config.GetStaticFileBuildpackName(), "-p", assets.NewAssets().Staticfile).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-			_, originalWorkerStartEvent := GetLastAppUseEventForProcess("worker", "STARTED", "")
-			originalProcessGuid := GetProcessGuidsForType(appGuid, "web")[0]
+			Eventually(func(g Gomega) {
+				session := cf.Cf("app", appName).Wait()
+				g.Expect(session).Should(Say("Active deployment with status DEPLOYING"))
+				g.Expect(session).Should(Say(`strategy:\s+rolling`))
+				g.Expect(session).Should(Exit(0))
+			}).Should(Succeed())
 
-			deploymentGuid := CreateDeployment(appGuid)
-			Expect(deploymentGuid).ToNot(BeEmpty())
-
-			Eventually(func() int { return len(GetProcessGuidsForType(appGuid, "web")) }, Config.CfPushTimeoutDuration()).
-				Should(BeNumerically(">", 1))
-
-			intermediateProcessGuid := GetProcessGuidsForType(appGuid, "web")[1]
-
-			secondDeploymentGuid := CreateDeployment(appGuid)
-			Expect(secondDeploymentGuid).ToNot(BeEmpty())
-
-			Eventually(func() int { return GetRunningInstancesStats(originalProcessGuid) }, Config.CfPushTimeoutDuration()).
-				Should(BeNumerically("<", instances))
-
-			Eventually(func() []string {
-				return GetProcessGuidsForType(appGuid, "web")
-			}). // there should eventually be a different final process guid from the first 2
-				Should(ContainElement(Not(SatisfyAny(
-					Equal(originalProcessGuid),
-					Equal(intermediateProcessGuid)))))
-
-			guids := GetProcessGuidsForType(appGuid, "web")
-			finalProcessGuid := guids[len(guids)-1]
-
-			Eventually(func() []string {
-				return GetProcessGuidsForType(appGuid, "web")
-			}).Should(ConsistOf(finalProcessGuid))
-
-			Eventually(func() int {
-				return GetRunningInstancesStats(finalProcessGuid)
-			}).Should(Equal(instances))
+			By("Verifying the new rolled out process")
+			Eventually(func(g Gomega) {
+				session := cf.Cf("app", appName).Wait()
+				g.Expect(session).ShouldNot(Say("Active deployment"))
+				g.Expect(session).Should(Exit(0))
+			}).Should(Succeed())
 
 			counter := 0
 			Eventually(func() int {
@@ -142,43 +86,31 @@ var _ = V3Describe("deployment", func() {
 				return counter
 			}).Should(Equal(10))
 
-			Eventually(func() bool {
-				restartEventExists, _ := GetLastAppUseEventForProcess("worker", "STARTED", originalWorkerStartEvent.Guid)
-				return restartEventExists
-			}).Should(BeTrue(), "Did not find a start event indicating the 'worker' process restarted")
+			Consistently(func() string {
+				return helpers.CurlAppRoot(Config, appName)
+			}).ShouldNot(ContainSubstring("Hi, I'm Dora"))
 		})
-	})
 
-	Describe("cancelling deployments", func() {
-		It("rolls back to the previous droplet", func() {
-			By("creating a deployment with the second droplet")
-			originalProcessGuid := GetProcessGuidsForType(appGuid, "web")[0]
+		It("can be cancelled and rolls back to the previous app", func() {
+			By("Pushing a rolling deployment")
+			Expect(cf.Cf("push", appName, "--strategy", "rolling", "--no-wait", "-b", Config.GetStaticFileBuildpackName(), "-p", assets.NewAssets().Staticfile).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-			deploymentGuid := CreateDeploymentForDroplet(appGuid, dropletGuid)
-			Expect(deploymentGuid).ToNot(BeEmpty())
+			Eventually(func(g Gomega) {
+				session := cf.Cf("app", appName).Wait()
+				g.Expect(session).Should(Say("Active deployment with status DEPLOYING"))
+				g.Expect(session).Should(Say(`strategy:\s+rolling`))
+				g.Expect(session).Should(Exit(0))
+			}).Should(Succeed())
 
-			By("waiting until there is a second web process  with instances before canceling")
-			Eventually(func() int { return len(GetProcessGuidsForType(appGuid, "web")) }, Config.CfPushTimeoutDuration()).
-				Should(BeNumerically(">", 1))
+			By("Cancelling the deployment")
+			Expect(cf.Cf("cancel-deployment", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-			intermediateProcessGuid := GetProcessGuidsForType(appGuid, "web")[1]
-
-			Eventually(func() int { return GetRunningInstancesStats(intermediateProcessGuid) }).
-				Should(BeNumerically(">", 0))
-
-			Eventually(func() int { return GetRunningInstancesStats(originalProcessGuid) }).
-				Should(BeNumerically("<", instances))
-
-			By("canceling the deployment")
-			CancelDeployment(deploymentGuid)
-
-			By("waiting until there is no second web process")
-			Eventually(func() int { return len(GetProcessGuidsForType(appGuid, "web")) }).
-				Should(Equal(1))
-
-			Eventually(func() int {
-				return GetRunningInstancesStats(originalProcessGuid)
-			}).Should(Equal(instances))
+			By("Verifying the cancel succeeded and we rolled back to old process")
+			Eventually(func(g Gomega) {
+				session := cf.Cf("app", appName).Wait()
+				g.Expect(session).ShouldNot(Say("Active deployment"))
+				g.Expect(session).Should(Exit(0))
+			}).Should(Succeed())
 
 			counter := 0
 			Eventually(func() int {
@@ -189,6 +121,214 @@ var _ = V3Describe("deployment", func() {
 				}
 				return counter
 			}).Should(Equal(10))
+
+			Consistently(func() string {
+				return helpers.CurlAppRoot(Config, appName)
+			}).ShouldNot(ContainSubstring("Hello from a staticfile"))
+		})
+
+		Context("max-in-flight", func() {
+			It("deploys an app with max_in_flight with a rolling deployment", func() {
+				By("Pushing a new rolling deployment with max in flight of 2")
+				Expect(cf.Cf("push", appName, "--strategy", "rolling", "--max-in-flight", "2", "--no-wait", "-b", Config.GetStaticFileBuildpackName(), "-p", assets.NewAssets().Staticfile).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+				Eventually(func(g Gomega) {
+					session := cf.Cf("app", appName).Wait()
+					// previous deployment
+					g.Expect(session).Should(Say(`#0\s+running`))
+					g.Expect(session).Should(Say(`#1\s+running`))
+					// new deployment
+					g.Expect(session).Should(Say(`#0\s+starting`))
+					g.Expect(session).Should(Say(`#1\s+starting`))
+					g.Expect(session).ShouldNot(Say(`#2\s+starting`))
+					g.Expect(session).Should(Say("Active deployment with status DEPLOYING"))
+					g.Expect(session).Should(Say(`strategy:\s+rolling`))
+					g.Expect(session).Should(Say(`max-in-flight:\s+2`))
+				})
+
+				By("Verifying the new app has rolled out to all instances")
+				Eventually(func(g Gomega) {
+					session := cf.Cf("app", appName).Wait()
+					// complete new deployment
+					g.Expect(session).Should(Say(`#0\s+running`))
+					g.Expect(session).Should(Say(`#1\s+running`))
+					g.Expect(session).Should(Say(`#2\s+running`))
+					g.Expect(session).ShouldNot(Say("starting"))
+					g.Expect(session).ShouldNot(Say("Active deployment"))
+				})
+
+				counter := 0
+				Eventually(func() int {
+					if strings.Contains(helpers.CurlAppRoot(Config, appName), "Hello from a staticfile") {
+						counter++
+					} else {
+						counter = 0
+					}
+					return counter
+				}).Should(Equal(10))
+
+				Consistently(func() string {
+					return helpers.CurlAppRoot(Config, appName)
+				}).ShouldNot(ContainSubstring("Hi, I'm Dora"))
+			})
+		})
+	})
+
+	Describe("Canary deployments", func() {
+		BeforeEach(func() {
+			stopCheckingAppAlive, appCheckerIsDone = checkAppRemainsAlive(appName)
+		})
+
+		AfterEach(func() {
+			stopCheckingAppAlive <- true
+			<-appCheckerIsDone
+		})
+
+		It("deploys an app, transitions to pause, is continued and then deploys successfully", func() {
+			By("Pushing a canary deployment")
+			Expect(cf.Cf("push", appName, "--strategy", "canary", "--no-wait", "-b", Config.GetStaticFileBuildpackName(), "-p", assets.NewAssets().Staticfile).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+			Eventually(func(g Gomega) {
+				session := cf.Cf("app", appName).Wait()
+				g.Expect(session).Should(Say("Active deployment with status PAUSED"))
+				g.Expect(session).Should(Say("strategy:        canary"))
+			}).Should(Succeed())
+
+			By("Checking that both the canary and original apps exist simultaneously")
+			Eventually(func() string {
+				return helpers.CurlAppRoot(Config, appName)
+			}).Should(ContainSubstring("Hello from a staticfile"))
+
+			Eventually(func() string {
+				return helpers.CurlAppRoot(Config, appName)
+			}).Should(ContainSubstring("Hi, I'm Dora"))
+
+			By("Continuing the deployment")
+			Expect(cf.Cf("continue-deployment", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+			Eventually(func(g Gomega) {
+				session := cf.Cf("app", appName).Wait()
+				g.Expect(session).ShouldNot(Say("Active deployment"))
+			}).Should(Succeed())
+
+			By("Verifying the continue succeeded and we rolled out the new process")
+			counter := 0
+			Eventually(func() int {
+				if strings.Contains(helpers.CurlAppRoot(Config, appName), "Hello from a staticfile") {
+					counter++
+				} else {
+					counter = 0
+				}
+				return counter
+			}).Should(Equal(10))
+
+			Consistently(func() string {
+				return helpers.CurlAppRoot(Config, appName)
+			}).ShouldNot(ContainSubstring("Hi, I'm Dora"))
+		})
+
+		It("can be cancelled when paused", func() {
+			By("Pushing a canary deployment")
+			Expect(cf.Cf("push", appName, "--strategy", "canary", "--no-wait", "-b", Config.GetStaticFileBuildpackName(), "-p", assets.NewAssets().Staticfile).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+			Eventually(func(g Gomega) {
+				session := cf.Cf("app", appName).Wait()
+				g.Expect(session).Should(Say("Active deployment with status PAUSED"))
+				g.Expect(session).Should(Say("strategy:        canary"))
+			}).Should(Succeed())
+
+			By("Checking that both the canary and original apps exist simultaneously")
+			Eventually(func() string {
+				return helpers.CurlAppRoot(Config, appName)
+			}).Should(ContainSubstring("Hello from a staticfile"))
+
+			Eventually(func() string {
+				return helpers.CurlAppRoot(Config, appName)
+			}).Should(ContainSubstring("Hi, I'm Dora"))
+
+			By("Cancelling the deployment")
+			Expect(cf.Cf("cancel-deployment", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+			Eventually(func(g Gomega) {
+				session := cf.Cf("app", appName).Wait()
+				g.Expect(session).ShouldNot(Say("Active deployment"))
+			}).Should(Succeed())
+
+			By("Verifying the cancel succeeded and we rolled back to old process")
+			counter := 0
+			Eventually(func() int {
+				if strings.Contains(helpers.CurlAppRoot(Config, appName), "Hi, I'm Dora") {
+					counter++
+				} else {
+					counter = 0
+				}
+				return counter
+			}).Should(Equal(10))
+
+			Consistently(func() string {
+				return helpers.CurlAppRoot(Config, appName)
+			}).ShouldNot(ContainSubstring("Hello from a staticfile"))
+		})
+
+		Context("max-in-flight", func() {
+			BeforeEach(func() {
+				Expect(cf.Cf("scale", appName, "-i", "3").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			})
+
+			It("deploys an app with max_in_flight after a canary deployment has been continued", func() {
+				By("Pushing a new canary deployment with max in flight of 2")
+				Expect(cf.Cf("push", appName, "--strategy", "canary", "--max-in-flight", "2", "--no-wait", "-b", Config.GetStaticFileBuildpackName(), "-p", assets.NewAssets().Staticfile).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+				By("Waiting for the a canary deployment to be paused")
+				Eventually(func(g Gomega) {
+					session := cf.Cf("app", appName).Wait()
+					g.Expect(session).Should(Say("Active deployment with status PAUSED"))
+					g.Expect(session).Should(Say("strategy:        canary"))
+				}).Should(Succeed())
+
+				By("Continuing the deployment")
+				Expect(cf.Cf("continue-deployment", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+				Eventually(func(g Gomega) {
+					session := cf.Cf("app", appName).Wait()
+					// previous deployment
+					g.Expect(session).Should(Say(`#0\s+running`))
+					g.Expect(session).Should(Say(`#1\s+running`))
+					// new deployment
+					g.Expect(session).Should(Say(`#0\s+running`))
+					g.Expect(session).Should(Say(`#1\s+starting`))
+					g.Expect(session).Should(Say(`#2\s+starting`))
+					g.Expect(session).ShouldNot(Say(`#3\s+starting`))
+					g.Expect(session).Should(Say("Active deployment with status DEPLOYING"))
+					g.Expect(session).Should(Say(`strategy:\s+rolling`))
+					g.Expect(session).Should(Say(`max-in-flight:\s+2`))
+				})
+
+				Eventually(func(g Gomega) {
+					session := cf.Cf("app", appName).Wait()
+					// complete new deployment
+					g.Expect(session).Should(Say(`#0\s+running`))
+					g.Expect(session).Should(Say(`#1\s+running`))
+					g.Expect(session).Should(Say(`#2\s+running`))
+					g.Expect(session).ShouldNot(Say("starting"))
+					g.Expect(session).ShouldNot(Say("Active deployment"))
+				})
+
+				By("Verifying the new app has rolled out to all instances")
+				counter := 0
+				Eventually(func() int {
+					if strings.Contains(helpers.CurlAppRoot(Config, appName), "Hello from a staticfile") {
+						counter++
+					} else {
+						counter = 0
+					}
+					return counter
+				}).Should(Equal(10))
+
+				Consistently(func() string {
+					return helpers.CurlAppRoot(Config, appName)
+				}).ShouldNot(ContainSubstring("Hi, I'm Dora"))
+			})
 		})
 	})
 })
@@ -214,30 +354,4 @@ func checkAppRemainsAlive(appName string) (chan<- bool, <-chan bool) {
 	}()
 
 	return doneChannel, appCheckerIsDone
-}
-
-func makeStaticFileZip() {
-	staticFiles, err := os.ReadDir(assets.NewAssets().Staticfile)
-	Expect(err).NotTo(HaveOccurred())
-
-	var staticFileNames []string
-	for _, staticFile := range staticFiles {
-		staticFileNames = append(staticFileNames, assets.NewAssets().Staticfile+"/"+staticFile.Name())
-	}
-
-	zip := archiver.NewZip()
-	err = zip.Archive(staticFileNames, staticFileZip)
-	Expect(err).NotTo(HaveOccurred())
-}
-
-func uploadDroplet(appGuid, zipFile, buildpackName, token string) string {
-	packageGuid := CreatePackage(appGuid)
-	url := fmt.Sprintf("%s%s/v3/packages/%s/upload", Config.Protocol(), Config.GetApiEndpoint(), packageGuid)
-
-	UploadPackage(url, zipFile, token)
-	WaitForPackageToBeReady(packageGuid)
-
-	buildGuid := StageBuildpackPackage(packageGuid, buildpackName)
-	WaitForBuildToStage(buildGuid)
-	return GetDropletFromBuild(buildGuid)
 }
