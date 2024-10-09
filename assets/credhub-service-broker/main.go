@@ -49,5 +49,9 @@ func main() {
 
 	// Start the HTTP server
 	log.Printf("Server starting, listening on port %d...", cfg.Port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), router))
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%d", cfg.Port),
+		Handler: router,
+	}
+	log.Fatal(server.ListenAndServe())
 }

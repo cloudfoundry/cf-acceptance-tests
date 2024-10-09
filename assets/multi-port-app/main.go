@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -24,10 +25,14 @@ func main() {
 		go func(wg *sync.WaitGroup, port string) {
 			defer wg.Done()
 
-			log.Fatal(http.ListenAndServe(":"+port, http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-				w.Header().Set("Content-Type", "text/plain")
-				w.Write([]byte(port + "\n"))
-			})))
+			server := &http.Server{
+				Addr: fmt.Sprintf(":%s", port),
+				Handler: http.HandlerFunc(func(responseWriter http.ResponseWriter, _ *http.Request) {
+					responseWriter.Header().Set("Content-Type", "text/plain")
+					responseWriter.Write([]byte(port + "\n"))
+				}),
+			}
+			log.Fatal(server.ListenAndServe())
 		}(&wg, port)
 	}
 	println("Listening on ports ", strings.Join(ports, ", "))

@@ -26,7 +26,11 @@ func main() {
 	mux.HandleFunc("/https_proxy/", httpsProxyHandler)
 	mux.HandleFunc("/", infoHandler(systemPort))
 
-	_ = http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", systemPort), mux)
+	server := &http.Server{
+		Addr:    fmt.Sprintf("0.0.0.0:%d", systemPort),
+		Handler: mux,
+	}
+	_ = server.ListenAndServe()
 }
 
 func infoHandler(port int) http.HandlerFunc {

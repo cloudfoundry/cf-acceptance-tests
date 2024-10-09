@@ -28,7 +28,11 @@ func main() {
 	http.HandleFunc("/log/stop", logStop)
 	http.HandleFunc("/", help)
 	port := os.Getenv("PORT")
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%s", port),
+		Handler: nil,
+	}
+	log.Fatal(server.ListenAndServe())
 }
 
 func help(w http.ResponseWriter, r *http.Request) {

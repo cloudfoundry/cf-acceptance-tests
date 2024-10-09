@@ -12,17 +12,21 @@ func main() {
 	http.HandleFunc("/", hello)
 	http.HandleFunc("/env", env)
 	fmt.Println("listening...")
-	err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%s", os.Getenv("PORT")),
+		Handler: nil,
+	}
+	err := server.ListenAndServe()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func hello(res http.ResponseWriter, req *http.Request) {
+func hello(res http.ResponseWriter, _ *http.Request) {
 	fmt.Fprintln(res, "Hello from a binary")
 }
 
-func env(res http.ResponseWriter, req *http.Request) {
+func env(res http.ResponseWriter, _ *http.Request) {
 	envVariables := make(map[string]string)
 	for _, envKeyValue := range os.Environ() {
 		keyValue := strings.Split(envKeyValue, "=")
