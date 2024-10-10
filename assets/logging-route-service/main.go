@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -30,7 +31,11 @@ func main() {
 	roundTripper := NewLoggingRoundTripper(skipSslValidation)
 	proxy := NewProxy(roundTripper, skipSslValidation)
 
-	log.Fatal(http.ListenAndServe(":"+port, proxy))
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%s", port),
+		Handler: proxy,
+	}
+	log.Fatal(server.ListenAndServe())
 }
 
 func NewProxy(transport http.RoundTripper, skipSslValidation bool) http.Handler {

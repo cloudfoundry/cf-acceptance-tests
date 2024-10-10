@@ -12,6 +12,11 @@ import (
 )
 
 func main() {
-	fmt.Printf("listening on port %s...\n", os.Getenv("PORT"))
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), router.New(os.Stdout, clock.NewClock())))
+	port := os.Getenv("PORT")
+	fmt.Printf("listening on port %s...\n", port)
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%s", port),
+		Handler: router.New(os.Stdout, clock.NewClock()),
+	}
+	log.Fatal(server.ListenAndServe())
 }

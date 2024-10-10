@@ -18,5 +18,9 @@ func main() {
 	fmt.Println("ENV", os.Environ())
 	port := os.Getenv("PORT")
 	fmt.Println("Listening on port: ", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%s", port),
+		Handler: nil,
+	}
+	log.Fatal(server.ListenAndServe())
 }

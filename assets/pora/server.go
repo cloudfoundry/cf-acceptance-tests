@@ -33,9 +33,12 @@ func main() {
 	errCh := make(chan error)
 
 	for _, port := range portArray {
-		println(port)
 		go func(port string) {
-			errCh <- http.ListenAndServe(":"+port, nil)
+			server := &http.Server{
+				Addr:    fmt.Sprintf(":%s", port),
+				Handler: nil,
+			}
+			errCh <- server.ListenAndServe()
 		}(port)
 	}
 
