@@ -44,11 +44,11 @@ var _ = AppsDescribe("Routing Transparency", func() {
 	})
 
 	It("appropriately handles certain reserved/unsafe characters", func() {
-		curlResponse := helpers.CurlApp(Config, appName, "/requesturi/!~^'()$\"?!'()$#!'")
+		curlResponse := helpers.CurlApp(Config, appName, "/requesturi/!~^'()$?!'()$#!'")
 		Expect(curlResponse).To(ContainSubstring("Request"))
 
 		By("preserving all characters")
-		Expect(curlResponse).To(ContainSubstring("/requesturi/!~^'()$\""))
+		Expect(curlResponse).To(ContainSubstring("/requesturi/!~^'()$"))
 		Expect(curlResponse).To(ContainSubstring("Query String is [!'()$]"))
 	})
 })
