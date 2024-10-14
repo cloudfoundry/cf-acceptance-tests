@@ -4,7 +4,7 @@ go 1.22
 toolchain go1.22.5
 
 require (
-	code.cloudfoundry.org/archiver v0.12.0
+	code.cloudfoundry.org/archiver v0.13.0
 	code.cloudfoundry.org/go-log-cache/v3 v3.0.3
 	code.cloudfoundry.org/go-loggregator/v10 v10.0.1
 	code.cloudfoundry.org/tlsconfig v0.7.0
@@ -30,7 +30,7 @@ require (
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
-	github.com/google/pprof v0.0.0-20240929191954-255acd752d31 // indirect
+	github.com/google/pprof v0.0.0-20241001023024-f4c0cfd0cf1d // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0 // indirect
 	github.com/klauspost/compress v1.11.4 // indirect
@@ -45,10 +45,10 @@ require (
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	go.step.sm/crypto v0.54.0 // indirect
-	golang.org/x/net v0.29.0 // indirect
+	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
-	golang.org/x/tools v0.25.0 // indirect
+	golang.org/x/tools v0.26.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240903143218-8af14fe29dc1 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240903143218-8af14fe29dc1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
