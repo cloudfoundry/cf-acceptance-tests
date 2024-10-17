@@ -11,6 +11,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
 )
@@ -19,6 +20,10 @@ var _ = AppsDescribe("Routing Transparency", func() {
 	var appName string
 
 	BeforeEach(func() {
+		if !Config.GetIncludeHTTP2Routing() {
+			Skip(skip_messages.SkipHTTP2RoutingMessage)
+		}
+
 		appName = random_name.CATSRandomName("APP")
 		Expect(cf.Cf("push",
 			appName,
@@ -44,11 +49,11 @@ var _ = AppsDescribe("Routing Transparency", func() {
 	})
 
 	It("appropriately handles certain reserved/unsafe characters", func() {
-		curlResponse := helpers.CurlApp(Config, appName, "/requesturi/!~^'()$?!'()$#!'")
+		curlResponse := helpers.CurlApp(Config, appName, "/requesturi/!~^'()$\"?!'()$#!'")
 		Expect(curlResponse).To(ContainSubstring("Request"))
 
 		By("preserving all characters")
-		Expect(curlResponse).To(ContainSubstring("/requesturi/!~^'()$"))
+		Expect(curlResponse).To(ContainSubstring("/requesturi/!~^'()$\""))
 		Expect(curlResponse).To(ContainSubstring("Query String is [!'()$]"))
 	})
 })
