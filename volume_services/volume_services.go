@@ -58,7 +58,11 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 		})
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
-			session := cf.Cf("enable-service-access", serviceName, "-o", TestSetup.RegularUserContext().Org).Wait()
+			args := []string{"enable-service-access", serviceName, "-o", TestSetup.RegularUserContext().Org}
+			if Config.GetVolumeServiceBrokerName() != "" {
+				args = append(args, "-b", Config.GetVolumeServiceBrokerName())
+			}
+			session := cf.Cf(args...).Wait()
 			Expect(session).To(Exit(0), "cannot enable nfs service access")
 		})
 
@@ -74,11 +78,16 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 
 		By("creating a service")
 		var createServiceSession *Session
-		if Config.GetVolumeServiceCreateConfig() == "" {
-			createServiceSession = cf.Cf("create-service", serviceName, Config.GetVolumeServicePlanName(), serviceInstanceName, "-c", fmt.Sprintf(`{"share": "%s/"}`, tcpDomain))
-		} else {
-			createServiceSession = cf.Cf("create-service", serviceName, Config.GetVolumeServicePlanName(), serviceInstanceName, "-c", Config.GetVolumeServiceCreateConfig())
+		args := []string{"create-service", serviceName, Config.GetVolumeServicePlanName(), serviceInstanceName}
+		if Config.GetVolumeServiceBrokerName() != "" {
+			args = append(args, "-b", Config.GetVolumeServiceBrokerName())
 		}
+		if Config.GetVolumeServiceCreateConfig() == "" {
+			args = append(args, "-c", fmt.Sprintf(`{"share": "%s/"}`, tcpDomain))
+		} else {
+			args = append(args, "-c", Config.GetVolumeServiceCreateConfig())
+		}
+		createServiceSession = cf.Cf(args...)
 		Expect(createServiceSession.Wait(TestSetup.ShortTimeout())).To(Exit(0), "cannot create an nfs service instance")
 
 		By("binding the service")

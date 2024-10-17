@@ -95,6 +95,7 @@ type CatsConfig interface {
 	GetVolumeServicePlanName() string
 	GetVolumeServiceCreateConfig() string
 	GetVolumeServiceBindConfig() string
+	GetVolumeServiceBrokerName() string
 
 	GetReporterConfig() reporterConfig
 
