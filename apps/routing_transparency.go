@@ -35,11 +35,11 @@ var _ = AppsDescribe("Routing Transparency", func() {
 	})
 
 	It("appropriately handles URLs with percent-encoded characters", func() {
-		curlResponse := helpers.CurlApp(Config, appName, "/requesturi/%21%7E%5E%24%20%27%28%29?foo=bar+baz%20bing")
+		curlResponse := helpers.CurlApp(Config, appName, "/requesturi/%20%21%22%23%24%25%27%28%29%3C%3E%5E%7C%7E?foo=bar+baz%20bing")
 		Expect(curlResponse).To(ContainSubstring("Request"))
 
 		By("preserving all characters")
-		Expect(curlResponse).To(ContainSubstring("/requesturi/%21%7E%5E%24%20%27%28%29"))
+		Expect(curlResponse).To(ContainSubstring("/requesturi/%20%21%22%23%24%25%27%28%29%3C%3E%5E%7C%7E"))
 		Expect(curlResponse).To(ContainSubstring("Query String is [foo=bar+baz%20bing]"))
 	})
 
