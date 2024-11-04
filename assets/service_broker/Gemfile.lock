@@ -3,7 +3,7 @@ GEM
   specs:
     base64 (0.2.0)
     diff-lcs (1.5.1)
-    json (2.7.4)
+    json (2.7.6)
     mustermann (3.0.0)
       ruby2_keywords (~> 0.0.1)
     rack (3.1.8)
