@@ -46,7 +46,7 @@ var _ = SecurityGroupsDescribe("ASGs", func() {
 	})
 
 	It("manages whether apps can reach certain IP addresses per ASG configuration", func() {
-		proxyRequestURL := fmt.Sprintf("%s%s.%s/https_proxy/cloud-controller-ng.service.cf.internal:9024/v2/info", Config.Protocol(), appName, Config.GetAppsDomain())
+		proxyRequestURL := fmt.Sprintf("%s%s.%s/https_proxy/cloud-controller-ng.service.cf.internal:9024/", Config.Protocol(), appName, Config.GetAppsDomain())
 
 		client := &http.Client{
 			Transport: &http.Transport{
@@ -134,7 +134,7 @@ func assertAppCanConnect(client *http.Client, proxyRequestURL string) {
 		Expect(err).ToNot(HaveOccurred())
 		resp.Body.Close()
 		return string(respBytes)
-	}, 1*time.Minute, 1*time.Second).Should(MatchRegexp("api_version"))
+	}, 1*time.Minute, 1*time.Second).Should(MatchRegexp("cloud_controller_v3"))
 }
 
 func assertEventuallyAppCanConnect(client *http.Client, proxyRequestURL string) {
@@ -146,7 +146,7 @@ func assertEventuallyAppCanConnect(client *http.Client, proxyRequestURL string) 
 		Expect(err).ToNot(HaveOccurred())
 		resp.Body.Close()
 		return string(respBytes)
-	}, 3*time.Minute, 1*time.Second).Should(MatchRegexp("api_version"))
+	}, 3*time.Minute, 1*time.Second).Should(MatchRegexp("cloud_controller_v3"))
 }
 
 func bindCCSecurityGroup(orgName, spaceName string) string {

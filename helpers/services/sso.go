@@ -46,8 +46,16 @@ func SetOauthEndpoints(apiInfoEndpoint string, oAuthConfig *OAuthConfig, config 
 	apiResponse := curl.Out.Contents()
 	jsonResult := ParseJsonResponse(apiResponse)
 
-	oAuthConfig.TokenEndpoint = fmt.Sprintf("%v", jsonResult[`token_endpoint`])
-	oAuthConfig.AuthorizationEndpoint = fmt.Sprintf("%v", jsonResult[`authorization_endpoint`])
+	if _, ok := jsonResult[`token_endpoint`]; ok {
+		// v2 API (/v2/info)
+		oAuthConfig.TokenEndpoint = fmt.Sprintf("%v", jsonResult[`token_endpoint`])
+		oAuthConfig.AuthorizationEndpoint = fmt.Sprintf("%v", jsonResult[`authorization_endpoint`])
+	} else {
+		// V3 API (root endpoint)
+		links := jsonResult["links"].(map[string]interface{})
+		oAuthConfig.TokenEndpoint = fmt.Sprintf("%v", links[`uaa`].(map[string]interface{})[`href`])
+		oAuthConfig.AuthorizationEndpoint = fmt.Sprintf("%v", links[`login`].(map[string]interface{})[`href`])
+	}
 }
 
 func AuthenticateUser(authorizationEndpoint string, username string, password string) (cookie string) {
