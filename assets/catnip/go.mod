@@ -6,7 +6,7 @@ toolchain go1.22.5
 require (
 	code.cloudfoundry.org/clock v1.21.0
 	github.com/go-chi/chi/v5 v5.1.0
-	github.com/onsi/ginkgo/v2 v2.21.0
+	github.com/onsi/ginkgo/v2 v2.22.0
 	github.com/onsi/gomega v1.35.1
 )
 
