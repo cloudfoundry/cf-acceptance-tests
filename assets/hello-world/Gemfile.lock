@@ -4,7 +4,7 @@ GEM
     rack (3.1.8)
     rackup (2.2.1)
       rack (>= 3)
-    webrick (1.9.0)
+    webrick (1.9.1)
 
 PLATFORMS
   ruby
