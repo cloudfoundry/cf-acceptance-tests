@@ -109,6 +109,17 @@ func CNBDescribe(description string, callback func()) bool {
 	})
 }
 
+func FileBasedServiceBindingsBuildpackAppDescribe(description string, callback func()) bool {
+	return Describe("[file-based service bindings for buildpack app]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeFileBasedServiceBindings() {
+				Skip(skip_messages.SkipFileBasedServiceBindings)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
 func InternetDependentDescribe(description string, callback func()) bool {
 	return Describe("[internet_dependent]", func() {
 		BeforeEach(func() {

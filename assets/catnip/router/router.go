@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/file"
 	"io"
 	"net/http"
 
@@ -38,6 +39,7 @@ func New(out io.Writer, clock clock.Clock) *chi.Mux {
 	r.Get("/curl/{host}", linux.CurlHandler)
 	r.Get("/curl/{host}/", linux.CurlHandler)
 	r.Get("/curl/{host}/{port}", linux.CurlHandler)
+	r.Get("/file/{filename}", file.FileHandler)
 
 	return r
 }

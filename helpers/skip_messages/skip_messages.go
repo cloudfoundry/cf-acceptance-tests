@@ -9,6 +9,7 @@ const SkipDockerMessage = `Skipping this test because config.IncludeDocker is se
 NOTE: Ensure Docker containers are enabled on your platform before enabling this test.`
 const SkipCNBMessage = `Skipping this test because config.IncludeCNB is set to 'false'.
 NOTE: Ensure CNB lifecycle is enabled on your platform before enabling this test.`
+const SkipFileBasedServiceBindings = `Skipping this test because config.IncludeFileBasedServiceBindings is set to 'false'.`
 const SkipInternetDependentMessage = `Skipping this test because config.IncludeInternetDependent is set to 'false'.
 NOTE: Ensure that your platform has access to the internet before running this test.`
 const SkipPrivateDockerRegistryMessage = `Skipping this test because config.IncludePrivateDockerRegistry is set to 'false'.

@@ -65,6 +65,7 @@ type testConfig struct {
 	IncludeDeployments              *bool `json:"include_deployments,omitempty"`
 	IncludeDetect                   *bool `json:"include_detect,omitempty"`
 	IncludeDocker                   *bool `json:"include_docker,omitempty"`
+	IncludeFileBasedServiceBindings *bool `json:"include_file_based_service_bindings,omitempty"`
 	IncludeInternetDependent        *bool `json:"include_internet_dependent,omitempty"`
 	IncludeIsolationSegments        *bool `json:"include_isolation_segments,omitempty"`
 	IncludePrivateDockerRegistry    *bool `json:"include_private_docker_registry,omitempty"`
@@ -149,6 +150,7 @@ type nullConfig struct {
 	IncludeContainerNetworking      *bool `json:"include_container_networking"`
 	IncludeDetect                   *bool `json:"include_detect"`
 	IncludeDocker                   *bool `json:"include_docker"`
+	IncludeFileBasedServiceBindings *bool `json:"include_file_based_service_bindings"`
 	IncludeInternetDependent        *bool `json:"include_internet_dependent"`
 	IncludePrivateDockerRegistry    *bool `json:"include_private_docker_registry"`
 	IncludeRouteServices            *bool `json:"include_route_services"`
@@ -275,6 +277,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeV3()).To(BeTrue())
 
 		Expect(config.GetIncludeDocker()).To(BeFalse())
+		Expect(config.GetIncludeFileBasedServiceBindings()).To(BeFalse())
 		Expect(config.GetIncludeInternetDependent()).To(BeFalse())
 		Expect(config.GetIncludeRouteServices()).To(BeFalse())
 		Expect(config.GetIncludeContainerNetworking()).To(BeFalse())
@@ -404,6 +407,7 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_apps' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_detect' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_docker' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_file_based_service_bindings' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_internet_dependent' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_private_docker_registry' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_route_services' must not be null"))
@@ -463,6 +467,7 @@ var _ = Describe("Config", func() {
 			testCfg.IncludeDeployments = ptrToBool(true)
 			testCfg.IncludeDetect = ptrToBool(false)
 			testCfg.IncludeDocker = ptrToBool(true)
+			testCfg.IncludeFileBasedServiceBindings = ptrToBool(true)
 			testCfg.IncludeInternetDependent = ptrToBool(true)
 			testCfg.IncludeIsolationSegments = ptrToBool(true)
 			testCfg.IncludePrivateDockerRegistry = ptrToBool(true)
@@ -525,6 +530,7 @@ var _ = Describe("Config", func() {
 			Expect(config.GetIncludeDeployments()).To(BeTrue())
 			Expect(config.GetIncludeDetect()).To(BeFalse())
 			Expect(config.GetIncludeDocker()).To(BeTrue())
+			Expect(config.GetIncludeFileBasedServiceBindings()).To(BeTrue())
 			Expect(config.GetIncludeInternetDependent()).To(BeTrue())
 			Expect(config.GetIncludeIsolationSegments()).To(BeTrue())
 			Expect(config.GetIncludePrivateDockerRegistry()).To(BeTrue())

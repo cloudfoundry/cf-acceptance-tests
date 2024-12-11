@@ -78,6 +78,7 @@ type config struct {
 	IncludeDetect                   *bool `json:"include_detect"`
 	IncludeDocker                   *bool `json:"include_docker"`
 	IncludeCNB                      *bool `json:"include_cnb"`
+	IncludeFileBasedServiceBindings *bool `json:"include_file_based_service_bindings"`
 	IncludeInternetDependent        *bool `json:"include_internet_dependent"`
 	IncludeIsolationSegments        *bool `json:"include_isolation_segments"`
 	IncludePrivateDockerRegistry    *bool `json:"include_private_docker_registry"`
@@ -180,6 +181,7 @@ func getDefaults() config {
 	defaults.CredhubClientSecret = ptrToString("")
 	defaults.IncludeDocker = ptrToBool(false)
 	defaults.IncludeCNB = ptrToBool(false)
+	defaults.IncludeFileBasedServiceBindings = ptrToBool(false)
 	defaults.IncludeInternetDependent = ptrToBool(false)
 	defaults.IncludeIsolationSegments = ptrToBool(false)
 	defaults.IncludeTCPIsolationSegments = ptrToBool(false)
@@ -429,6 +431,9 @@ func validateConfig(config *config) error {
 	}
 	if config.IncludeDocker == nil {
 		errs = errors.Join(errs, fmt.Errorf("* 'include_docker' must not be null"))
+	}
+	if config.IncludeFileBasedServiceBindings == nil {
+		errs = errors.Join(errs, fmt.Errorf("* 'include_file_based_service_bindings' must not be null"))
 	}
 	if config.IncludeCNB == nil {
 		errs = errors.Join(errs, fmt.Errorf("* 'include_cnb' must not be null"))
@@ -934,6 +939,8 @@ func (c *config) GetIncludeDocker() bool {
 func (c *config) GetIncludeCNB() bool {
 	return *c.IncludeCNB
 }
+
+func (c *config) GetIncludeFileBasedServiceBindings() bool { return *c.IncludeFileBasedServiceBindings }
 
 func (c *config) GetIncludeInternetDependent() bool {
 	return *c.IncludeInternetDependent
