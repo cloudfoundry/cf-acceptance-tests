@@ -1,7 +1,6 @@
 package router
 
 import (
-	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/file"
 	"io"
 	"net/http"
 
@@ -16,6 +15,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/session"
 	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/signal"
 	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/text"
+	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/file"
 )
 
 func New(out io.Writer, clock clock.Clock) *chi.Mux {

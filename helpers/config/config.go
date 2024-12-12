@@ -74,6 +74,7 @@ type CatsConfig interface {
 	GetNamePrefix() string
 	GetNginxBuildpackName() string
 	GetNodejsBuildpackName() string
+	GetCNBGoBuildpackName() string
 	GetCNBNodejsBuildpackName() string
 	GetPrivateDockerRegistryImage() string
 	GetPrivateDockerRegistryUsername() string

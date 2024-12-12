@@ -113,7 +113,18 @@ func FileBasedServiceBindingsBuildpackAppDescribe(description string, callback f
 	return Describe("[file-based service bindings for buildpack app]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeFileBasedServiceBindings() {
-				Skip(skip_messages.SkipFileBasedServiceBindings)
+				Skip(skip_messages.SkipFileBasedServiceBindingsBuildpackApp)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
+func FileBasedServiceBindingsCloudNativeBuildpackAppDescribe(description string, callback func()) bool {
+	return Describe("[file-based service bindings for CNB app]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeFileBasedServiceBindings() || !Config.GetIncludeCNB() {
+				Skip(skip_messages.SkipFileBasedServiceBindingsCnbApp)
 			}
 		})
 		Describe(description, callback)

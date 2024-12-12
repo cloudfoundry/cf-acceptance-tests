@@ -63,6 +63,7 @@ type config struct {
 	RubyBuildpackName       *string `json:"ruby_buildpack_name"`
 	StaticFileBuildpackName *string `json:"staticfile_buildpack_name"`
 
+	CNBGoBuildpackName     *string `json:"cnb_go_buildpack_name"`
 	CNBNodejsBuildpackName *string `json:"cnb_nodejs_buildpack_name"`
 
 	VolumeServiceName         *string `json:"volume_service_name"`
@@ -165,6 +166,7 @@ func getDefaults() config {
 	defaults.RubyBuildpackName = ptrToString("ruby_buildpack")
 	defaults.StaticFileBuildpackName = ptrToString("staticfile_buildpack")
 
+	defaults.CNBGoBuildpackName = ptrToString("docker://gcr.io/paketo-buildpacks/go:latest")
 	defaults.CNBNodejsBuildpackName = ptrToString("docker://gcr.io/paketo-buildpacks/nodejs:latest")
 
 	defaults.IncludeAppSyslogTCP = ptrToBool(true)
@@ -413,6 +415,9 @@ func validateConfig(config *config) error {
 	}
 	if config.StaticFileBuildpackName == nil {
 		errs = errors.Join(errs, fmt.Errorf("* 'staticfile_buildpack_name' must not be null"))
+	}
+	if config.CNBGoBuildpackName == nil {
+		errs = errors.Join(errs, fmt.Errorf("* 'cnb_go_buildpack_name' must not be null"))
 	}
 	if config.CNBNodejsBuildpackName == nil {
 		errs = errors.Join(errs, fmt.Errorf("* 'cnb_nodejs_buildpack_name' must not be null"))
@@ -1092,6 +1097,10 @@ func (c *config) GetBinaryBuildpackName() string {
 
 func (c *config) GetStaticFileBuildpackName() string {
 	return *c.StaticFileBuildpackName
+}
+
+func (c *config) GetCNBGoBuildpackName() string {
+	return *c.CNBGoBuildpackName
 }
 
 func (c *config) GetCNBNodejsBuildpackName() string {

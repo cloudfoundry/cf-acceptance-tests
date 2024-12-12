@@ -58,7 +58,7 @@ var _ = FileBasedServiceBindingsBuildpackAppDescribe("File Based Service Binding
 			Eventually(cf.Cf("delete-service", serviceName, "-f").Wait()).Should(Exit(0))
 		})
 
-		FIt("creates the required files in the app container", func() {
+		It("creates the required files in the app container", func() {
 			tags := "['list', 'of', 'tags']"
 			creds := `{"username": "admin", "password":"pa55woRD"}`
 			Expect(cf.Cf("create-user-provided-service", serviceName, "-p", creds, "-t", tags).Wait()).To(Exit(0))
