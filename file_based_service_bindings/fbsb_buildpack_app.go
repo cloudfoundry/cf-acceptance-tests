@@ -62,7 +62,7 @@ var _ = FileBasedServiceBindingsBuildpackAppDescribe("File Based Service Binding
 			tags := "['list', 'of', 'tags']"
 			creds := `{"username": "admin", "password":"pa55woRD"}`
 			Expect(cf.Cf("create-user-provided-service", serviceName, "-p", creds, "-t", tags).Wait()).To(Exit(0))
-            serviceGuid := getServiceInstanceGuid(serviceName)
+			serviceGuid := getServiceInstanceGuid(serviceName)
 
 			Expect(cf.Cf("create-app", appName).Wait()).To(Exit(0))
 			appGuid := app_helpers.GetAppGuid(appName)
