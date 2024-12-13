@@ -115,7 +115,7 @@ const (
 )
 
 func FileBasedServiceBindingsDescribe(description string, lifecycle string, callback func()) bool {
-	return Describe(fmt.Sprintf("[file-based service bindings for %s app]", lifecycle), func() {
+	return Describe(fmt.Sprintf("[file-based service bindings]", lifecycle), func() {
 		BeforeEach(func() {
 			if lifecycle == BuildpackLifecycle && !Config.GetIncludeFileBasedServiceBindings() {
 				Skip(skip_messages.SkipFileBasedServiceBindingsBuildpackApp)
