@@ -18,8 +18,15 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = FileBasedServiceBindingsCloudNativeBuildpackAppDescribe("File Based Service Bindings", func() {
-	Describe("Enabling a file based service binding for a CNB app", func() {
+var _ = FileBasedServiceBindingsDescribe("Enabling file based service binding for a buildpack app", BuildpackLifecycle, func() {
+	callback(BuildpackLifecycle)
+})
+
+var _ = FileBasedServiceBindingsDescribe("Enabling file based service binding for a CNB app", CNBLifecycle, func() {
+	callback(CNBLifecycle)
+})
+
+var callback = func(lifecycle string) {
 		var appName, serviceName string
 
 		getEncodedFilepath := func(serviceName string, fileName string) string {
@@ -59,13 +66,18 @@ var _ = FileBasedServiceBindingsCloudNativeBuildpackAppDescribe("File Based Serv
 			Eventually(cf.Cf("delete-service", serviceName, "-f").Wait()).Should(Exit(0))
 		})
 
-		It("creates the required files in the app container", func() {
+		FIt("creates the required files in the app container", func() {
 			tags := "['list', 'of', 'tags']"
 			creds := `{"username": "admin", "password":"pa55woRD"}`
 			Expect(cf.Cf("create-user-provided-service", serviceName, "-p", creds, "-t", tags).Wait()).To(Exit(0))
 			serviceGuid := getServiceInstanceGuid(serviceName)
 
-			Expect(cf.Cf("create-app", appName, "--app-type", "cnb", "--buildpack", Config.GetGoBuildpackName()).Wait()).To(Exit(0))
+			if lifecycle == BuildpackLifecycle {
+				Expect(cf.Cf("create-app", appName).Wait()).To(Exit(0))
+			}
+			if lifecycle == CNBLifecycle {
+				Expect(cf.Cf("create-app", appName, "--app-type", "cnb", "--buildpack", Config.GetGoBuildpackName()).Wait()).To(Exit(0))
+			}
 			appGuid := app_helpers.GetAppGuid(appName)
 
 			appFeatureUrl := fmt.Sprintf("/v3/apps/%s/features/file-based-service-bindings", appGuid)
@@ -73,14 +85,22 @@ var _ = FileBasedServiceBindingsCloudNativeBuildpackAppDescribe("File Based Serv
 
 			Expect(cf.Cf("bind-service", appName, serviceName).Wait()).To(Exit(0))
 
-			Expect(cf.Cf(
-				"push",
-				appName,
-				"--lifecycle", "cnb",
-				"--buildpack", Config.GetCNBGoBuildpackName(),
-				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().CatnipSrc,
-			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			if lifecycle == BuildpackLifecycle {
+				Expect(cf.Cf(app_helpers.CatnipWithArgs(
+					appName,
+					"-m", DEFAULT_MEMORY_LIMIT)...,
+				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			}
+			if lifecycle == CNBLifecycle {
+				Expect(cf.Cf(
+					"push",
+					appName,
+					"--lifecycle", "cnb",
+					"--buildpack", Config.GetCNBGoBuildpackName(),
+					"-m", DEFAULT_MEMORY_LIMIT,
+					"-p", assets.NewAssets().CatnipSrc,
+				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			}
 
 			checkFileContent("binding-guid", getServiceBindingGuid(appGuid, serviceGuid))
 			checkFileContent("instance-guid", serviceGuid)
@@ -94,5 +114,4 @@ var _ = FileBasedServiceBindingsCloudNativeBuildpackAppDescribe("File Based Serv
 			checkFileContent("type", "user-provided")
 			checkFileContent("username", "admin")
 		})
-	})
-})
+}

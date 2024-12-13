@@ -109,21 +109,18 @@ func CNBDescribe(description string, callback func()) bool {
 	})
 }
 
-func FileBasedServiceBindingsBuildpackAppDescribe(description string, callback func()) bool {
-	return Describe("[file-based service bindings for buildpack app]", func() {
+const (
+	BuildpackLifecycle string = "buildpack"
+	CNBLifecycle              = "CNB"
+)
+
+func FileBasedServiceBindingsDescribe(description string, lifecycle string, callback func()) bool {
+	return Describe(fmt.Sprintf("[file-based service bindings for %s app]", lifecycle), func() {
 		BeforeEach(func() {
-			if !Config.GetIncludeFileBasedServiceBindings() {
+			if lifecycle == BuildpackLifecycle && !Config.GetIncludeFileBasedServiceBindings() {
 				Skip(skip_messages.SkipFileBasedServiceBindingsBuildpackApp)
 			}
-		})
-		Describe(description, callback)
-	})
-}
-
-func FileBasedServiceBindingsCloudNativeBuildpackAppDescribe(description string, callback func()) bool {
-	return Describe("[file-based service bindings for CNB app]", func() {
-		BeforeEach(func() {
-			if !Config.GetIncludeFileBasedServiceBindings() || !Config.GetIncludeCNB() {
+			if lifecycle == CNBLifecycle && (!Config.GetIncludeFileBasedServiceBindings() || !Config.GetIncludeCNB()) {
 				Skip(skip_messages.SkipFileBasedServiceBindingsCnbApp)
 			}
 		})
