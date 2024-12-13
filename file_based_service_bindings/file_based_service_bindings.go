@@ -6,16 +6,15 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/services"
+	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/generator"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
-	"strings"
-
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	"strings"
 )
 
 var _ = FileBasedServiceBindingsDescribe("Enabling file based service binding for a buildpack app", BuildpackLifecycle, func() {
@@ -67,7 +66,7 @@ var callback = func(lifecycle string) {
 	})
 
 	It("creates the required files in the app container", func() {
-		tags := "['list', 'of', 'tags']"
+		tags := "list, of, tags"
 		creds := `{"username": "admin", "password":"pa55woRD"}`
 		Expect(cf.Cf("create-user-provided-service", serviceName, "-p", creds, "-t", tags).Wait()).To(Exit(0))
 		serviceGuid := getServiceInstanceGuid(serviceName)
@@ -109,8 +108,7 @@ var callback = func(lifecycle string) {
 		checkFileContent("name", serviceName)
 		checkFileContent("password", "pa55woRD")
 		checkFileContent("provider", "user-provided")
-		// TODO doesn't work yet: someone transforms the result to ["['list'","'of'","'tags']"]
-		// checkFileContent("tags", `["list", "of", "tags"]`)
+		checkFileContent("tags", `["list","of","tags"]`)
 		checkFileContent("type", "user-provided")
 		checkFileContent("username", "admin")
 	})
