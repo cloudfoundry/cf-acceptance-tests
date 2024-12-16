@@ -32,4 +32,4 @@ jobs:
           context: ./assets/catnip/
           file: ./assets/catnip/Dockerfile
           push: true
-          tag: latest
+          tags: latest
