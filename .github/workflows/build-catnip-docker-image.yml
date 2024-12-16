@@ -37,12 +37,4 @@ jobs:
           context: ./assets/catnip/
           file: ./assets/catnip/Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-      - name: Debug output
-        shell: bash
-        run: |
-          echo "TAGS: $TAGS"
-          echo "GH_REPO_O: $GH_REPO_O"
-        env:
-          TAGS: ${{ steps.meta.outputs.tags }}
-          GH_REPO_O: ${{ github.repository_owner }}
+          tags: "ghcr.io/cloudfoundry/catnip-app:latest"
