@@ -116,6 +116,7 @@ type config struct {
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username"`
 	PrivateDockerRegistryPassword *string `json:"private_docker_registry_password"`
 	PublicDockerAppImage          *string `json:"public_docker_app_image"`
+	CatnipDockerAppImage          *string `json:"catnip_docker_app_image"`
 
 	UnallocatedIPForSecurityGroup *string `json:"unallocated_ip_for_security_group"`
 
@@ -240,6 +241,8 @@ func getDefaults() config {
 	defaults.PrivateDockerRegistryUsername = ptrToString("")
 	defaults.PrivateDockerRegistryPassword = ptrToString("")
 	defaults.PublicDockerAppImage = ptrToString("cloudfoundry/diego-docker-app:latest")
+	// TODO use "latest" tag (?)
+	defaults.CatnipDockerAppImage = ptrToString("ghcr.io/cloudfoundry/catnip-app:file-based-service-bindings-docker-app")
 
 	defaults.UnallocatedIPForSecurityGroup = ptrToString("10.0.244.255")
 
@@ -287,6 +290,12 @@ func validateConfig(config *config) error {
 	}
 
 	err = validatePublicDockerAppImage(config)
+	if err != nil {
+		errs = errors.Join(errs, err)
+
+	}
+
+	err = validateCatnipDockerAppImage(config)
 	if err != nil {
 		errs = errors.Join(errs, err)
 
@@ -598,6 +607,16 @@ func validatePublicDockerAppImage(config *config) error {
 	}
 	if config.GetPublicDockerAppImage() == "" {
 		return fmt.Errorf("* Invalid configuration: 'public_docker_app_image' must be set to a valid image source")
+	}
+	return nil
+}
+
+func validateCatnipDockerAppImage(config *config) error {
+	if config.CatnipDockerAppImage == nil {
+		return fmt.Errorf("* 'catnip_docker_app_image' must not be null")
+	}
+	if config.GetCatnipDockerAppImage() == "" {
+		return fmt.Errorf("* Invalid configuration: 'catnip_docker_app_image' must be set to a valid image source")
 	}
 	return nil
 }
@@ -1121,6 +1140,10 @@ func (c *config) GetPrivateDockerRegistryPassword() string {
 
 func (c *config) GetPublicDockerAppImage() string {
 	return *c.PublicDockerAppImage
+}
+
+func (c *config) GetCatnipDockerAppImage() string {
+	return *c.CatnipDockerAppImage
 }
 
 func (c *config) GetUnallocatedIPForSecurityGroup() string {

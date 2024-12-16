@@ -111,6 +111,7 @@ type CatsConfig interface {
 	SleepTimeoutDuration() time.Duration
 
 	GetPublicDockerAppImage() string
+	GetCatnipDockerAppImage() string
 }
 
 func NewCatsConfig(path string) (CatsConfig, error) {

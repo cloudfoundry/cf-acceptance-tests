@@ -25,6 +25,11 @@ var _ = FileBasedServiceBindingsDescribe("Enabling file based service binding fo
 	callback(CNBLifecycle)
 })
 
+var _ = FileBasedServiceBindingsDescribe("Enabling file based service binding for a Docker app", DockerLifecycle, func() {
+	callback(DockerLifecycle)
+})
+
+
 var callback = func(lifecycle string) {
 	var appName, serviceName string
 
@@ -65,7 +70,7 @@ var callback = func(lifecycle string) {
 		Eventually(cf.Cf("delete-service", serviceName, "-f").Wait()).Should(Exit(0))
 	})
 
-	It("creates the required files in the app container", func() {
+	FIt("creates the required files in the app container", func() {
 		tags := "list, of, tags"
 		creds := `{"username": "admin", "password":"pa55woRD"}`
 		Expect(cf.Cf("create-user-provided-service", serviceName, "-p", creds, "-t", tags).Wait()).To(Exit(0))
@@ -76,6 +81,9 @@ var callback = func(lifecycle string) {
 		}
 		if lifecycle == CNBLifecycle {
 			Expect(cf.Cf("create-app", appName, "--app-type", "cnb", "--buildpack", Config.GetGoBuildpackName()).Wait()).To(Exit(0))
+		}
+		if lifecycle == DockerLifecycle {
+			Expect(cf.Cf("create-app", appName, "--app-type", "docker").Wait()).To(Exit(0))
 		}
 		appGuid := app_helpers.GetAppGuid(appName)
 
@@ -98,6 +106,14 @@ var callback = func(lifecycle string) {
 				"--buildpack", Config.GetCNBGoBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().CatnipSrc,
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		}
+		if lifecycle == DockerLifecycle {
+			Expect(cf.Cf(
+				"push",
+				appName,
+				"--docker-image", Config.GetCatnipDockerAppImage(),
+				"-m", DEFAULT_MEMORY_LIMIT,
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		}
 
