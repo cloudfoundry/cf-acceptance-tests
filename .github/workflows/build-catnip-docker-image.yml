@@ -32,4 +32,4 @@ jobs:
           context: ./assets/catnip/
           file: ./assets/catnip/Dockerfile
           push: true
-          tags: catnip:latest
+          tags: ${{ github.actor }}/catnip:latest
