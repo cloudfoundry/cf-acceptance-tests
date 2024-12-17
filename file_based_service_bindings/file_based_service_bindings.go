@@ -29,7 +29,6 @@ var _ = FileBasedServiceBindingsDescribe("Enabling file based service binding fo
 	callback(DockerLifecycle)
 })
 
-
 var callback = func(lifecycle string) {
 	var appName, serviceName string
 
@@ -82,9 +81,11 @@ var callback = func(lifecycle string) {
 		if lifecycle == CNBLifecycle {
 			Expect(cf.Cf("create-app", appName, "--app-type", "cnb", "--buildpack", Config.GetGoBuildpackName()).Wait()).To(Exit(0))
 		}
+
 		if lifecycle == DockerLifecycle {
 			Expect(cf.Cf("create-app", appName, "--app-type", "docker").Wait()).To(Exit(0))
 		}
+
 		appGuid := app_helpers.GetAppGuid(appName)
 
 		appFeatureUrl := fmt.Sprintf("/v3/apps/%s/features/file-based-service-bindings", appGuid)
@@ -108,6 +109,7 @@ var callback = func(lifecycle string) {
 				"-p", assets.NewAssets().CatnipSrc,
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		}
+
 		if lifecycle == DockerLifecycle {
 			Expect(cf.Cf(
 				"push",
