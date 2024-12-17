@@ -15,6 +15,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/session"
 	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/signal"
 	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/text"
+	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/file"
 )
 
 func New(out io.Writer, clock clock.Clock) *chi.Mux {
@@ -38,6 +39,7 @@ func New(out io.Writer, clock clock.Clock) *chi.Mux {
 	r.Get("/curl/{host}", linux.CurlHandler)
 	r.Get("/curl/{host}/", linux.CurlHandler)
 	r.Get("/curl/{host}/{port}", linux.CurlHandler)
+	r.Get("/file/{filename}", file.FileHandler)
 
 	return r
 }

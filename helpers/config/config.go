@@ -13,6 +13,7 @@ type CatsConfig interface {
 	GetIncludeDetect() bool
 	GetIncludeDocker() bool
 	GetIncludeCNB() bool
+	GetIncludeFileBasedServiceBindings() bool
 	GetIncludeInternetDependent() bool
 	GetIncludePrivateDockerRegistry() bool
 	GetIncludeRouteServices() bool
@@ -73,6 +74,7 @@ type CatsConfig interface {
 	GetNamePrefix() string
 	GetNginxBuildpackName() string
 	GetNodejsBuildpackName() string
+	GetCNBGoBuildpackName() string
 	GetCNBNodejsBuildpackName() string
 	GetPrivateDockerRegistryImage() string
 	GetPrivateDockerRegistryUsername() string
