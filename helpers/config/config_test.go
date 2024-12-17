@@ -42,6 +42,7 @@ type testConfig struct {
 	PrivateDockerRegistryUsername *string `json:"private_docker_registry_username,omitempty"`
 	PrivateDockerRegistryPassword *string `json:"private_docker_registry_password,omitempty"`
 	PublicDockerAppImage          *string `json:"public_docker_app_image,omitempty"`
+	CatnipDockerAppImage          *string `json:"catnip_docker_app_image,omitempty"`
 
 	IsolationSegmentName   *string `json:"isolation_segment_name,omitempty"`
 	IsolationSegmentDomain *string `json:"isolation_segment_domain,omitempty"`
@@ -629,6 +630,32 @@ var _ = Describe("Config", func() {
 			It("returns an error", func() {
 				_, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(err).To(MatchError("* Invalid configuration: 'public_docker_app_image' must be set to a valid image source"))
+			})
+		})
+	})
+
+	Context("when including catnip_docker_app_image", func() {
+		Context("when image name is set", func() {
+			var image = "some-image"
+			BeforeEach(func() {
+				testCfg.CatnipDockerAppImage = ptrToString(image)
+			})
+
+			It("has the value in the config", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(config.GetCatnipDockerAppImage()).To(Equal(image))
+			})
+		})
+
+		Context("when image is an empty string", func() {
+			BeforeEach(func() {
+				testCfg.CatnipDockerAppImage = ptrToString("")
+			})
+
+			It("returns an error", func() {
+				_, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).To(MatchError("* Invalid configuration: 'catnip_docker_app_image' must be set to a valid image source"))
 			})
 		})
 	})

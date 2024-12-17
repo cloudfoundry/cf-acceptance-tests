@@ -111,7 +111,7 @@ include_app_syslog_tcp
 * `include_app_syslog_tcp`: Flag to include the app syslog drain over TCP test group.
 * `include_apps`: Flag to include the apps test group.
 * `readiness_health_checks_enabled`: Defaults to `true`. Set to false if you are using an environment without readiness health checks.
-* `include_cnb`: Flag to include tests related to building apps using Cloud Native Buildpacks. Diego must be deployed and the CC API diego_cnb feature flag must be enabled for these tests to pass.
+* `include_cnb`: Flag to include tests related to building apps using Cloud Native Buildpacks. Diego must be deployed and the CC API diego_cnb feature flag must be enabled for these tests to pass. The CF CLI version must be at least v8.9.0.
 * `include_container_networking`: Flag to include tests related to container networking.
 * `credhub_mode`: Valid values are `assisted` or `non-assisted`. [See below](#credhub-modes).
 * `credhub_location`: Location of CredHub instance; default is `https://credhub.service.cf.internal:8844`
@@ -359,7 +359,7 @@ Test Group Name| Description
 `cnb` | Tests our ability to use cloud native buildpacks.
 `detect` | Tests the ability of the platform to detect the correct buildpack for compiling an application if no buildpack is explicitly specified.
 `docker`| Tests our ability to run docker containers on Diego and that we handle docker metadata correctly.
-`file-based service bindings`| Tests file-based service bindings for a buildpack and a CNB app.
+`file-based service bindings`| Tests file-based service bindings for a buildpack appd, a CNB app and a Docker app.
 `internet_dependent`| Tests the feature of being able to specify a buildpack via a Github URL.  As such, this depends on your Cloud Foundry application containers having access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
 `isolation_segments` | This test group requires that Diego be deployed with a minimum of 2 cells. One of those cells must have been deployed with a `placement_tag`. If the deployment has been deployed with a routing isolation segment, `isolation_segment_domain` must also be set. For more information, please refer to the [Isolation Segments documentation](https://docs.cloudfoundry.org/adminguide/isolation-segments.html).
 `route_services` | Tests the [Route Services](https://docs.cloudfoundry.org/services/route-services.html) feature of Cloud Foundry.
