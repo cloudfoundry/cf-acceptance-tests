@@ -2,7 +2,7 @@ name: Create and publish a Docker image with the "catnip" app
 
 on:
   push:
-    branches: ['file-based-service-bindings-docker-app']
+    branches: ['develop']
 
 env:
   REGISTRY: ghcr.io

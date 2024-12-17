@@ -241,7 +241,6 @@ func getDefaults() config {
 	defaults.PrivateDockerRegistryUsername = ptrToString("")
 	defaults.PrivateDockerRegistryPassword = ptrToString("")
 	defaults.PublicDockerAppImage = ptrToString("cloudfoundry/diego-docker-app:latest")
-	// TODO use "latest" tag (?)
 	defaults.CatnipDockerAppImage = ptrToString("ghcr.io/cloudfoundry/catnip-app:latest")
 
 	defaults.UnallocatedIPForSecurityGroup = ptrToString("10.0.244.255")
