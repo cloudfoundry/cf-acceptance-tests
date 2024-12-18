@@ -3,6 +3,8 @@ name: Create and publish a Docker image with the "catnip" app
 on:
   push:
     branches: ['develop']
+    paths:
+      - 'assets/catnip/**'
 
 env:
   REGISTRY: ghcr.io
@@ -14,7 +16,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-      attestations: write
       id-token: write
     steps:
       - name: Checkout repository
