@@ -1,5 +1,5 @@
-code.cloudfoundry.org/archiver v0.22.0 h1:sBslbpgzEkeHOTI0Y03RbzlH6vctuzcRiAojpZo2dcg=
-code.cloudfoundry.org/archiver v0.22.0/go.mod h1:b3CFoOYZVVKbQhHLZKdIvOkN0pJpV/EnYJqMo5dfnag=
+code.cloudfoundry.org/archiver v0.23.0 h1:M4qlj6A8WyFzHjekEBAGdgGu0FXqi0XoK+vy5EahyBo=
+code.cloudfoundry.org/archiver v0.23.0/go.mod h1:8vkFfxvXaDs9csNju6Xf9pXGtVTQM9rQpKDkDoSF13o=
 code.cloudfoundry.org/go-diodes v0.0.0-20220325013804-800fb6f70e2f h1:BMwVyadJ0dYvvXTdLNtjxtX3jSCR45rv/apUxuFc6bY=
 code.cloudfoundry.org/go-diodes v0.0.0-20220325013804-800fb6f70e2f/go.mod h1:cCrRt/O3uipyXfV4hZsKe5WyRNgFTgiMHnwAQqFlNjM=
 code.cloudfoundry.org/go-log-cache/v3 v3.0.3 h1:lmmGxF13Lxxc4bV1BfQkf7i4Dz5VVFPoBHNOp2FHdZg=

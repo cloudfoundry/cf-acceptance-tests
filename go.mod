@@ -4,7 +4,7 @@ go 1.22
 toolchain go1.22.9
 
 require (
-	code.cloudfoundry.org/archiver v0.22.0
+	code.cloudfoundry.org/archiver v0.23.0
 	code.cloudfoundry.org/go-log-cache/v3 v3.0.3
 	code.cloudfoundry.org/go-loggregator/v10 v10.0.1
 	code.cloudfoundry.org/tlsconfig v0.12.0
