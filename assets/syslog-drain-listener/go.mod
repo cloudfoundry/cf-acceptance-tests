@@ -4,4 +4,4 @@ go 1.22
 
 toolchain go1.22.0
 
-require code.cloudfoundry.org/tlsconfig v0.12.0
+require code.cloudfoundry.org/tlsconfig v0.13.0
