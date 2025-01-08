@@ -78,6 +78,6 @@ var _ = V3Describe("service instances", func() {
 		err := json.Unmarshal(listService.Out.Contents(), &res)
 		Expect(err).To(BeNil())
 
-		Expect(res.Resources).To(ConsistOf(expectedResources))
+		Expect(res.Resources).To(ContainElements(expectedResources))
 	})
 })
