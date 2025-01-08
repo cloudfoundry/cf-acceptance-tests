@@ -144,7 +144,7 @@ class ServiceBroker < Sinatra::Base
     end
   end
 
-  use Rack::Protection::HostAuthorization, allowed_hosts:  []
+  # use Rack::Protection::HostAuthorization, permitted_hosts:  ["cfp-containers-cats-service-broker-1:9292", "localhost", "127.0.0.1"]
 
   def log(request)
     $log.info "#{request.env['REQUEST_METHOD']} #{request.env['PATH_INFO']} #{request.env['QUERY_STRING']}".color(:yellow)
