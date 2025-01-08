@@ -144,6 +144,11 @@ class ServiceBroker < Sinatra::Base
     end
   end
 
+  use Rack::Protection::HostAuthorization, allow_if: lambda { |env|
+    $log.info "HostAuthorization: allowing request from #{env['HTTP_HOST']}"
+    true
+  }
+
   def log(request)
     $log.info "#{request.env['REQUEST_METHOD']} #{request.env['PATH_INFO']} #{request.env['QUERY_STRING']}".color(:yellow)
     request.body.rewind
