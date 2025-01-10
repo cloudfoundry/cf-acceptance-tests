@@ -3,6 +3,8 @@ package apps
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
@@ -13,7 +15,6 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	. "github.com/onsi/gomega/gexec"
-	"time"
 )
 
 func hasOneInstanceInState(processPath, desiredState string) bool {
@@ -78,7 +79,7 @@ var _ = AppsDescribe("Crashing", func() {
 			By("Pushing the app with three instances")
 			Expect(cf.Cf(
 				"push", appName,
-				"-b", "python_buildpack",
+				"-b", Config.GetPythonBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().PythonCrashApp,
 				"-i", "3", // Setting three instances
