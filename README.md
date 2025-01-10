@@ -174,6 +174,7 @@ include_app_syslog_tcp
 * `r_buildpack_name` [See below](#buildpack-names)
 * `binary_buildpack_name` [See below](#buildpack-names)
 * `cnb_nodejs_buildpack_name` [See below](#buildpack-names)
+* `python_buildpack_name: python_buildpack` [See below](#buildpack-names)
 
 * `include_windows`: Flag to include the tests that run against Windows cells.
 * `use_windows_test_task`: Flag to include the tasks tests on Windows cells. Default is `false`.
@@ -203,6 +204,7 @@ Many tests specify a buildpack when pushing an app, so that on diego the app sta
 * `r_buildpack_name: r_buildpack`
 * `binary_buildpack_name: binary_buildpack`
 * `hwc_buildpack_name: hwc_buildpack`
+* `python_buildpack_name: python_buildpack`
 
 For the Cloud Native Buildpacks lifecycle, you can override them by setting different names:
 
