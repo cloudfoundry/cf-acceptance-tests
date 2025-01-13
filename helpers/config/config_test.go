@@ -98,6 +98,7 @@ type testConfig struct {
 	RBuildpackName          *string `json:"r_buildpack_name,omitempty"`
 	RubyBuildpackName       *string `json:"ruby_buildpack_name,omitempty"`
 	StaticFileBuildpackName *string `json:"staticfile_buildpack_name,omitempty"`
+	PythonBuildpackName     *string `json:"python_buildpack_name,omitempty"`
 }
 
 type nullConfig struct {
@@ -144,6 +145,7 @@ type nullConfig struct {
 	RBuildpackName          *string `json:"r_buildpack_name"`
 	RubyBuildpackName       *string `json:"ruby_buildpack_name"`
 	StaticFileBuildpackName *string `json:"staticfile_buildpack_name"`
+	PythonBuildpackName     *string `json:"python_buildpack_name"`
 
 	ReporterConfig *testReporterConfig `json:"reporter_config"`
 
@@ -358,6 +360,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetRBuildpackName()).To(Equal("r_buildpack"))
 		Expect(config.GetRubyBuildpackName()).To(Equal("ruby_buildpack"))
 		Expect(config.GetStaticFileBuildpackName()).To(Equal("staticfile_buildpack"))
+		Expect(config.GetPythonBuildpackName()).To(Equal("python_buildpack"))
 	})
 
 	Context("when all values are null", func() {
@@ -404,6 +407,7 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'nodejs_buildpack_name' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'ruby_buildpack_name' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'staticfile_buildpack_name' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'python_buildpack_name' must not be null"))
 
 			Expect(err.Error()).To(ContainSubstring("'include_apps' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_detect' must not be null"))
@@ -500,6 +504,7 @@ var _ = Describe("Config", func() {
 			testCfg.RBuildpackName = ptrToString("r_buildpack_override")
 			testCfg.RubyBuildpackName = ptrToString("ruby_buildpack_override")
 			testCfg.StaticFileBuildpackName = ptrToString("staticfile_buildpack_override")
+			testCfg.PythonBuildpackName = ptrToString("python_buildpack_override")
 
 			// These values are set so as not to trigger validation errors associated with the overrides provided above
 			testCfg.PrivateDockerRegistryImage = ptrToString("avoid-validation-errors-by-setting-dummy-value")
@@ -563,6 +568,7 @@ var _ = Describe("Config", func() {
 			Expect(config.GetRBuildpackName()).To(Equal("r_buildpack_override"))
 			Expect(config.GetRubyBuildpackName()).To(Equal("ruby_buildpack_override"))
 			Expect(config.GetStaticFileBuildpackName()).To(Equal("staticfile_buildpack_override"))
+			Expect(config.GetPythonBuildpackName()).To(Equal("python_buildpack_override"))
 		})
 	})
 

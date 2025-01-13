@@ -62,6 +62,7 @@ type config struct {
 	RBuildpackName          *string `json:"r_buildpack_name"`
 	RubyBuildpackName       *string `json:"ruby_buildpack_name"`
 	StaticFileBuildpackName *string `json:"staticfile_buildpack_name"`
+	PythonBuildpackName     *string `json:"python_buildpack_name"`
 
 	CNBGoBuildpackName     *string `json:"cnb_go_buildpack_name"`
 	CNBNodejsBuildpackName *string `json:"cnb_nodejs_buildpack_name"`
@@ -166,6 +167,7 @@ func getDefaults() config {
 	defaults.RBuildpackName = ptrToString("r_buildpack")
 	defaults.RubyBuildpackName = ptrToString("ruby_buildpack")
 	defaults.StaticFileBuildpackName = ptrToString("staticfile_buildpack")
+	defaults.PythonBuildpackName = ptrToString("python_buildpack")
 
 	defaults.CNBGoBuildpackName = ptrToString("docker://gcr.io/paketo-buildpacks/go:latest")
 	defaults.CNBNodejsBuildpackName = ptrToString("docker://gcr.io/paketo-buildpacks/nodejs:latest")
@@ -428,6 +430,9 @@ func validateConfig(config *config) error {
 	}
 	if config.CNBNodejsBuildpackName == nil {
 		errs = errors.Join(errs, fmt.Errorf("* 'cnb_nodejs_buildpack_name' must not be null"))
+	}
+	if config.PythonBuildpackName == nil {
+		errs = errors.Join(errs, fmt.Errorf("* 'python_buildpack_name' must not be null"))
 	}
 	if config.IncludeAppSyslogTCP == nil {
 		errs = errors.Join(errs, fmt.Errorf("* 'include_app_syslog_tcp' must not be null"))
@@ -1122,6 +1127,10 @@ func (c *config) GetCNBGoBuildpackName() string {
 
 func (c *config) GetCNBNodejsBuildpackName() string {
 	return *c.CNBNodejsBuildpackName
+}
+
+func (c *config) GetPythonBuildpackName() string {
+	return *c.PythonBuildpackName
 }
 
 func (c *config) GetPrivateDockerRegistryImage() string {

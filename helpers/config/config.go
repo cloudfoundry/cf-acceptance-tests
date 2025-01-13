@@ -76,6 +76,7 @@ type CatsConfig interface {
 	GetNodejsBuildpackName() string
 	GetCNBGoBuildpackName() string
 	GetCNBNodejsBuildpackName() string
+	GetPythonBuildpackName() string
 	GetPrivateDockerRegistryImage() string
 	GetPrivateDockerRegistryUsername() string
 	GetPrivateDockerRegistryPassword() string
