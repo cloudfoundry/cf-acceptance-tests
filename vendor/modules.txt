@@ -264,7 +264,7 @@ golang.org/x/text/unicode/norm
 ## explicit; go 1.22.0
 golang.org/x/tools/cover
 golang.org/x/tools/go/ast/inspector
-# google.golang.org/genproto/googleapis/api v0.0.0-20241113202542-65e8d215514f
+# google.golang.org/genproto/googleapis/api v0.0.0-20241202173237-19429a94021a
 ## explicit; go 1.21
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/api/annotations
@@ -272,7 +272,7 @@ google.golang.org/genproto/googleapis/api/httpbody
 # google.golang.org/genproto/googleapis/rpc v0.0.0-20241206012308-a4fef0638583
 ## explicit; go 1.21
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.69.2
+# google.golang.org/grpc v1.70.0
 ## explicit; go 1.22
 google.golang.org/grpc
 google.golang.org/grpc/attributes

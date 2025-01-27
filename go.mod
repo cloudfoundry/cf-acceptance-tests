@@ -15,7 +15,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.22.2
 	github.com/onsi/gomega v1.36.2
 	golang.org/x/crypto v0.32.0
-	google.golang.org/grpc v1.69.2
+	google.golang.org/grpc v1.70.0
 	google.golang.org/protobuf v1.36.3
 )
 
@@ -49,7 +49,7 @@ require (
 	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/tools v0.29.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20241113202542-65e8d215514f // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20241202173237-19429a94021a // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241206012308-a4fef0638583 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
