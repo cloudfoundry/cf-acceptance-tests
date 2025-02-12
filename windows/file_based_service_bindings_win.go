@@ -17,7 +17,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = WindowsDescribe("File Based Service Bindings", func() {
+var _ = FileBasedServiceBindingsDescribe("File Based Service Bindings", WindowsLifecycle, func() {
 	var appName, serviceName string
 
 	getEncodedFilepath := func(serviceName string, fileName string) string {
