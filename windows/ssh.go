@@ -14,6 +14,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
 	. "github.com/onsi/ginkgo/v2"
@@ -26,6 +27,10 @@ var _ = WindowsDescribe("SSH", func() {
 	var appName string
 
 	BeforeEach(func() {
+		if !Config.GetIncludeSsh() {
+			Skip(skip_messages.SkipSSHMessage)
+		}
+
 		appName = random_name.CATSRandomName("APP")
 
 		Expect(cf.Cf("push",
