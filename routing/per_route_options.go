@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"slices"
 	"sync"
-	"time"
 
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
@@ -50,18 +49,19 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 			appId = app_helpers.GetAppGuid(appName)
 			appInstanceRegex, _ := regexp.Compile("[[:alnum:]]{8}(-[[:alnum:]]{4}){4}")
 			for i := range 2 {
-				for {
+				Eventually(func() bool {
 					fmt.Fprintf(GinkgoWriter, "Waiting for app instance %d to start...\n", i)
 					curl := helpers.Curl(Config, Config.Protocol()+leastConnHost+"."+Config.GetAppsDomain()+"/id", "-H", fmt.Sprintf("X-Cf-App-Instance: %s:%d", appId, i)).Wait()
 					id := string(curl.Out.Contents())
 					if appInstanceRegex.MatchString(id) {
 						instanceIds[i] = id
 						fmt.Fprintf(GinkgoWriter, "App instance %d has started. Instance ID: %s.\n", i, id)
-						break
+						return true
+					} else {
+						fmt.Fprintf(GinkgoWriter, "App instance %d is not ready yet. Response: %s, curl error: %s.\n", i, id, string(curl.Err.Contents()))
+						return false
 					}
-					fmt.Fprintf(GinkgoWriter, "App instance %d is not ready yet. Response: %s, curl error: %s.\n", i, id, string(curl.Err.Contents()))
-					time.Sleep(1 * time.Second)
-				}
+				}).Should(BeTrue())
 			}
 		})
 
@@ -79,16 +79,14 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 					go func() {
 						defer wg.Done()
 						defer GinkgoRecover()
-						Expect(helpers.Curl(Config, fmt.Sprintf("%s/delay/20", doraUrl), "-H", fmt.Sprintf("X-Cf-App-Instance: %s:0", appId)).Wait(25 * time.Second)).To(Exit(0))
+						helpers.Curl(Config, fmt.Sprintf("%s/delay/20", doraUrl), "-H", fmt.Sprintf("X-Cf-App-Instance: %s:0", appId))
 					}()
-					time.Sleep(10 * time.Millisecond)
 				}
 
 				reqCount := [2]int{0, 0}
 				for i := 0; i < 20; i++ {
 					id := helpers.Curl(Config, fmt.Sprintf("%s/id", doraUrl)).Wait().Out.Contents()
 					reqCount[slices.Index(instanceIds[:], string(id))] += 1
-					time.Sleep(10 * time.Millisecond)
 				}
 
 				// allow for some wiggle-room
@@ -107,16 +105,14 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 					go func() {
 						defer wg.Done()
 						defer GinkgoRecover()
-						Expect(helpers.Curl(Config, fmt.Sprintf("%s/delay/20", doraUrl), "-H", fmt.Sprintf("X-Cf-App-Instance: %s:0", appId)).Wait(25 * time.Second)).To(Exit(0))
+						helpers.Curl(Config, fmt.Sprintf("%s/delay/20", doraUrl), "-H", fmt.Sprintf("X-Cf-App-Instance: %s:0", appId))
 					}()
-					time.Sleep(10 * time.Millisecond)
 				}
 
 				reqCount := [2]int{0, 0}
 				for i := 0; i < 20; i++ {
 					id := helpers.Curl(Config, fmt.Sprintf("%s/id", doraUrl)).Wait().Out.Contents()
 					reqCount[slices.Index(instanceIds[:], string(id))] += 1
-					time.Sleep(10 * time.Millisecond)
 				}
 
 				// allow for some wiggle-room
