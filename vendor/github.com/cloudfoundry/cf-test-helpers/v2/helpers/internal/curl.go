@@ -11,10 +11,11 @@ func Curl(cmdStarter internal.Starter, skipSsl bool, args ...string) *gexec.Sess
 }
 
 func CurlWithCustomReporter(cmdStarter internal.Starter, reporter internal.Reporter, skipSsl bool, args ...string) *gexec.Session {
-	curlArgs := append([]string{"-s"}, args...)
-	curlArgs = append([]string{"-H", "Expect:"}, curlArgs...)
+	curlArgs := append([]string{"--silent"}, args...)
+	curlArgs = append([]string{"--show-error"}, curlArgs...)
+	curlArgs = append([]string{"--header", "Expect:"}, curlArgs...)
 	if skipSsl {
-		curlArgs = append([]string{"-k"}, curlArgs...)
+		curlArgs = append([]string{"--insecure"}, curlArgs...)
 	}
 
 	request, err := cmdStarter.Start(reporter, "curl", curlArgs...)
