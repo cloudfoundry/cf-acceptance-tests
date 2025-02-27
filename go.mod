@@ -6,7 +6,7 @@ toolchain go1.23.6
 require (
 	code.cloudfoundry.org/archiver v0.26.0
 	code.cloudfoundry.org/go-log-cache/v3 v3.0.3
-	code.cloudfoundry.org/go-loggregator/v10 v10.0.1
+	code.cloudfoundry.org/go-loggregator/v10 v10.1.0
 	code.cloudfoundry.org/tlsconfig v0.19.0
 	github.com/cloudfoundry/cf-test-helpers/v2 v2.11.0
 	github.com/cloudfoundry/noaa/v2 v2.5.0

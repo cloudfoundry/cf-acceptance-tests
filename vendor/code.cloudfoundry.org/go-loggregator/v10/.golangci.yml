@@ -8,6 +8,10 @@ linters:
     - gocyclo
     # Inspects source code for security problems.
     - gosec
+linters-settings:
+  gosec:
+    excludes:
+      - G115
 issues:
   # Disable max issues per linter.
   max-issues-per-linter: 0
