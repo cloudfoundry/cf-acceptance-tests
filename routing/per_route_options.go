@@ -81,7 +81,7 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 					go func() {
 						defer wg.Done()
 						defer GinkgoRecover()
-						helpers.Curl(Config, fmt.Sprintf("%s/delay/20", doraUrl), "-H", fmt.Sprintf("X-Cf-App-Instance: %s:0", appId))
+						helpers.Curl(Config, fmt.Sprintf("%s/delay/10", doraUrl), "-H", fmt.Sprintf("X-Cf-App-Instance: %s:0", appId))
 					}()
 				}
 
@@ -107,7 +107,7 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 					go func() {
 						defer wg.Done()
 						defer GinkgoRecover()
-						helpers.Curl(Config, fmt.Sprintf("%s/delay/20", doraUrl), "-H", fmt.Sprintf("X-Cf-App-Instance: %s:0", appId))
+						helpers.Curl(Config, fmt.Sprintf("%s/delay/10", doraUrl), "-H", fmt.Sprintf("X-Cf-App-Instance: %s:0", appId))
 					}()
 				}
 
