@@ -44,7 +44,7 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 				"--var", fmt.Sprintf("name=%s", appName),
 				"--var", fmt.Sprintf("leastconnhost=%s", leastConnHost),
 				"--var", fmt.Sprintf("roundrobinhost=%s", roundRobinHost),
-				"-f", filepath.Join(asset.Dora, "man_route_opt_lb.yml"),
+				"-f", filepath.Join(asset.Dora, "route_options_manifest.yml"),
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			appId = app_helpers.GetAppGuid(appName)
 			appInstanceRegex, _ := regexp.Compile("[[:alnum:]]{8}(-[[:alnum:]]{4}){4}")
