@@ -1,6 +1,6 @@
 ---
 applications:
-- name: ((name))
+- name: dora
   routes:
   - route: ((roundrobinhost)).((domain))
     options:

@@ -41,7 +41,6 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", asset.Dora,
 				"--var", fmt.Sprintf("domain=%s", Config.GetAppsDomain()),
-				"--var", fmt.Sprintf("name=%s", appName),
 				"--var", fmt.Sprintf("leastconnhost=%s", leastConnHost),
 				"--var", fmt.Sprintf("roundrobinhost=%s", roundRobinHost),
 				"-f", filepath.Join(asset.Dora, "route_options_manifest.yml"),
