@@ -1,17 +1,14 @@
 package windows
 
 import (
-	"encoding/json"
 	"fmt"
-	"strings"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
-	services_test "github.com/cloudfoundry/cf-acceptance-tests/services"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/generator"
-	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
@@ -19,31 +16,6 @@ import (
 
 var _ = FileBasedServiceBindingsDescribe("File Based Service Bindings", WindowsLifecycle, func() {
 	var appName, serviceName string
-
-	getEncodedFilepath := func(serviceName string, fileName string) string {
-		path := fmt.Sprintf("/etc/cf-service-bindings/%s/%s", serviceName, fileName)
-		return strings.Replace(path, "/", "%2F", -1)
-	}
-
-	checkFileContent := func(fileName string, content string) {
-		curlResponse := helpers.CurlApp(Config, appName, "/file/"+getEncodedFilepath(serviceName, fileName), "-L")
-		Expect(curlResponse).Should(ContainSubstring(content))
-	}
-
-	getServiceInstanceGuid := func(serviceName string) string {
-		serviceGuidCmd := cf.Cf("service", serviceName, "--guid")
-		Eventually(serviceGuidCmd).Should(Exit(0))
-		return strings.TrimSpace(string(serviceGuidCmd.Out.Contents()))
-	}
-
-	getServiceBindingGuid := func(appGuid string, instanceGuid string) string {
-		jsonResults := services_test.Response{}
-		bindingCurl := cf.Cf("curl", fmt.Sprintf("/v3/service_credential_bindings?app_guids=%s&service_instance_guids=%s", appGuid, instanceGuid)).Wait()
-		Expect(bindingCurl).To(Exit(0))
-		Expect(json.Unmarshal(bindingCurl.Out.Contents(), &jsonResults)).NotTo(HaveOccurred())
-		Expect(len(jsonResults.Resources)).To(BeNumerically(">", 0), "Expected to find at least one service binding.")
-		return jsonResults.Resources[0].GUID
-	}
 
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
@@ -61,7 +33,7 @@ var _ = FileBasedServiceBindingsDescribe("File Based Service Bindings", WindowsL
 		tags := "list, of, tags"
 		creds := `{"username": "admin", "password":"pa55woRD"}`
 		Expect(cf.Cf("create-user-provided-service", serviceName, "-p", creds, "-t", tags).Wait()).To(Exit(0))
-		serviceGuid := getServiceInstanceGuid(serviceName)
+		serviceGuid := services.GetServiceInstanceGuid(serviceName)
 
 		Expect(cf.Cf("create-app", appName).Wait()).To(Exit(0))
 		appGuid := app_helpers.GetAppGuid(appName)
@@ -75,15 +47,6 @@ var _ = FileBasedServiceBindingsDescribe("File Based Service Bindings", WindowsL
 			"-m", DEFAULT_MEMORY_LIMIT)...,
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-		checkFileContent("binding-guid", getServiceBindingGuid(appGuid, serviceGuid))
-		checkFileContent("instance-guid", serviceGuid)
-		checkFileContent("instance-name", serviceName)
-		checkFileContent("label", "user-provided")
-		checkFileContent("name", serviceName)
-		checkFileContent("password", "pa55woRD")
-		checkFileContent("provider", "user-provided")
-		checkFileContent("tags", `["list","of","tags"]`)
-		checkFileContent("type", "user-provided")
-		checkFileContent("username", "admin")
+		services.ValidateFileBasedServicebinding(appName, serviceName, appGuid, serviceGuid)
 	})
 })
