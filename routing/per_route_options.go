@@ -20,6 +20,10 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
+var (
+	appInstanceRegex = regexp.MustCompile("[[:alnum:]]{8}(-[[:alnum:]]{4}){4}")
+)
+
 var _ = RoutingDescribe("Per-Route Options", func() {
 	var (
 		appName        string
@@ -46,7 +50,6 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 				"-f", filepath.Join(asset.Dora, "route_options_manifest.yml"),
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 			appId = app_helpers.GetAppGuid(appName)
-			appInstanceRegex, _ := regexp.Compile("[[:alnum:]]{8}(-[[:alnum:]]{4}){4}")
 			for i := range 2 {
 				Eventually(func() bool {
 					fmt.Fprintf(GinkgoWriter, "Waiting for app instance %d to start...\n", i)
