@@ -2,10 +2,11 @@ package file
 
 import (
 	"fmt"
-	"github.com/go-chi/chi/v5"
 	"net/http"
 	"net/url"
 	"os"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func FileHandler(res http.ResponseWriter, req *http.Request) {
