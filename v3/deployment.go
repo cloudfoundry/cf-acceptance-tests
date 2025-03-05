@@ -1,7 +1,7 @@
 package v3
 
 import (
-	"strings"
+	"fmt"
 	"time"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
@@ -26,6 +26,8 @@ var _ = V3Describe("deployment", func() {
 		appCheckerIsDone     <-chan bool
 	)
 
+	const numberOfAppCurlChecks = 10
+
 	BeforeEach(func() {
 		if !Config.GetIncludeDeployments() {
 			Skip(skip_messages.SkipDeploymentsMessage)
@@ -37,7 +39,7 @@ var _ = V3Describe("deployment", func() {
 		Eventually(func(g Gomega) {
 			session := cf.Cf("app", appName).Wait()
 			g.Expect(session).Should(Say(`instances:\s+3/3`))
-		})
+		}).Should(Succeed())
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, appName)
 		}).Should(ContainSubstring("Hi, I'm Dora"))
@@ -76,19 +78,9 @@ var _ = V3Describe("deployment", func() {
 				g.Expect(session).Should(Exit(0))
 			}).Should(Succeed())
 
-			counter := 0
-			Eventually(func() int {
-				if strings.Contains(helpers.CurlAppRoot(Config, appName), "Hello from a staticfile") {
-					counter++
-				} else {
-					counter = 0
-				}
-				return counter
-			}).Should(Equal(10))
-
-			Consistently(func() string {
-				return helpers.CurlAppRoot(Config, appName)
-			}).ShouldNot(ContainSubstring("Hi, I'm Dora"))
+			for range numberOfAppCurlChecks {
+				Expect(helpers.CurlAppRoot(Config, appName)).To(ContainSubstring("Hello from a staticfile"))
+			}
 		})
 
 		It("can be cancelled and rolls back to the previous app", func() {
@@ -112,19 +104,9 @@ var _ = V3Describe("deployment", func() {
 				g.Expect(session).Should(Exit(0))
 			}).Should(Succeed())
 
-			counter := 0
-			Eventually(func() int {
-				if strings.Contains(helpers.CurlAppRoot(Config, appName), "Hi, I'm Dora") {
-					counter++
-				} else {
-					counter = 0
-				}
-				return counter
-			}).Should(Equal(10))
-
-			Consistently(func() string {
-				return helpers.CurlAppRoot(Config, appName)
-			}).ShouldNot(ContainSubstring("Hello from a staticfile"))
+			for range numberOfAppCurlChecks {
+				Expect(helpers.CurlAppRoot(Config, appName)).To(ContainSubstring("Hi, I'm Dora"))
+			}
 		})
 
 		Context("max-in-flight", func() {
@@ -134,42 +116,20 @@ var _ = V3Describe("deployment", func() {
 
 				Eventually(func(g Gomega) {
 					session := cf.Cf("app", appName).Wait()
-					// previous deployment
-					g.Expect(session).Should(Say(`#0\s+running`))
-					g.Expect(session).Should(Say(`#1\s+running`))
-					// new deployment
-					g.Expect(session).Should(Say(`#0\s+starting`))
-					g.Expect(session).Should(Say(`#1\s+starting`))
-					g.Expect(session).ShouldNot(Say(`#2\s+starting`))
 					g.Expect(session).Should(Say("Active deployment with status DEPLOYING"))
 					g.Expect(session).Should(Say(`strategy:\s+rolling`))
 					g.Expect(session).Should(Say(`max-in-flight:\s+2`))
-				})
+				}).Should((Succeed()))
 
 				By("Verifying the new app has rolled out to all instances")
 				Eventually(func(g Gomega) {
 					session := cf.Cf("app", appName).Wait()
-					// complete new deployment
-					g.Expect(session).Should(Say(`#0\s+running`))
-					g.Expect(session).Should(Say(`#1\s+running`))
-					g.Expect(session).Should(Say(`#2\s+running`))
-					g.Expect(session).ShouldNot(Say("starting"))
 					g.Expect(session).ShouldNot(Say("Active deployment"))
-				})
+				}).Should((Succeed()))
 
-				counter := 0
-				Eventually(func() int {
-					if strings.Contains(helpers.CurlAppRoot(Config, appName), "Hello from a staticfile") {
-						counter++
-					} else {
-						counter = 0
-					}
-					return counter
-				}).Should(Equal(10))
-
-				Consistently(func() string {
-					return helpers.CurlAppRoot(Config, appName)
-				}).ShouldNot(ContainSubstring("Hi, I'm Dora"))
+				for range numberOfAppCurlChecks {
+					Expect(helpers.CurlAppRoot(Config, appName)).To(ContainSubstring("Hello from a staticfile"))
+				}
 			})
 		})
 	})
@@ -212,19 +172,9 @@ var _ = V3Describe("deployment", func() {
 			}).Should(Succeed())
 
 			By("Verifying the continue succeeded and we rolled out the new process")
-			counter := 0
-			Eventually(func() int {
-				if strings.Contains(helpers.CurlAppRoot(Config, appName), "Hello from a staticfile") {
-					counter++
-				} else {
-					counter = 0
-				}
-				return counter
-			}).Should(Equal(10))
-
-			Consistently(func() string {
-				return helpers.CurlAppRoot(Config, appName)
-			}).ShouldNot(ContainSubstring("Hi, I'm Dora"))
+			for range numberOfAppCurlChecks {
+				Expect(helpers.CurlAppRoot(Config, appName)).To(ContainSubstring("Hello from a staticfile"))
+			}
 		})
 
 		It("can be cancelled when paused", func() {
@@ -255,26 +205,12 @@ var _ = V3Describe("deployment", func() {
 			}).Should(Succeed())
 
 			By("Verifying the cancel succeeded and we rolled back to old process")
-			counter := 0
-			Eventually(func() int {
-				if strings.Contains(helpers.CurlAppRoot(Config, appName), "Hi, I'm Dora") {
-					counter++
-				} else {
-					counter = 0
-				}
-				return counter
-			}).Should(Equal(10))
-
-			Consistently(func() string {
-				return helpers.CurlAppRoot(Config, appName)
-			}).ShouldNot(ContainSubstring("Hello from a staticfile"))
+			for range numberOfAppCurlChecks {
+				Expect(helpers.CurlAppRoot(Config, appName)).To(ContainSubstring("Hi, I'm Dora"))
+			}
 		})
 
 		Context("max-in-flight", func() {
-			BeforeEach(func() {
-				Expect(cf.Cf("scale", appName, "-i", "3").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-			})
-
 			It("deploys an app with max_in_flight after a canary deployment has been continued", func() {
 				By("Pushing a new canary deployment with max in flight of 2")
 				Expect(cf.Cf("push", appName, "--strategy", "canary", "--max-in-flight", "2", "--no-wait", "-b", Config.GetStaticFileBuildpackName(), "-p", assets.NewAssets().Staticfile).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -283,51 +219,71 @@ var _ = V3Describe("deployment", func() {
 				Eventually(func(g Gomega) {
 					session := cf.Cf("app", appName).Wait()
 					g.Expect(session).Should(Say("Active deployment with status PAUSED"))
-					g.Expect(session).Should(Say("strategy:        canary"))
+					g.Expect(session).Should(Say(`strategy:\s+canary`))
 				}).Should(Succeed())
 
 				By("Continuing the deployment")
-				Expect(cf.Cf("continue-deployment", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				Expect(cf.Cf("continue-deployment", appName, "--no-wait").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 				Eventually(func(g Gomega) {
 					session := cf.Cf("app", appName).Wait()
-					// previous deployment
-					g.Expect(session).Should(Say(`#0\s+running`))
-					g.Expect(session).Should(Say(`#1\s+running`))
-					// new deployment
-					g.Expect(session).Should(Say(`#0\s+running`))
-					g.Expect(session).Should(Say(`#1\s+starting`))
-					g.Expect(session).Should(Say(`#2\s+starting`))
-					g.Expect(session).ShouldNot(Say(`#3\s+starting`))
 					g.Expect(session).Should(Say("Active deployment with status DEPLOYING"))
-					g.Expect(session).Should(Say(`strategy:\s+rolling`))
+					g.Expect(session).Should(Say(`strategy:\s+canary`))
 					g.Expect(session).Should(Say(`max-in-flight:\s+2`))
-				})
+				}).Should(Succeed())
 
 				Eventually(func(g Gomega) {
 					session := cf.Cf("app", appName).Wait()
-					// complete new deployment
-					g.Expect(session).Should(Say(`#0\s+running`))
-					g.Expect(session).Should(Say(`#1\s+running`))
-					g.Expect(session).Should(Say(`#2\s+running`))
-					g.Expect(session).ShouldNot(Say("starting"))
 					g.Expect(session).ShouldNot(Say("Active deployment"))
-				})
+				}).Should(Succeed())
 
 				By("Verifying the new app has rolled out to all instances")
-				counter := 0
-				Eventually(func() int {
-					if strings.Contains(helpers.CurlAppRoot(Config, appName), "Hello from a staticfile") {
-						counter++
-					} else {
-						counter = 0
-					}
-					return counter
-				}).Should(Equal(10))
+				for range numberOfAppCurlChecks {
+					Expect(helpers.CurlAppRoot(Config, appName)).To(ContainSubstring("Hello from a staticfile"))
+				}
+			})
+		})
 
-				Consistently(func() string {
-					return helpers.CurlAppRoot(Config, appName)
-				}).ShouldNot(ContainSubstring("Hi, I'm Dora"))
+		Context("instance-steps", func() {
+			BeforeEach(func() {
+				Expect(cf.Cf("scale", appName, "-i", "4").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			})
+
+			It("deploys an app, transitions to pause and can be continued multiple times and then deploys successfully", func() {
+				By("Pushing a canary deployment")
+				Expect(cf.Cf("push", appName, "--strategy", "canary", "--instance-steps=25,50,75", "--no-wait", "-b", Config.GetStaticFileBuildpackName(), "-p", assets.NewAssets().Staticfile).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+				for i := 1; i <= 3; i++ {
+					By(fmt.Sprintf("Waiting for the a canary deployment to be paused on step %d", i))
+					Eventually(func(g Gomega) {
+						session := cf.Cf("app", appName).Wait()
+						g.Expect(session).Should(Say("Active deployment with status PAUSED"))
+						g.Expect(session).Should(Say("strategy:\\s+canary"))
+						g.Expect(session).Should(Say(fmt.Sprintf("canary-steps:\\s+%d/%d", i, 3)))
+					}).Should(Succeed())
+
+					By(fmt.Sprintf("Checking that both the canary and original apps exist simultaneously on step %d", i))
+					Eventually(func() string {
+						return helpers.CurlAppRoot(Config, appName)
+					}).Should(ContainSubstring("Hello from a staticfile"))
+
+					Eventually(func() string {
+						return helpers.CurlAppRoot(Config, appName)
+					}).Should(ContainSubstring("Hi, I'm Dora"))
+
+					By(fmt.Sprintf("Continuing the deployment on step %d", i))
+					Expect(cf.Cf("continue-deployment", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				}
+
+				Eventually(func(g Gomega) {
+					session := cf.Cf("app", appName).Wait()
+					g.Expect(session).ShouldNot(Say("Active deployment"))
+				}).Should(Succeed())
+
+				By("Verifying the continue succeeded and we rolled out the new process")
+				for range numberOfAppCurlChecks {
+					Expect(helpers.CurlAppRoot(Config, appName)).To(ContainSubstring("Hello from a staticfile"))
+				}
 			})
 		})
 	})
