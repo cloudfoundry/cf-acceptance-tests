@@ -113,6 +113,7 @@ const (
 	BuildpackLifecycle string = "buildpack"
 	CNBLifecycle              = "CNB"
 	DockerLifecycle           = "Docker"
+	WindowsLifecycle          = "windows"
 )
 
 func FileBasedServiceBindingsDescribe(description string, lifecycle string, callback func()) bool {
@@ -126,6 +127,9 @@ func FileBasedServiceBindingsDescribe(description string, lifecycle string, call
 			}
 			if lifecycle == DockerLifecycle && (!Config.GetIncludeFileBasedServiceBindings() || !Config.GetIncludeDocker()) {
 				Skip(skip_messages.SkipFileBasedServiceBindingsDockerApp)
+			}
+			if lifecycle == WindowsLifecycle && (!Config.GetIncludeFileBasedServiceBindings() || !Config.GetIncludeWindows()) {
+				Skip(skip_messages.SkipFileBasedServiceBindingsWindowsApp)
 			}
 		})
 		Describe(description, callback)
