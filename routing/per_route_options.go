@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	appInstanceRegex = regexp.MustCompile("[[:alnum:]]{8}(-[[:alnum:]]{4}){4}")
+	appInstanceRegex = regexp.MustCompile("^[[:alnum:]]{8}(-[[:alnum:]]{4}){4}$")
 )
 
 var _ = RoutingDescribe("Per-Route Options", func() {
