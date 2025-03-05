@@ -12,7 +12,7 @@ NOTE: Ensure CNB lifecycle is enabled on your platform before enabling this test
 const SkipFileBasedServiceBindingsBuildpackApp = `Skipping this test because config.IncludeFileBasedServiceBindings is set to 'false'.`
 const SkipFileBasedServiceBindingsCnbApp = `Skipping this test because config.IncludeFileBasedServiceBindings and/or config.IncludeCNB are set to 'false'.`
 const SkipFileBasedServiceBindingsDockerApp = `Skipping this test because config.IncludeFileBasedServiceBindings and/or config.IncludeDocker are set to 'false'.`
-const SkipFileBasedServiceBindingsWindowsApp = `Skipping this test because config.IncludeFileBasedServiceBindings and config.IncludeWindows is set to 'false'.`
+const SkipFileBasedServiceBindingsWindowsApp = `Skipping this test because config.IncludeFileBasedServiceBindings and/or config.IncludeWindows is set to 'false'.`
 const SkipInternetDependentMessage = `Skipping this test because config.IncludeInternetDependent is set to 'false'.
 NOTE: Ensure that your platform has access to the internet before running this test.`
 const SkipPrivateDockerRegistryMessage = `Skipping this test because config.IncludePrivateDockerRegistry is set to 'false'.
