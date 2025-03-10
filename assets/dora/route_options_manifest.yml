@@ -1,0 +1,18 @@
+---
+applications:
+- name: dora
+  routes:
+  - route: ((roundrobinhost)).((domain))
+    options:
+      loadbalancing: round-robin
+  - route: ((leastconnhost)).((domain))
+    options:
+      loadbalancing: least-connection
+  processes:
+  - type: web
+    instances: 2
+    memory: 1024M
+    disk_quota: 1024M
+    log-rate-limit-per-second: 16K
+    health-check-type: http
+    health-check-http-endpoint: /
