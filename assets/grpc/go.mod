@@ -1,7 +1,8 @@
 module github.com/cloudfoundry/cf-acceptance-tests/assets/grpc
 
-go 1.22
-toolchain go1.22.9
+go 1.23
+
+toolchain go1.23.7
 
 require (
 	google.golang.org/grpc v1.71.0
