@@ -1,6 +1,7 @@
 package v3
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -315,6 +316,58 @@ var _ = V3Describe("deployment", func() {
 				})
 
 				By("Verifying the new app has rolled out to all instances")
+				counter := 0
+				Eventually(func() int {
+					if strings.Contains(helpers.CurlAppRoot(Config, appName), "Hello from a staticfile") {
+						counter++
+					} else {
+						counter = 0
+					}
+					return counter
+				}).Should(Equal(10))
+
+				Consistently(func() string {
+					return helpers.CurlAppRoot(Config, appName)
+				}).ShouldNot(ContainSubstring("Hi, I'm Dora"))
+			})
+		})
+
+		Context("instance-steps", func() {
+			BeforeEach(func() {
+				Expect(cf.Cf("scale", appName, "-i", "4").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			})
+
+			It("deploys an app, transitions to pause and can be continued multiple times and then deploys successfully", func() {
+				By("Pushing a canary deployment")
+				Expect(cf.Cf("push", appName, "--strategy", "canary", "--instance-steps=25,50,75", "--no-wait", "-b", Config.GetStaticFileBuildpackName(), "-p", assets.NewAssets().Staticfile).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+				for i := 1; i <= 3; i++ {
+					By(fmt.Sprintf("Waiting for the a canary deployment to be paused on step %d", i))
+					Eventually(func(g Gomega) {
+						session := cf.Cf("app", appName).Wait()
+						g.Expect(session).Should(Say("Active deployment with status PAUSED"))
+						g.Expect(session).Should(Say("strategy:        canary"))
+					}).Should(Succeed())
+
+					By(fmt.Sprintf("Checking that both the canary and original apps exist simultaneously on step %d", i))
+					Eventually(func() string {
+						return helpers.CurlAppRoot(Config, appName)
+					}).Should(ContainSubstring("Hello from a staticfile"))
+
+					Eventually(func() string {
+						return helpers.CurlAppRoot(Config, appName)
+					}).Should(ContainSubstring("Hi, I'm Dora"))
+
+					By(fmt.Sprintf("Continuing the deployment on step %d", i))
+					Expect(cf.Cf("continue-deployment", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				}
+
+				Eventually(func(g Gomega) {
+					session := cf.Cf("app", appName).Wait()
+					g.Expect(session).ShouldNot(Say("Active deployment"))
+				}).Should(Succeed())
+
+				By("Verifying the continue succeeded and we rolled out the new process")
 				counter := 0
 				Eventually(func() int {
 					if strings.Contains(helpers.CurlAppRoot(Config, appName), "Hello from a staticfile") {
