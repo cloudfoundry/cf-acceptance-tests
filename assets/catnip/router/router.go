@@ -9,13 +9,13 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/env"
+	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/file"
 	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/health"
 	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/linux"
 	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/log"
 	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/session"
 	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/signal"
 	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/text"
-	"github.com/cloudfoundry/cf-acceptance-tests/assets/catnip/file"
 )
 
 func New(out io.Writer, clock clock.Clock) *chi.Mux {
