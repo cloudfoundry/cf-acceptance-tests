@@ -1,8 +1,7 @@
 module github.com/cloudfoundry/cf-acceptance-tests/assets/catnip
 
 go 1.23
-
-toolchain go1.23.7
+toolchain go1.24.1
 
 require (
 	code.cloudfoundry.org/clock v1.28.0
@@ -17,9 +16,9 @@ require (
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/pprof v0.0.0-20241210010833-40e02aabc2ad // indirect
 	github.com/kr/pretty v0.1.0 // indirect
-	golang.org/x/net v0.34.0 // indirect
-	golang.org/x/sys v0.29.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/net v0.36.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 	golang.org/x/tools v0.29.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
