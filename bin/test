@@ -18,5 +18,5 @@ export RUN_ID
 
 pushd "${CATS_ROOT}" > /dev/null
   echo "Using $(go run github.com/onsi/ginkgo/v2/ginkgo version)"
-  go run github.com/onsi/ginkgo/v2/ginkgo --randomize-all --keep-going "$@"
+  go run github.com/onsi/ginkgo/v2/ginkgo --randomize-all --keep-going --timeout=24h "$@"
 popd > /dev/null
