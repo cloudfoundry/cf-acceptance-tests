@@ -59,7 +59,7 @@ var callback = func(lifecycle string) {
 		}
 		appGuid := app_helpers.GetAppGuid(appName)
 
-		appFeatureUrl := fmt.Sprintf("/v3/apps/%s/features/file-based-service-bindings", appGuid)
+		appFeatureUrl := fmt.Sprintf("/v3/apps/%s/features/service-binding-k8s", appGuid)
 		Expect(cf.Cf("curl", appFeatureUrl, "-X", "PATCH", "-d", `{"enabled": true}`).Wait()).To(Exit(0))
 
 		Expect(cf.Cf("bind-service", appName, serviceName).Wait()).To(Exit(0))
