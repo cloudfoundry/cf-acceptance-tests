@@ -22,14 +22,7 @@ var _ = FileBasedServiceBindingsDescribe("File Based Service Bindings", WindowsL
 		serviceName = generator.PrefixedRandomName("cats", "svin")
 	})
 
-	AfterEach(func() {
-		app_helpers.AppReport(appName)
-		Eventually(cf.Cf("unbind-service", appName, serviceName).Wait()).Should(Exit(0))
-		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
-		Eventually(cf.Cf("delete-service", serviceName, "-f").Wait()).Should(Exit(0))
-	})
-
-	It("creates the required files in the app container", func() {
+	testPrepare := func(appFeatureFlag string) (string, string, string, string) {
 		tags := "list, of, tags"
 		creds := `{"username": "admin", "password":"pa55woRD"}`
 		Expect(cf.Cf("create-user-provided-service", serviceName, "-p", creds, "-t", tags).Wait()).To(Exit(0))
@@ -38,8 +31,9 @@ var _ = FileBasedServiceBindingsDescribe("File Based Service Bindings", WindowsL
 		Expect(cf.Cf("create-app", appName).Wait()).To(Exit(0))
 		appGuid := app_helpers.GetAppGuid(appName)
 
-		appFeatureUrl := fmt.Sprintf("/v3/apps/%s/features/file-based-service-bindings", appGuid)
+		appFeatureUrl := fmt.Sprintf("/v3/apps/%s/features/%s", appGuid, appFeatureFlag)
 		Expect(cf.Cf("curl", appFeatureUrl, "-X", "PATCH", "-d", `{"enabled": true}`).Wait()).To(Exit(0))
+
 		Expect(cf.Cf("bind-service", appName, serviceName).Wait()).To(Exit(0))
 
 		Expect(cf.Cf(app_helpers.WindowsCatnipWithArgs(
@@ -47,6 +41,31 @@ var _ = FileBasedServiceBindingsDescribe("File Based Service Bindings", WindowsL
 			"-m", DEFAULT_MEMORY_LIMIT)...,
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-		services.ValidateFileBasedServicebinding(appName, serviceName, appGuid, serviceGuid)
+		return appName, serviceName, appGuid, serviceGuid
+
+	}
+
+	Context("When the file-based-vcap-services feature enabled", func() {
+		It("It should store the VCAP_SERVICE binding information in file in the VCAP_SERVICES_FILE_PATH", func() {
+			appName, serviceName, appGuid, serviceGuid := testPrepare("file-based-vcap-services")
+			services.ValidateFileBasedVcapServices(appName, serviceName, appGuid, serviceGuid)
+
+		})
+	},
+	)
+
+	Context("When the service-binding-k8s feature enabled", func() {
+		It("It should have environment variable SERVICE_BINDING_ROOT which defines the location for the service binding", func() {
+			appName, serviceName, appGuid, serviceGuid := testPrepare("service-binding-k8s")
+			services.ValidateServiceBindingK8s(appName, serviceName, appGuid, serviceGuid)
+		})
 	})
+
+	AfterEach(func() {
+		app_helpers.AppReport(appName)
+		Eventually(cf.Cf("unbind-service", appName, serviceName).Wait()).Should(Exit(0))
+		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
+		Eventually(cf.Cf("delete-service", serviceName, "-f").Wait()).Should(Exit(0))
+	})
+
 })

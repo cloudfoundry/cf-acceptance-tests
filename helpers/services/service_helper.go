@@ -8,6 +8,7 @@ import (
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
 )
@@ -45,7 +46,7 @@ func GetServiceBindingGuid(appGuid string, instanceGuid string) string {
 	return jsonResults.Resources[0].GUID
 }
 
-func ValidateFileBasedServicebinding(appName, serviceName, appGuid, serviceGuid string) {
+func ValidateServiceBindingK8s(appName, serviceName, appGuid, serviceGuid string) {
 	getEncodedFilepath := func(serviceName string, fileName string) string {
 		path := fmt.Sprintf("/etc/cf-service-bindings/%s/%s", serviceName, fileName)
 		return strings.Replace(path, "/", "%2F", -1)
@@ -66,4 +67,47 @@ func ValidateFileBasedServicebinding(appName, serviceName, appGuid, serviceGuid 
 	checkFileContent("tags", `["list","of","tags"]`)
 	checkFileContent("type", "user-provided")
 	checkFileContent("username", "admin")
+}
+
+func ValidateFileBasedVcapServices(appName, serviceName, appGuid, serviceGuid string) {
+	getEncodedFilepath := func() string {
+		path := fmt.Sprintf("/etc/cf-service-bindings/vcap_services")
+		return strings.Replace(path, "/", "%2F", -1)
+	}
+
+	expectedVcapServicesTemplate := `{
+		"user-provided": [
+			{
+		      "label": "user-provided",
+		      "name": "%s",
+		      "tags": [
+		       "list", "of", "tags"
+		      ],
+		      "instance_guid": "%s",
+		      "instance_name": "%s",
+		      "binding_guid": "%s",
+		      "binding_name": "",
+		      "credentials": {
+		        "password": "pa55woRD",
+		        "username": "admin"
+		      }
+			}
+		]
+    }`
+
+	expectedString := fmt.Sprintf(expectedVcapServicesTemplate, serviceName, serviceGuid, serviceName, GetServiceBindingGuid(appGuid, serviceGuid))
+	expectedJson := VCAPServicesFile{}
+	err := expectedJson.ReadFromString(expectedString)
+	if err != nil {
+		Fail(err.Error())
+	}
+
+	curlResponse := helpers.CurlApp(Config, appName, "/file/"+getEncodedFilepath(), "-L")
+	actualJson := VCAPServicesFile{}
+	err = actualJson.ReadFromString(curlResponse)
+	if err != nil {
+		Fail(err.Error())
+	}
+
+	Expect(actualJson).To(Equal(expectedJson))
 }
