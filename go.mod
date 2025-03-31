@@ -2,7 +2,7 @@ module github.com/cloudfoundry/cf-acceptance-tests
 
 go 1.23.0
 
-toolchain go1.24.0
+toolchain go1.24.1
 
 require (
 	code.cloudfoundry.org/archiver v0.28.0
@@ -17,7 +17,7 @@ require (
 	github.com/onsi/gomega v1.36.2
 	golang.org/x/crypto v0.36.0
 	google.golang.org/grpc v1.71.0
-	google.golang.org/protobuf v1.36.5
+	google.golang.org/protobuf v1.36.6
 )
 
 require (
