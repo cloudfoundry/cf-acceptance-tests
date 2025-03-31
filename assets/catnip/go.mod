@@ -4,10 +4,10 @@ go 1.23
 toolchain go1.24.1
 
 require (
-	code.cloudfoundry.org/clock v1.31.0
+	code.cloudfoundry.org/clock v1.32.0
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/onsi/ginkgo/v2 v2.23.3
-	github.com/onsi/gomega v1.36.2
+	github.com/onsi/gomega v1.36.3
 )
 
 require (
