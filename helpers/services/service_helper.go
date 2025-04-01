@@ -71,8 +71,7 @@ func ValidateServiceBindingK8s(appName, serviceName, appGuid, serviceGuid string
 
 func ValidateFileBasedVcapServices(appName, serviceName, appGuid, serviceGuid string) {
 	getEncodedFilepath := func() string {
-		path := fmt.Sprintf("/etc/cf-service-bindings/vcap_services")
-		return strings.Replace(path, "/", "%2F", -1)
+		return strings.Replace("/etc/cf-service-bindings/vcap_services", "/", "%2F", -1)
 	}
 
 	expectedVcapServicesTemplate := `{
