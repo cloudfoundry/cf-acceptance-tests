@@ -2,7 +2,6 @@ package windows
 
 import (
 	"fmt"
-
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -15,21 +14,19 @@ import (
 )
 
 var _ = FileBasedServiceBindingsDescribe("File Based Service Bindings", WindowsLifecycle, func() {
-	var appName, serviceName string
+	var appName, serviceName, serviceGuid, appGuid, appFeatureFlag string
 
-	BeforeEach(func() {
+	JustBeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 		serviceName = generator.PrefixedRandomName("cats", "svin")
-	})
 
-	testPrepare := func(appFeatureFlag string) (string, string, string, string) {
 		tags := "list, of, tags"
 		creds := `{"username": "admin", "password":"pa55woRD"}`
 		Expect(cf.Cf("create-user-provided-service", serviceName, "-p", creds, "-t", tags).Wait()).To(Exit(0))
-		serviceGuid := services.GetServiceInstanceGuid(serviceName)
+		serviceGuid = services.GetServiceInstanceGuid(serviceName)
 
 		Expect(cf.Cf("create-app", appName).Wait()).To(Exit(0))
-		appGuid := app_helpers.GetAppGuid(appName)
+		appGuid = app_helpers.GetAppGuid(appName)
 
 		appFeatureUrl := fmt.Sprintf("/v3/apps/%s/features/%s", appGuid, appFeatureFlag)
 		Expect(cf.Cf("curl", appFeatureUrl, "-X", "PATCH", "-d", `{"enabled": true}`).Wait()).To(Exit(0))
@@ -41,13 +38,15 @@ var _ = FileBasedServiceBindingsDescribe("File Based Service Bindings", WindowsL
 			"-m", DEFAULT_MEMORY_LIMIT)...,
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-		return appName, serviceName, appGuid, serviceGuid
-
-	}
+	})
 
 	Context("When the file-based-vcap-services feature enabled", func() {
+
+		BeforeEach(func() {
+			appFeatureFlag = "file-based-vcap-services"
+		})
+
 		It("It should store the VCAP_SERVICE binding information in file in the VCAP_SERVICES_FILE_PATH", func() {
-			appName, serviceName, appGuid, serviceGuid := testPrepare("file-based-vcap-services")
 			services.ValidateFileBasedVcapServices(appName, serviceName, appGuid, serviceGuid)
 
 		})
@@ -55,8 +54,11 @@ var _ = FileBasedServiceBindingsDescribe("File Based Service Bindings", WindowsL
 	)
 
 	Context("When the service-binding-k8s feature enabled", func() {
+
+		BeforeEach(func() {
+			appFeatureFlag = "service-binding-k8s"
+		})
 		It("It should have environment variable SERVICE_BINDING_ROOT which defines the location for the service binding", func() {
-			appName, serviceName, appGuid, serviceGuid := testPrepare("service-binding-k8s")
 			services.ValidateServiceBindingK8s(appName, serviceName, appGuid, serviceGuid)
 		})
 	})
