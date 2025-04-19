@@ -6,8 +6,8 @@ code.cloudfoundry.org/go-log-cache/v3 v3.1.0 h1:/7Fn9ID9wCzLSbqaw6JBJbVo5481xn7L
 code.cloudfoundry.org/go-log-cache/v3 v3.1.0/go.mod h1:3kRhDyPZhjBUxUFT0ysMM8Sh27ZtKaPuKzI5x9AmmuE=
 code.cloudfoundry.org/go-loggregator/v10 v10.2.0 h1:0vUdIKvZb+eDoZ06xy/L0R0KIK9qH4S8CTmIqjylZEE=
 code.cloudfoundry.org/go-loggregator/v10 v10.2.0/go.mod h1:5rfrVz/L3CLsWeKqXFcgfZLTvAhyL8ZR0bRquHfT4RM=
-code.cloudfoundry.org/tlsconfig v0.23.0 h1:1wca1WPUj5p/1KISAFQxlQPzDO7SGoXw0FV6rC/zo2s=
-code.cloudfoundry.org/tlsconfig v0.23.0/go.mod h1:cFCgtxwP9+ZQ9InkQhWX0g6GZKJxs1et4zJCF9TCO2A=
+code.cloudfoundry.org/tlsconfig v0.24.0 h1:tmYocOoYLUWSgtxjHe2VLB1ANd7vn5ITzZe57HOi3LU=
+code.cloudfoundry.org/tlsconfig v0.24.0/go.mod h1:CyuahJSzLOy+TdPEeqNUdOgVtTdEr9lWU9nEuumUns8=
 filippo.io/edwards25519 v1.1.0 h1:FNf4tywRC1HmFuKW5xopWpigGjJKiJSV0Cqo0cJWDaA=
 filippo.io/edwards25519 v1.1.0/go.mod h1:BxyFTGdWcka3PhytdK4V28tE5sGfRvvvRV7EaN4VDT4=
 github.com/andybalholm/brotli v1.0.1 h1:KqhlKozYbRtJvsPrrEeXcO+N2l6NYT5A2QAFmSULpEc=
