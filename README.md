@@ -127,6 +127,7 @@ include_app_syslog_tcp
 * `include_private_docker_registry`: Flag to run tests that rely on a private docker image. [See below](#private-docker).
 * `include_route_services`: Flag to include the route services tests. Diego must be deployed for these tests to pass.
 * `include_routing`: Flag to include the routing tests.
+* `include_ipv6`: Flag to include the IPv6 validation test group.
 * `include_routing_isolation_segments`: Flag to include routing isolation segments tests. [See below](#routing-isolation-segments). Cannot be run together with logging isolation segments tests.
 * `include_security_groups`: Flag to include tests for security groups. [See below](#container-networking-and-application-security-groups)
 * `dynamic_asgs_enabled`: Defaults to `true`. Set to false if dynamic ASGs are disabled in the test environment.
@@ -362,6 +363,7 @@ Test Group Name| Description
 `detect` | Tests the ability of the platform to detect the correct buildpack for compiling an application if no buildpack is explicitly specified.
 `docker`| Tests our ability to run docker containers on Diego and that we handle docker metadata correctly.
 `file-based service bindings`| Tests file-based service bindings for a buildpack app, a CNB app and a Docker app.
+`ipv6`| Tests IVp6 egress calls.
 `internet_dependent`| Tests the feature of being able to specify a buildpack via a Github URL.  As such, this depends on your Cloud Foundry application containers having access to the Internet.  You should take into account the configuration of the network into which you've deployed your Cloud Foundry, as well as any security group settings applied to application containers.
 `isolation_segments` | This test group requires that Diego be deployed with a minimum of 2 cells. One of those cells must have been deployed with a `placement_tag`. If the deployment has been deployed with a routing isolation segment, `isolation_segment_domain` must also be set. For more information, please refer to the [Isolation Segments documentation](https://docs.cloudfoundry.org/adminguide/isolation-segments.html).
 `route_services` | Tests the [Route Services](https://docs.cloudfoundry.org/services/route-services.html) feature of Cloud Foundry.

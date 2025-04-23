@@ -101,6 +101,7 @@ type config struct {
 	IncludeV3                       *bool `json:"include_v3"`
 	IncludeVolumeServices           *bool `json:"include_volume_services"`
 	IncludeZipkin                   *bool `json:"include_zipkin"`
+	IncludeIpv6                     *bool `json:"include_ipv6"`
 
 	CredhubMode         *string `json:"credhub_mode"`
 	CredhubLocation     *string `json:"credhub_location"`
@@ -205,6 +206,7 @@ func getDefaults() config {
 	defaults.IncludeHTTP2Routing = ptrToBool(false)
 	defaults.IncludeTCPRouting = ptrToBool(false)
 	defaults.IncludeVolumeServices = ptrToBool(false)
+	defaults.IncludeIpv6 = ptrToBool(false)
 
 	defaults.IncludeWindows = ptrToBool(false)
 	defaults.UseWindowsContextPath = ptrToBool(false)
@@ -520,6 +522,9 @@ func validateConfig(config *config) error {
 	}
 	if config.NamePrefix == nil {
 		errs = errors.Join(errs, fmt.Errorf("* 'name_prefix' must not be null"))
+	}
+	if config.IncludeIpv6 == nil {
+		errs = errors.Join(errs, fmt.Errorf("* 'include_ipv6' must not be null"))
 	}
 
 	return errs
@@ -1055,6 +1060,10 @@ func (c *config) GetIncludeCredhubAssisted() bool {
 
 func (c *config) GetIncludeCredhubNonAssisted() bool {
 	return *c.CredhubMode == CredhubNonAssistedMode
+}
+
+func (c *config) GetIncludeIpv6() bool {
+	return *c.IncludeIpv6
 }
 
 func (c *config) GetCredHubBrokerClientCredential() string {

@@ -132,6 +132,17 @@ func FileBasedServiceBindingsDescribe(description string, lifecycle string, call
 	})
 }
 
+func IPv6Describe(description string, callback func()) bool {
+	return Describe("[ipv6]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeIpv6() {
+				Skip(skip_messages.SkipIncludeIpv6)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
 func InternetDependentDescribe(description string, callback func()) bool {
 	return Describe("[internet_dependent]", func() {
 		BeforeEach(func() {

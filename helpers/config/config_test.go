@@ -88,6 +88,7 @@ type testConfig struct {
 	IncludeVolumeServices           *bool `json:"include_volume_services,omitempty"`
 	IncludeZipkin                   *bool `json:"include_zipkin,omitempty"`
 	IncludeWindows                  *bool `json:"include_windows,omitempty"`
+	IncludeIpv6         			*bool `json:"include_ipv6,omitempty"`
 
 	BinaryBuildpackName     *string `json:"binary_buildpack_name,omitempty"`
 	GoBuildpackName         *string `json:"go_buildpack_name,omitempty"`
@@ -281,6 +282,7 @@ var _ = Describe("Config", func() {
 
 		Expect(config.GetIncludeDocker()).To(BeFalse())
 		Expect(config.GetIncludeFileBasedServiceBindings()).To(BeFalse())
+		Expect(config.GetIncludeIpv6()).To(BeFalse())
 		Expect(config.GetIncludeInternetDependent()).To(BeFalse())
 		Expect(config.GetIncludeRouteServices()).To(BeFalse())
 		Expect(config.GetIncludeContainerNetworking()).To(BeFalse())
@@ -473,6 +475,7 @@ var _ = Describe("Config", func() {
 			testCfg.IncludeDetect = ptrToBool(false)
 			testCfg.IncludeDocker = ptrToBool(true)
 			testCfg.IncludeFileBasedServiceBindings = ptrToBool(true)
+			testCfg.IncludeIpv6Validation = ptrToBool(true)
 			testCfg.IncludeInternetDependent = ptrToBool(true)
 			testCfg.IncludeIsolationSegments = ptrToBool(true)
 			testCfg.IncludePrivateDockerRegistry = ptrToBool(true)
@@ -537,6 +540,7 @@ var _ = Describe("Config", func() {
 			Expect(config.GetIncludeDetect()).To(BeFalse())
 			Expect(config.GetIncludeDocker()).To(BeTrue())
 			Expect(config.GetIncludeFileBasedServiceBindings()).To(BeTrue())
+			Expect(config.GetIncludeIpv6()).To(BeTrue())
 			Expect(config.GetIncludeInternetDependent()).To(BeTrue())
 			Expect(config.GetIncludeIsolationSegments()).To(BeTrue())
 			Expect(config.GetIncludePrivateDockerRegistry()).To(BeTrue())
