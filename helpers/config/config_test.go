@@ -88,7 +88,7 @@ type testConfig struct {
 	IncludeVolumeServices           *bool `json:"include_volume_services,omitempty"`
 	IncludeZipkin                   *bool `json:"include_zipkin,omitempty"`
 	IncludeWindows                  *bool `json:"include_windows,omitempty"`
-	IncludeIPv6         			*bool `json:"include_ipv6,omitempty"`
+	IncludeIPv6                     *bool `json:"include_ipv6,omitempty"`
 
 	BinaryBuildpackName     *string `json:"binary_buildpack_name,omitempty"`
 	GoBuildpackName         *string `json:"go_buildpack_name,omitempty"`
