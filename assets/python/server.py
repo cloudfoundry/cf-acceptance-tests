@@ -1,5 +1,4 @@
 import os
-import sys
 import logging
 import ipaddress
 import http.client
@@ -13,8 +12,11 @@ ENDPOINT_TYPE_MAP = {
             'api64.ipify.org': "Dual stack"
         }
 
-PORT = '8080'
+DEFAULT_PORT = '8080'
 HOST = '127.0.0.1'
+
+FAIL_MESSAGE = "Test execution has completed. IPv6 validation failed."
+SUCCESS_MESSAGE = "Test execution has completed. IPv6 validation is successful."
 
 # Set up logging
 logging.basicConfig(
@@ -36,18 +38,21 @@ class IPv6Tester:
         self.endpoints = endpoints
     
     def test_all_addresses(self):
+        results = []
         all_successful = True
         for endpoint in self.endpoints:
             result = self.test_endpoint(endpoint)
+            results.append((endpoint, result))
             self.print_result(endpoint, result)
             if not result['success']:
                 all_successful = False
 
         if all_successful:
-            logging.info("Test execution has completed. IPv6 validation is successful.")
+            logging.info(SUCCESS_MESSAGE)
         else:
-            logging.error("Test execution has completed. IPv6 validation failed.")
-            sys.exit(1)
+            logging.error(FAIL_MESSAGE)
+        
+        return all_successful, results
     
     def print_result(self, endpoint, result):
         validation_type = ENDPOINT_TYPE_MAP.get(endpoint, "Unknown")
@@ -65,7 +70,6 @@ class IPv6Tester:
             
             response = connection.getresponse()
             response_data = response.read().strip().decode('utf-8')
-
             ip_type = self.determine_ip_type(response_data)
 
             connection.close()
@@ -109,12 +113,28 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write('\n'.encode('utf-8'))
         
     def handle_ipv6_test(self):
-        self.send_response(200)
-        self.end_headers()
         tester = IPv6Tester(list(ENDPOINT_TYPE_MAP.keys()))
-        tester.test_all_addresses()
-        message = "IPv6 tests executed."
-        self.wfile.write(message.encode('utf-8'))
+        all_successful, results = tester.test_all_addresses()
+
+        # Determine response status and message
+        response_code = 200 if all_successful else 500
+        overall_message = SUCCESS_MESSAGE if all_successful else FAIL_MESSAGE
+
+        # Send HTTP response status
+        self.send_response(response_code)
+        self.end_headers()
+       
+        response_messages = []
+        for endpoint, result in results:
+            endpoint_results = f"{ENDPOINT_TYPE_MAP.get(endpoint, 'Unknown')} validation resulted in {'success' if result['success'] else 'failure'}. Detected IP type is {result.get('ip_type', 'unknown')}. Error message: {result.get('error', 'none')}."
+            response_messages.append(endpoint_results)
+        
+        response_content = "\n".join(response_messages + [overall_message])
+        
+        # Write the detailed results and overall message to the web console
+        self.wfile.write(response_content.encode('utf-8'))
+        self.wfile.write('\n'.encode('utf-8'))
+        
 
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
@@ -122,7 +142,7 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', PORT))
+    port = int(os.environ.get('PORT', DEFAULT_PORT))
     host = os.environ.get('VCAP_APP_HOST', HOST)
 
     print("Going to start server on %s:%s" % (host, port))

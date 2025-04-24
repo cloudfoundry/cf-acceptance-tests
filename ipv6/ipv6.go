@@ -14,7 +14,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = IPv6Describe("IPv6", func() {
+var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
     var appName string
 
     BeforeEach(func() {
@@ -26,30 +26,24 @@ var _ = IPv6Describe("IPv6", func() {
         Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
     })
 
-    Describe("egress from a Python app", func() {
+    Describe("Egress Capability in Python App", func() {
         for _, stack := range Config.GetStacks() {
             stack := stack
-            Context(fmt.Sprintf("when using %s stack", stack), func() {
-                It("allows IPv6 egress", func() {
+            Context(fmt.Sprintf("Using stack: %s", stack), func() {
+                It("validates IPv6 egress and examines test results", func() {
                     Expect(cf.Cf("push", appName,
                         "-m", DEFAULT_MEMORY_LIMIT,
                         "-p", assets.NewAssets().Python,
                         "-s", stack,
                     ).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
-                    /* This test is verifying that the default path
-                    for testing python buldpack is working */
-                    Eventually(func() string {
-                        return helpers.CurlApp(Config, appName, "/")
-                    }).Should(ContainSubstring("Hello"))
-
-                    /* This test is checking IPv6 egress calls.
-                    It examines that after making a request to a predifined route,
-                    IPv6 tests are executed successfully */
+                    response := helpers.CurlApp(Config, appName, "/ipv6-test")
                     
-                    Eventually(func() string {
-                        return helpers.CurlApp(Config, appName, "/ipv6-test")
-                    }).Should(ContainSubstring("IPv6 tests executed"))
+                    Expect(response).To(ContainSubstring("IPv4 validation resulted in success"))
+                    Expect(response).To(ContainSubstring("IPv6 validation resulted in success"))
+                    Expect(response).To(ContainSubstring("Dual stack validation resulted in success"))
+                    Expect(response).NotTo(ContainSubstring("validation failed"))
+                    Expect(response).To(ContainSubstring("validation succeeded"))
                 })
             })
         }
