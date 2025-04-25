@@ -15,8 +15,8 @@ ENDPOINT_TYPE_MAP = {
 DEFAULT_PORT = '8080'
 HOST = '127.0.0.1'
 
-FAIL_MESSAGE = "Test execution has completed. IPv6 validation failed."
-SUCCESS_MESSAGE = "Test execution has completed. IPv6 validation is successful."
+OVERALL_SUCCESS_MESSAGE = "IPv6 egress test suite passed. All tests completed successfully."
+OVERALL_FAIL_MESSAGE = "IPv6 Egress Suite failed — investigate failed components."
 
 # Set up logging
 logging.basicConfig(
@@ -48,9 +48,9 @@ class IPv6Tester:
                 all_successful = False
 
         if all_successful:
-            logging.info(SUCCESS_MESSAGE)
+            logging.info(OVERALL_SUCCESS_MESSAGE)
         else:
-            logging.error(FAIL_MESSAGE)
+            logging.error(OVERALL_FAIL_MESSAGE)
         
         return all_successful, results
     
@@ -118,7 +118,7 @@ class Handler(BaseHTTPRequestHandler):
 
         # Determine response status and message
         response_code = 200 if all_successful else 500
-        overall_message = SUCCESS_MESSAGE if all_successful else FAIL_MESSAGE
+        overall_message = OVERALL_SUCCESS_MESSAGE if all_successful else OVERALL_FAIL_MESSAGE
 
         # Send HTTP response status
         self.send_response(response_code)

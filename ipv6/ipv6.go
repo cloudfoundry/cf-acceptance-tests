@@ -2,7 +2,6 @@ package ipv6
 
 import (
 	"fmt"
-
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
@@ -42,8 +41,8 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 					Expect(response).To(ContainSubstring("IPv4 validation resulted in success"))
 					Expect(response).To(ContainSubstring("IPv6 validation resulted in success"))
 					Expect(response).To(ContainSubstring("Dual stack validation resulted in success"))
-					Expect(response).NotTo(ContainSubstring("validation failed"))
-					Expect(response).To(ContainSubstring("validation succeeded"))
+					Expect(response).NotTo(ContainSubstring("IPv6 Egress Suite failed"))
+					Expect(response).To(ContainSubstring("IPv6 egress test suite passed."))
 				})
 			})
 		}
