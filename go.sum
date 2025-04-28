@@ -1,5 +1,5 @@
-code.cloudfoundry.org/archiver v0.33.0 h1:ChXSzHHLWr0WP1YRIdW6PagKbLctXAVZlx6ifSPSqRg=
-code.cloudfoundry.org/archiver v0.33.0/go.mod h1:Tw/TS6Bcb95j2llUkTRYPkDf8/Bh74mKPMtJfZVWjTI=
+code.cloudfoundry.org/archiver v0.34.0 h1:O+O2Lj8i7fI9HmV0lkJrC8Yis6FlVwnQtj8qJaIUvOw=
+code.cloudfoundry.org/archiver v0.34.0/go.mod h1:qme+yeAzbqVjMrLt6LUCNWX4u06knX8DwVAzuUPRORM=
 code.cloudfoundry.org/go-diodes v0.0.0-20220325013804-800fb6f70e2f h1:BMwVyadJ0dYvvXTdLNtjxtX3jSCR45rv/apUxuFc6bY=
 code.cloudfoundry.org/go-diodes v0.0.0-20220325013804-800fb6f70e2f/go.mod h1:cCrRt/O3uipyXfV4hZsKe5WyRNgFTgiMHnwAQqFlNjM=
 code.cloudfoundry.org/go-log-cache/v3 v3.1.1 h1:1DL5Ifs7WNIQBuMWUDac0f5IMGoP99gHXjxHLthzXq8=
@@ -67,8 +67,8 @@ github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
 github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX3N/iU=
 github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38/go.mod h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE=
-github.com/google/pprof v0.0.0-20250403155104-27863c87afa6 h1:BHT72Gu3keYf3ZEu2J0b1vyeLSOYI8bm5wbJM/8yDe8=
-github.com/google/pprof v0.0.0-20250403155104-27863c87afa6/go.mod h1:boTsfXsheKC2y+lKOCMpSfarhxDeIzfZG1jqGcPl3cA=
+github.com/google/pprof v0.0.0-20250418163039-24c5476c6587 h1:b/8HpQhvKLSNzH5oTXN2WkNcMl6YB5K3FRbb+i+Ml34=
+github.com/google/pprof v0.0.0-20250418163039-24c5476c6587/go.mod h1:boTsfXsheKC2y+lKOCMpSfarhxDeIzfZG1jqGcPl3cA=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/gorilla/websocket v1.5.3 h1:saDtZ6Pbx/0u+bgYQ3q96pZgCzfhKXGPqt7kZ72aNNg=
