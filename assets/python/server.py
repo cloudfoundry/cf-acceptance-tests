@@ -7,18 +7,23 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from socketserver import ThreadingMixIn
 
 ENDPOINT_TYPE_MAP = {
-            'api.ipify.org': "IPv4",
-            'api6.ipify.org': "IPv6",
-            'api64.ipify.org': "Dual stack"
-        }
+    'api.ipify.org': {
+        'validation_name': "IPv4",
+        'path': "/ipv4-test"
+    },
+    'api6.ipify.org': {
+        'validation_name': "IPv6",
+        'path': "/ipv6-test"
+    },
+    'api64.ipify.org': {
+        'validation_name': "Dual stack",
+        'path': "/dual-stack-test"
+    }
+}
 
 DEFAULT_PORT = '8080'
 HOST = '127.0.0.1'
 
-OVERALL_SUCCESS_MESSAGE = "IPv6 egress test suite passed. All tests completed successfully."
-OVERALL_FAIL_MESSAGE = "IPv6 Egress Suite failed — investigate failed components."
-
-# Set up logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s | %(levelname)s | %(message)s'
@@ -27,42 +32,28 @@ logging.basicConfig(
 class IPv6Tester:
     """
     The `IPv6Tester` class is responsible for verifying the successful execution of
-    egress calls using IPv4, IPv6, and Dual Stack configurations, sequentially.
-    It offers logging at each step to track the progress of the calls.
-    The test execution is deemed successful if all endpoints are reached without errors.
-    Conversely, if any egress call fails, the test execution is marked as failed,
-    and the application exits with an exit code of 1 to signal the failure.
+    egress calls using IPv4, IPv6, and Dual Stack configurations, depending on the input.
+    It offers logging result from the call.
+    The test execution is deemed successful if the requested endpoint is reached without errors.
+
     """
 
     def __init__(self, endpoints):
         self.endpoints = endpoints
-    
-    def test_all_addresses(self):
-        results = []
-        all_successful = True
-        for endpoint in self.endpoints:
-            result = self.test_endpoint(endpoint)
-            results.append((endpoint, result))
-            self.print_result(endpoint, result)
-            if not result['success']:
-                all_successful = False
 
-        if all_successful:
-            logging.info(OVERALL_SUCCESS_MESSAGE)
-        else:
-            logging.error(OVERALL_FAIL_MESSAGE)
-        
-        return all_successful, results
-    
+    def test_single_address(self, endpoint):
+        result = self.test_endpoint(endpoint)
+        self.print_result(endpoint, result)
+        return result
+
     def print_result(self, endpoint, result):
-        validation_type = ENDPOINT_TYPE_MAP.get(endpoint, "Unknown")
+        validation_type = ENDPOINT_TYPE_MAP[endpoint]['validation_name']
         if result['success']:
             logging.info(f"{validation_type} validation succeeded.")
         else:
             logging.error(f"{validation_type} validation failed.")
-    
+
     def test_endpoint(self, endpoint):
-       
         try:
             logging.info(f"Testing endpoint: {endpoint}")
             connection = http.client.HTTPConnection(endpoint, timeout=0.20)
@@ -83,9 +74,9 @@ class IPv6Tester:
             return {
                 'success': False,
                 'error': str(e),
-                'ip_type': 'Unknown' 
+                'ip_type': 'Unknown'
             }
-    
+
     @staticmethod
     def determine_ip_type(ip_string):
         try:
@@ -101,45 +92,45 @@ class Handler(BaseHTTPRequestHandler):
         to testing IPv6 egress calls, while the default path is used
         for testing the default Hello-Python buildpack test case.
     '''
+
     def do_GET(self):
-        path = self.path
-        if path == "/ipv6-test":
-            self.handle_ipv6_test()
+        if self.path in [data['path'] for data in ENDPOINT_TYPE_MAP.values()]:
+            self.handle_test()
         else:
             self.send_response(200)
             self.end_headers()
-            message =  "Hello python, world!"
+            message = "Hello python, world!"
             self.wfile.write(message.encode('utf-8'))
             self.wfile.write('\n'.encode('utf-8'))
-        
-    def handle_ipv6_test(self):
-        tester = IPv6Tester(list(ENDPOINT_TYPE_MAP.keys()))
-        all_successful, results = tester.test_all_addresses()
 
-        # Determine response status and message
-        response_code = 200 if all_successful else 500
-        overall_message = OVERALL_SUCCESS_MESSAGE if all_successful else OVERALL_FAIL_MESSAGE
+    def handle_test(self):
+        endpoint = self.get_endpoint_from_path()
+        if endpoint:
+            tester = IPv6Tester([endpoint])
+            result = tester.test_single_address(endpoint)
+            response_code = 200 if result['success'] else 500
+            self.send_response(response_code)
+            self.end_headers()
 
-        # Send HTTP response status
-        self.send_response(response_code)
-        self.end_headers()
-       
-        response_messages = []
-        for endpoint, result in results:
-            endpoint_results = f"{ENDPOINT_TYPE_MAP.get(endpoint, 'Unknown')} validation resulted in {'success' if result['success'] else 'failure'}. Detected IP type is {result.get('ip_type', 'unknown')}. Error message: {result.get('error', 'none')}."
-            response_messages.append(endpoint_results)
-        
-        response_content = "\n".join(response_messages + [overall_message])
-        
-        # Write the detailed results and overall message to the web console
-        self.wfile.write(response_content.encode('utf-8'))
-        self.wfile.write('\n'.encode('utf-8'))
-        
+            validation_name = ENDPOINT_TYPE_MAP[endpoint]['validation_name']
+            response_message = (f"{validation_name} validation resulted in "
+                                f"{'success' if result['success'] else 'failure'}. Detected IP type is "
+                                f"{result.get('ip_type', 'unknown')}. Error message: {result.get('error', 'none')}.")
+            self.wfile.write(response_message.encode('utf-8'))
+            self.wfile.write('\n'.encode('utf-8'))
+        else:
+            self.send_response(404)
+            self.end_headers()
+            self.wfile.write(b'Endpoint not found\n')
 
+    def get_endpoint_from_path(self):
+        for endpoint, data in ENDPOINT_TYPE_MAP.items():
+            if self.path == data['path']:
+                return endpoint
+        return None
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """Handle requests in a separate thread."""
-
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', DEFAULT_PORT))
