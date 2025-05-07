@@ -2,6 +2,7 @@ package v3
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
@@ -78,9 +79,7 @@ var _ = V3Describe("deployment", func() {
 				g.Expect(session).Should(Exit(0))
 			}).Should(Succeed())
 
-			for range numberOfAppCurlChecks {
-				Expect(helpers.CurlAppRoot(Config, appName)).To(ContainSubstring("Hello from a staticfile"))
-			}
+			checkAppCurlResponse(appName, "Hello from a staticfile", numberOfAppCurlChecks)
 		})
 
 		It("can be cancelled and rolls back to the previous app", func() {
@@ -104,9 +103,7 @@ var _ = V3Describe("deployment", func() {
 				g.Expect(session).Should(Exit(0))
 			}).Should(Succeed())
 
-			for range numberOfAppCurlChecks {
-				Expect(helpers.CurlAppRoot(Config, appName)).To(ContainSubstring("Hi, I'm Dora"))
-			}
+			checkAppCurlResponse(appName, "Hi, I'm Dora", numberOfAppCurlChecks)
 		})
 
 		Context("max-in-flight", func() {
@@ -119,17 +116,15 @@ var _ = V3Describe("deployment", func() {
 					g.Expect(session).Should(Say("Active deployment with status DEPLOYING"))
 					g.Expect(session).Should(Say(`strategy:\s+rolling`))
 					g.Expect(session).Should(Say(`max-in-flight:\s+2`))
-				}).Should((Succeed()))
+				}).Should(Succeed())
 
 				By("Verifying the new app has rolled out to all instances")
 				Eventually(func(g Gomega) {
 					session := cf.Cf("app", appName).Wait()
 					g.Expect(session).ShouldNot(Say("Active deployment"))
-				}).Should((Succeed()))
+				}).Should(Succeed())
 
-				for range numberOfAppCurlChecks {
-					Expect(helpers.CurlAppRoot(Config, appName)).To(ContainSubstring("Hello from a staticfile"))
-				}
+				checkAppCurlResponse(appName, "Hello from a staticfile", numberOfAppCurlChecks)
 			})
 		})
 	})
@@ -172,9 +167,8 @@ var _ = V3Describe("deployment", func() {
 			}).Should(Succeed())
 
 			By("Verifying the continue succeeded and we rolled out the new process")
-			for range numberOfAppCurlChecks {
-				Expect(helpers.CurlAppRoot(Config, appName)).To(ContainSubstring("Hello from a staticfile"))
-			}
+
+			checkAppCurlResponse(appName, "Hello from a staticfile", numberOfAppCurlChecks)
 		})
 
 		It("can be cancelled when paused", func() {
@@ -205,9 +199,7 @@ var _ = V3Describe("deployment", func() {
 			}).Should(Succeed())
 
 			By("Verifying the cancel succeeded and we rolled back to old process")
-			for range numberOfAppCurlChecks {
-				Expect(helpers.CurlAppRoot(Config, appName)).To(ContainSubstring("Hi, I'm Dora"))
-			}
+			checkAppCurlResponse(appName, "Hi, I'm Dora", numberOfAppCurlChecks)
 		})
 
 		Context("max-in-flight", func() {
@@ -238,9 +230,8 @@ var _ = V3Describe("deployment", func() {
 				}).Should(Succeed())
 
 				By("Verifying the new app has rolled out to all instances")
-				for range numberOfAppCurlChecks {
-					Expect(helpers.CurlAppRoot(Config, appName)).To(ContainSubstring("Hello from a staticfile"))
-				}
+
+				checkAppCurlResponse(appName, "Hello from a staticfile", numberOfAppCurlChecks)
 			})
 		})
 
@@ -281,9 +272,7 @@ var _ = V3Describe("deployment", func() {
 				}).Should(Succeed())
 
 				By("Verifying the continue succeeded and we rolled out the new process")
-				for range numberOfAppCurlChecks {
-					Expect(helpers.CurlAppRoot(Config, appName)).To(ContainSubstring("Hello from a staticfile"))
-				}
+				checkAppCurlResponse(appName, "Hello from a staticfile", numberOfAppCurlChecks)
 			})
 		})
 	})
@@ -310,4 +299,17 @@ func checkAppRemainsAlive(appName string) (chan<- bool, <-chan bool) {
 	}()
 
 	return doneChannel, appCheckerIsDone
+}
+
+func checkAppCurlResponse(appName string, expected string, numberOfAppCurlChecks int) {
+	var wg sync.WaitGroup
+	for range numberOfAppCurlChecks {
+		wg.Add(1)
+		go func() {
+			defer GinkgoRecover()
+			defer wg.Done()
+			Expect(helpers.CurlAppRoot(Config, appName)).To(ContainSubstring(expected))
+		}()
+	}
+	wg.Wait()
 }
