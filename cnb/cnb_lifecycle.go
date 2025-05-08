@@ -45,6 +45,7 @@ var _ = CNBDescribe("CloudNativeBuildpacks lifecycle", func() {
 
 	Describe("pushing Node.js application with CNB lifecycle and no buildpacks", func() {
 		It("fails", func() {
+			Skip("System buildpacks are supported in latest CAPI version")
 			push := cf.Cf("push",
 				appName,
 				"-p", assets.NewAssets().CNBNode,
