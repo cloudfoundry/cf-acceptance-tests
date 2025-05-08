@@ -36,6 +36,12 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 		})
 	})
 
+	AfterEach(func() {
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			Expect(cf.Cf("delete-shared-domain", domainName).Wait()).To(Exit())
+		})
+	})
+
 	Context("external ports", func() {
 		var (
 			appName            string
