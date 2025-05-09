@@ -14,6 +14,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -22,29 +23,11 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-type LastOperation struct {
-	State string `json:"state"`
-}
-
-type Resource struct {
-	Name          string `json:"name"`
-	GUID          string
-	LastOperation LastOperation `json:"last_operation"`
-}
-
-type Response struct {
-	Resources []Resource `json:"resources"`
-}
-
-type ErrorResponse struct {
-	ErrorCode string `json:"error_code"`
-}
-
 var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 	const asyncOperationPollInterval = 5 * time.Second
-	var broker ServiceBroker
+	var broker services.ServiceBroker
 
-	waitForAsyncDeletionToComplete := func(broker ServiceBroker, instanceName string) {
+	waitForAsyncDeletionToComplete := func(broker services.ServiceBroker, instanceName string) {
 		Eventually(func() *Buffer {
 			session := cf.Cf("service", instanceName).Wait()
 			combinedOutputBytes := append(session.Out.Contents(), session.Err.Contents()...)
@@ -52,7 +35,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 		}, Config.AsyncServiceOperationTimeoutDuration(), asyncOperationPollInterval).Should(Say("not found"))
 	}
 
-	waitForAsyncOperationToCompleteAndSay := func(broker ServiceBroker, instanceName, expectedText string) {
+	waitForAsyncOperationToCompleteAndSay := func(broker services.ServiceBroker, instanceName, expectedText string) {
 		Eventually(func() *Session {
 			serviceDetails := cf.Cf("service", instanceName).Wait()
 			Expect(serviceDetails).To(Exit(0), "failed getting service instance details")
@@ -62,7 +45,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 	Describe("Synchronous operations", func() {
 		BeforeEach(func() {
-			broker = NewServiceBroker(
+			broker = services.NewServiceBroker(
 				random_name.CATSRandomName("BRKR"),
 				assets.NewAssets().ServiceBroker,
 				TestSetup,
@@ -319,7 +302,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 		var instanceName string
 
 		BeforeEach(func() {
-			broker = NewServiceBroker(
+			broker = services.NewServiceBroker(
 				random_name.CATSRandomName("BRKR"),
 				assets.NewAssets().ServiceBroker,
 				TestSetup,

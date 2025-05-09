@@ -101,6 +101,21 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	err = buildCmd.Run()
 	Expect(err).NotTo(HaveOccurred())
 
+	if Config.GetIncludeWindows() {
+		windowsBuildCmd := exec.Command("go", "build", "-o", "bin/catnip.exe")
+		windowsBuildCmd.Dir = "assets/catnip"
+		windowsBuildCmd.Env = append(os.Environ(),
+			"CGO_ENABLED=0",
+			"GOOS=windows",
+			"GOARCH=amd64",
+		)
+		windowsBuildCmd.Stdout = GinkgoWriter
+		windowsBuildCmd.Stderr = GinkgoWriter
+
+		err = windowsBuildCmd.Run()
+		Expect(err).NotTo(HaveOccurred())
+	}
+
 	doraFiles, err := os.ReadDir(assets.NewAssets().Dora)
 	Expect(err).NotTo(HaveOccurred())
 

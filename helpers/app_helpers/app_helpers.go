@@ -27,6 +27,18 @@ func CatnipWithArgs(appName string, args ...string) []string {
 	return pushArgs
 }
 
+func WindowsCatnipWithArgs(appName string, args ...string) []string {
+	pushArgs := []string{
+		"push", appName,
+		"-s", Config.GetWindowsStack(),
+		"-b", Config.GetBinaryBuildpackName(),
+		"-p", assets.NewAssets().Catnip,
+		"-c", "./catnip.exe",
+	}
+	pushArgs = append(pushArgs, args...)
+	return pushArgs
+}
+
 func BinaryWithArgs(appName string, args ...string) []string {
 	pushArgs := []string{
 		"push", appName,

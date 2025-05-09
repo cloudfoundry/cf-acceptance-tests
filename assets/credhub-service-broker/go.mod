@@ -1,8 +1,7 @@
 module github.com/cloudfoundry/cf-acceptance-tests/assets/credhub-service-broker
 
 go 1.23
-
-toolchain go1.23.7
+toolchain go1.24.1
 
 require (
 	code.cloudfoundry.org/credhub-cli v0.0.0-20230320130818-a7d5420b283b
@@ -15,7 +14,7 @@ require (
 	github.com/cloudfoundry/socks5-proxy v0.2.86 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
-	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
 	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
 )

@@ -3,11 +3,11 @@ GEM
   specs:
     base64 (0.2.0)
     diff-lcs (1.5.1)
-    json (2.10.2)
+    json (2.11.3)
     logger (1.6.1)
     mustermann (3.0.3)
       ruby2_keywords (~> 0.0.1)
-    rack (3.1.10)
+    rack (3.1.12)
     rack-protection (4.1.1)
       base64 (>= 0.1.0)
       logger (>= 1.6.0)
