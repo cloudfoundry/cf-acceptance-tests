@@ -25,7 +25,7 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 	})
 
-	ENDPOINT_TYPE_MAP := map[string]struct {
+	EndpointTypeMap := map[string]struct {
 		validationName string
 		path           string
 	}{
@@ -55,7 +55,7 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 			"-s", stack,
 		).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
-		for _, data := range ENDPOINT_TYPE_MAP {
+		for _, data := range EndpointTypeMap {
 			response := helpers.CurlApp(Config, appName, data.path)
 		
 			if data.path == "" {
@@ -68,7 +68,6 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 
 	Describe("Egress Capability in Apps", func() {
 		for _, stack := range Config.GetStacks() {
-			stack := stack
 
 			Context(fmt.Sprintf("Using Python stack: %s", stack), func() {
 				It("validates IPv6 egress for Python App", func() {
