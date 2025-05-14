@@ -82,7 +82,7 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 			})
 
 			Context(fmt.Sprintf("Using Node.js stack: %s", stack), func() {
-				It("validates IPv6 egress for Node.js App", func() {
+				It("validates IPv6 egress for Golang App", func() {
 					describeIPv6Tests(assets.NewAssets().Golang, stack)
 				})
 			})
