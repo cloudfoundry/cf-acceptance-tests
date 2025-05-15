@@ -98,13 +98,6 @@ class IPv6TesterController {
         return "Invalid IP";
     }
 
-    private static class EndpointInfo {
-        String validationName;
-        String path;
-
-        EndpointInfo(String validationName, String path) {
-            this.validationName = validationName;
-            this.path = path;
-        }
+    private static record EndpointInfo(String validationName, String path) {
     }
 }

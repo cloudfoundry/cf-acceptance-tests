@@ -2,6 +2,7 @@ package ipv6
 
 import (
 	"fmt"
+	"os"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
@@ -47,30 +48,26 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 		},
 	}
 
-	describeIPv6Tests := func(buildpackPath, stack, manifestFile string) {
+	describeIPv6Tests := func(assetPath, stack string) {
 		appName = random_name.CATSRandomName("APP")
 
-		memoryLimit := DEFAULT_MEMORY_LIMIT
-		if manifestFile == "assets/java-spring/manifest.yml" {
-			memoryLimit = "1600MB" // Java Spring app specific memory limit
+		if assetPath == "" {
+			Expect(os.Chdir("assets/java-spring")).NotTo(HaveOccurred())
 		}
 
-		commandOptions := []string{"push", appName, "-m", memoryLimit, "-s", stack}
-		if manifestFile != "" {
-			commandOptions = append(commandOptions, "-f", manifestFile)
-		} else {
-			commandOptions = append(commandOptions, "-p", buildpackPath)
+		commandOptions := []string{"push", appName, "-s", stack}
+		if assetPath != "" {
+			commandOptions = append(commandOptions, "-p", assetPath, "-m", DEFAULT_MEMORY_LIMIT)
 		}
 
 		pushSession := cf.Cf(commandOptions...)
 		Expect(pushSession.Wait(Config.DetectTimeoutDuration())).To(Exit(0))
-		isJavaSpringApp := manifestFile == "assets/java-spring/manifest.yml"
 
-		for _, data := range ENDPOINT_TYPE_MAP {
+		for _, data := range EndpointTypeMap {
 			response := helpers.CurlApp(Config, appName, data.path)
 
 			if data.path == "" {
-				if isJavaSpringApp {
+				if assetPath == "" { //
 					Expect(response).To(ContainSubstring("ok"))
 				} else {
 					Expect(response).To(ContainSubstring("Hello"))
@@ -86,19 +83,19 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 
 			Context(fmt.Sprintf("Using Python stack: %s", stack), func() {
 				It("validates IPv6 egress for Python App", func() {
-					describeIPv6Tests(assets.NewAssets().Python, stack, "")
+					describeIPv6Tests(assets.NewAssets().Python, stack)
 				})
 			})
 
 			Context(fmt.Sprintf("Using Node.js stack: %s", stack), func() {
 				It("validates IPv6 egress for Node.js App", func() {
-					describeIPv6Tests(assets.NewAssets().Node, stack, "")
+					describeIPv6Tests(assets.NewAssets().Node, stack)
 				})
 			})
 
 			Context(fmt.Sprintf("Using JavaSpring stack: %s", stack), func() {
 				It("validates IPv6 egress for JavaSpring App", func() {
-					describeIPv6Tests("", stack, "assets/java-spring/manifest.yml")
+					describeIPv6Tests("", stack)
 				})
 			})
 		}
