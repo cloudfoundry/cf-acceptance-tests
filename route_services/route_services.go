@@ -86,7 +86,7 @@ var _ = RouteServicesDescribe("Route Services", func() {
 					logs := logshelper.Recent(routeServiceName)
 					Expect(logs.Wait()).To(Exit(0))
 					return logs
-				}).Should(Say("Response Body: go, world"))
+				}).Should(Say("Response Body: Hello go, world"))
 			})
 		})
 
