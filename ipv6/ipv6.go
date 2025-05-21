@@ -1,6 +1,7 @@
 package ipv6
 
 import (
+	"encoding/json"
 	"fmt"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
@@ -11,7 +12,18 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	"net"
 )
+
+func isIPv4(ip string) bool {
+	parsedIP := net.ParseIP(ip)
+	return parsedIP != nil && parsedIP.To4() != nil
+}
+
+func isIPv6(ip string) bool {
+	parsedIP := net.ParseIP(ip)
+	return parsedIP != nil && parsedIP.To4() == nil
+}
 
 var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 	var appName string
@@ -57,11 +69,57 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 
 		for _, data := range EndpointTypeMap {
 			response := helpers.CurlApp(Config, appName, data.path)
-		
+
 			if data.path == "" {
 				Expect(response).To(ContainSubstring("Hello"))
 			} else {
 				Expect(response).To(ContainSubstring(fmt.Sprintf("%s validation resulted in success", data.validationName)))
+			}
+		}
+	}
+
+	describeIpv6NginxTest := func(assetPath, stack string) {
+		commandOptions := []string{"push", appName, "-s", stack, "-p", assetPath, "-m", DEFAULT_MEMORY_LIMIT}
+		defaultPathExpectMessage := "Hello"
+		pushSession := cf.Cf(commandOptions...)
+		exitCode := pushSession.Wait(Config.DetectTimeoutDuration()).ExitCode()
+
+		// Log output if app push fails to diagnose deployment errors. This is crucial for
+		// identifying issues such as unsupported IPv6, which prevent the Nginx app from
+		// being successfully deployed. Capturing stdout and stderr provides insights into
+		// configuration or connectivity problems.
+
+		if exitCode != 0 {
+			fmt.Println("Error pushing app:")
+			fmt.Printf("STDOUT: %s\n", pushSession.Out.Contents())
+			fmt.Printf("STDERR: %s\n", pushSession.Err.Contents())
+		}
+
+		Expect(exitCode).To(BeZero())
+
+		for _, data := range EndpointTypeMap {
+			response := helpers.CurlApp(Config, appName, data.path)
+
+			if data.path == "" {
+				Expect(response).To(ContainSubstring(defaultPathExpectMessage))
+			} else {
+				var result map[string]interface{}
+				Expect(json.Unmarshal([]byte(response), &result)).To(Succeed())
+				ip, ok := result["ip"].(string)
+				Expect(ok).To(BeTrue())
+
+				validationResult := false
+
+				switch data.validationName {
+				case "IPv4":
+					validationResult = isIPv4(ip)
+				case "IPv6":
+					validationResult = isIPv6(ip)
+				case "Dual stack":
+					validationResult = isIPv4(ip) || isIPv6(ip)
+				}
+
+				Expect(validationResult).To(BeTrue(), fmt.Sprintf("%s validation failed with IP: %s", data.validationName, ip))
 			}
 		}
 	}
@@ -84,6 +142,12 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 			Context(fmt.Sprintf("Using Golang stack: %s", stack), func() {
 				It("validates IPv6 egress for Golang App", func() {
 					describeIPv6Tests(assets.NewAssets().Golang, stack)
+				})
+			})
+
+			Context(fmt.Sprintf("Using Nginx stack: %s", stack), func() {
+				It("validates IPv6 egress for Nginx App", func() {
+					describeIpv6NginxTest(assets.NewAssets().Nginx, stack)
 				})
 			})
 		}
