@@ -209,7 +209,7 @@ Many tests specify a buildpack when pushing an app, so that on diego the app sta
 
 For the Cloud Native Buildpacks lifecycle, you can override them by setting different names:
 
-* `cnb_nodejs_buildpack_name: docker://gcr.io/paketo-buildpacks/nodejs:latest`
+* `cnb_nodejs_buildpack_name: docker://docker.io/paketobuildpacks/nodejs:latest`
 
 #### Route Services Test Group Setup
 The `route_services` test group pushes applications which must be able to reach the load balancer of your Cloud Foundry deployment. This requires configuring application security groups to support this. Your deployment manifest should include the following data if you are running the `route_services` group:

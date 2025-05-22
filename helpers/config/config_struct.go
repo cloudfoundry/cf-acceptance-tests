@@ -170,8 +170,8 @@ func getDefaults() config {
 	defaults.StaticFileBuildpackName = ptrToString("staticfile_buildpack")
 	defaults.PythonBuildpackName = ptrToString("python_buildpack")
 
-	defaults.CNBGoBuildpackName = ptrToString("docker://gcr.io/paketo-buildpacks/go:latest")
-	defaults.CNBNodejsBuildpackName = ptrToString("docker://gcr.io/paketo-buildpacks/nodejs:latest")
+	defaults.CNBGoBuildpackName = ptrToString("docker://docker.io/paketobuildpacks/go:latest")
+	defaults.CNBNodejsBuildpackName = ptrToString("docker://docker.io/paketobuildpacks/nodejs:latest")
 
 	defaults.IncludeAppSyslogTCP = ptrToBool(true)
 	defaults.IncludeApps = ptrToBool(true)
