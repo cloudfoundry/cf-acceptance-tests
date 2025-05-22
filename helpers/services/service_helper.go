@@ -47,13 +47,16 @@ func GetServiceBindingGuid(appGuid string, instanceGuid string) string {
 }
 
 func ValidateServiceBindingK8s(appName, serviceName, appGuid, serviceGuid string) {
+	serviceBindingRoot := helpers.CurlApp(Config, appName, "/env/SERVICE_BINDING_ROOT")
+	Expect(serviceBindingRoot).Should(Equal("/etc/cf-service-bindings"))
+
 	getEncodedFilepath := func(serviceName string, fileName string) string {
-		path := fmt.Sprintf("/etc/cf-service-bindings/%s/%s", serviceName, fileName)
+		path := fmt.Sprintf("%s/%s/%s", serviceBindingRoot, serviceName, fileName)
 		return strings.Replace(path, "/", "%2F", -1)
 	}
 
 	checkFileContent := func(fileName string, content string) {
-		curlResponse := helpers.CurlApp(Config, appName, "/file/"+getEncodedFilepath(serviceName, fileName), "-L")
+		curlResponse := helpers.CurlApp(Config, appName, "/file/"+getEncodedFilepath(serviceName, fileName))
 		Expect(curlResponse).Should(ContainSubstring(content))
 	}
 
@@ -70,8 +73,11 @@ func ValidateServiceBindingK8s(appName, serviceName, appGuid, serviceGuid string
 }
 
 func ValidateFileBasedVcapServices(appName, serviceName, appGuid, serviceGuid string) {
+	vcapServicesFilePath := helpers.CurlApp(Config, appName, "/env/VCAP_SERVICES_FILE_PATH")
+	Expect(vcapServicesFilePath).Should(Equal("/etc/cf-service-bindings/vcap_services"))
+
 	getEncodedFilepath := func() string {
-		return strings.Replace("/etc/cf-service-bindings/vcap_services", "/", "%2F", -1)
+		return strings.Replace(vcapServicesFilePath, "/", "%2F", -1)
 	}
 
 	expectedVcapServicesTemplate := `{
@@ -101,7 +107,7 @@ func ValidateFileBasedVcapServices(appName, serviceName, appGuid, serviceGuid st
 		Fail(err.Error())
 	}
 
-	curlResponse := helpers.CurlApp(Config, appName, "/file/"+getEncodedFilepath(), "-L")
+	curlResponse := helpers.CurlApp(Config, appName, "/file/"+getEncodedFilepath())
 	actualJson := VCAPServicesFile{}
 	err = actualJson.ReadFromString(curlResponse)
 	if err != nil {

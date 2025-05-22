@@ -26,23 +26,41 @@ var _ = FileBasedServiceBindingsDescribe("Enabling file based service binding fo
 
 var callback = func(lifeCycle LifeCycle) {
 	var appName, serviceName string
+
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 		serviceName = generator.PrefixedRandomName("cats", "svin") // uppercase characters are not valid
 	})
 
-	Context("When the file-based-vcap-services feature enabled", func() {
-		It("It should store the VCAP_SERVICE binding information in file in the VCAP_SERVICES_FILE_PATH", func() {
-			appGuid, serviceGuid := lifeCycle.Prepare(serviceName, appName, "file-based-vcap-services")
-			services.ValidateFileBasedVcapServices(appName, serviceName, appGuid, serviceGuid)
+	Context("When the file-based-vcap-services feature is enabled", func() {
+		Context("Via API call", func() {
+			It("It should store the VCAP_SERVICES binding information in a file in the VCAP_SERVICES_FILE_PATH", func() {
+				appGuid, serviceGuid := Prepare(appName, serviceName, "file-based-vcap-services", lifeCycle)
+				services.ValidateFileBasedVcapServices(appName, serviceName, appGuid, serviceGuid)
+			})
+		})
 
+		Context("Via manifest", func() {
+			It("It should store the VCAP_SERVICES binding information in a file in the VCAP_SERVICES_FILE_PATH", func() {
+				appGuid, serviceGuid := PrepareWithManifest(appName, serviceName, "file-based-vcap-services", lifeCycle)
+				services.ValidateFileBasedVcapServices(appName, serviceName, appGuid, serviceGuid)
+			})
 		})
 	})
 
-	Context("When the service-binding-k8s feature enabled", func() {
-		It("It should have environment variable SERVICE_BINDING_ROOT which defines the location for the service binding", func() {
-			appGuid, serviceGuid := lifeCycle.Prepare(serviceName, appName, "service-binding-k8s")
-			services.ValidateServiceBindingK8s(appName, serviceName, appGuid, serviceGuid)
+	Context("When the service-binding-k8s feature is enabled", func() {
+		Context("Via API call", func() {
+			It("It should store the binding information in files under the SERVICE_BINDING_ROOT path", func() {
+				appGuid, serviceGuid := Prepare(appName, serviceName, "service-binding-k8s", lifeCycle)
+				services.ValidateServiceBindingK8s(appName, serviceName, appGuid, serviceGuid)
+			})
+		})
+
+		Context("Via manifest", func() {
+			It("It should store the binding information in files under the SERVICE_BINDING_ROOT path", func() {
+				appGuid, serviceGuid := PrepareWithManifest(appName, serviceName, "service-binding-k8s", lifeCycle)
+				services.ValidateServiceBindingK8s(appName, serviceName, appGuid, serviceGuid)
+			})
 		})
 	})
 
@@ -52,5 +70,4 @@ var callback = func(lifeCycle LifeCycle) {
 		Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
 		Eventually(cf.Cf("delete-service", serviceName, "-f").Wait()).Should(Exit(0))
 	})
-
 }
