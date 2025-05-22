@@ -52,10 +52,10 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 		pushSession := cf.Cf(commandOptions...)
 		Expect(pushSession.Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
-		for _, data := range EndpointTypeMap {
+		for key, data := range EndpointTypeMap {
 			response := helpers.CurlApp(Config, appName, data.path)
 
-			if data.path == "" {
+			if key == "default" {
 				Expect(response).To(ContainSubstring(defaultPathExpectMessage))
 			} else {
 				Expect(response).To(ContainSubstring(fmt.Sprintf("%s validation resulted in success", data.validationName)))
