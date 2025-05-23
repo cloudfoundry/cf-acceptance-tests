@@ -3,7 +3,7 @@ GEM
   specs:
     daemons (1.4.1)
     eventmachine (1.2.7)
-    rack (2.2.15)
+    rack (2.2.16)
     thin (1.8.2)
       daemons (~> 1.0, >= 1.0.9)
       eventmachine (~> 1.0, >= 1.0.4)
