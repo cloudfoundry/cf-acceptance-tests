@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"golang.org/x/crypto/ssh"
@@ -208,6 +210,30 @@ var _ = WindowsDescribe("SSH", func() {
 				return string(cf.Cf("events", appName).Wait().Out.Contents())
 			}).Should(MatchRegexp("audit.app.ssh-unauthorized"))
 		})
+
+		Context("disabling ssh", func() {
+			BeforeEach(func() {
+				Expect(cf.Cf("ssh", "-v", appName).Wait()).To(Exit(0))
+			})
+
+			It("can be disabled via cli", func() {
+				Expect(cf.Cf("disable-ssh", appName).Wait()).To(Exit(0))
+
+				expectSshCmdToFail(appName)
+			})
+
+			It("can be disabled via manifest", func() {
+				manifestFile := createManifestSshDisabled(appName)
+				pushArgs := []string{
+					"push",
+					"-f", manifestFile,
+					"-p", assets.NewAssets().Nora,
+				}
+				Expect(cf.Cf(pushArgs...).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+				expectSshCmdToFail(appName)
+			})
+		})
 	})
 
 })
@@ -235,4 +261,32 @@ func sshProxyAddress() string {
 	Expect(err).NotTo(HaveOccurred())
 
 	return response.Links.AppSsh.Href
+}
+
+func createManifestSshDisabled(appName string) string {
+	tmpdir, err := os.MkdirTemp(os.TempDir(), appName)
+	Expect(err).ToNot(HaveOccurred())
+
+	manifestFile := filepath.Join(tmpdir, "manifest.yml")
+	manifestContent := fmt.Sprintf(`---
+applications:
+- name: %s
+  features:
+    ssh: false
+`, appName)
+	err = os.WriteFile(manifestFile, []byte(manifestContent), 0644)
+	Expect(err).ToNot(HaveOccurred())
+
+	return manifestFile
+}
+
+func expectSshCmdToFail(appName string) {
+	sshCmd := cf.Cf("ssh", "-v", appName)
+	Expect(sshCmd.Wait()).To(Exit(1))
+
+	output := string(sshCmd.Out.Contents())
+	stdErr := string(sshCmd.Err.Contents())
+
+	Expect(string(output)).To(MatchRegexp("FAILED"))
+	Expect(string(stdErr)).To(MatchRegexp("Error opening SSH connection"))
 }
