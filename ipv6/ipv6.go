@@ -2,7 +2,6 @@ package ipv6
 
 import (
 	"fmt"
-	"os"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
@@ -12,6 +11,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	"os"
 )
 
 var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
@@ -74,6 +74,11 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 		pushAndValidate(commandOptions, "ok")
 	}
 
+	describeIPv6RubyTests := func(assetPath, stack string) {
+		commandOptions := []string{"push", appName, "-s", stack, "-p", assetPath, "-m", DEFAULT_MEMORY_LIMIT}
+		pushAndValidate(commandOptions, "Healthy")
+	}
+
 	Describe("Egress Capability in Apps", func() {
 		for _, stack := range Config.GetStacks() {
 
@@ -98,6 +103,12 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 			Context(fmt.Sprintf("Using Golang stack: %s", stack), func() {
 				It("validates IPv6 egress for Golang App", func() {
 					describeIPv6Tests(assets.NewAssets().Golang, stack)
+				})
+			})
+
+			Context(fmt.Sprintf("Using Ruby stack: %s", stack), func() {
+				It("validates IPv6 egress for Ruby App", func() {
+					describeIPv6RubyTests(assets.NewAssets().RubySimple, stack)
 				})
 			})
 		}
