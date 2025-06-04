@@ -10,59 +10,56 @@ import (
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	"os"
+	"path/filepath"
 )
 
 type LifeCycle interface {
-	Prepare(string, string, string) (string, string)
+	CreateAppArgs() []string
+	PushArgs() []string
 }
 
 type BuildpackLifecycles struct{}
 type CNBLifecycles struct{}
 type DockerLifecycles struct{}
 
-func (b *BuildpackLifecycles) Prepare(serviceName, appName, appFeatureFlag string) (string, string) {
-
-	Expect(cf.Cf("create-app", appName).Wait()).To(Exit(0))
-	appGuid, serviceGuid := LifeCycleCommon(serviceName, appName, appFeatureFlag)
-
-	Expect(cf.Cf(app_helpers.CatnipWithArgs(
-		appName,
-		"-m", DEFAULT_MEMORY_LIMIT)...,
-	).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-	return appGuid, serviceGuid
-
+func (b *BuildpackLifecycles) CreateAppArgs() []string {
+	return []string{}
 }
 
-func (c *CNBLifecycles) Prepare(serviceName, appName, appFeatureFlag string) (string, string) {
+func (b *BuildpackLifecycles) PushArgs() []string {
+	return []string{
+		"--buildpack", Config.GetBinaryBuildpackName(),
+		"-p", assets.NewAssets().Catnip,
+		"-c", "./catnip",
+	}
+}
 
-	Expect(cf.Cf("create-app", appName, "--app-type", "cnb", "--buildpack", Config.GetGoBuildpackName()).Wait()).To(Exit(0))
-	appGuid, serviceGuid := LifeCycleCommon(serviceName, appName, appFeatureFlag)
+func (c *CNBLifecycles) CreateAppArgs() []string {
+	return []string{
+		"--app-type", "cnb",
+		"--buildpack", Config.GetCNBGoBuildpackName(),
+	}
+}
 
-	Expect(cf.Cf(
-		"push",
-		appName,
+func (c *CNBLifecycles) PushArgs() []string {
+	return []string{
 		"--lifecycle", "cnb",
 		"--buildpack", Config.GetCNBGoBuildpackName(),
-		"-m", DEFAULT_MEMORY_LIMIT,
 		"-p", assets.NewAssets().CatnipSrc,
-	).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-	return appGuid, serviceGuid
+	}
 }
 
-func (d *DockerLifecycles) Prepare(serviceName, appName, appFeatureFlag string) (string, string) {
+func (d *DockerLifecycles) CreateAppArgs() []string {
+	return []string{
+		"--app-type", "docker",
+	}
+}
 
-	Expect(cf.Cf("create-app", appName, "--app-type", "docker").Wait()).To(Exit(0))
-	appGuid, serviceGuid := LifeCycleCommon(serviceName, appName, appFeatureFlag)
-
-	Expect(cf.Cf(
-		"push",
-		appName,
+func (d *DockerLifecycles) PushArgs() []string {
+	return []string{
 		"--docker-image", Config.GetCatnipDockerAppImage(),
-		"-m", DEFAULT_MEMORY_LIMIT,
-	).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-	return appGuid, serviceGuid
+	}
 }
 
 const (
@@ -70,17 +67,79 @@ const (
 	CREDS = `{"username": "admin", "password":"pa55woRD"}`
 )
 
-func LifeCycleCommon(serviceName, appName, appFeatureFlag string) (string, string) {
+func Prepare(appName, serviceName, appFeatureFlag string, lifecycle LifeCycle) (string, string) {
+	appGuid := CreateApp(appName, lifecycle.CreateAppArgs()...)
+	serviceGuid := CreateUpsi(serviceName)
+	BindUpsi(appName, serviceName)
+	EnableFeatureViaAPI(appGuid, appFeatureFlag)
 
+	pushArgs := append([]string{appName}, lifecycle.PushArgs()...)
+	Push(pushArgs...)
+
+	return appGuid, serviceGuid
+}
+
+func PrepareWithManifest(appName, serviceName, appFeatureFlag string, lifecycle LifeCycle) (string, string) {
+	serviceGuid := CreateUpsi(serviceName)
+	manifestFile := CreateManifest(appName, serviceName, appFeatureFlag)
+
+	pushArgs := append([]string{"-f", manifestFile}, lifecycle.PushArgs()...)
+	Push(pushArgs...)
+
+	return app_helpers.GetAppGuid(appName), serviceGuid
+}
+
+func CreateApp(appName string, args ...string) string {
+	createAppArgs := []string{
+		"create-app", appName,
+	}
+	createAppArgs = append(createAppArgs, args...)
+	Expect(cf.Cf(createAppArgs...).Wait()).To(Exit(0))
+	appGuid := app_helpers.GetAppGuid(appName)
+
+	return appGuid
+}
+
+func CreateUpsi(serviceName string) string {
 	Expect(cf.Cf("create-user-provided-service", serviceName, "-p", CREDS, "-t", TAGS).Wait()).To(Exit(0))
 	serviceGuid := services.GetServiceInstanceGuid(serviceName)
 
-	appGuid := app_helpers.GetAppGuid(appName)
+	return serviceGuid
+}
 
+func CreateManifest(appName, serviceName, appFeatureFlag string) string {
+	tmpdir, err := os.MkdirTemp(os.TempDir(), appName)
+	Expect(err).ToNot(HaveOccurred())
+
+	manifestFile := filepath.Join(tmpdir, "manifest.yml")
+	manifestContent := fmt.Sprintf(`---
+applications:
+- name: %s
+  features:
+    %s: true
+  services:
+    - %s
+`, appName, appFeatureFlag, serviceName)
+	err = os.WriteFile(manifestFile, []byte(manifestContent), 0644)
+	Expect(err).ToNot(HaveOccurred())
+
+	return manifestFile
+}
+
+func BindUpsi(appName, serviceName string) {
+	Expect(cf.Cf("bind-service", appName, serviceName).Wait()).To(Exit(0))
+}
+
+func EnableFeatureViaAPI(appGuid, appFeatureFlag string) {
 	appFeatureUrl := fmt.Sprintf("/v3/apps/%s/features/%s", appGuid, appFeatureFlag)
 	Expect(cf.Cf("curl", appFeatureUrl, "-X", "PATCH", "-d", `{"enabled": true}`).Wait()).To(Exit(0))
+}
 
-	Expect(cf.Cf("bind-service", appName, serviceName).Wait()).To(Exit(0))
-
-	return appGuid, serviceGuid
+func Push(args ...string) {
+	pushArgs := []string{
+		"push",
+		"-m", DEFAULT_MEMORY_LIMIT,
+	}
+	pushArgs = append(pushArgs, args...)
+	Expect(cf.Cf(pushArgs...).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 }
