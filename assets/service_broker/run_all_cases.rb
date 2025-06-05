@@ -6,7 +6,7 @@ require 'benchmark'
 require 'securerandom'
 require 'optparse'
 
-DEFAULT_BROKER_URL = 'http://async-broker.bosh-lite.com'
+DEFAULT_BROKER_URL = 'http://async-broker.bosh-lite.env.wg-ard.ci.cloudfoundry.org'
 
 def get_config
   raw_config = File.read('data.json')
