@@ -203,6 +203,7 @@ type testReporterConfig struct {
 	CustomTags        map[string]interface{} `json:"custom_tags"`
 }
 
+const BoshLiteDomain = "bosh-lite.env.wg-ard.ci.cloudfoundry.org"
 var tmpFilePath string
 var testCfg testConfig
 
@@ -240,11 +241,11 @@ func ptrToFloat(f float64) *float64 {
 var _ = Describe("Config", func() {
 	BeforeEach(func() {
 		testCfg = testConfig{}
-		testCfg.ApiEndpoint = ptrToString("api.bosh-lite.com")
+		testCfg.ApiEndpoint = ptrToString(BoshLiteDomain)
 		testCfg.AdminUser = ptrToString("admin")
 		testCfg.AdminPassword = ptrToString("admin")
 		testCfg.SkipSSLValidation = ptrToBool(true)
-		testCfg.AppsDomain = ptrToString("cf-app.bosh-lite.com")
+		testCfg.AppsDomain = ptrToString(BoshLiteDomain)
 		testCfg.UseHttp = ptrToBool(false)
 	})
 
@@ -826,12 +827,12 @@ var _ = Describe("Config", func() {
 		It(`returns the URL`, func() {
 			cfg, err := cfg.NewCatsConfig(tmpFilePath)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(cfg.GetApiEndpoint()).To(Equal("api.bosh-lite.com"))
+			Expect(cfg.GetApiEndpoint()).To(Equal("api." + BoshLiteDomain))
 		})
 
 		Context("when url is an IP address", func() {
 			BeforeEach(func() {
-				testCfg.ApiEndpoint = ptrToString("10.244.0.34") // api.bosh-lite.com
+				testCfg.ApiEndpoint = ptrToString("10.244.0.34") // api.bosh-lite.env.wg-ard.ci.cloudfoundry.org
 			})
 
 			It("returns the IP address", func() {
@@ -879,13 +880,13 @@ var _ = Describe("Config", func() {
 
 		Context("when the url contains https://", func() {
 			BeforeEach(func() {
-				testCfg.ApiEndpoint = ptrToString("https://api.bosh-lite.com")
+				testCfg.ApiEndpoint = ptrToString("https://api." + BoshLiteDomain)
 			})
 
 			It("returns an error", func() {
 				_, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(err).To(HaveOccurred())
-				Expect(err).To(MatchError("* Invalid configuration: 'api' must not contain a scheme/protocol but was set to 'https' in 'https://api.bosh-lite.com'"))
+				Expect(err).To(MatchError("* Invalid configuration: 'api' must not contain a scheme/protocol but was set to 'https' in 'https://api." + BoshLiteDomain + "'"))
 			})
 		})
 
@@ -906,7 +907,7 @@ var _ = Describe("Config", func() {
 		It("returns the domain", func() {
 			c, err := cfg.NewCatsConfig(tmpFilePath)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(c.GetAppsDomain()).To(Equal("cf-app.bosh-lite.com"))
+			Expect(c.GetAppsDomain()).To(Equal("cf-app." + BoshLiteDomain))
 		})
 
 		Context("when the domain is not valid", func() {

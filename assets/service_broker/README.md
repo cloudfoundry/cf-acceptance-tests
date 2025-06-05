@@ -181,7 +181,7 @@ as specified, and then makes the corresponding cf cli command. The CLI output is
 name as the input file with a "-out" suffix. (For example, acceptance.csv becomes acceptance-out.csv)
 
 If the caller provides a broker URL, the script will use that address for its test cases, otherwise it will default to 
-async-broker.bosh-lite.com.
+async-broker.bosh-lite.env.wg-ard.ci.cloudfoundry.org.
 
 The script also preforms setup and cleanup for each test it executes. e.g. performing an update requires a setup which
 creates an instance and cleanup which deletes it.
