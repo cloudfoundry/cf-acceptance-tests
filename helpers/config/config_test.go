@@ -241,11 +241,11 @@ func ptrToFloat(f float64) *float64 {
 var _ = Describe("Config", func() {
 	BeforeEach(func() {
 		testCfg = testConfig{}
-		testCfg.ApiEndpoint = ptrToString(BoshLiteDomain)
+		testCfg.ApiEndpoint = ptrToString("api." + BoshLiteDomain)
 		testCfg.AdminUser = ptrToString("admin")
 		testCfg.AdminPassword = ptrToString("admin")
 		testCfg.SkipSSLValidation = ptrToBool(true)
-		testCfg.AppsDomain = ptrToString(BoshLiteDomain)
+		testCfg.AppsDomain = ptrToString("cf-app." + BoshLiteDomain)
 		testCfg.UseHttp = ptrToBool(false)
 	})
 
