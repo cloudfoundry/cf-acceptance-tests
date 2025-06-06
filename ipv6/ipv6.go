@@ -100,6 +100,12 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 					describeIPv6Tests(assets.NewAssets().Golang, stack)
 				})
 			})
+
+            Context(fmt.Sprintf("Using PHP stack: %s", stack), func() {
+                It("validates IPv6 egress for PHP App", func() {
+                    describeIPv6Tests(assets.NewAssets().Php, stack)
+                })
+            })
 		}
 	})
 })
