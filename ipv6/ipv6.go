@@ -3,6 +3,7 @@ package ipv6
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
@@ -59,23 +60,30 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 		},
 	}
 
-	describeIPv6Tests := func(buildpackPath string, stack string) {
-		appName = random_name.CATSRandomName("APP")
-		Expect(cf.Cf("push", appName,
-			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", buildpackPath,
-			"-s", stack,
-		).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+	pushAndValidate := func(commandOptions []string, defaultPathExpectMessage string) {
+		pushSession := cf.Cf(commandOptions...)
+		Expect(pushSession.Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
-		for _, data := range EndpointTypeMap {
+		for key, data := range EndpointTypeMap {
 			response := helpers.CurlApp(Config, appName, data.path)
 
-			if data.path == "" {
-				Expect(response).To(ContainSubstring("Hello"))
+			if key == "default" {
+				Expect(response).To(ContainSubstring(defaultPathExpectMessage))
 			} else {
 				Expect(response).To(ContainSubstring(fmt.Sprintf("%s validation resulted in success", data.validationName)))
 			}
 		}
+	}
+
+	describeIPv6Tests := func(assetPath, stack string) {
+		commandOptions := []string{"push", appName, "-s", stack, "-p", assetPath, "-m", DEFAULT_MEMORY_LIMIT}
+		pushAndValidate(commandOptions, "Hello")
+	}
+
+	describeIPv6JavaSpringTest := func(stack string) {
+		Expect(os.Chdir("assets/java-spring")).NotTo(HaveOccurred())
+		commandOptions := []string{"push", appName, "-s", stack}
+		pushAndValidate(commandOptions, "ok")
 	}
 
 	describeIpv6NginxTest := func(assetPath, stack string) {
@@ -136,6 +144,12 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 			Context(fmt.Sprintf("Using Node.js stack: %s", stack), func() {
 				It("validates IPv6 egress for Node.js App", func() {
 					describeIPv6Tests(assets.NewAssets().Node, stack)
+				})
+			})
+
+			Context(fmt.Sprintf("Using JavaSpring stack: %s", stack), func() {
+				It("validates IPv6 egress for JavaSpring App", func() {
+					describeIPv6JavaSpringTest(stack)
 				})
 			})
 
