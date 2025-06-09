@@ -180,7 +180,7 @@
         "sleep_seconds": 0,
         "status": 201,
         "body": {
-          "route_service_url": "https://logging-route-service.bosh-lite.com",
+          "route_service_url": "https://logging-route-service.bosh-lite.env.wg-ard.ci.cloudfoundry.org",
           "credentials": {
             "uri": "fake-service://fake-user:fake-password@fake-host:3306/fake-dbname",
             "username": "fake-user",

@@ -10,11 +10,11 @@ import (
 )
 
 var requiredConfig = `{
-  "api": "api.bosh-lite.com",
+  "api": "api.bosh-lite.env.wg-ard.ci.cloudfoundry.org",
   "admin_user": "admin",
   "admin_password": "password",
   "skip_ssl_validation": false,
-  "apps_domain": "cf-app.bosh-lite.com",
+  "apps_domain": "cf-app.bosh-lite.env.wg-ard.ci.cloudfoundry.org",
   "use_http": false
 }`
 
