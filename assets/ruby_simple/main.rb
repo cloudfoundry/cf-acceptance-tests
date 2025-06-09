@@ -29,27 +29,27 @@ def logger
 end
 
 class IPTester
-  def initialize(endpoints)
-    @endpoints = endpoints
+  def initialize(endpoint)
+    @endpoint = endpoint
   end
 
-  def test_single_address(endpoint)
-    test_endpoint(endpoint).tap do |result|
-      print_result(endpoint, result)
+  def test_single_address
+    test_endpoint.tap do |result|
+      print_result(result)
     end
   end
 
   private
 
-  def print_result(endpoint, result)
-    validation_type = ENDPOINT_TYPE_MAP[endpoint][:validation_name]
+  def print_result(result)
+    validation_type = ENDPOINT_TYPE_MAP[@endpoint][:validation_name]
     message = "#{validation_type} validation #{result[:success] ? 'succeeded' : 'failed'}."
     result[:success] ? logger.info(message) : logger.error(message)
   end
 
-  def test_endpoint(endpoint)
-    logger.info("Testing endpoint: #{endpoint}")
-    uri = URI("http://#{endpoint}/")
+  def test_endpoint
+    logger.info("Testing endpoint: #{@endpoint}")
+    uri = URI("http://#{@endpoint}/")
 
     begin
       response = Net::HTTP.get_response(uri)
@@ -60,7 +60,7 @@ class IPTester
         ip_type: ip_type
       }
     rescue => e
-      logger.error("Failed to reach #{endpoint}: #{e}")
+      logger.error("Failed to reach #{@endpoint}: #{e.class} - #{e.message}\n#{e.backtrace.join("\n")}")
       {
         success: false,
         error: e.message,
@@ -70,7 +70,10 @@ class IPTester
   end
 
   def determine_ip_type(ip_string)
-    IPAddr.new(ip_string).ipv4? ? 'IPv4' : 'IPv6'
+    ip = IPAddr.new(ip_string)
+    return 'IPv4' if ip.ipv4?
+    return 'IPv6' if ip.ipv6?
+    'Unknown'
   rescue IPAddr::InvalidAddressError
     'Invalid IP'
   end
@@ -83,15 +86,16 @@ end
 
 ENDPOINT_TYPE_MAP.each do |endpoint, data|
   get data[:path] do
-    tester = IPTester.new([endpoint])
-    result = tester.test_single_address(endpoint)
+    tester = IPTester.new(endpoint)
+    result = tester.test_single_address
     status(result[:success] ? 200 : 500)
 
     validation_name = ENDPOINT_TYPE_MAP[endpoint][:validation_name]
-    "#{validation_name} validation resulted in #{result[:success] ? 'success' : 'failure'}. Detected IP type is #{result[:ip_type]}. Error message: #{result[:error]}"
+    message = "#{validation_name} validation resulted in #{result[:success] ? 'success' : 'failure'}. Detected IP type is #{result[:ip_type]}."
+    message += " Error message: #{result[:error]}" if result[:error]
+    message
   end
 end
-
 
 get '/' do
 <<-RESPONSE
