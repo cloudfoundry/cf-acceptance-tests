@@ -1,6 +1,7 @@
 package ipv6
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
@@ -12,7 +13,9 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
+	"net"
 )
+
 
 var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 	var appName string
@@ -74,6 +77,47 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 		pushAndValidate(commandOptions, "ok")
 	}
 
+	describeIpv6NginxTest := func(assetPath, stack string) {
+        pushSession := cf.Cf("push", appName, "-s", stack, "-p", assetPath, "-m", DEFAULT_MEMORY_LIMIT)
+        Expect(pushSession.Wait(Config.DetectTimeoutDuration())).To(Exit(0))
+
+        isIPv4 := func(ip string) bool {
+            parsedIP := net.ParseIP(ip)
+            return parsedIP != nil && parsedIP.To4() != nil
+        }
+
+        isIPv6 := func(ip string) bool {
+            parsedIP := net.ParseIP(ip)
+            return parsedIP != nil && parsedIP.To4() == nil
+        }
+
+        for key, data := range EndpointTypeMap {
+            response := helpers.CurlApp(Config, appName, data.path)
+
+            if key == "default" {
+                Expect(response).To(ContainSubstring("Hello NGINX!"))
+            } else {
+                var result map[string]interface{}
+                Expect(json.Unmarshal([]byte(response), &result)).To(Succeed())
+                ip, ok := result["ip"].(string)
+                Expect(ok).To(BeTrue())
+
+                validationResult := false
+
+                switch data.validationName {
+                case "IPv4":
+                    validationResult = isIPv4(ip)
+                case "IPv6":
+                    validationResult = isIPv6(ip)
+                case "Dual stack":
+                    validationResult = isIPv4(ip) || isIPv6(ip)
+                }
+
+                Expect(validationResult).To(BeTrue(), fmt.Sprintf("%s validation failed with the following error: %s", data.validationName, ip))
+            }
+        }
+    }
+
 	Describe("Egress Capability in Apps", func() {
 		for _, stack := range Config.GetStacks() {
 
@@ -98,6 +142,12 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 			Context(fmt.Sprintf("Using Golang stack: %s", stack), func() {
 				It("validates IPv6 egress for Golang App", func() {
 					describeIPv6Tests(assets.NewAssets().Golang, stack)
+				})
+			})
+
+			Context(fmt.Sprintf("Using Nginx stack: %s", stack), func() {
+				It("validates IPv6 egress for Nginx App", func() {
+					describeIpv6NginxTest(assets.NewAssets().Nginx, stack)
 				})
 			})
 		}
