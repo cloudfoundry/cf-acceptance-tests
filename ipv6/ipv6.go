@@ -147,7 +147,7 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 
 			Context(fmt.Sprintf("Using Nginx stack: %s", stack), func() {
 				It("validates IPv6 egress for Nginx App", func() {
-					describeIpv6NginxTest(assets.NewAssets().Nginx, stack)
+					describeIpv6NginxTest(assets.NewAssets().NginxIPv6, stack)
 				})
 			})
 		}
