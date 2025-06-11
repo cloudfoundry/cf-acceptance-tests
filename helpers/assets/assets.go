@@ -23,6 +23,7 @@ type Assets struct {
 	Python                     string
 	PythonCrashApp             string
 	Nginx                      string
+	NginxIPv6                  string
 	Node                       string
 	CNBNode                    string
 	NodeWithProcfile           string
@@ -70,6 +71,7 @@ func NewAssets() Assets {
 		LoggregatorLoadGenerator:   "assets/loggregator-load-generator",
 		LoggregatorLoadGeneratorGo: "assets/loggregator-load-generator-go",
 		Nginx:                      "assets/nginx",
+		NginxIPv6:                  "assets/nginx-ipv6",
 		Node:                       "assets/node",
 		CNBNode:                    "assets/cnb-node",
 		NodeWithProcfile:           "assets/node-with-procfile",
