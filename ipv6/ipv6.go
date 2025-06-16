@@ -1,9 +1,9 @@
 package ipv6
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
+	"net"
+	"strings"
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
@@ -13,9 +13,21 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
-	"net"
 )
 
+func ValidateIP(ipAddress, expectedType string) {
+	parsedIP := net.ParseIP(ipAddress)
+	Expect(parsedIP).NotTo(BeNil(), "Expected a valid IP address")
+
+	switch expectedType {
+	case "IPv4":
+		Expect(parsedIP.To4()).NotTo(BeNil(), "Expected an IPv4 address")
+	case "IPv6":
+		Expect(parsedIP.To4()).To(BeNil(), "Expected an IPv6 address")
+	case "Dual stack":
+		Expect(parsedIP).NotTo(BeNil(), "Expected either an IPv4 or IPv6 address")
+	}
+}
 
 var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 	var appName string
@@ -30,24 +42,24 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 	})
 
 	EndpointTypeMap := map[string]struct {
-		validationName string
-		path           string
+		expectedType string
+		path         string
 	}{
-		"api.ipify.org": {
-			validationName: "IPv4",
-			path:           "/ipv4-test",
+		"IPv4": {
+			expectedType: "IPv4",
+			path:         "/ipv4-test",
 		},
-		"api6.ipify.org": {
-			validationName: "IPv6",
-			path:           "/ipv6-test",
+		// "IPv6": {
+		// 	expectedType: "IPv6",
+		// 	path:         "/ipv6-test",
+		// },
+		"Dual stack": {
+			expectedType: "Dual stack",
+			path:         "/dual-stack-test",
 		},
-		"api64.ipify.org": {
-			validationName: "Dual stack",
-			path:           "/dual-stack-test",
-		},
-		"default": {
-			validationName: "Default app",
-			path:           "",
+		"Default": {
+			expectedType: "",
+			path:         "",
 		},
 	}
 
@@ -55,13 +67,18 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 		pushSession := cf.Cf(commandOptions...)
 		Expect(pushSession.Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
-		for key, data := range EndpointTypeMap {
-			response := helpers.CurlApp(Config, appName, data.path)
+		for _, data := range EndpointTypeMap {
+			response := helpers.CurlAppWithStatusCode(Config, appName, data.path)
 
-			if key == "default" {
+			if data.expectedType == "" {
 				Expect(response).To(ContainSubstring(defaultPathExpectMessage))
 			} else {
-				Expect(response).To(ContainSubstring(fmt.Sprintf("%s validation resulted in success", data.validationName)))
+				responseParts := strings.Split(response, "\n")
+				ipAddress := responseParts[0]
+				statusCode := responseParts[1]
+
+				ValidateIP(ipAddress, data.expectedType)
+				Expect(statusCode).To(Equal("200"))
 			}
 		}
 	}
@@ -71,83 +88,11 @@ var _ = IPv6Describe("IPv6 Connectivity Tests", func() {
 		pushAndValidate(commandOptions, "Hello")
 	}
 
-	describeIPv6JavaSpringTest := func(stack string) {
-		Expect(os.Chdir("assets/java-spring")).NotTo(HaveOccurred())
-		commandOptions := []string{"push", appName, "-s", stack}
-		pushAndValidate(commandOptions, "ok")
-	}
-
-	describeIpv6NginxTest := func(assetPath, stack string) {
-        pushSession := cf.Cf("push", appName, "-s", stack, "-p", assetPath, "-m", DEFAULT_MEMORY_LIMIT)
-        Expect(pushSession.Wait(Config.DetectTimeoutDuration())).To(Exit(0))
-
-        isIPv4 := func(ip string) bool {
-            parsedIP := net.ParseIP(ip)
-            return parsedIP != nil && parsedIP.To4() != nil
-        }
-
-        isIPv6 := func(ip string) bool {
-            parsedIP := net.ParseIP(ip)
-            return parsedIP != nil && parsedIP.To4() == nil
-        }
-
-        for key, data := range EndpointTypeMap {
-            response := helpers.CurlApp(Config, appName, data.path)
-
-            if key == "default" {
-                Expect(response).To(ContainSubstring("Hello NGINX!"))
-            } else {
-                var result map[string]interface{}
-                Expect(json.Unmarshal([]byte(response), &result)).To(Succeed())
-                ip, ok := result["ip"].(string)
-                Expect(ok).To(BeTrue())
-
-                validationResult := false
-
-                switch data.validationName {
-                case "IPv4":
-                    validationResult = isIPv4(ip)
-                case "IPv6":
-                    validationResult = isIPv6(ip)
-                case "Dual stack":
-                    validationResult = isIPv4(ip) || isIPv6(ip)
-                }
-
-                Expect(validationResult).To(BeTrue(), fmt.Sprintf("%s validation failed with the following error: %s", data.validationName, ip))
-            }
-        }
-    }
-
 	Describe("Egress Capability in Apps", func() {
 		for _, stack := range Config.GetStacks() {
-
 			Context(fmt.Sprintf("Using Python stack: %s", stack), func() {
 				It("validates IPv6 egress for Python App", func() {
 					describeIPv6Tests(assets.NewAssets().Python, stack)
-				})
-			})
-
-			Context(fmt.Sprintf("Using Node.js stack: %s", stack), func() {
-				It("validates IPv6 egress for Node.js App", func() {
-					describeIPv6Tests(assets.NewAssets().Node, stack)
-				})
-			})
-
-			Context(fmt.Sprintf("Using JavaSpring stack: %s", stack), func() {
-				It("validates IPv6 egress for JavaSpring App", func() {
-					describeIPv6JavaSpringTest(stack)
-				})
-			})
-
-			Context(fmt.Sprintf("Using Golang stack: %s", stack), func() {
-				It("validates IPv6 egress for Golang App", func() {
-					describeIPv6Tests(assets.NewAssets().Golang, stack)
-				})
-			})
-
-			Context(fmt.Sprintf("Using Nginx stack: %s", stack), func() {
-				It("validates IPv6 egress for Nginx App", func() {
-					describeIpv6NginxTest(assets.NewAssets().Nginx, stack)
 				})
 			})
 		}

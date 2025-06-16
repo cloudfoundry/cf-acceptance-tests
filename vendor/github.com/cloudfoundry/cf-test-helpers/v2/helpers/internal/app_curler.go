@@ -34,3 +34,15 @@ func (appCurler *AppCurler) CurlAndWait(cfg CurlConfig, appName string, path str
 	ExpectWithOffset(3, string(curlCmd.Err.Contents())).To(HaveLen(0))
 	return string(curlCmd.Out.Contents())
 }
+
+
+func (appCurler *AppCurler) CurlWithStatusCode(cfg CurlConfig, appName string, path string, timeout time.Duration, args ...string) string {
+    appUri := appCurler.UriCreator.AppUri(appName, path)
+    curlArgs := append([]string{"-s", "-w", "%{http_code}", appUri}, args...)
+
+    curlCmd := appCurler.CurlFunc(cfg, curlArgs...).Wait(timeout)
+	
+    ExpectWithOffset(3, curlCmd).To(gexec.Exit(0))
+    ExpectWithOffset(3, string(curlCmd.Err.Contents())).To(HaveLen(0))
+    return string(curlCmd.Out.Contents())
+}
