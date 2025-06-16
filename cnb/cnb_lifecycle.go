@@ -9,6 +9,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
+	"github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -43,17 +44,41 @@ var _ = CNBDescribe("CloudNativeBuildpacks lifecycle", func() {
 		})
 	})
 
-	Describe("pushing Node.js application with CNB lifecycle and no buildpacks", func() {
-		It("fails", func() {
-			Skip("System buildpacks are supported in latest CAPI version")
-			push := cf.Cf("push",
-				appName,
-				"-p", assets.NewAssets().CNBNode,
-				"-f", filepath.Join(assets.NewAssets().CNBNode, "manifest.yml"),
-			).Wait(Config.CfPushTimeoutDuration())
+	Describe("creating system CNB buildpacks", func() {
+		var buildpackName string
 
-			Expect(push).To(Exit(1))
-			Expect(combineOutput(push.Out, push.Err)).To(Say("Buildpack\\(s\\) must be specified when using Cloud Native Buildpacks"))
+		BeforeEach(func() {
+			buildpackName = random_name.CATSRandomName("CNB-BUILDPACK")
+		})
+
+		AfterEach(func() {
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				Expect(cf.Cf("delete-buildpack", buildpackName, "-f").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			})
+		})
+
+		Describe("uploading a .cnb extension cnb", func() {
+			It("makes the app reachable by its bound route", func() {
+				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+					Expect(cf.Cf("create-buildpack",
+						buildpackName,
+						assets.NewAssets().CNBNodeBuildpack,
+						"1",
+						"--lifecycle", "cnb",
+					).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+				})
+
+				Expect(cf.Cf("push",
+					appName,
+					"-p", assets.NewAssets().CNBNode,
+					"-b", buildpackName,
+					"-f", filepath.Join(assets.NewAssets().CNBNode, "manifest.yml"),
+				).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+
+				Eventually(func() string {
+					return helpers.CurlAppRoot(Config, appName)
+				}).Should(ContainSubstring("Hello from a node app!"))
+			})
 		})
 	})
 })

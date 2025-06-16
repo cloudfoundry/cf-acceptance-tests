@@ -111,7 +111,7 @@ include_app_syslog_tcp
 * `include_app_syslog_tcp`: Flag to include the app syslog drain over TCP test group.
 * `include_apps`: Flag to include the apps test group.
 * `readiness_health_checks_enabled`: Defaults to `true`. Set to false if you are using an environment without readiness health checks.
-* `include_cnb`: Flag to include tests related to building apps using Cloud Native Buildpacks. Diego must be deployed and the CC API diego_cnb feature flag must be enabled for these tests to pass. The CF CLI version must be at least v8.9.0.
+* `include_cnb`: Flag to include tests related to building apps using Cloud Native Buildpacks. Diego must be deployed and the CC API diego_cnb feature flag must be enabled for these tests to pass. The CF CLI version must be at least v8.14.0.
 * `include_container_networking`: Flag to include tests related to container networking.
 * `credhub_mode`: Valid values are `assisted` or `non-assisted`. [See below](#credhub-modes).
 * `credhub_location`: Location of CredHub instance; default is `https://credhub.service.cf.internal:8844`

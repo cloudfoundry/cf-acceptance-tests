@@ -4,6 +4,7 @@ type Assets struct {
 	AspClassic                 string
 	Catnip                     string
 	CatnipSrc                  string
+	CNBNodeBuildpack           string
 	CredHubEnabledApp          string
 	CredHubServiceBroker       string
 	Dora                       string
@@ -52,6 +53,7 @@ func NewAssets() Assets {
 		AspClassic:           "assets/asp-classic",
 		Catnip:               "assets/catnip/bin",
 		CatnipSrc:            "assets/catnip",
+		CNBNodeBuildpack:     "assets/cnb-node-buildpack/nodejs-7.6.2.cnb",
 		CredHubEnabledApp:    "assets/credhub-enabled-app/credhub-enabled-app.jar",
 		CredHubServiceBroker: "assets/credhub-service-broker",
 		Dora:                 "assets/dora",
