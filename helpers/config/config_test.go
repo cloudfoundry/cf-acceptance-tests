@@ -204,6 +204,7 @@ type testReporterConfig struct {
 }
 
 const BoshLiteDomain = "bosh-lite.env.wg-ard.ci.cloudfoundry.org"
+
 var tmpFilePath string
 var testCfg testConfig
 
