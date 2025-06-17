@@ -4,56 +4,36 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"time"
 )
 
-type EndpointType struct {
-	validationName string
-	path           string
-}
-
-var endpointTypeMap = map[string]EndpointType{
-	"api.ipify.org": {
-		validationName: "IPv4",
-		path:           "/ipv4-test",
-	},
-	"api6.ipify.org": {
-		validationName: "IPv6",
-		path:           "/ipv6-test",
-	},
-	"api64.ipify.org": {
-		validationName: "Dual stack",
-		path:           "/dual-stack-test",
-	},
+var endpointMap = map[string]string{
+	"/ipv4-test":     "https://api.ipify.org",
+	"/ipv6-test":     "https://api6.ipify.org",
+	"/dual-stack-test": "https://api64.ipify.org",
 }
 
 func main() {
-	http.HandleFunc("/", handleRequest)
+	http.HandleFunc("/", hello)
 	http.HandleFunc("/requesturi/", echo)
 
-	log.Printf("Starting server on %s\n", os.Getenv("PORT"))
 
-	server := &http.Server{
-		Addr:    fmt.Sprintf(":%s", os.Getenv("PORT")),
+	for path, apiURL := range endpointMap {
+		http.HandleFunc(path, createIPHandler(apiURL))
 	}
 
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatalf("Could not start server: %s\n", err)
-	}
-}
-
-func handleRequest(res http.ResponseWriter, req *http.Request) {
-	for endpoint, data := range endpointTypeMap {
-		if req.URL.Path == data.path {
-			testEndpoint(res, endpoint, data.validationName)
-			return
-		}
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
 	}
 
-	hello(res, req)
+	fmt.Printf("Listening on port %s...\n", port)
+	err := http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		log.Fatalf("Could not start server: %v\n", err)
+	}
 }
 
 func hello(res http.ResponseWriter, req *http.Request) {
@@ -61,18 +41,23 @@ func hello(res http.ResponseWriter, req *http.Request) {
 }
 
 func echo(res http.ResponseWriter, req *http.Request) {
-	fmt.Fprintln(res, fmt.Sprintf("Request URI is [%s]\nQuery String is [%s]", req.RequestURI, req.URL.RawQuery))
+	fmt.Fprintf(res, "Request URI is [%s]\nQuery String is [%s]\n", req.RequestURI, req.URL.RawQuery)
 }
 
-func testEndpoint(res http.ResponseWriter, endpoint, validationName string) {
-	client := &http.Client{
-		Timeout: 5 * time.Second,
+func createIPHandler(apiURL string) http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		fetchAndWriteIP(res, apiURL)
 	}
+}
 
-	resp, err := client.Get(fmt.Sprintf("http://%s", endpoint))
+func fetchAndWriteIP(res http.ResponseWriter, apiURL string) {
+	client := &http.Client{Timeout: 5 * time.Second}
+
+	resp, err := client.Get(apiURL)
 	if err != nil {
-		log.Printf("Failed to reach %s: %v\n", endpoint, err)
-		writeTestResponse(res, validationName, false, "Unknown", err.Error())
+		log.Printf("Error fetching from %s: %v\n", apiURL, err)
+		res.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(res, "Error: %v\n", err)
 		return
 	}
 	defer resp.Body.Close()
@@ -80,41 +65,11 @@ func testEndpoint(res http.ResponseWriter, endpoint, validationName string) {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("Error reading response: %v\n", err)
-		writeTestResponse(res, validationName, false, "Unknown", err.Error())
+		res.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(res, "Error: %v\n", err)
 		return
 	}
 
-	ipType := determineIPType(string(body))
-	success := resp.StatusCode == http.StatusOK
-
-	writeTestResponse(res, validationName, success, ipType, "")
-}
-
-func writeTestResponse(res http.ResponseWriter, validationName string, success bool, ipType, errorMsg string) {
-	responseCode := http.StatusInternalServerError
-	if success {
-		responseCode = http.StatusOK
-	}
-	res.WriteHeader(responseCode)
-
-	if errorMsg == "" {
-		errorMsg = "none"
-	}
-
-	message := fmt.Sprintf("%s validation resulted in %s. Detected IP type is %s. Error message: %s.\n",
-		validationName, map[bool]string{true: "success", false: "failure"}[success], ipType, errorMsg)
-	res.Write([]byte(message))
-}
-
-func determineIPType(ipString string) string {
-	ip := net.ParseIP(ipString)
-	if ip == nil {
-		return "Invalid IP"
-	}
-
-	if ip.To4() != nil {
-		return "IPv4"
-	}
-
-	return "IPv6"
+	res.WriteHeader(resp.StatusCode)
+	fmt.Fprintln(res, string(body))
 }

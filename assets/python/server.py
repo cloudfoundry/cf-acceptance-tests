@@ -43,7 +43,7 @@ class Handler(BaseHTTPRequestHandler):
             status, message = fetch_ip(endpoint)
             self.send_response(status)
             self.end_headers()
-            self.wfile.write(f"{message}\n".encode('utf-8'))
+            self.wfile.write(message.encode('utf-8'))
         else:
             self.send_response(200)
             self.end_headers()

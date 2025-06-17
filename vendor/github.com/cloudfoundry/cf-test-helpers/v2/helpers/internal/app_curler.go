@@ -38,7 +38,7 @@ func (appCurler *AppCurler) CurlAndWait(cfg CurlConfig, appName string, path str
 
 func (appCurler *AppCurler) CurlWithStatusCode(cfg CurlConfig, appName string, path string, timeout time.Duration, args ...string) string {
     appUri := appCurler.UriCreator.AppUri(appName, path)
-    curlArgs := append([]string{"-s", "-w", "%{http_code}", appUri}, args...)
+    curlArgs := append([]string{"-s", "-w", "\n%{http_code}", appUri}, args...)
 
     curlCmd := appCurler.CurlFunc(cfg, curlArgs...).Wait(timeout)
 	
