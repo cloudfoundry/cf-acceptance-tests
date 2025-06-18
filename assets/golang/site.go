@@ -19,7 +19,6 @@ func main() {
 	http.HandleFunc("/", hello)
 	http.HandleFunc("/requesturi/", echo)
 
-
 	for path, apiURL := range endpointMap {
 		http.HandleFunc(path, createIPHandler(apiURL))
 	}
@@ -57,7 +56,7 @@ func fetchAndWriteIP(res http.ResponseWriter, apiURL string) {
 	if err != nil {
 		log.Printf("Error fetching from %s: %v\n", apiURL, err)
 		res.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(res, "Error: %v\n", err)
+		fmt.Fprintf(res, "Error: %v", err)
 		return
 	}
 	defer resp.Body.Close()
@@ -66,10 +65,10 @@ func fetchAndWriteIP(res http.ResponseWriter, apiURL string) {
 	if err != nil {
 		log.Printf("Error reading response: %v\n", err)
 		res.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(res, "Error: %v\n", err)
+		fmt.Fprintf(res, "Error: %v", err)
 		return
 	}
 
 	res.WriteHeader(resp.StatusCode)
-	fmt.Fprintln(res, string(body))
+	fmt.Fprintf(res, "%s", string(body))
 }

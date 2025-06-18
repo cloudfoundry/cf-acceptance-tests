@@ -1,2 +1,2 @@
 RewriteEngine On
-RewriteRule ^(ipv4-test|ipv6-test|dual-stack-test)$ $1.php [L]
+RewriteRule ^(ipv4|ipv6|dual-stack)-test$ ip-test.php?target=$1 [L]
