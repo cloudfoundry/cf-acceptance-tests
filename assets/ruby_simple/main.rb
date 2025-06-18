@@ -30,7 +30,6 @@ class IPTester
   end
 
   def fetch_ip
-    logger.info("Fetching IP from endpoint: #{@endpoint}")
     uri = URI("http://#{@endpoint}/")
 
     begin

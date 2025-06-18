@@ -25,6 +25,7 @@ http.createServer(async function (req, res) {
             });
 
         }).on("error", (err) => {
+            console.error(`Error fetching from ${endpoint}: ${err.message}`);
             res.writeHead(500, { 'Content-Type': 'text/plain' });
             res.end(err.message);
         });
