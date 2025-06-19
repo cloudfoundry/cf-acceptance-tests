@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -31,9 +30,9 @@ class IPv6TesterController {
 
     static {
         ENDPOINT_TYPE_MAP = new HashMap<>();
-        ENDPOINT_TYPE_MAP.put("api.ipify.org", new EndpointInfo("IPv4", "/ipv4-test"));
-        ENDPOINT_TYPE_MAP.put("api6.ipify.org", new EndpointInfo("IPv6", "/ipv6-test"));
-        ENDPOINT_TYPE_MAP.put("api64.ipify.org", new EndpointInfo("Dual stack", "/dual-stack-test"));
+        ENDPOINT_TYPE_MAP.put("api.ipify.org", new EndpointInfo("/ipv4-test"));
+        ENDPOINT_TYPE_MAP.put("api6.ipify.org", new EndpointInfo("/ipv6-test"));
+        ENDPOINT_TYPE_MAP.put("api64.ipify.org", new EndpointInfo("/dual-stack-test"));
     }
 
     @GetMapping("/")
@@ -64,40 +63,21 @@ class IPv6TesterController {
             URI uri = new URI("http://" + endpoint + "/");
 
             String response = restTemplate.getForObject(uri, String.class);
+            if (response == null || response.isEmpty()) {
+                throw new RuntimeException("Empty response from " + endpoint);
+            }
 
-            String ipType = determineIpType(response);
-            boolean success = response != null && !response.isEmpty();
-            String resultMessage = success ? "success" : "failure";
+            return response;
 
-            logger.info(endpointInfo.validationName + " validation " + resultMessage);
-
-            return endpointInfo.validationName + " validation resulted in " + resultMessage +
-                    ". Detected IP type is " + ipType + ".";
         } catch (URISyntaxException e) {
             logger.severe("URI syntax issue with " + endpoint + ": " + e.getMessage());
-            return endpointInfo.validationName +
-                    " validation resulted in failure due to URI issue. Error message: " + e.getMessage() + ".";
+            return e.getMessage();
         } catch (Exception e) {
             logger.severe("Failed to reach " + endpoint + ": " + e.getMessage());
-            return endpointInfo.validationName +
-                    " validation resulted in failure. Error message: " + e.getMessage() + ".";
+            return e.getMessage();
         }
     }
 
-    private String determineIpType(String ipString) {
-        try {
-            InetAddress inetAddress = InetAddress.getByName(ipString);
-            if (inetAddress instanceof java.net.Inet4Address) {
-                return "IPv4";
-            } else if (inetAddress instanceof java.net.Inet6Address) {
-                return "IPv6";
-            }
-        } catch (Exception e) {
-            logger.severe("Invalid IP format or unexpected error for: " + ipString + ". Error: " + e.getMessage());
-        }
-        return "Invalid IP";
-    }
-
-    private static record EndpointInfo(String validationName, String path) {
+    private static record EndpointInfo(String path) {
     }
 }
