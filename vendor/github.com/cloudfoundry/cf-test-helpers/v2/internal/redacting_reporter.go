@@ -35,7 +35,7 @@ func (r *RedactingReporter) Report(startTime time.Time, cmd *exec.Cmd) {
 		startColor = "\x1b[32m"
 		endColor = "\x1b[0m"
 	}
-	fmt.Fprintf(
+	_, err := fmt.Fprintf(
 		r.writer,
 		"\n%s[%s]> %s %s\n",
 		startColor,
@@ -43,4 +43,7 @@ func (r *RedactingReporter) Report(startTime time.Time, cmd *exec.Cmd) {
 		r.redactor.Redact(strings.Join(cmd.Args, " ")),
 		endColor,
 	)
+	if err != nil {
+		panic(err)
+	}
 }

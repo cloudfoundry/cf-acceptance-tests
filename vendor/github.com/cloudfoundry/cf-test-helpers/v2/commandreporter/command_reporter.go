@@ -41,7 +41,7 @@ func (r *CommandReporter) Report(startTime time.Time, cmd *exec.Cmd) {
 		endColor = "\x1b[0m"
 	}
 
-	fmt.Fprintf(
+	_, err := fmt.Fprintf(
 		r.Writer,
 		"\n%s[%s]> %s %s\n",
 		startColor,
@@ -49,4 +49,7 @@ func (r *CommandReporter) Report(startTime time.Time, cmd *exec.Cmd) {
 		strings.Join(cmd.Args, " "),
 		endColor,
 	)
+	if err != nil {
+		panic(err)
+	}
 }
