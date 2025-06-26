@@ -3,15 +3,14 @@ package internal
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"fmt"
 	"time"
 
 	"github.com/cloudfoundry/cf-test-helpers/v2/generator"
 	"github.com/cloudfoundry/cf-test-helpers/v2/internal"
 	"github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gbytes"
-	. "github.com/onsi/gomega/gexec"
+	"github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
+	"github.com/onsi/gomega/gexec"
 )
 
 type TestUser struct {
@@ -112,16 +111,16 @@ func (user *TestUser) Create() {
 	redactingReporter := internal.NewRedactingReporter(ginkgo.GinkgoWriter, redactor)
 
 	session := internal.CfWithCustomReporter(user.cmdStarter, redactingReporter, "create-user", user.username, user.password)
-	EventuallyWithOffset(1, session, user.timeout).Should(Exit(), "Failed to create user")
+	gomega.EventuallyWithOffset(1, session, user.timeout).Should(gexec.Exit(), "Failed to create user")
 
 	if session.ExitCode() != 0 {
-		ExpectWithOffset(1, combineOutputAndRedact(session, redactor)).Should(Say("scim_resource_already_exists"), "Failed to create user")
+		gomega.ExpectWithOffset(1, combineOutputAndRedact(session, redactor)).Should(gbytes.Say("scim_resource_already_exists"), "Failed to create user")
 	}
 }
 
 func (user *TestUser) Destroy() {
 	session := internal.Cf(user.cmdStarter, "delete-user", "-f", user.username)
-	EventuallyWithOffset(1, session, user.timeout).Should(Exit(0), "Failed to delete user")
+	gomega.EventuallyWithOffset(1, session, user.timeout).Should(gexec.Exit(0), "Failed to delete user")
 }
 
 func (user *TestUser) Username() string {
@@ -140,11 +139,11 @@ func (user *TestUser) ShouldRemain() bool {
 	return user.shouldKeepUser
 }
 
-func combineOutputAndRedact(session *Session, redactor internal.Redactor) *Buffer {
+func combineOutputAndRedact(session *gexec.Session, redactor internal.Redactor) *gbytes.Buffer {
 	stdout := redactor.Redact(string(session.Out.Contents()))
 	stderr := redactor.Redact(string(session.Err.Contents()))
 
-	return BufferWithBytes(append([]byte(stdout), []byte(stderr)...))
+	return gbytes.BufferWithBytes(append([]byte(stdout), []byte(stderr)...))
 }
 
 // The key thing that makes a password secure is the _entropy_ that comes from a
@@ -159,7 +158,7 @@ func generatePassword() string {
 	randomBytes := make([]byte, encoding.DecodedLen(randomBytesLength))
 	_, err := rand.Read(randomBytes)
 	if err != nil {
-		panic(fmt.Errorf("Could not generate random password: %s", err.Error()))
+		panic("Could not generate random password: " + err.Error())
 	}
 
 	return "A0a!" + encoding.EncodeToString(randomBytes)

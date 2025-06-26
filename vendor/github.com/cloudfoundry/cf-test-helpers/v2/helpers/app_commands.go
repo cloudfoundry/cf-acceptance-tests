@@ -27,6 +27,12 @@ func CurlApp(cfg helpersinternal.CurlConfig, appName, path string, args ...strin
 	return appCurler.CurlAndWait(cfg, appName, path, CURL_TIMEOUT, args...)
 }
 
+// Curls an app's endpoint and returns the body content and the HTTP status code
+func CurlAppWithStatusCode(cfg helpersinternal.CurlConfig, appName, path string, args ...string) string {
+	appCurler := helpersinternal.NewAppCurler(Curl, cfg)
+	return appCurler.CurlWithStatusCode(cfg, appName, path, CURL_TIMEOUT, args...)
+}
+
 // Curls an app's root endpoint and exit successfully before the default timeout
 func CurlAppRoot(cfg helpersinternal.CurlConfig, appName string) string {
 	appCurler := helpersinternal.NewAppCurler(Curl, cfg)

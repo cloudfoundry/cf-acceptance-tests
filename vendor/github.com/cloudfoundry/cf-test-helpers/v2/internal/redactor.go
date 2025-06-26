@@ -18,7 +18,7 @@ func NewRedactor(redactees ...string) Redactor {
 
 func (r *redactor) Redact(toRedact string) string {
 	for _, r := range r.redactees {
-		toRedact = strings.Replace(toRedact, r, "[REDACTED]", -1)
+		toRedact = strings.ReplaceAll(toRedact, r, "[REDACTED]")
 	}
 
 	return toRedact
