@@ -15,7 +15,10 @@ type artifactsDirectoryConfig interface {
 }
 
 func EnableCFTrace(config artifactsDirectoryConfig, componentName string) {
-	os.Setenv("CF_TRACE", traceLogFilePath(config, componentName))
+	err := os.Setenv("CF_TRACE", traceLogFilePath(config, componentName))
+	if err != nil {
+		panic(err)
+	}
 }
 
 func NewJUnitReporter(config artifactsDirectoryConfig, componentName string) *reporters.JUnitReporter {
@@ -35,5 +38,5 @@ func ginkgoNode() int {
 }
 
 func sanitizeComponentName(componentName string) string {
-	return strings.Replace(componentName, " ", "_", -1)
+	return strings.ReplaceAll(componentName, " ", "_")
 }

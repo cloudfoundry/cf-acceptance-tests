@@ -82,12 +82,15 @@ var Push = func(appName string, args ...string) *gexec.Session {
 		panic(err)
 	}
 
-	fmt.Fprintf(
+	_, err = fmt.Fprintf(
 		ginkgo.GinkgoWriter,
 		"\n[%s]> Generated app manifest:\n%s\n",
 		time.Now().UTC().Format("2006-01-02 15:04:05.00 (MST)"),
 		string(manifestText),
 	)
+	if err != nil {
+		panic(err)
+	}
 
 	return Cf("push",
 		"-f", manifestPath,

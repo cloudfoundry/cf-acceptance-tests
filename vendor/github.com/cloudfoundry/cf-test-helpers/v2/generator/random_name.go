@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	. "github.com/onsi/ginkgo/v2"
+	"github.com/onsi/ginkgo/v2"
 )
 
 func randomName() string {
@@ -19,5 +19,5 @@ func randomName() string {
 }
 
 func PrefixedRandomName(prefixName, resourceName string) string {
-	return prefixName + "-" + strconv.Itoa(GinkgoParallelProcess()) + "-" + resourceName + "-" + randomName()
+	return prefixName + "-" + strconv.Itoa(ginkgo.GinkgoParallelProcess()) + "-" + resourceName + "-" + randomName()
 }
