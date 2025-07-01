@@ -7,8 +7,8 @@ import (
 
 	"github.com/cloudfoundry/cf-test-helpers/v2/commandreporter"
 	"github.com/cloudfoundry/cf-test-helpers/v2/internal"
-	. "github.com/onsi/gomega"
-	. "github.com/onsi/gomega/gexec"
+	"github.com/onsi/gomega"
+	"github.com/onsi/gomega/gexec"
 )
 
 func ApiRequest(cmdStarter internal.Starter, method, endpoint string, response interface{}, timeout time.Duration, data ...string) {
@@ -25,13 +25,13 @@ func ApiRequest(cmdStarter internal.Starter, method, endpoint string, response i
 
 	reporter := commandreporter.NewCommandReporter()
 	request, err := cmdStarter.Start(reporter, "cf", args...)
-	ExpectWithOffset(2, err).NotTo(HaveOccurred())
+	gomega.ExpectWithOffset(2, err).NotTo(gomega.HaveOccurred())
 
 	request.Wait(timeout)
-	ExpectWithOffset(2, request).To(Exit(0))
+	gomega.ExpectWithOffset(2, request).To(gexec.Exit(0))
 
 	if response != nil {
 		err := json.Unmarshal(request.Out.Contents(), response)
-		ExpectWithOffset(2, err).ToNot(HaveOccurred())
+		gomega.ExpectWithOffset(2, err).ToNot(gomega.HaveOccurred())
 	}
 }

@@ -9,10 +9,10 @@ import (
 	"github.com/cloudfoundry/cf-test-helpers/v2/commandstarter"
 	"github.com/cloudfoundry/cf-test-helpers/v2/internal"
 	workflowhelpersinternal "github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers/internal"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
-	. "github.com/onsi/gomega/gexec"
+	"github.com/onsi/gomega/gexec"
 )
 
 type userValues interface {
@@ -45,7 +45,7 @@ type UserContext struct {
 	UseClientCredentials bool
 }
 
-func cliErrorMessage(session *Session) string {
+func cliErrorMessage(session *gexec.Session) string {
 	var command string
 
 	if strings.EqualFold(session.Command.Args[1], "auth") {
@@ -57,7 +57,7 @@ func cliErrorMessage(session *Session) string {
 	return fmt.Sprintf("\n>>> [ %s ] exited with an error \n", command)
 }
 
-func apiErrorMessage(session *Session) string {
+func apiErrorMessage(session *gexec.Session) string {
 	apiEndpoint := strings.Join(session.Command.Args, " ")
 	stdError := string(session.Err.Contents())
 
@@ -93,10 +93,10 @@ func (uc UserContext) Login() {
 	}
 
 	session := internal.Cf(uc.CommandStarter, args...).Wait(uc.Timeout)
-	EventuallyWithOffset(1, session, uc.Timeout).Should(Exit(0), apiErrorMessage(session))
+	gomega.EventuallyWithOffset(1, session, uc.Timeout).Should(gexec.Exit(0), apiErrorMessage(session))
 
 	redactor := internal.NewRedactor(uc.TestUser.Password())
-	redactingReporter := internal.NewRedactingReporter(GinkgoWriter, redactor)
+	redactingReporter := internal.NewRedactingReporter(ginkgo.GinkgoWriter, redactor)
 
 	var err error
 	if uc.UseClientCredentials {
@@ -105,24 +105,28 @@ func (uc UserContext) Login() {
 		err = workflowhelpersinternal.CfAuth(uc.CommandStarter, redactingReporter, uc.TestUser.Username(), uc.TestUser.Password(), uc.TestUser.Origin(), uc.Timeout)
 	}
 
-	Expect(err).NotTo(HaveOccurred())
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 }
 
 func (uc UserContext) SetCfHomeDir() (string, string) {
 	originalCfHomeDir := os.Getenv("CF_HOME")
-	currentCfHomeDir, err := os.MkdirTemp("", fmt.Sprintf("cf_home_%d", GinkgoParallelProcess()))
+	currentCfHomeDir, err := os.MkdirTemp("", fmt.Sprintf("cf_home_%d", ginkgo.GinkgoParallelProcess()))
 	if err != nil {
 		panic("Error: could not create temporary home directory: " + err.Error())
 	}
 
-	os.Setenv("CF_HOME", currentCfHomeDir)
+	err = os.Setenv("CF_HOME", currentCfHomeDir)
+	if err != nil {
+		panic("Error: could not set 'CF_HOME' env var: " + err.Error())
+	}
+
 	return originalCfHomeDir, currentCfHomeDir
 }
 
 func (uc UserContext) TargetSpace() {
 	if uc.TestSpace != nil && uc.TestSpace.OrganizationName() != "" {
 		session := internal.Cf(uc.CommandStarter, "target", "-o", uc.TestSpace.OrganizationName(), "-s", uc.TestSpace.SpaceName())
-		EventuallyWithOffset(1, session, uc.Timeout).Should(Exit(0), cliErrorMessage(session))
+		gomega.EventuallyWithOffset(1, session, uc.Timeout).Should(gexec.Exit(0), cliErrorMessage(session))
 	}
 }
 
@@ -132,30 +136,36 @@ func (uc UserContext) AddUserToSpace() {
 	spaceName := uc.TestSpace.SpaceName()
 
 	spaceManager := internal.Cf(uc.CommandStarter, "set-space-role", username, orgName, spaceName, "SpaceManager")
-	EventuallyWithOffset(1, spaceManager, uc.Timeout).Should(Exit())
+	gomega.EventuallyWithOffset(1, spaceManager, uc.Timeout).Should(gexec.Exit())
 	if spaceManager.ExitCode() != 0 {
-		ExpectWithOffset(1, spaceManager.Out).Should(gbytes.Say("not authorized"))
+		gomega.ExpectWithOffset(1, spaceManager.Out).Should(gbytes.Say("not authorized"))
 	}
 
 	spaceDeveloper := internal.Cf(uc.CommandStarter, "set-space-role", username, orgName, spaceName, "SpaceDeveloper")
-	EventuallyWithOffset(1, spaceDeveloper, uc.Timeout).Should(Exit())
+	gomega.EventuallyWithOffset(1, spaceDeveloper, uc.Timeout).Should(gexec.Exit())
 	if spaceDeveloper.ExitCode() != 0 {
-		ExpectWithOffset(1, spaceDeveloper.Out).Should(gbytes.Say("not authorized"))
+		gomega.ExpectWithOffset(1, spaceDeveloper.Out).Should(gbytes.Say("not authorized"))
 	}
 
 	spaceAuditor := internal.Cf(uc.CommandStarter, "set-space-role", username, orgName, spaceName, "SpaceAuditor")
-	EventuallyWithOffset(1, spaceAuditor, uc.Timeout).Should(Exit())
+	gomega.EventuallyWithOffset(1, spaceAuditor, uc.Timeout).Should(gexec.Exit())
 	if spaceAuditor.ExitCode() != 0 {
-		ExpectWithOffset(1, spaceAuditor.Out).Should(gbytes.Say("not authorized"))
+		gomega.ExpectWithOffset(1, spaceAuditor.Out).Should(gbytes.Say("not authorized"))
 	}
 }
 
 func (uc UserContext) Logout() {
 	session := internal.Cf(uc.CommandStarter, "logout")
-	EventuallyWithOffset(1, session, uc.Timeout).Should(Exit(0), cliErrorMessage(session))
+	gomega.EventuallyWithOffset(1, session, uc.Timeout).Should(gexec.Exit(0), cliErrorMessage(session))
 }
 
 func (uc UserContext) UnsetCfHomeDir(originalCfHomeDir, currentCfHomeDir string) {
-	os.Setenv("CF_HOME", originalCfHomeDir)
-	os.RemoveAll(currentCfHomeDir)
+	err := os.Setenv("CF_HOME", originalCfHomeDir)
+	if err != nil {
+		panic(err)
+	}
+	err = os.RemoveAll(currentCfHomeDir)
+	if err != nil {
+		panic(err)
+	}
 }
