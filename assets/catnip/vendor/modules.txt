@@ -1,4 +1,4 @@
-# code.cloudfoundry.org/clock v1.40.0
+# code.cloudfoundry.org/clock v1.41.0
 ## explicit; go 1.23.0
 code.cloudfoundry.org/clock
 code.cloudfoundry.org/clock/fakeclock
@@ -20,7 +20,7 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/pprof v0.0.0-20250607225305-033d6d78b36a
+# github.com/google/pprof v0.0.0-20250630185457-6e76a2b096b5
 ## explicit; go 1.23.0
 github.com/google/pprof/profile
 # github.com/onsi/ginkgo/v2 v2.23.4
