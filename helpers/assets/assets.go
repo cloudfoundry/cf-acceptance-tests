@@ -32,6 +32,7 @@ type Assets struct {
 	Pora                       string
 	Php                        string
 	Proxy                      string
+	ProxyIpv6                  string
 	R                          string
 	RubySimple                 string
 	SecurityGroupBuildpack     string
@@ -81,6 +82,7 @@ func NewAssets() Assets {
 		Pora:                       "assets/pora",
 		Php:                        "assets/php",
 		Proxy:                      "assets/proxy",
+		ProxyIpv6:                  "assets/proxy-ipv6",
 		Python:                     "assets/python",
 		PythonCrashApp:             "assets/python-crash-app",
 		R:                          "assets/r",
