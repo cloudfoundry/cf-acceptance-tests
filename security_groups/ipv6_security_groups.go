@@ -44,7 +44,7 @@ var _ = IPv6SecurityGroupsDescribe("IPv6 Security Group", func() {
 	})
 
 	assertAppCanConnect := func() {
-		response := helpers.CurlAppWithStatusCode(Config, appName, "/ipv4-test")
+		response := helpers.CurlAppWithStatusCode(Config, appName, "/ipv6-test")
 		responseParts := strings.Split(response, "\n")
 		ipAddress := responseParts[0]
 		statusCode := responseParts[1]
@@ -55,14 +55,12 @@ var _ = IPv6SecurityGroupsDescribe("IPv6 Security Group", func() {
 	}
 
 	assertAppCanNotConnect := func() {
-		response := helpers.CurlAppWithStatusCode(Config, appName, "/ipv4-test")
+		response := helpers.CurlAppWithStatusCode(Config, appName, "/ipv6-test")
 		responseParts := strings.Split(response, "\n")
-		ipAddress := responseParts[0]
+		bodyResponce := responseParts[0]
 		statusCode := responseParts[1]
 
-		bodyResponce := net.ParseIP(ipAddress)
-		Expect(bodyResponce).To(BeNil(), "Expected a non-valid IP address")
-		Expect(bodyResponce).To(ContainSubstring("not supported by protocol"))
+		Expect(bodyResponce).To(ContainSubstring("Connection refused"))
 		Expect(statusCode).To(Equal("500"))
 	}
 
