@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.24.1
 
 require (
-	code.cloudfoundry.org/archiver v0.39.0
+	code.cloudfoundry.org/archiver v0.40.0
 	code.cloudfoundry.org/go-log-cache/v3 v3.1.1
 	code.cloudfoundry.org/go-loggregator/v10 v10.2.0
 	code.cloudfoundry.org/tlsconfig v0.31.0
@@ -46,10 +46,10 @@ require (
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	go.step.sm/crypto v0.67.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
-	golang.org/x/net v0.41.0 // indirect
+	golang.org/x/net v0.42.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/text v0.27.0 // indirect
-	golang.org/x/tools v0.34.0 // indirect
+	golang.org/x/tools v0.35.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250505200425-f936aa4a68b2 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250603155806-513f23925822 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
