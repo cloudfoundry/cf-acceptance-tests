@@ -15,7 +15,7 @@ require (
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/onsi/ginkgo/v2 v2.23.4
 	github.com/onsi/gomega v1.38.0
-	golang.org/x/crypto v0.40.0
+	golang.org/x/crypto v0.41.0
 	google.golang.org/grpc v1.74.2
 	google.golang.org/protobuf v1.36.7
 )
@@ -47,8 +47,8 @@ require (
 	go.step.sm/crypto v0.67.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	golang.org/x/net v0.42.0 // indirect
-	golang.org/x/sys v0.34.0 // indirect
-	golang.org/x/text v0.27.0 // indirect
+	golang.org/x/sys v0.35.0 // indirect
+	golang.org/x/text v0.28.0 // indirect
 	golang.org/x/tools v0.35.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250528174236-200df99c418a // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250603155806-513f23925822 // indirect
