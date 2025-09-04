@@ -180,7 +180,7 @@ include_app_syslog_tcp
 * `include_windows`: Flag to include the tests that run against Windows cells.
 * `use_windows_test_task`: Flag to include the tasks tests on Windows cells. Default is `false`.
 * `use_windows_context_path`: Flag to include the Windows context path routing tests. Default is `false`.
-* `windows_stack`: Windows stack to run tests against. Must be `windows`.
+* `windows_stack`: Windows stack to run tests against.
 
 * `include_service_discovery`: Flag to include test for the service discovery. These tests use `apps.internal` domain, which is the default in `cf-networking-release`. The internal domain is currently not configurable.
 * `stacks`: An array of stacks to test against. Default is `[cflinuxfs4]`.

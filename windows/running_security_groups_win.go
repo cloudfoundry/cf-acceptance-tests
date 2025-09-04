@@ -150,9 +150,7 @@ var _ = WindowsDescribe("WINDOWS: App Instance Networking", func() {
 			serverAppName, privateHost, privatePort = pushServerApp()
 			clientAppName = pushClientApp()
 
-			if Config.GetWindowsStack() == "windows" {
-				assertNetworkingPreconditions(clientAppName, privateHost, privatePort)
-			}
+			assertNetworkingPreconditions(clientAppName, privateHost, privatePort)
 		})
 
 		AfterEach(func() {
