@@ -141,4 +141,12 @@ class Dora < Sinatra::Base
   end
 
   run! if app_file == $0
+
+  get '/print/:string' do
+    STDOUT.puts params[:string]
+  end
+
+  get '/print_err/:string' do
+    STDERR.puts params[:string]
+  end
 end
