@@ -8,14 +8,14 @@ require (
 	code.cloudfoundry.org/archiver v0.45.0
 	code.cloudfoundry.org/go-log-cache/v3 v3.1.1
 	code.cloudfoundry.org/go-loggregator/v10 v10.2.0
-	code.cloudfoundry.org/tlsconfig v0.34.0
+	code.cloudfoundry.org/tlsconfig v0.35.0
 	github.com/cloudfoundry/cf-test-helpers/v2 v2.13.0
 	github.com/cloudfoundry/noaa/v2 v2.5.0
 	github.com/cloudfoundry/sonde-go v0.0.0-20230710164515-a0a43d1dbbf8
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/onsi/ginkgo/v2 v2.25.3
 	github.com/onsi/gomega v1.38.2
-	golang.org/x/crypto v0.41.0
+	golang.org/x/crypto v0.42.0
 	google.golang.org/grpc v1.74.2
 	google.golang.org/protobuf v1.36.8
 )
