@@ -60,9 +60,9 @@ func ValidateServiceBindingK8s(appName, serviceName, appGuid, serviceGuid string
 		Expect(curlResponse).Should(ContainSubstring(content))
 	}
 
-	checkFileContent("binding-guid", GetServiceBindingGuid(appGuid, serviceGuid))
-	checkFileContent("instance-guid", serviceGuid)
-	checkFileContent("instance-name", serviceName)
+	checkFileContent("binding_guid", GetServiceBindingGuid(appGuid, serviceGuid))
+	checkFileContent("instance_guid", serviceGuid)
+	checkFileContent("instance_name", serviceName)
 	checkFileContent("label", "user-provided")
 	checkFileContent("name", serviceName)
 	checkFileContent("password", "pa55woRD")
