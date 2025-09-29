@@ -35,7 +35,7 @@ var _ = AppSyslogTcpDescribe("Syslog Drain over TCP", func() {
 	Describe("Syslog drains", func() {
 		BeforeEach(func() {
 			interrupt = make(chan struct{}, 1)
-			domainName = fmt.Sprintf("tcp.%s", Config.GetAppsDomain())
+			domainName = Config.GetTCPDomain()
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				routerGroupOutput := string(cf.Cf("router-groups").Wait().Out.Contents())
 				Expect(routerGroupOutput).To(
