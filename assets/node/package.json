@@ -1,7 +1,4 @@
 {
     "name" : "node_without_procfile",
-    "version": "0.1.0",
-    "dependencies": {
-        "ip": "^1.1.8"
-      }
+    "version": "0.1.0"
 }
