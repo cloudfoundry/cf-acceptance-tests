@@ -17,7 +17,7 @@ require (
 	github.com/onsi/gomega v1.38.2
 	golang.org/x/crypto v0.42.0
 	google.golang.org/grpc v1.75.1
-	google.golang.org/protobuf v1.36.9
+	google.golang.org/protobuf v1.36.10
 )
 
 require (
