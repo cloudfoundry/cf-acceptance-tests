@@ -1,8 +1,8 @@
 module github.com/cloudfoundry/cf-acceptance-tests/assets/credhub-service-broker
 
-go 1.23.0
+go 1.24
 
-toolchain go1.24.1
+toolchain go1.24.2
 
 require (
 	code.cloudfoundry.org/credhub-cli v0.0.0-20230320130818-a7d5420b283b
