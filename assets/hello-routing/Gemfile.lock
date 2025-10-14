@@ -4,7 +4,7 @@ GEM
     daemons (1.4.1)
     eventmachine (1.2.7)
     logger (1.7.0)
-    rack (3.2.2)
+    rack (3.2.3)
     thin (2.0.1)
       daemons (~> 1.0, >= 1.0.9)
       eventmachine (~> 1.0, >= 1.0.4)
