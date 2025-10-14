@@ -1,11 +1,11 @@
 module github.com/cloudfoundry/cf-acceptance-tests/assets/catnip
 
-go 1.24
+go 1.24.0
 
 toolchain go1.24.2
 
 require (
-	code.cloudfoundry.org/clock v1.50.0
+	code.cloudfoundry.org/clock v1.51.0
 	github.com/go-chi/chi/v5 v5.2.3
 	github.com/onsi/ginkgo/v2 v2.26.0
 	github.com/onsi/gomega v1.38.2
@@ -16,7 +16,7 @@ require (
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/pprof v0.0.0-20250923004556-9e5a51aed1e8 // indirect
+	github.com/google/pprof v0.0.0-20251002213607-436353cc1ee6 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/mod v0.28.0 // indirect
