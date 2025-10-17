@@ -3,5 +3,5 @@ applications:
   - buildpacks:
       - go_buildpack
     env:
-      GOVERSION: go1.23
+      GOVERSION: go1.24
       GOPACKAGENAME: github.com/cloudfoundry-samples/logging-route-service

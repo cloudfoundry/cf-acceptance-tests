@@ -39,7 +39,7 @@ in such a way as to impact other tests.
 
 ## Test Setup
 ### Prerequisites for running CATS
-- Install golang >= `1.23.0`. Set up your golang development environment, per
+- Install golang >= `1.24.0`. Set up your golang development environment, per
   [golang.org](http://golang.org/doc/install).
 - Install the [`cf CLI`](https://github.com/cloudfoundry/cli) >= `8.5.0`. Make
   sure that it is accessible in your `$PATH`.
@@ -53,7 +53,7 @@ in such a way as to impact other tests.
 All `go` dependencies required by CATs
 are vendored in the `vendor` directory.
 
-Make sure to have Golang 1.23+
+Make sure to have Golang 1.24+
 
 In order to update a current dependency to a specific version,
 do the following:
