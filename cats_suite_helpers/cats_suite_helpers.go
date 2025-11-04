@@ -438,6 +438,17 @@ func VolumeServicesDescribe(description string, callback func()) bool {
 	})
 }
 
+func IPv6SecurityGroupsDescribe(description string, callback func()) bool {
+	return Describe("[ipv6 security groups]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeIPv6() {
+				Skip(skip_messages.SkipIPv6)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
 func GetNServerResponses(n int, domainName, externalPort1 string) ([]string, error) {
 	var responses []string
 
