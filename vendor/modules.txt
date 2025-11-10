@@ -1,4 +1,4 @@
-# code.cloudfoundry.org/archiver v0.51.0
+# code.cloudfoundry.org/archiver v0.52.0
 ## explicit; go 1.24.0
 code.cloudfoundry.org/archiver/extractor/test_helper
 # code.cloudfoundry.org/go-diodes v0.0.0-20220325013804-800fb6f70e2f
