@@ -2,4 +2,4 @@
 applications:
   - env:
       GOPACKAGENAME: go-online
-      GOVERSION: go1.23
+      GOVERSION: go1.24
