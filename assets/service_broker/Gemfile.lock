@@ -42,7 +42,7 @@ GEM
       rack-session (>= 2.0.0, < 3)
       tilt (~> 2.0)
     tilt (2.6.1)
-    webrick (1.9.1)
+    webrick (1.9.2)
 
 PLATFORMS
   ruby
