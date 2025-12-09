@@ -6,6 +6,6 @@ applications:
     buildpack: go_buildpack
     env:
       GOPACKAGENAME: example-apps/proxy
-      GOVERSION: go1.23
+      GOVERSION: go1.24
     routes:
       - route: app-smoke.apps.internal
