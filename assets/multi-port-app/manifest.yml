@@ -1,4 +1,4 @@
 ---
 applications:
   - env:
-      GOVERSION: go1.24
+      GOVERSION: latest
