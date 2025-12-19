@@ -2,4 +2,4 @@
 applications:
   - env:
       GOPACKAGENAME: tcp-listener
-      GOVERSION: latest
+      GOVERSION: go1.24
