@@ -3,4 +3,4 @@ applications:
   - name: syslog-drain-listener
     env:
       GOPACKAGENAME: main
-      GOVERSION: latest
+      GOVERSION: go1.24
