@@ -8,7 +8,7 @@ description = 'CredHub Enabled App'
 
 dependencies {
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
-    implementation group: 'org.json', name: 'json', version: '20250517'
+    implementation group: 'org.json', name: 'json', version: '20251224'
 }
 
 repositories {
