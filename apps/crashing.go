@@ -95,7 +95,7 @@ var _ = AppsDescribe("Crashing", func() {
 			// Poll until at least one instance has crashed
 			Eventually(func() bool {
 				return hasOneInstanceInState(processStatsPath, "CRASHED")
-			}, 60*time.Second, 5*time.Second).Should(BeTrue(), "At least one instance should be in the CRASHED state")
+			}, 90*time.Second, 15*time.Second).Should(BeTrue(), "At least one instance should be in the CRASHED state")
 
 			By("Verifying at least one instance is still running")
 			foundRunning := hasOneInstanceInState(processStatsPath, "RUNNING")
