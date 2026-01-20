@@ -6,7 +6,7 @@ toolchain go1.24.2
 
 require (
 	code.cloudfoundry.org/credhub-cli v0.0.0-20230320130818-a7d5420b283b
-	github.com/go-chi/chi/v5 v5.2.3
+	github.com/go-chi/chi/v5 v5.2.4
 	github.com/satori/go.uuid v1.2.0
 )
 
