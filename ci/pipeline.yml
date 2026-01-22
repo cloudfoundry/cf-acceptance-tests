@@ -237,6 +237,7 @@ jobs:
       CONFIG_FILE_PATH: environments/test/cats/integration_config.json
       REPORTER_CONFIG_FILE_PATH: environments/test/cats/reporter_config.json
       SKIP_REGEXP: "shows logs and metrics"
+      NODES: 5
 
 - name: bless-cats
   public: true
