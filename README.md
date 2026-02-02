@@ -105,6 +105,7 @@ include_app_syslog_tcp
 * `admin_password`: Password of the admin user above.
 * `apps_domain`: A shared domain that tests can use to create subdomains that will route to applications also created in the tests, without scheme (HTTP/S) specified.
 * `skip_ssl_validation`: Set to true if using an invalid (e.g. self-signed) cert for traffic routed to your CF instance; this is generally always true for BOSH-Lite deployments of CF.
+* `skip_dns_validation`: Skip DNS validation for CF API and apps domain. Use true for proxy environments. Default:false
 
 ##### Optional parameters:
 `include_*` parameters are used to specify whether to skip tests based on how a deployment is configured.

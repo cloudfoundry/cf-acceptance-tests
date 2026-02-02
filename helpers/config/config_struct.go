@@ -40,6 +40,7 @@ type config struct {
 	IsolationSegmentTCPDomain *string `json:"isolation_segment_tcp_domain"`
 
 	SkipSSLValidation *bool `json:"skip_ssl_validation"`
+	SkipDNSValidation *bool `json:"skip_dns_validation"`
 
 	ArtifactsDirectory *string `json:"artifacts_directory"`
 
@@ -556,6 +557,11 @@ func validateApiEndpoint(config *config) error {
 		host = u.Path
 	}
 
+	// Skip DNS validation if configured (useful for HTTP proxy environments)
+	if config.GetSkipDNSValidation() {
+		return nil
+	}
+
 	if _, err = net.LookupHost(host); err != nil {
 		return fmt.Errorf("* Invalid configuration for 'api' <%s>: %s", config.GetApiEndpoint(), err)
 	}
@@ -578,6 +584,11 @@ func validateAppsDomain(config *config) error {
 	if host == "" {
 		// url.Parse misunderstood our convention and treated the hostname as a URL path
 		host = u.Path
+	}
+
+	// Skip DNS validation if configured (useful for HTTP proxy environments)
+	if config.GetSkipDNSValidation() {
+		return nil
 	}
 
 	if _, err = net.LookupHost(madeUpAppHostname); err != nil {
@@ -864,6 +875,13 @@ func (c *config) GetTCPDomain() string {
 
 func (c *config) GetSkipSSLValidation() bool {
 	return *c.SkipSSLValidation
+}
+
+func (c *config) GetSkipDNSValidation() bool {
+	if c.SkipDNSValidation == nil {
+		return false
+	}
+	return *c.SkipDNSValidation
 }
 
 func (c *config) GetArtifactsDirectory() string {
