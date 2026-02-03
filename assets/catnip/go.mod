@@ -5,8 +5,8 @@ go 1.24.9
 require (
 	code.cloudfoundry.org/clock v1.59.0
 	github.com/go-chi/chi/v5 v5.2.4
-	github.com/onsi/ginkgo/v2 v2.27.5
-	github.com/onsi/gomega v1.39.0
+	github.com/onsi/ginkgo/v2 v2.28.0
+	github.com/onsi/gomega v1.39.1
 )
 
 require (
