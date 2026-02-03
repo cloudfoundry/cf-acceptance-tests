@@ -121,7 +121,7 @@
         "body": {}
       }
     },
-    "fetch": {
+    "fetch_service_instance_last_operation": {
       "default": {
         "in_progress": {
           "sleep_seconds": 0,
@@ -137,6 +137,20 @@
             "state": "succeeded"
           }
         }
+      }
+    },
+    "fetch_service_instance": {
+      "default": {
+        "sleep_seconds": 0,
+        "status": 200,
+        "body": {}
+      }
+    },
+    "fetch_service_binding": {
+      "default": {
+        "sleep_seconds": 0,
+        "status": 200,
+        "body": {}
       }
     },
     "update": {
@@ -198,9 +212,28 @@
         "status": 200,
         "body": {}
       }
+    },
+    "fetch_service_binding_last_operation": {
+      "default": {
+        "in_progress": {
+          "sleep_seconds": 0,
+          "status": 200,
+          "body": {
+            "state": "in progress"
+          }
+        },
+        "finished": {
+          "sleep_seconds": 0,
+          "status": 200,
+          "body": {
+            "state": "succeeded"
+          }
+        }
+      }
     }
   },
   "service_instances": {},
   "service_bindings": {},
-  "max_fetch_service_instance_requests": 1
+  "max_fetch_service_instance_requests": 1,
+  "max_fetch_service_binding_requests": 1
 }
