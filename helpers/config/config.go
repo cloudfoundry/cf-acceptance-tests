@@ -39,6 +39,7 @@ type CatsConfig interface {
 	GetIncludeVolumeServices() bool
 	GetShouldKeepUser() bool
 	GetSkipSSLValidation() bool
+	GetSkipDNSValidation() bool
 	GetUseExistingUser() bool
 
 	GetAddExistingUserToExistingSpace() bool
