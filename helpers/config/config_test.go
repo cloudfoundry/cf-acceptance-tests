@@ -27,13 +27,14 @@ type testConfig struct {
 	requiredConfig
 
 	// timeouts
-	DefaultTimeout               *int `json:"default_timeout,omitempty"`
-	CfPushTimeout                *int `json:"cf_push_timeout,omitempty"`
-	LongCurlTimeout              *int `json:"long_curl_timeout,omitempty"`
-	BrokerStartTimeout           *int `json:"broker_start_timeout,omitempty"`
-	AsyncServiceOperationTimeout *int `json:"async_service_operation_timeout,omitempty"`
-	DetectTimeout                *int `json:"detect_timeout,omitempty"`
-	SleepTimeout                 *int `json:"sleep_timeout,omitempty"`
+	DefaultTimeout               *int  `json:"default_timeout,omitempty"`
+	CfPushTimeout                *int  `json:"cf_push_timeout,omitempty"`
+	LongCurlTimeout              *int  `json:"long_curl_timeout,omitempty"`
+	BrokerStartTimeout           *int  `json:"broker_start_timeout,omitempty"`
+	AsyncServiceOperationTimeout *int  `json:"async_service_operation_timeout,omitempty"`
+	DetectTimeout                *int  `json:"detect_timeout,omitempty"`
+	SleepTimeout                 *int  `json:"sleep_timeout,omitempty"`
+	SkipDNSValidation            *bool `json:"skip_dns_validation"`
 
 	TimeoutScale *float64 `json:"timeout_scale,omitempty"`
 
@@ -124,6 +125,7 @@ type nullConfig struct {
 	IsolationSegmentDomain *string `json:"isolation_segment_domain"`
 
 	SkipSSLValidation *bool `json:"skip_ssl_validation"`
+	SkipDNSValidation *bool `json:"skip_dns_validation"`
 
 	ArtifactsDirectory *string `json:"artifacts_directory"`
 
@@ -944,6 +946,63 @@ var _ = Describe("Config", func() {
 				_, err := cfg.NewCatsConfig(tmpFilePath)
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(ContainSubstring("'apps_domain' must not be null"))
+			})
+		})
+	})
+
+	Describe("GetSkipDNSValidation", func() {
+		Context("when skip_dns_validation is not set", func() {
+			It("returns false (default)", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(config.GetSkipDNSValidation()).To(BeFalse())
+			})
+		})
+
+		Context("when skip_dns_validation is set to true", func() {
+			BeforeEach(func() {
+				testCfg.SkipDNSValidation = ptrToBool(true)
+			})
+
+			It("returns true", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(config.GetSkipDNSValidation()).To(BeTrue())
+			})
+
+			Context("with unresolvable apps domain", func() {
+				BeforeEach(func() {
+					testCfg.AppsDomain = ptrToString("apps.domain.example.com")
+				})
+
+				It("skips DNS lookup for apps domain", func() {
+					config, err := cfg.NewCatsConfig(tmpFilePath)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(config.GetAppsDomain()).To(Equal("apps.domain.example.com"))
+				})
+			})
+		})
+
+		Context("when skip_dns_validation is set to false", func() {
+			BeforeEach(func() {
+				testCfg.SkipDNSValidation = ptrToBool(false)
+			})
+
+			It("returns false", func() {
+				config, err := cfg.NewCatsConfig(tmpFilePath)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(config.GetSkipDNSValidation()).To(BeFalse())
+			})
+			Context("with unresolvable apps domain", func() {
+				BeforeEach(func() {
+					testCfg.AppsDomain = ptrToString("domain.example.com.does-not-exist")
+				})
+
+				It("performs DNS lookup for apps domain", func() {
+					_, err := cfg.NewCatsConfig(tmpFilePath)
+					Expect(err).To(HaveOccurred())
+					Expect(err.Error()).To(ContainSubstring("no such host"))
+				})
 			})
 		})
 	})
