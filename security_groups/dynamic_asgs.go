@@ -46,7 +46,8 @@ var _ = SecurityGroupsDescribe("ASGs", func() {
 	})
 
 	It("manages whether apps can reach certain IP addresses per ASG configuration", func() {
-		proxyRequestURL := fmt.Sprintf("%s%s.%s/https_proxy/cloud-controller-ng.service.cf.internal:9024/", Config.Protocol(), appName, Config.GetAppsDomain())
+		internalAddress := Config.GetInternalCCAddress()
+		proxyRequestURL := fmt.Sprintf("%s%s.%s/https_proxy/%s:9024/", Config.Protocol(), appName, Config.GetAppsDomain(), internalAddress)
 
 		client := &http.Client{
 			Transport: &http.Transport{
