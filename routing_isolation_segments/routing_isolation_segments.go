@@ -57,6 +57,10 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 			bytes := session.Wait().Out.Contents()
 			orgGuid = v3_helpers.GetGuidFromResponse(bytes)
 
+			session = cf.Cf("curl", fmt.Sprintf("/v3/spaces?names=%s", spaceName))
+			bytes = session.Wait().Out.Contents()
+			spaceGuid = v3_helpers.GetGuidFromResponse(bytes)
+
 			isoSegGuid = v3_helpers.CreateOrGetIsolationSegment(isoSegName)
 		})
 	})
@@ -116,9 +120,6 @@ var _ = RoutingIsolationSegmentsDescribe("RoutingIsolationSegments", func() {
 		BeforeEach(func() {
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
 				v3_helpers.EntitleOrgToIsolationSegment(orgGuid, isoSegGuid)
-				session := cf.Cf("curl", fmt.Sprintf("/v3/spaces?names=%s", spaceName))
-				bytes := session.Wait().Out.Contents()
-				spaceGuid = v3_helpers.GetGuidFromResponse(bytes)
 				v3_helpers.AssignIsolationSegmentToSpace(spaceGuid, isoSegGuid)
 
 				target := cf.Cf("target", "-o", orgName, "-s", spaceName).Wait()
