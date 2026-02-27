@@ -124,9 +124,10 @@ type config struct {
 
 	UnallocatedIPForSecurityGroup *string `json:"unallocated_ip_for_security_group"`
 
-	DynamicASGsEnabled           *bool `json:"dynamic_asgs_enabled"`
-	CommaDelimitedASGsEnabled    *bool `json:"comma_delim_asgs_enabled"`
-	ReadinessHealthChecksEnabled *bool `json:"readiness_health_checks_enabled"`
+	DynamicASGsEnabled           *bool   `json:"dynamic_asgs_enabled"`
+	CommaDelimitedASGsEnabled    *bool   `json:"comma_delim_asgs_enabled"`
+	ReadinessHealthChecksEnabled *bool   `json:"readiness_health_checks_enabled"`
+	InternalCCAddress            *string `json:"internal_cc_address"`
 
 	NamePrefix *string `json:"name_prefix"`
 
@@ -890,6 +891,14 @@ func (c *config) GetArtifactsDirectory() string {
 
 func (c *config) GetIsolationSegmentName() string {
 	return *c.IsolationSegmentName
+}
+
+func (c *config) GetInternalCCAddress() string {
+	if c.InternalCCAddress == nil || *c.InternalCCAddress == "" {
+		return "cloud-controller-ng.service.cf.internal"
+	}
+
+	return *c.InternalCCAddress
 }
 
 func (c *config) GetIsolationSegmentDomain() string {

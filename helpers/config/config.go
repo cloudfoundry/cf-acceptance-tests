@@ -69,6 +69,7 @@ type CatsConfig interface {
 	GetExistingClientSecret() string
 	GetGoBuildpackName() string
 	GetHwcBuildpackName() string
+	GetInternalCCAddress() string
 	GetIsolationSegmentName() string
 	GetIsolationSegmentDomain() string
 	GetIsolationSegmentTCPDomain() string
