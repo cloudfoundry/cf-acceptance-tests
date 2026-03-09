@@ -5,7 +5,7 @@ go 1.24.0
 toolchain go1.24.2
 
 require (
-	google.golang.org/grpc v1.79.1
+	google.golang.org/grpc v1.79.2
 	google.golang.org/protobuf v1.36.11
 )
 
