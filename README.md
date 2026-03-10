@@ -136,7 +136,7 @@ include_app_syslog_tcp
 * `include_services`: Flag to include test for the services API.
 * `include_service_instance_sharing`: Flag to include tests for service instance sharing between spaces. `include_services` must be set for these tests to run. The `service_instance_sharing` feature flag must also be enabled for these tests to pass.
 * `include_ssh`: Flag to include tests for Diego container ssh feature.
-* `include_sso`: Flag to include the services tests that integrate with Single Sign On. `include_services` must also be set for tests to run.
+* `include_sso`: Flag to include the services tests that integrate with Single Sign On.
 * `include_tasks`: Flag to include the v3 task tests. `include_v3` must also be set for tests to run. The CC API task_creation feature flag must be enabled for these tests to pass.
 * `include_tcp_routing`: Flag to include the TCP Routing tests. These tests are equivalent to the [TCP Routing tests](https://github.com/cloudfoundry/routing-acceptance-tests/blob/master/tcp_routing/tcp_routing_test.go) from the Routing Acceptance Tests.
 * `tcp_domain`: Domain that will be used for apps with TCP routes

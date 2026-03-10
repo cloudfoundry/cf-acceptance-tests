@@ -283,6 +283,17 @@ func ServiceInstanceSharingDescribe(description string, callback func()) bool {
 	})
 }
 
+func ServicesSsoDescribe(description string, callback func()) bool {
+	return Describe("[services sso]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeSSO() {
+				Skip(skip_messages.SkipSSOMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
 func UserProvidedServicesDescribe(description string, callback func()) bool {
 	return Describe("[user provided services]", func() {
 		BeforeEach(func() {
