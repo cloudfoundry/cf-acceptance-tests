@@ -11,10 +11,9 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 )
 
-var _ = ServicesDescribe("SSO Lifecycle", func() {
+var _ = ServicesSsoDescribe("SSO Lifecycle", func() {
 	var broker ServiceBroker
 	var oauthConfig OAuthConfig
 	var apiEndpoint string
@@ -22,9 +21,6 @@ var _ = ServicesDescribe("SSO Lifecycle", func() {
 	redirectUri := `http://example.com`
 
 	BeforeEach(func() {
-		if !Config.GetIncludeSSO() {
-			Skip(skip_messages.SkipSSOMessage)
-		}
 		apiEndpoint = Config.Protocol() + Config.GetApiEndpoint()
 		broker = NewServiceBroker(
 			random_name.CATSRandomName("BRKR"),
