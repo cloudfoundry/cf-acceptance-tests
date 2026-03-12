@@ -1,6 +1,7 @@
 package loggregator
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -10,7 +11,6 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
