@@ -135,6 +135,7 @@ include_app_syslog_tcp
 * `comma_delim_asgs_enabled`: Defaults to `false`. Set to true if comma delimited ASG destinations are enabled in the test environment.
 * `include_services`: Flag to include test for the services API.
 * `include_service_instance_sharing`: Flag to include tests for service instance sharing between spaces. `include_services` must be set for these tests to run. The `service_instance_sharing` feature flag must also be enabled for these tests to pass.
+* `include_service_credential_binding_rotation`: Execute tests for multiple service bindings. See [RFC-0040](https://github.com/cloudfoundry/community/blob/main/toc/rfc/rfc-0040-service-binding-rotation.md) for details. This test requires CF CLI v8.18.0 or later. The backend must support at least 2 service bindings per app and service instance.
 * `include_ssh`: Flag to include tests for Diego container ssh feature.
 * `include_sso`: Flag to include the services tests that integrate with Single Sign On.
 * `include_tasks`: Flag to include the v3 task tests. `include_v3` must also be set for tests to run. The CC API task_creation feature flag must be enabled for these tests to pass.

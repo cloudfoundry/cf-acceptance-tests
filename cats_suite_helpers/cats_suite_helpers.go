@@ -117,7 +117,7 @@ const (
 )
 
 func FileBasedServiceBindingsDescribe(description string, lifecycle string, callback func()) bool {
-	return Describe(fmt.Sprintf("[file-based service bindings]", lifecycle), func() {
+	return Describe(fmt.Sprintf("[file-based service bindings %s]", lifecycle), func() {
 		BeforeEach(func() {
 			if lifecycle == BuildpackLifecycle && !Config.GetIncludeFileBasedServiceBindings() {
 				Skip(skip_messages.SkipFileBasedServiceBindingsBuildpackApp)
@@ -277,6 +277,17 @@ func ServiceInstanceSharingDescribe(description string, callback func()) bool {
 		BeforeEach(func() {
 			if !Config.GetIncludeServiceInstanceSharing() {
 				Skip(skip_messages.SkipServiceInstanceSharingMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
+func ServiceCredentialBindingRotationDescribe(description string, callback func()) bool {
+	return Describe("[service credential binding rotation]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeServiceCredentialBindingRotation() {
+				Skip(skip_messages.SkipServiceCredentialBindingRotationMessage)
 			}
 		})
 		Describe(description, callback)

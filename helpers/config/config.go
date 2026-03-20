@@ -25,6 +25,7 @@ type CatsConfig interface {
 	GetIncludeServices() bool
 	GetIncludeUserProvidedServices() bool
 	GetIncludeServiceDiscovery() bool
+	GetIncludeServiceCredentialBindingRotation() bool
 	GetIncludeSsh() bool
 	GetIncludeTasks() bool
 	GetIncludeV3() bool
