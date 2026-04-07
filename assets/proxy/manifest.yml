@@ -7,4 +7,4 @@ applications:
       - go_buildpack
     env:
       GOPACKAGENAME: example-apps/proxy
-      GOVERSION: go1.24
+      GOVERSION: latest

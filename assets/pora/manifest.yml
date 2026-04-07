@@ -5,4 +5,4 @@ applications:
       - go_buildpack
     env:
       GOPACKAGENAME: pora
-      GOVERSION: go1.24
+      GOVERSION: latest
