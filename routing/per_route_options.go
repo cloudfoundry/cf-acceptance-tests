@@ -1,6 +1,7 @@
 package routing
 
 import (
+	"crypto/rand"
 	"fmt"
 	"path/filepath"
 	"regexp"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
+	"github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
@@ -26,25 +28,50 @@ var (
 
 var _ = RoutingDescribe("Per-Route Options", func() {
 	var (
-		appName        string
-		appId          string
-		instanceIds    [2]string
-		leastConnHost  string
-		roundRobinHost string
+		appName              string
+		appId                string
+		instanceIds          [2]string
+		leastConnHost        string
+		roundRobinHost       string
+		hashBasedRoutingHost string
 	)
+
+	// Helper function to build URL for a given host
+	buildUrl := func(host string) string {
+		return fmt.Sprintf("%s%s.%s", Config.Protocol(), host, Config.GetAppsDomain())
+	}
+
+	// Helper function to create busy background requests on a specific CF instance
+	createBusyInstance := func(url, instanceIndex string, count int) *sync.WaitGroup {
+		var wg sync.WaitGroup
+		for i := 0; i < count; i++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				defer GinkgoRecover()
+				helpers.Curl(Config, fmt.Sprintf("%s/delay/10", url), "-H", fmt.Sprintf("X-Cf-App-Instance: %s:%s", appId, instanceIndex))
+			}()
+		}
+		return &wg
+	}
 
 	Context("when an app sets the loadbalancing algorithm", func() {
 		BeforeEach(func() {
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
+				Expect(cf.Cf("enable-feature-flag", "hash_based_routing").Wait()).To(Exit(0))
+			})
 			appName = random_name.CATSRandomName("APP")
 			asset := assets.NewAssets()
 			leastConnHost = random_name.CATSRandomName("dora-lc")
 			roundRobinHost = random_name.CATSRandomName("dora-rr")
+			hashBasedRoutingHost = random_name.CATSRandomName("dora-hash")
 			Expect(cf.Cf("push",
 				appName,
 				"-b", Config.GetRubyBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", asset.Dora,
 				"--var", fmt.Sprintf("domain=%s", Config.GetAppsDomain()),
+				"--var", fmt.Sprintf("hashbasedroutinghost=%s", hashBasedRoutingHost),
 				"--var", fmt.Sprintf("leastconnhost=%s", leastConnHost),
 				"--var", fmt.Sprintf("roundrobinhost=%s", roundRobinHost),
 				"-f", filepath.Join(asset.Dora, "route_options_manifest.yml"),
@@ -55,6 +82,7 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 					fmt.Fprintf(GinkgoWriter, "Waiting for app instance %d to start...\n", i)
 					curl := helpers.Curl(Config, Config.Protocol()+leastConnHost+"."+Config.GetAppsDomain()+"/id", "-H", fmt.Sprintf("X-Cf-App-Instance: %s:%d", appId, i)).Wait()
 					id := string(curl.Out.Contents())
+					fmt.Fprintf(GinkgoWriter, "App instance %s\n", id)
 					if appInstanceRegex.MatchString(id) {
 						instanceIds[i] = id
 						fmt.Fprintf(GinkgoWriter, "App instance %d has started. Instance ID: %s.\n", i, id)
@@ -74,7 +102,7 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 
 		Context("when it's set to round-robin", func() {
 			It("distributes requests evenly", func() {
-				doraUrl := fmt.Sprintf("%s%s.%s", Config.Protocol(), roundRobinHost, Config.GetAppsDomain())
+				doraUrl := buildUrl(roundRobinHost)
 				var wg sync.WaitGroup
 				for i := 0; i < 10; i++ {
 					wg.Add(1)
@@ -100,7 +128,7 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 
 		Context("when it's set to least-connection", func() {
 			It("always sends the request to the instance with less active connections", func() {
-				doraUrl := fmt.Sprintf("%s%s.%s", Config.Protocol(), leastConnHost, Config.GetAppsDomain())
+				doraUrl := buildUrl(leastConnHost)
 				var wg sync.WaitGroup
 				for i := 0; i < 10; i++ {
 					wg.Add(1)
@@ -121,6 +149,53 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 				Expect(reqCount[0]).To(BeNumerically("<=", 8))
 				Expect(reqCount[1]).To(BeNumerically(">=", 12))
 				wg.Wait()
+			})
+		})
+		Context("when it's set to hash", func() {
+			Context("when the requests contain the same hash header", func() {
+				It("routes requests to the same instance", func() {
+					doraUrl := buildUrl(hashBasedRoutingHost)
+					hashHeader := "X-Hash-Header: 1"
+					cfInstanceIndex := helpers.Curl(Config, fmt.Sprintf("%s/env/INSTANCE_INDEX", doraUrl), "-H", hashHeader).Wait().Out.Contents()
+
+					// Create background load on the target instance
+					wg := createBusyInstance(doraUrl, string(cfInstanceIndex), 10)
+
+					reqCount := [2]int{0, 0}
+					for i := 0; i < 20; i++ {
+						id := helpers.Curl(Config, fmt.Sprintf("%s/id", doraUrl), "-H", hashHeader).Wait().Out.Contents()
+						reqCount[slices.Index(instanceIds[:], string(id))] += 1
+					}
+
+					// All requests with the same hash should go to the same instance
+					Expect(reqCount[0] == 20 || reqCount[1] == 20).To(BeTrue(), "All 20 requests should be routed to the same instance")
+					wg.Wait()
+				})
+			})
+			Context("when the requests contain the different hash headers", func() {
+				It("distributes requests evenly", func() {
+					doraUrl := buildUrl(hashBasedRoutingHost)
+					// Create background load on the instance with index 0
+					wg := createBusyInstance(doraUrl, "0", 10)
+
+					reqCount := [2]int{0, 0}
+					requestsToSent := 100
+					for i := 0; i < requestsToSent; i++ {
+						// Generate random hash header
+						uuid := make([]byte, 16)
+						rand.Read(uuid)
+						uuidStr := fmt.Sprintf("%x", uuid)
+
+						id := helpers.Curl(Config, fmt.Sprintf("%s/id", doraUrl), "-H", fmt.Sprintf("X-Hash-Header: %s", uuidStr)).Wait().Out.Contents()
+						reqCount[slices.Index(instanceIds[:], string(id))] += 1
+					}
+
+					// allow for some wiggle-room
+					expectedWithTolerance := (requestsToSent / 2) - (requestsToSent * 10 / 100)
+					Expect(reqCount[0]).To(BeNumerically(">=", expectedWithTolerance))
+					Expect(reqCount[1]).To(BeNumerically(">=", expectedWithTolerance))
+					wg.Wait()
+				})
 			})
 		})
 	})
