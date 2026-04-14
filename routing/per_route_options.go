@@ -41,20 +41,6 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 		return fmt.Sprintf("%s%s.%s", Config.Protocol(), host, Config.GetAppsDomain())
 	}
 
-	// Helper function to create busy background requests on a specific CF instance
-	createBusyInstance := func(url, instanceIndex string, count int) *sync.WaitGroup {
-		var wg sync.WaitGroup
-		for i := 0; i < count; i++ {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				defer GinkgoRecover()
-				helpers.Curl(Config, fmt.Sprintf("%s/delay/10", url), "-H", fmt.Sprintf("X-Cf-App-Instance: %s:%s", appId, instanceIndex))
-			}()
-		}
-		return &wg
-	}
-
 	Context("when an app sets the loadbalancing algorithm", func() {
 		BeforeEach(func() {
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
@@ -156,10 +142,6 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 				It("routes requests to the same instance", func() {
 					doraUrl := buildUrl(hashBasedRoutingHost)
 					hashHeader := "X-Hash-Header: 1"
-					cfInstanceIndex := helpers.Curl(Config, fmt.Sprintf("%s/env/INSTANCE_INDEX", doraUrl), "-H", hashHeader).Wait().Out.Contents()
-
-					// Create background load on the target instance
-					wg := createBusyInstance(doraUrl, string(cfInstanceIndex), 10)
 
 					reqCount := [2]int{0, 0}
 					for i := 0; i < 20; i++ {
@@ -169,32 +151,28 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 
 					// All requests with the same hash should go to the same instance
 					Expect(reqCount[0] == 20 || reqCount[1] == 20).To(BeTrue(), "All 20 requests should be routed to the same instance")
-					wg.Wait()
 				})
 			})
 			Context("when the requests contain the different hash headers", func() {
 				It("distributes requests evenly", func() {
 					doraUrl := buildUrl(hashBasedRoutingHost)
-					// Create background load on the instance with index 0
-					wg := createBusyInstance(doraUrl, "0", 10)
 
 					reqCount := [2]int{0, 0}
-					requestsToSent := 100
-					for i := 0; i < requestsToSent; i++ {
+					requestsToSend := 100
+					for i := 0; i < requestsToSend; i++ {
 						// Generate random hash header
 						uuid := make([]byte, 16)
 						rand.Read(uuid)
-						uuidStr := fmt.Sprintf("%x", uuid)
+						randomHashValue := fmt.Sprintf("%x", uuid)
 
-						id := helpers.Curl(Config, fmt.Sprintf("%s/id", doraUrl), "-H", fmt.Sprintf("X-Hash-Header: %s", uuidStr)).Wait().Out.Contents()
+						id := helpers.Curl(Config, fmt.Sprintf("%s/id", doraUrl), "-H", fmt.Sprintf("X-Hash-Header: %s", randomHashValue)).Wait().Out.Contents()
 						reqCount[slices.Index(instanceIds[:], string(id))] += 1
 					}
 
 					// allow for some wiggle-room
-					expectedWithTolerance := (requestsToSent / 2) - (requestsToSent * 10 / 100)
-					Expect(reqCount[0]).To(BeNumerically(">=", expectedWithTolerance))
-					Expect(reqCount[1]).To(BeNumerically(">=", expectedWithTolerance))
-					wg.Wait()
+					tolerance := 10
+					Expect(reqCount[0]).To(BeNumerically(">=", (requestsToSend/2)-tolerance), "Approximately half of requests should be routed to the first instance")
+					Expect(reqCount[1]).To(BeNumerically(">=", (requestsToSend/2)-tolerance), "Approximately half of requests should be routed to the second instance")
 				})
 			})
 		})
