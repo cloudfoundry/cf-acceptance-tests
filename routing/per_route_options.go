@@ -84,6 +84,9 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 		AfterEach(func() {
 			app_helpers.AppReport(appName)
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {
+				Expect(cf.Cf("disable-feature-flag", "hash_based_routing").Wait()).To(Exit(0))
+			})
 		})
 
 		Context("when it's set to round-robin", func() {
