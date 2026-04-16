@@ -8,6 +8,10 @@ applications:
   - route: ((leastconnhost)).((domain))
     options:
       loadbalancing: least-connection
+  - route: ((hashbasedroutinghost)).((domain))
+    options:
+      loadbalancing: hash
+      hash_header: X-Hash-Header
   processes:
   - type: web
     instances: 2
