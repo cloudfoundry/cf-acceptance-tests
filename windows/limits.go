@@ -28,7 +28,7 @@ var _ = WindowsDescribe("App Limits", func() {
 			appName,
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetHwcBuildpackName(),
-			"-m", "256m",
+			"-m", "512m",
 			"-p", assets.NewAssets().Nora,
 			"-l", "1K",
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
@@ -42,7 +42,7 @@ var _ = WindowsDescribe("App Limits", func() {
 	})
 
 	It("does not allow the app to use more memory than allowed", func() {
-		response := helpers.CurlApp(Config, appName, "/leakmemory/300")
+		response := helpers.CurlApp(Config, appName, "/leakmemory/600")
 		Expect(response).To(ContainSubstring("Insufficient memory"))
 	})
 
