@@ -6,7 +6,7 @@ require (
 	code.cloudfoundry.org/archiver v0.66.0
 	code.cloudfoundry.org/go-log-cache/v3 v3.1.1
 	code.cloudfoundry.org/go-loggregator/v10 v10.3.1
-	code.cloudfoundry.org/tlsconfig v0.50.0
+	code.cloudfoundry.org/tlsconfig v0.51.0
 	github.com/cloudfoundry/cf-test-helpers/v2 v2.13.0
 	github.com/cloudfoundry/noaa/v2 v2.6.0
 	github.com/cloudfoundry/sonde-go v0.0.0-20251217143644-d1670a435f2a
