@@ -60,4 +60,10 @@ var _ = AppsDescribe("app logs", func() {
 			return logs.Recent(appName).Wait().Out
 		}).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*ERR %s", message)))
 	})
+
+	It("captures [API/*] logs emitted by the Cloud Controller", func() {
+		Eventually(func() *Buffer {
+			return logs.Recent(appName).Wait().Out
+		}).Should(Say(`\[API/\d+\]\s*OUT Created app with guid `))
+	})
 })
