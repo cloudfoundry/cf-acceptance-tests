@@ -30,6 +30,8 @@ NOTE: Ensure that route services are enabled on your platform before running thi
 const SkipRoutingMessage = `Skipping this test because config.IncludeRouting is set to 'false'.`
 const SkipHTTP2RoutingMessage = `Skipping this test because config.IncludeHTTP2Routing is set to 'false'.`
 const SkipTCPRoutingMessage = `Skipping this test because config.IncludeTCPRouting is set to 'false'.`
+const SkipTCPSNIRoutingMessage = `Skipping this test because config.IncludeTCPSNIRouting is set to 'false'.
+NOTE: Ensure that TCP router frontend TLS termination is enabled and *.<tcp-domain> DNS resolves to the TCP router before enabling this test.`
 const SkipSecurityGroupsMessage = `Skipping this test because config.IncludeSecurityGroups is set to 'false'.
 NOTE: Ensure that your platform restricts internal network traffic by default in order to run this test.`
 const SkipCommaDelimitedSecurityGroupsMessage = `Skipping this test because config.CommaDelimitedASGsEnabled is set to 'false'.

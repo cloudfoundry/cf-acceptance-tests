@@ -36,6 +36,9 @@ type CatsConfig interface {
 	GetIncludeTCPIsolationSegments() bool
 	GetIncludeHTTP2Routing() bool
 	GetIncludeTCPRouting() bool
+	GetIncludeTCPSNIRouting() bool
+	GetTCPPortRangeStart() int
+	GetTCPPortRangeEnd() int
 	GetIncludeWindows() bool
 	GetIncludeVolumeServices() bool
 	GetShouldKeepUser() bool

@@ -99,6 +99,9 @@ type config struct {
 	IncludeTCPIsolationSegments             *bool `json:"include_tcp_isolation_segments"`
 	IncludeHTTP2Routing                     *bool `json:"include_http2_routing"`
 	IncludeTCPRouting                       *bool `json:"include_tcp_routing"`
+	IncludeTCPSNIRouting                    *bool `json:"include_tcp_sni_routing"`
+	TCPPortRangeStart                       *int  `json:"tcp_port_range_start"`
+	TCPPortRangeEnd                         *int  `json:"tcp_port_range_end"`
 	IncludeTasks                            *bool `json:"include_tasks"`
 	IncludeV3                               *bool `json:"include_v3"`
 	IncludeVolumeServices                   *bool `json:"include_volume_services"`
@@ -210,6 +213,9 @@ func getDefaults() config {
 	defaults.IncludeServiceCredentialBindingRotation = ptrToBool(false)
 	defaults.IncludeHTTP2Routing = ptrToBool(false)
 	defaults.IncludeTCPRouting = ptrToBool(false)
+	defaults.IncludeTCPSNIRouting = ptrToBool(false)
+	defaults.TCPPortRangeStart = ptrToInt(0)
+	defaults.TCPPortRangeEnd = ptrToInt(0)
 	defaults.IncludeVolumeServices = ptrToBool(false)
 	defaults.IncludeIPv6 = ptrToBool(false)
 
@@ -507,6 +513,9 @@ func validateConfig(config *config) error {
 	}
 	if config.IncludeTCPRouting == nil {
 		errs = errors.Join(errs, fmt.Errorf("* 'include_tcp_routing' must not be null"))
+	}
+	if config.IncludeTCPSNIRouting == nil {
+		errs = errors.Join(errs, fmt.Errorf("* 'include_tcp_sni_routing' must not be null"))
 	}
 	if config.IncludeV3 == nil {
 		errs = errors.Join(errs, fmt.Errorf("* 'include_v3' must not be null"))
@@ -1066,6 +1075,18 @@ func (c *config) GetIncludeHTTP2Routing() bool {
 
 func (c *config) GetIncludeTCPRouting() bool {
 	return *c.IncludeTCPRouting
+}
+
+func (c *config) GetIncludeTCPSNIRouting() bool {
+	return *c.IncludeTCPSNIRouting
+}
+
+func (c *config) GetTCPPortRangeStart() int {
+	return *c.TCPPortRangeStart
+}
+
+func (c *config) GetTCPPortRangeEnd() int {
+	return *c.TCPPortRangeEnd
 }
 
 func (c *config) GetIncludeV3() bool {

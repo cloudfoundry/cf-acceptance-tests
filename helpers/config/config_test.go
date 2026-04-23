@@ -84,6 +84,7 @@ type testConfig struct {
 	IncludeTCPIsolationSegments     *bool `json:"include_tcp_isolation_segments,omitempty"`
 	IncludeHTTP2Routing             *bool `json:"include_http2_routing,omitempty"`
 	IncludeTCPRouting               *bool `json:"include_tcp_routing,omitempty"`
+	IncludeTCPSNIRouting            *bool `json:"include_tcp_sni_routing,omitempty"`
 	IncludeTasks                    *bool `json:"include_tasks,omitempty"`
 	IncludeV3                       *bool `json:"include_v3,omitempty"`
 	IncludeVolumeServices           *bool `json:"include_volume_services,omitempty"`
@@ -175,6 +176,7 @@ type nullConfig struct {
 	IncludeRoutingIsolationSegments *bool `json:"include_routing_isolation_segments"`
 	IncludeHTTP2Routing             *bool `json:"include_http2_routing"`
 	IncludeTCPRouting               *bool `json:"include_tcp_routing"`
+	IncludeTCPSNIRouting            *bool `json:"include_tcp_sni_routing"`
 	IncludeServiceDiscovery         *bool `json:"include_service_discovery"`
 	IncludeVolumeServices           *bool `json:"include_volume_services"`
 	IncludeTCPIsolationSegments     *bool `json:"include_tcp_isolation_segments"`
@@ -307,6 +309,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeServiceInstanceSharing()).To(BeFalse())
 		Expect(config.GetIncludeHTTP2Routing()).To(BeFalse())
 		Expect(config.GetIncludeTCPRouting()).To(BeFalse())
+		Expect(config.GetIncludeTCPSNIRouting()).To(BeFalse())
 		Expect(config.GetIncludeVolumeServices()).To(BeFalse())
 
 		Expect(config.GetIncludeWindows()).To(BeFalse())
@@ -433,6 +436,7 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_tasks' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_http2_routing' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_tcp_routing' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_tcp_sni_routing' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_v3' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_zipkin' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_isolation_segments' must not be null"))
@@ -496,6 +500,7 @@ var _ = Describe("Config", func() {
 			testCfg.IncludeTCPIsolationSegments = ptrToBool(true)
 			testCfg.IncludeHTTP2Routing = ptrToBool(true)
 			testCfg.IncludeTCPRouting = ptrToBool(true)
+			testCfg.IncludeTCPSNIRouting = ptrToBool(true)
 			testCfg.IncludeTasks = ptrToBool(true)
 			testCfg.IncludeV3 = ptrToBool(false)
 			testCfg.IncludeVolumeServices = ptrToBool(true)
@@ -561,6 +566,7 @@ var _ = Describe("Config", func() {
 			Expect(config.GetIncludeTCPIsolationSegments()).To(BeTrue())
 			Expect(config.GetIncludeHTTP2Routing()).To(BeTrue())
 			Expect(config.GetIncludeTCPRouting()).To(BeTrue())
+			Expect(config.GetIncludeTCPSNIRouting()).To(BeTrue())
 			Expect(config.GetIncludeTasks()).To(BeTrue())
 			Expect(config.GetIncludeV3()).To(BeFalse())
 			Expect(config.GetIncludeVolumeServices()).To(BeTrue())

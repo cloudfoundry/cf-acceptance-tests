@@ -2,9 +2,12 @@ package cats_suite_helpers
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
+	"math/rand"
 	"net"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -196,6 +199,17 @@ func TCPRoutingDescribe(description string, callback func()) bool {
 		BeforeEach(func() {
 			if !Config.GetIncludeTCPRouting() {
 				Skip(skip_messages.SkipTCPRoutingMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
+func TCPSNIRoutingDescribe(description string, callback func()) bool {
+	return Describe("[tcp sni routing]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeTCPSNIRouting() {
+				Skip(skip_messages.SkipTCPSNIRoutingMessage)
 			}
 		})
 		Describe(description, callback)
@@ -475,8 +489,22 @@ func GetNServerResponses(n int, domainName, externalPort1 string) ([]string, err
 	return responses, nil
 }
 
+func GetTCPPort() int {
+	start := Config.GetTCPPortRangeStart()
+	end := Config.GetTCPPortRangeEnd()
+	if start > 0 && end >= start {
+		return rand.Intn(end-start+1) + start
+	}
+	return 0
+}
+
 func MapTCPRoute(appName, domainName string) string {
-	createRouteSession := cf.Cf("map-route", appName, domainName).Wait()
+	port := GetTCPPort()
+	args := []string{"map-route", appName, domainName}
+	if port != 0 {
+		args = append(args, "--port", strconv.Itoa(port))
+	}
+	createRouteSession := cf.Cf(args...).Wait()
 	Expect(createRouteSession).To(Exit(0))
 
 	r := regexp.MustCompile(fmt.Sprintf(`.+%s:(\d+).+`, domainName))
@@ -528,4 +556,91 @@ func SendAndReceive(addr string, externalPort string) (string, error) {
 	}
 
 	return string(buff[:i]), nil
+}
+
+// MapTCPRouteWithHostname maps a TCP route on `domainName` with the given hostname.
+// If port == 0, a new external port is allocated by the TCP router; the chosen port
+// is parsed from the CLI output and returned.
+// If port != 0, the supplied port is reused so callers can map multiple apps on the
+// same external port, differentiated by SNI hostname.
+func MapTCPRouteWithHostname(appName, domainName, hostname string, port int) int {
+	if port == 0 {
+		port = GetTCPPort()
+	}
+	args := []string{"map-route", appName, domainName, "--hostname", hostname}
+	if port != 0 {
+		args = append(args, "--port", strconv.Itoa(port))
+	}
+
+	session := cf.Cf(args...).Wait()
+	Expect(session).To(Exit(0))
+
+	if port != 0 {
+		return port
+	}
+
+	r := regexp.MustCompile(fmt.Sprintf(`.+%s:(\d+).+`, domainName))
+	matches := r.FindStringSubmatch(string(session.Out.Contents()))
+	Expect(matches).To(HaveLen(2), "expected map-route output to contain an external port")
+
+	chosen, err := strconv.Atoi(matches[1])
+	Expect(err).ToNot(HaveOccurred())
+
+	return chosen
+}
+
+// SendAndReceiveTLS opens a TLS connection to addr:port using the given SNI serverName,
+// writes a small payload, and returns the server's response. insecureSkipVerify should
+// typically be true in CATs since we only validate routing, not cert trust.
+func SendAndReceiveTLS(addr string, port int, serverName string, insecureSkipVerify bool) (string, error) {
+	address := fmt.Sprintf("%s:%d", addr, port)
+
+	dialer := &net.Dialer{Timeout: 10 * time.Second}
+	conn, err := tls.DialWithDialer(dialer, "tcp", address, &tls.Config{
+		ServerName:         serverName,
+		InsecureSkipVerify: insecureSkipVerify,
+	})
+	if err != nil {
+		return "", err
+	}
+	defer conn.Close()
+
+	if err := conn.SetDeadline(time.Now().Add(10 * time.Second)); err != nil {
+		return "", err
+	}
+
+	message := []byte(fmt.Sprintf("Time is %d", time.Now().Nanosecond()))
+	if _, err = conn.Write(message); err != nil {
+		return "", err
+	}
+
+	// mirror SendAndReceive: small pause to let the server respond before the read.
+	time.Sleep(100 * time.Millisecond)
+
+	buff := make([]byte, 1024)
+	n, err := conn.Read(buff)
+	if err != nil {
+		return "", err
+	}
+
+	i := n
+	if j := bytes.IndexByte(buff[:n], 0); j > 0 {
+		i = j
+	}
+
+	return string(buff[:i]), nil
+}
+
+// GetNTLSResponses performs n TLS SNI round-trips against addr:port using the given
+// serverName and returns all responses in order.
+func GetNTLSResponses(n int, addr string, port int, serverName string, insecureSkipVerify bool) ([]string, error) {
+	responses := make([]string, 0, n)
+	for i := 0; i < n; i++ {
+		resp, err := SendAndReceiveTLS(addr, port, serverName, insecureSkipVerify)
+		if err != nil {
+			return nil, err
+		}
+		responses = append(responses, resp)
+	}
+	return responses, nil
 }

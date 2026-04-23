@@ -140,6 +140,7 @@ include_app_syslog_tcp
 * `include_sso`: Flag to include the services tests that integrate with Single Sign On.
 * `include_tasks`: Flag to include the v3 task tests. `include_v3` must also be set for tests to run. The CC API task_creation feature flag must be enabled for these tests to pass.
 * `include_tcp_routing`: Flag to include the TCP Routing tests. These tests are equivalent to the [TCP Routing tests](https://github.com/cloudfoundry/routing-acceptance-tests/blob/master/tcp_routing/tcp_routing_test.go) from the Routing Acceptance Tests.
+* `include_tcp_sni_routing`: Flag to include the SNI TCP Routing tests (TNZ-81099). These tests map multiple apps to the same external TCP port differentiated by SNI hostname (e.g. `cf map-route appB tcp.<domain> --port 18001 --hostname app-b`) and verify that a TLS client with the matching `ServerName` reaches the expected backend. Requires: (1) wildcard DNS so `*.<tcp_domain>` resolves to the TCP router load balancer; (2) `cf-tcp-router` deployed with frontend TLS termination enabled and a certificate that covers `*.<tcp_domain>` (self-signed is acceptable — the tests skip cert verification); (3) an org/space quota permitting at least two reserved route ports.
 * `tcp_domain`: Domain that will be used for apps with TCP routes
 * `include_user_provided_services`: Flag to include test for user-provided services.
 * `include_v3`: Flag to include tests for the v3 API.
