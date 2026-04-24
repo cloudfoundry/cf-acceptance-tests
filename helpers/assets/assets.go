@@ -96,6 +96,6 @@ func NewAssets() Assets {
 		WindowsWebapp:              "assets/webapp",
 		Worker:                     "assets/worker",
 		MultiPortApp:               "assets/multi-port-app",
-		SpringSleuthZip:            "assets/spring-sleuth-modern/target/spring-sleuth-modern-0.0.1.jar",
+		SpringSleuthZip:            "assets/spring-sleuth/target/spring-sleuth-0.0.1.jar",
 	}
 }

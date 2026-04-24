@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: spring-sleuth
+
+management:
+  tracing:
+    enabled: true
+    propagation:
+      consume: [W3C, B3, B3_MULTI]
+      produce: [W3C, B3_MULTI]
+    sampling:
+      probability: 1.0
+
