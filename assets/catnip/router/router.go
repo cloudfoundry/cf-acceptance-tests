@@ -39,7 +39,8 @@ func New(out io.Writer, clock clock.Clock) *chi.Mux {
 	r.Get("/curl/{host}", linux.CurlHandler)
 	r.Get("/curl/{host}/", linux.CurlHandler)
 	r.Get("/curl/{host}/{port}", linux.CurlHandler)
-	r.Get("/file/{filename}", file.FileHandler)
+	r.Get("/file/{filename}", file.ReadFileHandler)
+	r.Post("/file/{filename}", file.WriteFileHandler)
 
 	return r
 }

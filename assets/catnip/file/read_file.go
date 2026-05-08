@@ -9,7 +9,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func FileHandler(res http.ResponseWriter, req *http.Request) {
+func ReadFileHandler(res http.ResponseWriter, req *http.Request) {
 	filename := chi.URLParam(req, "filename")
 	decodedFilename, err := url.PathUnescape(filename)
 	if err != nil {
@@ -19,13 +19,13 @@ func FileHandler(res http.ResponseWriter, req *http.Request) {
 
 	_, err = os.Stat(decodedFilename)
 	if err != nil {
-		http.Error(res, http.StatusText(404) + ": " + decodedFilename, 404)
+		http.Error(res, http.StatusText(404)+": "+decodedFilename, 404)
 		return
 	}
 
 	content, err := os.ReadFile(decodedFilename)
 	if err != nil {
-		http.Error(res, http.StatusText(500) + ": " + err.Error(), 500)
+		http.Error(res, http.StatusText(500)+": "+err.Error(), 500)
 		return
 	}
 	res.Write(append(content, '\n'))
