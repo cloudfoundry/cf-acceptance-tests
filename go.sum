@@ -1,5 +1,5 @@
-code.cloudfoundry.org/archiver v0.68.0 h1:/wtxTX+dt3KZ9jJTUQL8HYWzk5hgXtgQyH+VCawZcvI=
-code.cloudfoundry.org/archiver v0.68.0/go.mod h1:MoIE37BIFQi705b+VvrrQsZqXAEtyEzUcifS3UYj5C4=
+code.cloudfoundry.org/archiver v0.69.0 h1:DzbQASBPccGjEXFzcPGuPHGNstgyd5RTfU74dwdQgyY=
+code.cloudfoundry.org/archiver v0.69.0/go.mod h1:tj4x5JsmpTNH1hwalOBRoKSaFhu+NnmLWOtwA69Xec8=
 code.cloudfoundry.org/go-diodes v0.0.0-20260209061029-a81ffbc46978 h1:uZ6UIz7zl39FMy5GybKzI83zD35c4fvkU8sQEZDH/x8=
 code.cloudfoundry.org/go-diodes v0.0.0-20260209061029-a81ffbc46978/go.mod h1:ZZMgJNANhsfqeXF//d5qDK0dNnQ4jTBsib4WR0xbWJQ=
 code.cloudfoundry.org/go-log-cache/v3 v3.1.1 h1:1DL5Ifs7WNIQBuMWUDac0f5IMGoP99gHXjxHLthzXq8=
@@ -10,8 +10,8 @@ code.cloudfoundry.org/tlsconfig v0.52.0 h1:u5pFOr0aXGNVOt0ga5dIb3esGWaWJ/Mi3xDrZ
 code.cloudfoundry.org/tlsconfig v0.52.0/go.mod h1:9Jxw2AnXRy1aq9iSGrOWWrOMc+vh6JmAClqxCw9rpFs=
 filippo.io/edwards25519 v1.2.0 h1:crnVqOiS4jqYleHd9vaKZ+HKtHfllngJIiOpNpoJsjo=
 filippo.io/edwards25519 v1.2.0/go.mod h1:xzAOLCNug/yB62zG1bQ8uziwrIqIuxhctzJT18Q77mc=
-github.com/Masterminds/semver/v3 v3.4.0 h1:Zog+i5UMtVoCU8oKka5P7i9q9HgrJeGzI9SA1Xbatp0=
-github.com/Masterminds/semver/v3 v3.4.0/go.mod h1:4V+yj/TJE1HU9XfppCwVMZq3I84lprf4nC11bSS5beM=
+github.com/Masterminds/semver/v3 v3.5.0 h1:kQceYJfbupGfZOKZQg0kou0DgAKhzDg2NZPAwZ/2OOE=
+github.com/Masterminds/semver/v3 v3.5.0/go.mod h1:4V+yj/TJE1HU9XfppCwVMZq3I84lprf4nC11bSS5beM=
 github.com/andybalholm/brotli v1.0.1 h1:KqhlKozYbRtJvsPrrEeXcO+N2l6NYT5A2QAFmSULpEc=
 github.com/andybalholm/brotli v1.0.1/go.mod h1:loMXtMfwqflxFJPmdbJO0a3KNoPuLBgiu3qAvBg8x/Y=
 github.com/apoydence/eachers v0.0.0-20181020210610-23942921fe77 h1:afT88tB6u9JCKQZVAAaa9ICz/uGn5Uw9ekn6P22mYKM=
