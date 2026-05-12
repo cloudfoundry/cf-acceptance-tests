@@ -60,6 +60,7 @@ func NewAssets() Assets {
 		DoraZip:              "assets/dora.zip",
 		DotnetCore: map[string]string{
 			"cflinuxfs4": "assets/dotnet-core/cflinuxfs4",
+			"cflinuxfs5": "assets/dotnet-core/cflinuxfs5",
 		},
 		GoCallsRubyZip:             "assets/go_calls_ruby.zip",
 		Golang:                     "assets/golang",

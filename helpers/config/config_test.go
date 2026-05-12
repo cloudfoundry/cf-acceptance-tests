@@ -356,6 +356,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetCredHubLocation()).To(Equal("https://credhub.service.cf.internal:8844"))
 
 		Expect(config.GetStacks()).To(ConsistOf("cflinuxfs4"))
+		// NOTE: cflinuxfs5 is also supported - override stacks in config to test it
 
 		Expect(config.GetBinaryBuildpackName()).To(Equal("binary_buildpack"))
 		Expect(config.GetGoBuildpackName()).To(Equal("go_buildpack"))
@@ -749,6 +750,30 @@ var _ = Describe("Config", func() {
 			config, err := cfg.NewCatsConfig(tmpFilePath)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(config.GetStacks()).To(Equal([]string{"cflinuxfs4", "my-custom-stack"}))
+		})
+	})
+
+	Context("when providing cflinuxfs5 in the stacks property", func() {
+		BeforeEach(func() {
+			testCfg.Stacks = &[]string{"cflinuxfs5"}
+		})
+
+		It("is loaded into the config", func() {
+			config, err := cfg.NewCatsConfig(tmpFilePath)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(config.GetStacks()).To(Equal([]string{"cflinuxfs5"}))
+		})
+	})
+
+	Context("when providing cflinuxfs4 and cflinuxfs5 in the stacks property", func() {
+		BeforeEach(func() {
+			testCfg.Stacks = &[]string{"cflinuxfs4", "cflinuxfs5"}
+		})
+
+		It("is loaded into the config", func() {
+			config, err := cfg.NewCatsConfig(tmpFilePath)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(config.GetStacks()).To(Equal([]string{"cflinuxfs4", "cflinuxfs5"}))
 		})
 	})
 
