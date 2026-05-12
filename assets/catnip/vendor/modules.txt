@@ -1,8 +1,8 @@
-# code.cloudfoundry.org/clock v1.67.0
+# code.cloudfoundry.org/clock v1.69.0
 ## explicit; go 1.25.0
 code.cloudfoundry.org/clock
 code.cloudfoundry.org/clock/fakeclock
-# github.com/Masterminds/semver/v3 v3.4.0
+# github.com/Masterminds/semver/v3 v3.5.0
 ## explicit; go 1.21
 github.com/Masterminds/semver/v3
 # github.com/go-chi/chi/v5 v5.2.5
