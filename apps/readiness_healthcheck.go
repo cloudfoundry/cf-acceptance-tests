@@ -37,6 +37,7 @@ var _ = AppsDescribe("Readiness Healthcheck", func() {
 			By("pushing the app")
 
 			Expect(cf.Cf("push", appName,
+				"-b", Config.GetRubyBuildpackName(),
 				"-p", assets.NewAssets().Dora,
 				"-f", assets.NewAssets().Dora+"/readiness_manifest.yml",
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))

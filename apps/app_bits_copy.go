@@ -29,6 +29,7 @@ var _ = AppsDescribe("Copy app bits", func() {
 		).Wait()).To(Exit(0))
 		Expect(cf.Cf("push", helloWorldAppName,
 			"--no-start",
+			"-b", Config.GetRubyBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", assets.NewAssets().HelloWorld,
 		).Wait()).To(Exit(0))

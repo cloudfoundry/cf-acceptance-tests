@@ -72,7 +72,7 @@ var _ = AppsDescribe("Uploading and Downloading droplets", func() {
 
 		By("Pushing other app with 'healthy' in the response")
 		otherAppName = random_name.CATSRandomName("APP")
-		Expect(cf.Cf("push", otherAppName, "-p", assets.NewAssets().RubySimple).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf("push", otherAppName, "-b", Config.GetRubyBuildpackName(), "-p", assets.NewAssets().RubySimple).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, otherAppName)
