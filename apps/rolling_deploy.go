@@ -5,7 +5,6 @@ import (
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
@@ -22,13 +21,11 @@ var _ = AppsDescribe("Rolling deploys", func() {
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Push(appName,
-			"-p", assets.NewAssets().Dora,
-		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf(app_helpers.CatnipWithArgs(appName)...).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		Eventually(func() string {
 			return helpers.CurlAppRoot(Config, appName)
-		}).Should(ContainSubstring("Hi, I'm Dora!"))
+		}).Should(ContainSubstring("Catnip?"))
 	})
 
 	AfterEach(func() {
@@ -59,15 +56,11 @@ var _ = AppsDescribe("Rolling deploys", func() {
 				case <-tickerChannel:
 					appResponse := helpers.CurlAppRoot(Config, appName)
 					Expect(appResponse).ToNot(ContainSubstring("404"))
-					Expect(appResponse).To(ContainSubstring("Hi, I'm Dora!"))
+					Expect(appResponse).To(ContainSubstring("Catnip?"))
 				}
 			}
 		}()
 
-		Expect(cf.Cf(
-			"push", appName,
-			"-p", assets.NewAssets().Dora,
-			"--strategy=rolling",
-		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf(app_helpers.CatnipWithArgs(appName, "--strategy=rolling")...).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 })
