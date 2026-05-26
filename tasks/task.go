@@ -325,7 +325,8 @@ exit 1`
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 					Expect(cf.Cf("bind-security-group", securityGroupName, TestSetup.RegularUserContext().Org, "--space", TestSetup.RegularUserContext().Space).Wait()).To(Exit(0))
 				})
-				// Give time to allow the security group to propagate
+				// Empirically calibrated to 60s in commit 4ee6f9f4 — shorter delays
+				// reintroduce ~80% flakiness on vanilla CF. Do not reduce.
 				time.Sleep(60 * time.Second)
 
 				By("restarting the app to apply the ASG")

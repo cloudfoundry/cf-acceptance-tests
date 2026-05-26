@@ -135,6 +135,7 @@ EOF
 		process := GetProcessByGuid(processes[0].Guid)
 		Expect(process.Command).Should(ContainSubstring("custom buildpack contents - cache not found"))
 
+		// Wait for buildpack cache to be uploaded to blobstore. Tunable via sleep_timeout config.
 		time.Sleep(Config.SleepTimeoutDuration())
 
 		restage := cf.Cf("restage", appName).Wait(Config.CfPushTimeoutDuration())
