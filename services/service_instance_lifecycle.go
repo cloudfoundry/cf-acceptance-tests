@@ -43,8 +43,8 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 		}, Config.AsyncServiceOperationTimeoutDuration(), asyncOperationPollInterval).Should(Say(expectedText))
 	}
 
-	Describe("Synchronous operations", func() {
-		BeforeEach(func() {
+	Describe("Synchronous operations", Ordered, func() {
+		BeforeAll(func() {
 			broker = services.NewServiceBroker(
 				random_name.CATSRandomName("BRKR"),
 				assets.NewAssets().ServiceBroker,
@@ -56,7 +56,7 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 			broker.PublicizePlans()
 		})
 
-		AfterEach(func() {
+		AfterAll(func() {
 			app_helpers.AppReport(broker.Name)
 
 			broker.Destroy()
@@ -298,10 +298,10 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 		})
 	})
 
-	Describe("Asynchronous operations", func() {
+	Describe("Asynchronous operations", Ordered, func() {
 		var instanceName string
 
-		BeforeEach(func() {
+		BeforeAll(func() {
 			broker = services.NewServiceBroker(
 				random_name.CATSRandomName("BRKR"),
 				assets.NewAssets().ServiceBroker,
@@ -314,10 +314,12 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 		})
 
 		AfterEach(func() {
-			app_helpers.AppReport(broker.Name)
-
 			Expect(cf.Cf("delete-service", instanceName, "-f").Wait()).To(Exit())
 			waitForAsyncDeletionToComplete(broker, instanceName)
+		})
+
+		AfterAll(func() {
+			app_helpers.AppReport(broker.Name)
 
 			broker.Destroy()
 		})

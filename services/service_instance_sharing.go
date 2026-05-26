@@ -20,7 +20,7 @@ import (
 )
 
 var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
-	Context("when User A shares a service instance into User B's space", func() {
+	Context("when User A shares a service instance into User B's space", Ordered, func() {
 		// Note: user A is admin and user B is regular user
 		var (
 			broker              services.ServiceBroker
@@ -29,7 +29,7 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			userASpaceName      string
 		)
 
-		BeforeEach(func() {
+		BeforeAll(func() {
 			broker = services.NewServiceBroker(
 				random_name.CATSRandomName("BRKR"),
 				assets.NewAssets().ServiceBroker,
@@ -40,7 +40,13 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			broker.Configure()
 			broker.Create()
 			broker.PublicizePlans()
+		})
 
+		AfterAll(func() {
+			broker.Destroy()
+		})
+
+		BeforeEach(func() {
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				orgName := TestSetup.RegularUserContext().Org
 
@@ -72,15 +78,15 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 		})
 
 		AfterEach(func() {
-			broker.Destroy()
-
 			if appName != "" {
 				app_helpers.AppReport(appName)
 				Eventually(cf.Cf("delete", appName, "-f")).Should(Exit(0))
+				appName = ""
 			}
 
 			if serviceInstanceName != "" {
 				Expect(cf.Cf("delete-service", serviceInstanceName, "-f").Wait()).To(Exit(0))
+				serviceInstanceName = ""
 			}
 		})
 
