@@ -13,7 +13,6 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	logshelper "github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
@@ -26,13 +25,11 @@ var _ = AppsDescribe("log rate limit", func() {
 	BeforeEach(func() {
 		appName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Cf("push",
+		Expect(cf.Cf(app_helpers.CatnipWithArgs(
 			appName,
-			"-b", Config.GetRubyBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", assets.NewAssets().Dora,
 			"-l", "1K",
-		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		)...).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {
