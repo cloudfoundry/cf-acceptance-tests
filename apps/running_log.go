@@ -19,51 +19,53 @@ import (
 )
 
 var _ = AppsDescribe("app logs", func() {
-	var appName string
+	Describe("app logs scenarios", Ordered, func() {
+		var appName string
 
-	BeforeEach(func() {
-		appName = random_name.CATSRandomName("APP")
+		BeforeAll(func() {
+			appName = random_name.CATSRandomName("APP")
 
-		Expect(cf.Cf("push",
-			appName,
-			"-p", assets.NewAssets().Dora,
-		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-		Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("Hi, I'm Dora!"))
-	})
+			Expect(cf.Cf("push",
+				appName,
+				"-p", assets.NewAssets().Dora,
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			Eventually(helpers.CurlingAppRoot(Config, appName)).Should(ContainSubstring("Hi, I'm Dora!"))
+		})
 
-	AfterEach(func() {
-		app_helpers.AppReport(appName)
+		AfterAll(func() {
+			app_helpers.AppReport(appName)
 
-		Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).Should(Exit(0))
-	})
+			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).Should(Exit(0))
+		})
 
-	It("captures stdout logs with the correct tag", func() {
-		var message string
+		It("captures stdout logs with the correct tag", func() {
+			var message string
 
-		By("logging application stdout")
-		message = "message-from-stdout"
-		helpers.CurlApp(Config, appName, fmt.Sprintf("/print/%s", url.QueryEscape(message)))
+			By("logging application stdout")
+			message = "message-from-stdout"
+			helpers.CurlApp(Config, appName, fmt.Sprintf("/print/%s", url.QueryEscape(message)))
 
-		Eventually(func() *Buffer {
-			return logs.Recent(appName).Wait().Out
-		}).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*OUT %s", message)))
-	})
+			Eventually(func() *Buffer {
+				return logs.Recent(appName).Wait().Out
+			}).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*OUT %s", message)))
+		})
 
-	It("captures stderr logs with the correct tag", func() {
-		var message string
+		It("captures stderr logs with the correct tag", func() {
+			var message string
 
-		By("logging application stderr")
-		message = "message-from-stderr"
-		helpers.CurlApp(Config, appName, fmt.Sprintf("/print_err/%s", url.QueryEscape(message)))
+			By("logging application stderr")
+			message = "message-from-stderr"
+			helpers.CurlApp(Config, appName, fmt.Sprintf("/print_err/%s", url.QueryEscape(message)))
 
-		Eventually(func() *Buffer {
-			return logs.Recent(appName).Wait().Out
-		}).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*ERR %s", message)))
-	})
+			Eventually(func() *Buffer {
+				return logs.Recent(appName).Wait().Out
+			}).Should(Say(fmt.Sprintf("\\[APP(.*)/0\\]\\s*ERR %s", message)))
+		})
 
-	It("captures [API/*] logs emitted by the Cloud Controller", func() {
-		Eventually(func() *Buffer {
-			return logs.Recent(appName).Wait().Out
-		}).Should(Say(`\[API/\d+\]\s*OUT Created app with guid `))
+		It("captures [API/*] logs emitted by the Cloud Controller", func() {
+			Eventually(func() *Buffer {
+				return logs.Recent(appName).Wait().Out
+			}).Should(Say(`\[API/\d+\]\s*OUT Created app with guid `))
+		})
 	})
 })
