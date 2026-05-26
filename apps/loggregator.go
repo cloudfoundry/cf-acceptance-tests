@@ -57,6 +57,10 @@ var _ = AppsDescribe("loggregator", func() {
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait()).To(Exit(0))
 		})
 
+		AfterEach(func() {
+			helpers.CurlApp(Config, appName, "/log/stop")
+		})
+
 		Context("cf logs", func() {
 			var logs *Session
 
