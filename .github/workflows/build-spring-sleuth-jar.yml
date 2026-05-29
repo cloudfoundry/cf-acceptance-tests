@@ -16,15 +16,10 @@ on:
 
 jobs:
   build:
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-        with:
-          token: ${{ secrets.GIT_BOT_TOKEN || github.token }}
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -34,26 +29,21 @@ jobs:
           cache: maven
 
       - name: Build jar with Maven
+        id: build_jar
+        continue-on-error: true
         working-directory: assets/spring-sleuth
-        run: mvn package
-
-      - name: Commit rebuilt jar to PR branch
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && env.GIT_BOT_TOKEN != '' && env.GIT_BOT_NAME != '' && env.GIT_BOT_EMAIL != ''
-        env:
-          GIT_BOT_TOKEN: ${{ secrets.GIT_BOT_TOKEN }}
-          GIT_BOT_NAME: ${{ secrets.GIT_BOT_NAME }}
-          GIT_BOT_EMAIL: ${{ secrets.GIT_BOT_EMAIL }}
         run: |
-          git config user.name "${GIT_BOT_NAME}"
-          git config user.email "${GIT_BOT_EMAIL}"
-          git remote set-url origin "https://x-access-token:${GIT_BOT_TOKEN}@github.com/${{ github.repository }}.git"
+          mvn package
 
-          git add assets/spring-sleuth/target/spring-sleuth-0.0.1.jar
-          if git diff --cached --quiet; then
-            echo "No jar changes to commit"
-            exit 0
-          fi
+      - name: Report successful package build
+        if: steps.build_jar.outcome == 'success'
+        run: |
+          echo "mvn package succeeded."
+          echo "Please rebuild and push assets/spring-sleuth/target/spring-sleuth-0.0.1.jar manually in a new PR."
 
-          git commit -m "Build spring-sleuth-0.0.1.jar with 'mvn package'"
-          git push origin "HEAD:${{ github.head_ref }}"
-
+      - name: Report failed package build
+        if: steps.build_jar.outcome == 'failure'
+        run: |
+          echo "mvn package failed."
+          echo "The automatic update requires further code changes before the jar can be rebuilt. Check previous build jar step for details."
+          exit 1
