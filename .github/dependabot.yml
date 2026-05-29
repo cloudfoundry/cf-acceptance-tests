@@ -46,7 +46,9 @@ updates:
   - "/assets/service_broker"
 
 - package-ecosystem: "maven"
-  directory: "/assets/java-spring"
+  directories:
+  - "/assets/java-spring"
+  - "/assets/spring-sleuth"
   target-branch: "develop"
   schedule:
     interval: "weekly"
