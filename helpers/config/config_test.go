@@ -752,6 +752,30 @@ var _ = Describe("Config", func() {
 		})
 	})
 
+	Context("when providing cflinuxfs5 in the stacks property", func() {
+		BeforeEach(func() {
+			testCfg.Stacks = &[]string{"cflinuxfs5"}
+		})
+
+		It("is loaded into the config", func() {
+			config, err := cfg.NewCatsConfig(tmpFilePath)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(config.GetStacks()).To(Equal([]string{"cflinuxfs5"}))
+		})
+	})
+
+	Context("when providing cflinuxfs4 and cflinuxfs5 in the stacks property", func() {
+		BeforeEach(func() {
+			testCfg.Stacks = &[]string{"cflinuxfs4", "cflinuxfs5"}
+		})
+
+		It("is loaded into the config", func() {
+			config, err := cfg.NewCatsConfig(tmpFilePath)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(config.GetStacks()).To(Equal([]string{"cflinuxfs4", "cflinuxfs5"}))
+		})
+	})
+
 	Context("when including a reporter config", func() {
 		BeforeEach(func() {
 			reporterConfig := &testReporterConfig{

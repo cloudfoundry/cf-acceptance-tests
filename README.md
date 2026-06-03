@@ -185,7 +185,7 @@ include_app_syslog_tcp
 * `windows_stack`: Windows stack to run tests against.
 
 * `include_service_discovery`: Flag to include test for the service discovery. These tests use `apps.internal` domain, which is the default in `cf-networking-release`. The internal domain is currently not configurable.
-* `stacks`: An array of stacks to test against. Default is `[cflinuxfs4]`.
+* `stacks`: An array of stacks to test against. Currently `cflinuxfs4` and `cflinuxfs5` stacks are supported. Default is `[cflinuxfs4]`.
 
 * `include_volume_services`: Flag to include the tests for volume services. The following requirements must be met to run this suite: tcp-routing must be deployed.
 * `volume_service_name`: The name of the volume service provided by the volume service broker.

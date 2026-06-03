@@ -133,6 +133,8 @@ EOF
 				switch stackName {
 				case "cflinuxfs4":
 					expectedLSBRelease = "DISTRIB_CODENAME=jammy"
+				case "cflinuxfs5":
+					expectedLSBRelease = "DISTRIB_CODENAME=noble"
 				}
 
 				push := cf.Cf("push", appName,
