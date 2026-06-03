@@ -263,9 +263,6 @@ func getDefaults() config {
 
 	defaults.Stacks = &[]string{"cflinuxfs4"}
 
-	// NOTE: To test cflinuxfs5, override the stacks property in your cats config:
-	// "stacks": ["cflinuxfs5"]
-
 	return defaults
 }
 

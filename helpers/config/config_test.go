@@ -356,7 +356,6 @@ var _ = Describe("Config", func() {
 		Expect(config.GetCredHubLocation()).To(Equal("https://credhub.service.cf.internal:8844"))
 
 		Expect(config.GetStacks()).To(ConsistOf("cflinuxfs4"))
-		// NOTE: cflinuxfs5 is also supported - override stacks in config to test it
 
 		Expect(config.GetBinaryBuildpackName()).To(Equal("binary_buildpack"))
 		Expect(config.GetGoBuildpackName()).To(Equal("go_buildpack"))
