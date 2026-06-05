@@ -1,4 +1,4 @@
-# code.cloudfoundry.org/clock v1.72.0
+# code.cloudfoundry.org/clock v1.73.0
 ## explicit; go 1.25.0
 code.cloudfoundry.org/clock
 code.cloudfoundry.org/clock/fakeclock
