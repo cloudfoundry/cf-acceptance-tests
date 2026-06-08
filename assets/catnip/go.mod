@@ -3,7 +3,7 @@ module github.com/cloudfoundry/cf-acceptance-tests/assets/catnip
 go 1.25.0
 
 require (
-	code.cloudfoundry.org/clock v1.72.0
+	code.cloudfoundry.org/clock v1.73.0
 	github.com/go-chi/chi/v5 v5.3.0
 	github.com/onsi/ginkgo/v2 v2.29.0
 	github.com/onsi/gomega v1.41.0
