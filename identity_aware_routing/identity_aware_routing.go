@@ -98,7 +98,7 @@ var _ = IdentityAwareRoutingDescribe("Identity-Aware Routing", func() {
 	}
 
 	Describe("mTLS authorization with route policies", func() {
-	It("denies access by default and allows after adding an access rule", func() {
+	It("denies access by default and allows after adding a route policy", func() {
 		By("verifying the frontend is denied without route policies (default deny)")
 		Eventually(func() int {
 			resp := curlMtlsProxy(appNameFrontend, backendHostName, identityAwareDomain, "headers")
