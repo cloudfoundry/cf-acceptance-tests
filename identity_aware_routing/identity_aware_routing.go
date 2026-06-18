@@ -97,25 +97,25 @@ var _ = IdentityAwareRoutingDescribe("Identity-Aware Routing", func() {
 		return resp
 	}
 
-	Describe("mTLS authorization with access rules", func() {
+	Describe("mTLS authorization with route policies", func() {
 	It("denies access by default and allows after adding an access rule", func() {
-		By("verifying the frontend is denied without access rules (default deny)")
+		By("verifying the frontend is denied without route policies (default deny)")
 		Eventually(func() int {
 			resp := curlMtlsProxy(appNameFrontend, backendHostName, identityAwareDomain, "headers")
 			return resp.StatusCode
 		}, 2*time.Minute).Should(Equal(403))
 
-		By("creating an access rule for the frontend app")
+		By("creating a route policy for the frontend app")
 		Expect(cf.Cf(
-			"add-access-rule", identityAwareDomain,
+			"add-route-policy", identityAwareDomain,
 			"--source-app", appNameFrontend,
 			"--hostname", backendHostName,
 		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
-		By("verifying the access rule is listed")
-		accessRulesOutput := cf.Cf("access-rules", "--domain", identityAwareDomain).Wait(Config.DefaultTimeoutDuration())
-		Expect(accessRulesOutput).To(Exit(0))
-		Expect(string(accessRulesOutput.Out.Contents())).To(ContainSubstring(appNameFrontend))
+		By("verifying the route policy is listed")
+		routePoliciesOutput := cf.Cf("route-policies", "--domain", identityAwareDomain).Wait(Config.DefaultTimeoutDuration())
+		Expect(routePoliciesOutput).To(Exit(0))
+		Expect(string(routePoliciesOutput.Out.Contents())).To(ContainSubstring(appNameFrontend))
 
 		By("verifying the frontend can now reach the backend")
 		Eventually(func() int {
@@ -125,9 +125,9 @@ var _ = IdentityAwareRoutingDescribe("Identity-Aware Routing", func() {
 	})
 
 	It("denies access from an unauthorized app even with a valid certificate", func() {
-		By("creating an access rule only for the frontend app")
+		By("creating a route policy only for the frontend app")
 		Expect(cf.Cf(
-			"add-access-rule", identityAwareDomain,
+			"add-route-policy", identityAwareDomain,
 			"--source-app", appNameFrontend,
 			"--hostname", backendHostName,
 		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
@@ -148,9 +148,9 @@ var _ = IdentityAwareRoutingDescribe("Identity-Aware Routing", func() {
 		It("forwards X-Forwarded-Client-Cert header with caller identity in Envoy format", func() {
 			frontendGuid := GuidForAppName(appNameFrontend)
 
-			By("creating an access rule for the frontend app")
+			By("creating a route policy for the frontend app")
 			Expect(cf.Cf(
-				"add-access-rule", identityAwareDomain,
+				"add-route-policy", identityAwareDomain,
 				"--source-app", appNameFrontend,
 				"--hostname", backendHostName,
 			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
