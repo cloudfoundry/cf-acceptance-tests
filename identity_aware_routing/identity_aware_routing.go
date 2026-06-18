@@ -16,6 +16,7 @@ import (
 
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
+	"github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers"
 )
 
 type mtlsProxyResponse struct {
@@ -98,52 +99,52 @@ var _ = IdentityAwareRoutingDescribe("Identity-Aware Routing", func() {
 	}
 
 	Describe("mTLS authorization with route policies", func() {
-	It("denies access by default and allows after adding a route policy", func() {
-		By("verifying the frontend is denied without route policies (default deny)")
-		Eventually(func() int {
-			resp := curlMtlsProxy(appNameFrontend, backendHostName, identityAwareDomain, "headers")
-			return resp.StatusCode
-		}, 2*time.Minute).Should(Equal(403))
+		It("denies access by default and allows after adding a route policy", func() {
+			By("verifying the frontend is denied without route policies (default deny)")
+			Eventually(func() int {
+				resp := curlMtlsProxy(appNameFrontend, backendHostName, identityAwareDomain, "headers")
+				return resp.StatusCode
+			}, 2*time.Minute).Should(Equal(403))
 
-		By("creating a route policy for the frontend app")
-		Expect(cf.Cf(
-			"add-route-policy", identityAwareDomain,
-			"--source-app", appNameFrontend,
-			"--hostname", backendHostName,
-		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			By("creating a route policy for the frontend app")
+			Expect(cf.Cf(
+				"add-route-policy", identityAwareDomain,
+				"--source-app", appNameFrontend,
+				"--hostname", backendHostName,
+			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
-		By("verifying the route policy is listed")
-		routePoliciesOutput := cf.Cf("route-policies", "--domain", identityAwareDomain).Wait(Config.DefaultTimeoutDuration())
-		Expect(routePoliciesOutput).To(Exit(0))
-		Expect(string(routePoliciesOutput.Out.Contents())).To(ContainSubstring(appNameFrontend))
+			By("verifying the route policy is listed")
+			routePoliciesOutput := cf.Cf("route-policies", "--domain", identityAwareDomain).Wait(Config.DefaultTimeoutDuration())
+			Expect(routePoliciesOutput).To(Exit(0))
+			Expect(string(routePoliciesOutput.Out.Contents())).To(ContainSubstring(appNameFrontend))
 
-		By("verifying the frontend can now reach the backend")
-		Eventually(func() int {
-			resp := curlMtlsProxy(appNameFrontend, backendHostName, identityAwareDomain, "headers")
-			return resp.StatusCode
-		}, 2*time.Minute).Should(Equal(200))
-	})
+			By("verifying the frontend can now reach the backend")
+			Eventually(func() int {
+				resp := curlMtlsProxy(appNameFrontend, backendHostName, identityAwareDomain, "headers")
+				return resp.StatusCode
+			}, 2*time.Minute).Should(Equal(200))
+		})
 
-	It("denies access from an unauthorized app even with a valid certificate", func() {
-		By("creating a route policy only for the frontend app")
-		Expect(cf.Cf(
-			"add-route-policy", identityAwareDomain,
-			"--source-app", appNameFrontend,
-			"--hostname", backendHostName,
-		).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+		It("denies access from an unauthorized app even with a valid certificate", func() {
+			By("creating a route policy only for the frontend app")
+			Expect(cf.Cf(
+				"add-route-policy", identityAwareDomain,
+				"--source-app", appNameFrontend,
+				"--hostname", backendHostName,
+			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
-		By("verifying the authorized frontend can reach the backend")
-		Eventually(func() int {
-			resp := curlMtlsProxy(appNameFrontend, backendHostName, identityAwareDomain, "headers")
-			return resp.StatusCode
-		}, 2*time.Minute).Should(Equal(200))
+			By("verifying the authorized frontend can reach the backend")
+			Eventually(func() int {
+				resp := curlMtlsProxy(appNameFrontend, backendHostName, identityAwareDomain, "headers")
+				return resp.StatusCode
+			}, 2*time.Minute).Should(Equal(200))
 
-		By("verifying the unauthorized app is denied")
-		Consistently(func() int {
-			resp := curlMtlsProxy(appNameUnauthorized, backendHostName, identityAwareDomain, "headers")
-			return resp.StatusCode
-		}, 30*time.Second).Should(Equal(403))
-	})
+			By("verifying the unauthorized app is denied")
+			Consistently(func() int {
+				resp := curlMtlsProxy(appNameUnauthorized, backendHostName, identityAwareDomain, "headers")
+				return resp.StatusCode
+			}, 30*time.Second).Should(Equal(403))
+		})
 
 		It("forwards X-Forwarded-Client-Cert header with caller identity in Envoy format", func() {
 			frontendGuid := GuidForAppName(appNameFrontend)
@@ -155,22 +156,22 @@ var _ = IdentityAwareRoutingDescribe("Identity-Aware Routing", func() {
 				"--hostname", backendHostName,
 			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
 
-		By("calling the backend and examining the XFCC header")
-		var xfcc string
-		Eventually(func() string {
-			resp := curlMtlsProxy(appNameFrontend, backendHostName, identityAwareDomain, "headers")
-			if resp.StatusCode != 200 {
-				return ""
-			}
-			// The backend returns its request headers as JSON via /headers
-			var headers map[string]string
-			err := json.Unmarshal([]byte(resp.Body), &headers)
-			if err != nil {
-				return ""
-			}
-			xfcc = headers["X-Forwarded-Client-Cert"]
-			return xfcc
-		}, 2*time.Minute).ShouldNot(BeEmpty())
+			By("calling the backend and examining the XFCC header")
+			var xfcc string
+			Eventually(func() string {
+				resp := curlMtlsProxy(appNameFrontend, backendHostName, identityAwareDomain, "headers")
+				if resp.StatusCode != 200 {
+					return ""
+				}
+				// The backend returns its request headers as JSON via /headers
+				var headers map[string]string
+				err := json.Unmarshal([]byte(resp.Body), &headers)
+				if err != nil {
+					return ""
+				}
+				xfcc = headers["X-Forwarded-Client-Cert"]
+				return xfcc
+			}, 2*time.Minute).ShouldNot(BeEmpty())
 
 			By("verifying the XFCC header is in Envoy format")
 			Expect(xfcc).To(ContainSubstring("Hash="))
@@ -179,5 +180,46 @@ var _ = IdentityAwareRoutingDescribe("Identity-Aware Routing", func() {
 			By("verifying the XFCC header contains the frontend app GUID")
 			Expect(strings.ToLower(xfcc)).To(ContainSubstring("ou=app:" + strings.ToLower(frontendGuid)))
 		})
+	})
+})
+
+var _ = IdentityAwareRoutingDescribe("Route Policy Domain Management", func() {
+	var domainName string
+
+	BeforeEach(func() {
+		domainName = random_name.CATSRandomName("DOMAIN") + "." + Config.GetAppsDomain()
+	})
+
+	AfterEach(func() {
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			cf.Cf("target", "-o", TestSetup.GetOrganizationName()).Wait(Config.DefaultTimeoutDuration())
+			cf.Cf("delete-shared-domain", domainName, "-f").Wait()
+		})
+	})
+
+	It("creates a shared domain with route policy enforcement and verifies it in cf domains", func() {
+		By("creating the domain with --enforce-route-policies and --scope space")
+		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+			createSession := cf.Cf(
+				"create-shared-domain", domainName,
+				"--enforce-route-policies",
+				"--scope", "space",
+			)
+			Expect(createSession.Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+			Expect(string(createSession.Out.Contents())).To(ContainSubstring("identity-aware"))
+		})
+
+		By("verifying the domain appears in cf domains")
+		domainsOutput := cf.Cf("domains").Wait(Config.DefaultTimeoutDuration())
+		Expect(domainsOutput).To(Exit(0))
+
+		var domainLine string
+		for _, line := range strings.Split(string(domainsOutput.Out.Contents()), "\n") {
+			if strings.Contains(line, domainName) {
+				domainLine = line
+				break
+			}
+		}
+		Expect(domainLine).NotTo(BeEmpty(), "domain %s not found in cf domains output:\n%s", domainName, string(domainsOutput.Out.Contents()))
 	})
 })
