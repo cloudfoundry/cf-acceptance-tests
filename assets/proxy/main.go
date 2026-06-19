@@ -138,7 +138,7 @@ func mtlsProxyHandler(resp http.ResponseWriter, req *http.Request) {
 			}).Dial,
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: true,
-				Certificates:      []tls.Certificate{cert},
+				Certificates:       []tls.Certificate{cert},
 			},
 		},
 	}
