@@ -490,9 +490,6 @@ func validateConfig(config *config) error {
 	if config.IncludeSecurityGroups == nil {
 		errs = errors.Join(errs, fmt.Errorf("* 'include_security_groups' must not be null"))
 	}
-	if config.IncludeIdentityAwareRouting == nil {
-		errs = errors.Join(errs, fmt.Errorf("* 'include_identity_aware_routing' must not be null"))
-	}
 	if config.IncludeServiceDiscovery == nil {
 		errs = errors.Join(errs, fmt.Errorf("* 'include_service_discovery' must not be null"))
 	}
