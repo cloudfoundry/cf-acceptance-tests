@@ -360,6 +360,11 @@ func validateConfig(config *config) error {
 		errs = errors.Join(errs, err)
 	}
 
+	err = validateIdentityAwareRouting(config)
+	if err != nil {
+		errs = errors.Join(errs, err)
+	}
+
 	err = validateTimeoutScale(config)
 	if err != nil {
 		errs = errors.Join(errs, err)
@@ -777,6 +782,22 @@ func validateVolumeServices(config *config) error {
 	}
 	if config.GetVolumeServicePlanName() == "" {
 		return fmt.Errorf("* Invalid configuration: 'volume_service_plan_name' must be provided if 'include_volume_services' is true")
+	}
+
+	return nil
+}
+
+func validateIdentityAwareRouting(config *config) error {
+	if config.IncludeIdentityAwareRouting == nil {
+		return fmt.Errorf("* 'include_identity_aware_routing' must not be null")
+	}
+
+	if !config.GetIncludeIdentityAwareRouting() {
+		return nil
+	}
+
+	if config.IdentityAwareDomain == nil {
+		return fmt.Errorf("* Invalid configuration: 'identity_aware_domain' must not be null if 'include_identity_aware_routing' is true")
 	}
 
 	return nil
