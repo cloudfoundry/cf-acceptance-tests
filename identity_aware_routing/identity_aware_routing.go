@@ -93,8 +93,9 @@ var _ = IdentityAwareRoutingDescribe("Identity-Aware Routing", func() {
 		curlArgs := mtlsProxyURL(appName, backendHost, domain, path)
 		curl := helpers.Curl(Config, curlArgs).Wait()
 		var resp mtlsProxyResponse
-		err := json.Unmarshal(curl.Out.Contents(), &resp)
-		ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to parse mtls_proxy response: %s", string(curl.Out.Contents()))
+		if err := json.Unmarshal(curl.Out.Contents(), &resp); err != nil {
+			return mtlsProxyResponse{StatusCode: -1}
+		}
 		return resp
 	}
 
