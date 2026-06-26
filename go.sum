@@ -1,5 +1,5 @@
-code.cloudfoundry.org/archiver v0.75.0 h1:2kT6A8nCJXv1sZC9s6FF9/VqWXIP3BZose2rf05WE68=
-code.cloudfoundry.org/archiver v0.75.0/go.mod h1:TxTkO3519OvIFreS8bHlC1trd81hV/0SaPiINOT5Ly0=
+code.cloudfoundry.org/archiver v0.76.0 h1:MO+0+P7PIKAJGKC7DO0Zeb/2KjokH1F57atwSLBK9ME=
+code.cloudfoundry.org/archiver v0.76.0/go.mod h1:+J4BCWIxasRfXszRwkV+G8f1Xb0tS6zNBJ6L8d9YR/M=
 code.cloudfoundry.org/go-diodes v0.0.0-20260209061029-a81ffbc46978 h1:uZ6UIz7zl39FMy5GybKzI83zD35c4fvkU8sQEZDH/x8=
 code.cloudfoundry.org/go-diodes v0.0.0-20260209061029-a81ffbc46978/go.mod h1:ZZMgJNANhsfqeXF//d5qDK0dNnQ4jTBsib4WR0xbWJQ=
 code.cloudfoundry.org/go-log-cache/v3 v3.1.2 h1:VtYzWJhTQfopm8MSwm6T+KYURUKnzlpYEIi7Z37679w=
@@ -83,8 +83,8 @@ github.com/mholt/archiver/v3 v3.5.1 h1:rDjOBX9JSF5BvoJGvjqK479aL70qh9DIpZCl+k7Cl
 github.com/mholt/archiver/v3 v3.5.1/go.mod h1:e3dqJ7H78uzsRSEACH1joayhuSyhnonssnDhppzS1L4=
 github.com/nwaples/rardecode v1.1.0 h1:vSxaY8vQhOcVr4mm5e8XllHWTiM4JF507A0Katqw7MQ=
 github.com/nwaples/rardecode v1.1.0/go.mod h1:5DzqNKiOdpKKBH87u8VlvAnPZMXcGRhxWkRpHbbfGS0=
-github.com/onsi/ginkgo/v2 v2.31.0 h1:GtuJos5DFUV9EerYJo8RhYxosYNGvOdDE5haKq6Grfs=
-github.com/onsi/ginkgo/v2 v2.31.0/go.mod h1:+aXOY+vzZ5mu2iI2HpTZUPmM//oQfsNFX6gU9kNcA44=
+github.com/onsi/ginkgo/v2 v2.32.0 h1:Hw7s2pVrQo/8Yz5N77qdnpHaoc+c6cC9WIV1Jce+J6E=
+github.com/onsi/ginkgo/v2 v2.32.0/go.mod h1:+aXOY+vzZ5mu2iI2HpTZUPmM//oQfsNFX6gU9kNcA44=
 github.com/onsi/gomega v1.42.0 h1:CJby8u36xb7v34W78F8WKvqTQP7PCMIPB78IVDB73l4=
 github.com/onsi/gomega v1.42.0/go.mod h1:M/Uqpu/8qTjtzCLUA2zJHX9Iilrau25x1PdoSRbWh5A=
 github.com/pierrec/lz4/v4 v4.1.2 h1:qvY3YFXRQE/XB8MlLzJH7mSzBs74eA2gg52YTk6jUPM=

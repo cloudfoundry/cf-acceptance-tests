@@ -3,7 +3,7 @@ module github.com/cloudfoundry/cf-acceptance-tests
 go 1.25.8
 
 require (
-	code.cloudfoundry.org/archiver v0.75.0
+	code.cloudfoundry.org/archiver v0.76.0
 	code.cloudfoundry.org/go-log-cache/v3 v3.1.2
 	code.cloudfoundry.org/go-loggregator/v10 v10.3.1
 	code.cloudfoundry.org/tlsconfig v0.60.0
@@ -11,7 +11,7 @@ require (
 	github.com/cloudfoundry/noaa/v2 v2.6.0
 	github.com/cloudfoundry/sonde-go v0.0.0-20251217143644-d1670a435f2a
 	github.com/mholt/archiver/v3 v3.5.1
-	github.com/onsi/ginkgo/v2 v2.31.0
+	github.com/onsi/ginkgo/v2 v2.32.0
 	github.com/onsi/gomega v1.42.0
 	golang.org/x/crypto v0.53.0
 	google.golang.org/grpc v1.81.1
