@@ -15,8 +15,8 @@ repositories {
     mavenCentral()
 }
 
-
-jar {
+tasks.named('bootJar') {
     archiveBaseName = 'credhub-enabled-app'
+    archiveClassifier = ''
     destinationDirectory = file("$rootDir")
 }
