@@ -214,7 +214,7 @@ func RoutingIsolationSegmentsDescribe(description string, callback func()) bool 
 }
 
 func ZipkinDescribe(description string, callback func()) bool {
-	return Describe("[routing]", func() {
+	return Describe("[zipkin]", func() {
 		BeforeEach(func() {
 			if !Config.GetIncludeRouting() {
 				Skip(skip_messages.SkipRoutingMessage)
