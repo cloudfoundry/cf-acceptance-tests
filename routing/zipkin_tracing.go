@@ -31,8 +31,16 @@ var _ = ZipkinDescribe("Zipkin Tracing", func() {
 			"-b", Config.GetJavaBuildpackName(),
 			"-m", "1024M",
 			"-p", assetPath,
+			"--no-start",
 			"-t", "120",
-		).Wait(CF_JAVA_TIMEOUT)).To(gexec.Exit(0))
+		).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
+
+		Expect(cf.Cf(
+			"set-env", appName,
+			"JBP_CONFIG_OPEN_JDK_JRE", `{ jre: { version: 21.+ } }`,
+		).Wait()).To(gexec.Exit(0))
+
+		Expect(cf.Cf("start", appName).Wait(CF_JAVA_TIMEOUT)).To(gexec.Exit(0))
 	})
 
 	AfterEach(func() {
