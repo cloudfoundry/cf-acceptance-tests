@@ -62,25 +62,14 @@ var _ = IdentityAwareRoutingDescribe("Identity-Aware Routing", func() {
 			"-p", assets.NewAssets().Proxy,
 			"-f", assets.NewAssets().Proxy+"/manifest.yml",
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-
-		// push unauthorized app (same proxy app, different identity)
-		Expect(cf.Cf(
-			"push", appNameUnauthorized,
-			"-b", Config.GetGoBuildpackName(),
-			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", assets.NewAssets().Proxy,
-			"-f", assets.NewAssets().Proxy+"/manifest.yml",
-		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {
 		app_helpers.AppReport(appNameFrontend)
 		app_helpers.AppReport(appNameBackend)
-		app_helpers.AppReport(appNameUnauthorized)
 
 		Expect(cf.Cf("delete", appNameFrontend, "-f", "-r").Wait()).To(Exit(0))
 		Expect(cf.Cf("delete", appNameBackend, "-f", "-r").Wait()).To(Exit(0))
-		Expect(cf.Cf("delete", appNameUnauthorized, "-f", "-r").Wait()).To(Exit(0))
 	})
 
 	mtlsProxyURL := func(appName, backendHost, domain, path string) string {
@@ -124,9 +113,36 @@ var _ = IdentityAwareRoutingDescribe("Identity-Aware Routing", func() {
 				resp := curlMtlsProxy(appNameFrontend, backendHostName, identityAwareDomain, "headers")
 				return resp.StatusCode
 			}, 2*time.Minute).Should(Equal(200))
+
+			By("removing the route policy for the frontend app")
+			Expect(cf.Cf(
+				"remove-route-policy", identityAwareDomain,
+				"--source-app", appNameFrontend,
+				"--hostname", backendHostName,
+				"-f",
+			).Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+
+			By("verifying the frontend can no longer reach the backend")
+			Eventually(func() int {
+				resp := curlMtlsProxy(appNameFrontend, backendHostName, identityAwareDomain, "headers")
+				return resp.StatusCode
+			}, 2*time.Minute).Should(Equal(403))
 		})
 
 		It("denies access from an unauthorized app even with a valid certificate", func() {
+			By("pushing an unauthorized app (same proxy app, different identity)")
+			Expect(cf.Cf(
+				"push", appNameUnauthorized,
+				"-b", Config.GetGoBuildpackName(),
+				"-m", DEFAULT_MEMORY_LIMIT,
+				"-p", assets.NewAssets().Proxy,
+				"-f", assets.NewAssets().Proxy+"/manifest.yml",
+			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+			defer func() {
+				app_helpers.AppReport(appNameUnauthorized)
+				Expect(cf.Cf("delete", appNameUnauthorized, "-f", "-r").Wait()).To(Exit(0))
+			}()
+
 			By("creating a route policy only for the frontend app")
 			Expect(cf.Cf(
 				"add-route-policy", identityAwareDomain,
