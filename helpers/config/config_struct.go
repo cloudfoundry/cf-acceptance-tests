@@ -74,36 +74,38 @@ type config struct {
 	VolumeServiceBindConfig   *string `json:"volume_service_bind_config"`
 	VolumeServiceBrokerName   *string `json:"volume_service_broker_name"`
 
-	IncludeAppSyslogTCP                     *bool `json:"include_app_syslog_tcp"`
-	IncludeApps                             *bool `json:"include_apps"`
-	IncludeContainerNetworking              *bool `json:"include_container_networking"`
-	IncludeDeployments                      *bool `json:"include_deployments"`
-	IncludeDetect                           *bool `json:"include_detect"`
-	IncludeDocker                           *bool `json:"include_docker"`
-	IncludeCNB                              *bool `json:"include_cnb"`
-	IncludeFileBasedServiceBindings         *bool `json:"include_file_based_service_bindings"`
-	IncludeInternetDependent                *bool `json:"include_internet_dependent"`
-	IncludeIsolationSegments                *bool `json:"include_isolation_segments"`
-	IncludePrivateDockerRegistry            *bool `json:"include_private_docker_registry"`
-	IncludeRouteServices                    *bool `json:"include_route_services"`
-	IncludeRouting                          *bool `json:"include_routing"`
-	IncludeRoutingIsolationSegments         *bool `json:"include_routing_isolation_segments"`
-	IncludeSSO                              *bool `json:"include_sso"`
-	IncludeSecurityGroups                   *bool `json:"include_security_groups"`
-	IncludeServiceDiscovery                 *bool `json:"include_service_discovery"`
-	IncludeServiceInstanceSharing           *bool `json:"include_service_instance_sharing"`
-	IncludeServiceCredentialBindingRotation *bool `json:"include_service_credential_binding_rotation"`
-	IncludeServices                         *bool `json:"include_services"`
-	IncludeUserProvidedServices             *bool `json:"include_user_provided_services"`
-	IncludeSsh                              *bool `json:"include_ssh"`
-	IncludeTCPIsolationSegments             *bool `json:"include_tcp_isolation_segments"`
-	IncludeHTTP2Routing                     *bool `json:"include_http2_routing"`
-	IncludeTCPRouting                       *bool `json:"include_tcp_routing"`
-	IncludeTasks                            *bool `json:"include_tasks"`
-	IncludeV3                               *bool `json:"include_v3"`
-	IncludeVolumeServices                   *bool `json:"include_volume_services"`
-	IncludeZipkin                           *bool `json:"include_zipkin"`
-	IncludeIPv6                             *bool `json:"include_ipv6"`
+	IncludeAppSyslogTCP                     *bool   `json:"include_app_syslog_tcp"`
+	IncludeApps                             *bool   `json:"include_apps"`
+	IncludeContainerNetworking              *bool   `json:"include_container_networking"`
+	IncludeDeployments                      *bool   `json:"include_deployments"`
+	IncludeDetect                           *bool   `json:"include_detect"`
+	IncludeDocker                           *bool   `json:"include_docker"`
+	IncludeCNB                              *bool   `json:"include_cnb"`
+	IncludeFileBasedServiceBindings         *bool   `json:"include_file_based_service_bindings"`
+	IncludeIdentityAwareRouting             *bool   `json:"include_identity_aware_routing"`
+	IdentityAwareDomain                     *string `json:"identity_aware_domain"`
+	IncludeInternetDependent                *bool   `json:"include_internet_dependent"`
+	IncludeIsolationSegments                *bool   `json:"include_isolation_segments"`
+	IncludePrivateDockerRegistry            *bool   `json:"include_private_docker_registry"`
+	IncludeRouteServices                    *bool   `json:"include_route_services"`
+	IncludeRouting                          *bool   `json:"include_routing"`
+	IncludeRoutingIsolationSegments         *bool   `json:"include_routing_isolation_segments"`
+	IncludeSSO                              *bool   `json:"include_sso"`
+	IncludeSecurityGroups                   *bool   `json:"include_security_groups"`
+	IncludeServiceDiscovery                 *bool   `json:"include_service_discovery"`
+	IncludeServiceInstanceSharing           *bool   `json:"include_service_instance_sharing"`
+	IncludeServiceCredentialBindingRotation *bool   `json:"include_service_credential_binding_rotation"`
+	IncludeServices                         *bool   `json:"include_services"`
+	IncludeUserProvidedServices             *bool   `json:"include_user_provided_services"`
+	IncludeSsh                              *bool   `json:"include_ssh"`
+	IncludeTCPIsolationSegments             *bool   `json:"include_tcp_isolation_segments"`
+	IncludeHTTP2Routing                     *bool   `json:"include_http2_routing"`
+	IncludeTCPRouting                       *bool   `json:"include_tcp_routing"`
+	IncludeTasks                            *bool   `json:"include_tasks"`
+	IncludeV3                               *bool   `json:"include_v3"`
+	IncludeVolumeServices                   *bool   `json:"include_volume_services"`
+	IncludeZipkin                           *bool   `json:"include_zipkin"`
+	IncludeIPv6                             *bool   `json:"include_ipv6"`
 
 	CredhubMode         *string `json:"credhub_mode"`
 	CredhubLocation     *string `json:"credhub_location"`
@@ -200,6 +202,8 @@ func getDefaults() config {
 	defaults.IncludeRouteServices = ptrToBool(false)
 	defaults.IncludeSSO = ptrToBool(false)
 	defaults.IncludeSecurityGroups = ptrToBool(false)
+	defaults.IncludeIdentityAwareRouting = ptrToBool(false)
+	defaults.IdentityAwareDomain = ptrToString("apps.identity")
 	defaults.IncludeServiceDiscovery = ptrToBool(false)
 	defaults.IncludeServices = ptrToBool(false)
 	defaults.IncludeUserProvidedServices = ptrToBool(false)
@@ -352,6 +356,11 @@ func validateConfig(config *config) error {
 	}
 
 	err = validateVolumeServices(config)
+	if err != nil {
+		errs = errors.Join(errs, err)
+	}
+
+	err = validateIdentityAwareRouting(config)
 	if err != nil {
 		errs = errors.Join(errs, err)
 	}
@@ -775,6 +784,22 @@ func validateVolumeServices(config *config) error {
 	return nil
 }
 
+func validateIdentityAwareRouting(config *config) error {
+	if config.IncludeIdentityAwareRouting == nil {
+		return fmt.Errorf("* 'include_identity_aware_routing' must not be null")
+	}
+
+	if !config.GetIncludeIdentityAwareRouting() {
+		return nil
+	}
+
+	if config.IdentityAwareDomain == nil {
+		return fmt.Errorf("* Invalid configuration: 'identity_aware_domain' must not be null if 'include_identity_aware_routing' is true")
+	}
+
+	return nil
+}
+
 func validateWindows(config *config) error {
 	if config.IncludeWindows == nil {
 		return fmt.Errorf("* 'include_windows' must not be null")
@@ -1122,6 +1147,14 @@ func (c *config) GetIncludeServiceCredentialBindingRotation() bool {
 
 func (c *config) GetIncludeWindows() bool {
 	return *c.IncludeWindows
+}
+
+func (c *config) GetIncludeIdentityAwareRouting() bool {
+	return *c.IncludeIdentityAwareRouting
+}
+
+func (c *config) GetIdentityAwareDomain() string {
+	return *c.IdentityAwareDomain
 }
 
 func (c *config) GetIncludeServiceDiscovery() bool {
