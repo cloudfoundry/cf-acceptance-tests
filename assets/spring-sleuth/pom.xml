@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.4.5</version>
+    <version>4.1.0</version>
     <relativePath/>
   </parent>
 
@@ -17,7 +17,7 @@
   <description>Modern tracing sample replacing legacy Spring Cloud Sleuth SpanAccessor usage</description>
 
   <properties>
-    <java.version>17</java.version>
+    <java.version>21</java.version>
   </properties>
 
   <dependencies>
@@ -30,8 +30,8 @@
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.micrometer</groupId>
-      <artifactId>micrometer-tracing-bridge-otel</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-micrometer-tracing-opentelemetry</artifactId>
     </dependency>
     <dependency>
       <groupId>io.opentelemetry</groupId>
@@ -40,6 +40,11 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-webmvc-test</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
