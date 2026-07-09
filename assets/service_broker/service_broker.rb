@@ -22,6 +22,8 @@ class ServiceInstance
     @provision_data = opts.fetch(:provision_data)
     @fetch_count = opts.fetch(:fetch_count, 0)
     @deleted = opts.fetch(:deleted, false)
+    # Puma serves requests concurrently; guard every write to instance state.
+    @mutex = Mutex.new
   end
 
   def plan_id
@@ -29,19 +31,23 @@ class ServiceInstance
   end
 
   def update!(updated_data)
-    @provision_data.merge!(updated_data)
-    @fetch_count = 0
+    @mutex.synchronize do
+      @provision_data.merge!(updated_data)
+      @fetch_count = 0
+    end
     self
   end
 
   def delete!
-    @deleted = true
-    @fetch_count = 0
+    @mutex.synchronize do
+      @deleted = true
+      @fetch_count = 0
+    end
     self
   end
 
   def increment_fetch_count
-    @fetch_count += 1
+    @mutex.synchronize { @fetch_count += 1 }
   end
 
   def to_json(opts={})
@@ -58,6 +64,8 @@ class DataSource
 
   def initialize(data = nil)
     @data = data || JSON.parse(File.read(File.absolute_path('data.json')))
+    # Puma serves requests concurrently; guard every mutation of @data.
+    @mutex = Mutex.new
   end
 
   def max_fetch_service_instance_requests
@@ -69,43 +77,51 @@ class DataSource
   end
 
   def create_service_instance(cc_id, json_data)
-    service_instance = ServiceInstance.new(
-      provision_data: json_data,
-    )
+    @mutex.synchronize do
+      service_instance = ServiceInstance.new(
+        provision_data: json_data,
+      )
 
-    @data['service_instances'][cc_id] = service_instance
+      @data['service_instances'][cc_id] = service_instance
 
-    service_instance
+      service_instance
+    end
   end
 
   def create_service_binding(instance_id, binding_id, binding_data)
-    @data['service_instances'][binding_id] = {
-      'binding_data' => binding_data,
-      'instance_id' => instance_id,
-    }
+    @mutex.synchronize do
+      @data['service_instances'][binding_id] = {
+        'binding_data' => binding_data,
+        'instance_id' => instance_id,
+      }
+    end
   end
 
   def delete_service_binding(binding_id)
-    @data['service_instances'].delete(binding_id)
+    @mutex.synchronize do
+      @data['service_instances'].delete(binding_id)
+    end
   end
 
   def merge!(data)
-    data = data.dup
-    data['service_instances'] = data.fetch('service_instances', {}).inject({}) do |service_instances, (guid, instance_data)|
-      symbolized_data = instance_data.inject({}) do |memo,(k,v)|
-        memo[k.to_sym] = v
-        memo
+    @mutex.synchronize do
+      data = data.dup
+      data['service_instances'] = data.fetch('service_instances', {}).inject({}) do |service_instances, (guid, instance_data)|
+        symbolized_data = instance_data.inject({}) do |memo,(k,v)|
+          memo[k.to_sym] = v
+          memo
+        end
+
+        service_instances[guid] = ServiceInstance.new(symbolized_data)
+        service_instances
       end
 
-      service_instances[guid] = ServiceInstance.new(symbolized_data)
-      service_instances
-    end
-
-    data.each_pair do |key, value|
-      if @data[key] && @data[key].is_a?(Hash)
-        @data[key].merge!(value)
-      else
-        @data[key] = value
+      data.each_pair do |key, value|
+        if @data[key] && @data[key].is_a?(Hash)
+          @data[key].merge!(value)
+        else
+          @data[key] = value
+        end
       end
     end
   end
