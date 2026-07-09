@@ -162,11 +162,13 @@ class ServiceBroker < Sinatra::Base
 
   def log(request)
     $log.info "#{request.env['REQUEST_METHOD']} #{request.env['PATH_INFO']} #{request.env['QUERY_STRING']}".color(:yellow)
-    request.body.rewind
     headers = find_headers(request)
     $log.info "Request headers: #{headers}".color(:cyan)
-    $log.info "Request body: #{request.body.read}".color(:yellow)
-    request.body.rewind
+    if request.body
+      request.body.rewind
+      $log.info "Request body: #{request.body.read}".color(:yellow)
+      request.body.rewind
+    end
   end
 
   def find_headers(request)
