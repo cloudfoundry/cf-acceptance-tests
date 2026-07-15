@@ -83,7 +83,9 @@ var _ = AppSyslogTcpDescribe("Syslog Drain over TCP", func() {
 		})
 
 		AfterEach(func() {
-			logs.Kill()
+			if logs != nil {
+				logs.Kill()
+			}
 			close(interrupt)
 
 			app_helpers.AppReport(logWriterAppName1)
