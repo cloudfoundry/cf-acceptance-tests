@@ -137,6 +137,36 @@ var _ = AppSyslogTcpDescribe("Syslog Drain source type filter over TCP", func() 
 			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(appMarker), "APP log line was not forwarded by the drain-data=all include-APP drain")
 			Consistently(logs, 30).ShouldNot(Say(rtrSourceTypeMarker), "RTR log line leaked through the drain-data=all include-APP drain")
 		})
+
+		It("include-log-source-types=STG,APP with two types forwards APP logs and drops RTR logs", func() {
+			drainURL := fmt.Sprintf("syslog://%s:%s/?include-log-source-types=STG,APP", domainName, externalPort)
+			Eventually(cf.Cf("cups", serviceName, "-l", drainURL)).Should(Exit(0), "Failed to create syslog drain service")
+			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName)).Should(Exit(0), "Failed to bind service")
+
+			appMarker := random_name.CATSRandomName("APP-MARKER")
+
+			logs = logshelper.Follow(listenerAppName)
+
+			go driveAppUntilInterrupted(interrupt, logWriterAppName, appMarker)
+
+			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(appMarker), "APP log line was not forwarded by the include-STG,APP drain")
+			Consistently(logs, 30).ShouldNot(Say(rtrSourceTypeMarker), "RTR log line leaked through the include-STG,APP drain")
+		})
+
+		It("with no source type filter forwards both APP and RTR logs", func() {
+			drainURL := fmt.Sprintf("syslog://%s:%s/", domainName, externalPort)
+			Eventually(cf.Cf("cups", serviceName, "-l", drainURL)).Should(Exit(0), "Failed to create syslog drain service")
+			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName)).Should(Exit(0), "Failed to bind service")
+
+			appMarker := random_name.CATSRandomName("APP-MARKER")
+
+			logs = logshelper.Follow(listenerAppName)
+
+			go driveAppUntilInterrupted(interrupt, logWriterAppName, appMarker)
+
+			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(appMarker), "APP log line was not forwarded by the unfiltered drain")
+			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(rtrSourceTypeMarker), "RTR log line was not forwarded by the unfiltered drain")
+		})
 	})
 })
 
