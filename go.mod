@@ -3,7 +3,7 @@ module github.com/cloudfoundry/cf-acceptance-tests
 go 1.25.8
 
 require (
-	code.cloudfoundry.org/archiver v0.80.0
+	code.cloudfoundry.org/archiver v0.81.0
 	code.cloudfoundry.org/go-log-cache/v3 v3.1.2
 	code.cloudfoundry.org/go-loggregator/v10 v10.3.1
 	code.cloudfoundry.org/tlsconfig v0.63.0
@@ -40,7 +40,7 @@ require (
 	github.com/ulikunitz/xz v0.5.14 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	go.step.sm/crypto v0.85.0 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/mod v0.38.0 // indirect
 	golang.org/x/net v0.57.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
