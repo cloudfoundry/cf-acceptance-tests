@@ -11,7 +11,7 @@ code.cloudfoundry.org/go-log-cache/v3/rpc/logcache_v1
 ## explicit; go 1.25.0
 code.cloudfoundry.org/go-loggregator/v10
 code.cloudfoundry.org/go-loggregator/v10/rpc/loggregator_v2
-# code.cloudfoundry.org/tlsconfig v0.63.0
+# code.cloudfoundry.org/tlsconfig v0.64.0
 ## explicit; go 1.25.8
 code.cloudfoundry.org/tlsconfig
 code.cloudfoundry.org/tlsconfig/certtest
@@ -162,7 +162,7 @@ github.com/ulikunitz/xz/lzma
 # github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
 ## explicit
 github.com/xi2/xz
-# go.step.sm/crypto v0.85.0
+# go.step.sm/crypto v0.87.0
 ## explicit; go 1.25.8
 go.step.sm/crypto/fingerprint
 go.step.sm/crypto/internal/bcrypt_pbkdf
@@ -259,12 +259,12 @@ golang.org/x/tools/internal/stdlib
 golang.org/x/tools/internal/typeparams
 golang.org/x/tools/internal/typesinternal
 golang.org/x/tools/internal/versions
-# google.golang.org/genproto/googleapis/api v0.0.0-20260526163538-3dc84a4a5aaa
+# google.golang.org/genproto/googleapis/api v0.0.0-20260630182238-925bb5da69e7
 ## explicit; go 1.25.0
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/api/httpbody
-# google.golang.org/genproto/googleapis/rpc v0.0.0-20260630182238-925bb5da69e7
+# google.golang.org/genproto/googleapis/rpc v0.0.0-20260706201446-f0a921348800
 ## explicit; go 1.25.0
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.83.0
