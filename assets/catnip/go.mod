@@ -3,7 +3,7 @@ module github.com/cloudfoundry/cf-acceptance-tests/assets/catnip
 go 1.25.0
 
 require (
-	code.cloudfoundry.org/clock v1.81.0
+	code.cloudfoundry.org/clock v1.82.0
 	github.com/go-chi/chi/v5 v5.3.1
 	github.com/onsi/ginkgo/v2 v2.32.0
 	github.com/onsi/gomega v1.42.1
@@ -14,7 +14,7 @@ require (
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/pprof v0.0.0-20260709232956-b9395ee17fa0 // indirect
+	github.com/google/pprof v0.0.0-20260802141513-ef3492d7dac3 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/mod v0.38.0 // indirect
 	golang.org/x/net v0.57.0 // indirect
