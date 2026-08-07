@@ -1,4 +1,9 @@
 # CF Acceptance Tests (CATs)
+
+<!-- hy-mt2-i18n:start -->
+**English** · [中文](./README_zh-CN.md) · [日本語](./README_ja.md) · [Español](./README_es.md)
+<!-- hy-mt2-i18n:end -->
+
 This suite exercises a [Cloud Foundry](https://github.com/cloudfoundry/cf-deployment)
 deployment using the `cf` CLI and `curl`.
 It is scoped to testing user-facing,
