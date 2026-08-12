@@ -186,6 +186,7 @@ include_app_syslog_tcp
 
 * `include_service_discovery`: Flag to include test for the service discovery. These tests use `apps.internal` domain, which is the default in `cf-networking-release`. The internal domain is currently not configurable.
 * `stacks`: An array of stacks to test against. Currently `cflinuxfs4` and `cflinuxfs5` stacks are supported. Default is `[cflinuxfs4]`.
+* `dotnet_core_asset_paths`: A map from stack name to a directory holding a published dotnet-core app for that stack. CATs ships assets for `cflinuxfs4` and `cflinuxfs5` only; set this to run the dotnet-core detect test against any other stack listed in `stacks`. Without it, that test is skipped for stacks CATs has no asset for. Assets built for the stacks CATs ships take precedence.
 
 * `include_volume_services`: Flag to include the tests for volume services. The following requirements must be met to run this suite: tcp-routing must be deployed.
 * `volume_service_name`: The name of the volume service provided by the volume service broker.

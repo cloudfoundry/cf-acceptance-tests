@@ -93,6 +93,7 @@ type CatsConfig interface {
 	Protocol() string
 
 	GetStacks() []string
+	GetDotnetCoreAssetPaths() map[string]string
 
 	GetUseWindowsTestTask() bool
 	GetUseWindowsContextPath() bool

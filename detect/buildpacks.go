@@ -14,6 +14,7 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/skip_messages"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
 )
@@ -161,8 +162,11 @@ var _ = DetectDescribe("Buildpacks", func() {
 			stack := stack
 			Context(fmt.Sprintf("when using %s stack", stack), func() {
 				It("makes the app reachable via its bound route", func() {
-					assetPath, ok := assets.NewAssets().DotnetCore[stack]
-					Expect(ok).To(BeTrue(), fmt.Sprintf("dotnet-core app is missing asset for %s stack", stack))
+					assetPath, ok := dotnetCoreAssetPath(stack)
+					if !ok {
+						Skip(skip_messages.SkipNoDotnetCoreAssetMessage)
+					}
+
 					Expect(cf.Cf("push", appName, "-m", DEFAULT_MEMORY_LIMIT, "-p", assetPath, "-s", stack).Wait(Config.DetectTimeoutDuration())).To(Exit(0))
 
 					Eventually(func() string {
@@ -250,3 +254,16 @@ var _ = DetectDescribe("Buildpacks", func() {
 		}
 	})
 })
+
+// dotnetCoreAssetPath resolves the published dotnet-core app to push for a
+// stack, preferring the assets CATs ships and falling back to whatever the
+// deployment supplied via the dotnet_core_asset_paths config.
+func dotnetCoreAssetPath(stack string) (string, bool) {
+	if assetPath, ok := assets.NewAssets().DotnetCore[stack]; ok {
+		return assetPath, true
+	}
+
+	assetPath, ok := Config.GetDotnetCoreAssetPaths()[stack]
+
+	return assetPath, ok
+}
