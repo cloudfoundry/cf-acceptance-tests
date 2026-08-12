@@ -61,6 +61,8 @@ const SkipCapiExperimentalMessage = `Skipping this test because config.IncludeCa
 const SkipWindowsTasksMessage = `Skipping Windows tasks tests (requires diego-release v1.20.0 and above)`
 const SkipNoAlternateStacksMessage = `Skipping this test because config.Stacks is empty.`
 const SkipNonOSSStackMessage = `Skipping this test because none of the configured config.Stacks are a known OSS stack (cflinuxfs4, cflinuxfs5).`
+const SkipNoDotnetCoreAssetMessage = `Skipping this test because CATs has no dotnet-core app asset for this stack.
+NOTE: Set 'dotnet_core_asset_paths' to map the stack to a directory holding a published dotnet-core app in order to run this test.`
 const SkipVolumeServicesMessage = `Skipping this test because config.IncludeVolumeServices is set to 'false'.
 NOTE: Ensure that volume services are enabled on your platform and volume service broker is registered before running this test.`
 const SkipVolumeServicesDockerEnabledMessage = `Skipping this test because config.IncludeDocker is set to 'true'`

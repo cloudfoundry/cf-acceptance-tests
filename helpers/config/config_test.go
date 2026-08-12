@@ -58,6 +58,8 @@ type testConfig struct {
 
 	Stacks *[]string `json:"stacks,omitempty"`
 
+	DotnetCoreAssetPaths map[string]string `json:"dotnet_core_asset_paths,omitempty"`
+
 	VolumeServiceName     *string `json:"volume_service_name,omitempty"`
 	VolumeServicePlanName *string `json:"volume_service_plan_name,omitempty"`
 
@@ -356,6 +358,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetCredHubLocation()).To(Equal("https://credhub.service.cf.internal:8844"))
 
 		Expect(config.GetStacks()).To(ConsistOf("cflinuxfs4"))
+		Expect(config.GetDotnetCoreAssetPaths()).To(BeEmpty())
 
 		Expect(config.GetBinaryBuildpackName()).To(Equal("binary_buildpack"))
 		Expect(config.GetGoBuildpackName()).To(Equal("go_buildpack"))
@@ -773,6 +776,18 @@ var _ = Describe("Config", func() {
 			config, err := cfg.NewCatsConfig(tmpFilePath)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(config.GetStacks()).To(Equal([]string{"cflinuxfs4", "cflinuxfs5"}))
+		})
+	})
+
+	Context("when providing dotnet_core_asset_paths", func() {
+		BeforeEach(func() {
+			testCfg.DotnetCoreAssetPaths = map[string]string{"my-custom-stack": "assets/dotnet-core/cflinuxfs5"}
+		})
+
+		It("is loaded into the config", func() {
+			config, err := cfg.NewCatsConfig(tmpFilePath)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(config.GetDotnetCoreAssetPaths()).To(Equal(map[string]string{"my-custom-stack": "assets/dotnet-core/cflinuxfs5"}))
 		})
 	})
 

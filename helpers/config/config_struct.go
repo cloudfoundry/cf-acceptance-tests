@@ -112,6 +112,12 @@ type config struct {
 
 	Stacks *[]string `json:"stacks,omitempty"`
 
+	// DotnetCoreAssetPaths maps a stack to a directory holding a published
+	// dotnet-core app for that stack. It supplements the assets CATs ships
+	// itself, so that deployments running a stack CATs does not know about can
+	// still exercise the dotnet-core detect test.
+	DotnetCoreAssetPaths map[string]string `json:"dotnet_core_asset_paths,omitempty"`
+
 	IncludeWindows        *bool   `json:"include_windows"`
 	UseWindowsTestTask    *bool   `json:"use_windows_test_task"`
 	UseWindowsContextPath *bool   `json:"use_windows_context_path"`
@@ -1206,6 +1212,10 @@ func (c *config) GetUnallocatedIPForSecurityGroup() string {
 
 func (c *config) GetStacks() []string {
 	return *c.Stacks
+}
+
+func (c *config) GetDotnetCoreAssetPaths() map[string]string {
+	return c.DotnetCoreAssetPaths
 }
 
 func (c *config) GetUseWindowsTestTask() bool {
