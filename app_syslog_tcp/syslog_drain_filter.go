@@ -93,8 +93,8 @@ var _ = AppSyslogTcpDescribe("Syslog Drain source type filter over TCP", func() 
 			Eventually(cf.Cf("delete-orphaned-routes", "-f"), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to delete orphaned routes")
 		})
 
-		It("include-log-source-types=APP forwards APP logs and drops RTR logs", func() {
-			drainURL := fmt.Sprintf("syslog://%s:%s/?include-log-source-types=APP", domainName, externalPort)
+		It("include-log-types=APP forwards APP logs and drops RTR logs", func() {
+			drainURL := fmt.Sprintf("syslog://%s:%s/?include-log-types=APP", domainName, externalPort)
 			Eventually(cf.Cf("cups", serviceName, "-l", drainURL)).Should(Exit(0), "Failed to create syslog drain service")
 			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName)).Should(Exit(0), "Failed to bind service")
 
@@ -108,8 +108,8 @@ var _ = AppSyslogTcpDescribe("Syslog Drain source type filter over TCP", func() 
 			Consistently(logs, 30).ShouldNot(Say(rtrSourceTypeMarker), "RTR log line leaked through the include-APP drain")
 		})
 
-		It("exclude-log-source-types=RTR forwards APP logs and drops RTR logs", func() {
-			drainURL := fmt.Sprintf("syslog://%s:%s/?exclude-log-source-types=RTR", domainName, externalPort)
+		It("exclude-log-types=RTR forwards APP logs and drops RTR logs", func() {
+			drainURL := fmt.Sprintf("syslog://%s:%s/?exclude-log-types=RTR", domainName, externalPort)
 			Eventually(cf.Cf("cups", serviceName, "-l", drainURL)).Should(Exit(0), "Failed to create syslog drain service")
 			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName)).Should(Exit(0), "Failed to bind service")
 
@@ -123,8 +123,8 @@ var _ = AppSyslogTcpDescribe("Syslog Drain source type filter over TCP", func() 
 			Consistently(logs, 30).ShouldNot(Say(rtrSourceTypeMarker), "RTR log line leaked through the exclude-RTR drain")
 		})
 
-		It("drain-data=all with include-log-source-types=APP forwards APP logs and drops RTR logs", func() {
-			drainURL := fmt.Sprintf("syslog://%s:%s/?drain-data=all&include-log-source-types=APP", domainName, externalPort)
+		It("drain-data=all with include-log-types=APP forwards APP logs and drops RTR logs", func() {
+			drainURL := fmt.Sprintf("syslog://%s:%s/?drain-data=all&include-log-types=APP", domainName, externalPort)
 			Eventually(cf.Cf("cups", serviceName, "-l", drainURL)).Should(Exit(0), "Failed to create syslog drain service")
 			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName)).Should(Exit(0), "Failed to bind service")
 
@@ -138,8 +138,8 @@ var _ = AppSyslogTcpDescribe("Syslog Drain source type filter over TCP", func() 
 			Consistently(logs, 30).ShouldNot(Say(rtrSourceTypeMarker), "RTR log line leaked through the drain-data=all include-APP drain")
 		})
 
-		It("include-log-source-types=STG,APP with two types forwards APP logs and drops RTR logs", func() {
-			drainURL := fmt.Sprintf("syslog://%s:%s/?include-log-source-types=STG,APP", domainName, externalPort)
+		It("include-log-types=STG,APP with two types forwards APP logs and drops RTR logs", func() {
+			drainURL := fmt.Sprintf("syslog://%s:%s/?include-log-types=STG,APP", domainName, externalPort)
 			Eventually(cf.Cf("cups", serviceName, "-l", drainURL)).Should(Exit(0), "Failed to create syslog drain service")
 			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName)).Should(Exit(0), "Failed to bind service")
 
