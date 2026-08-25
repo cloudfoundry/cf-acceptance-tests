@@ -29,6 +29,7 @@ type config struct {
 	ExistingUserPassword *string `json:"existing_user_password"`
 	ShouldKeepUser       *bool   `json:"keep_user_at_suite_end"`
 	UseExistingUser      *bool   `json:"use_existing_user"`
+	Origin               *string `json:"origin"`
 
 	UseExistingOrganization *bool   `json:"use_existing_organization"`
 	ExistingOrganization    *string `json:"existing_organization"`
@@ -953,7 +954,7 @@ func (c *config) GetExistingUserPassword() string {
 }
 
 func (c *config) GetUserOrigin() string {
-	return ""
+	return *c.Origin
 }
 
 func (c *config) GetConfigurableTestPassword() string {
@@ -977,7 +978,7 @@ func (c *config) GetAdminPassword() string {
 }
 
 func (c *config) GetAdminOrigin() string {
-	return ""
+	return *c.Origin
 }
 
 func (c *config) GetApiEndpoint() string {
