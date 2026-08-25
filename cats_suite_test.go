@@ -125,6 +125,7 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 		doraFileNames = append(doraFileNames, assets.NewAssets().Dora+"/"+doraFile.Name())
 	}
 	zip := archiver.NewZip()
+	os.Remove(assets.NewAssets().DoraZip)
 	err = zip.Archive(doraFileNames, assets.NewAssets().DoraZip)
 	Expect(err).NotTo(HaveOccurred())
 
