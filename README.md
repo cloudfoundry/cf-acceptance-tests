@@ -288,6 +288,11 @@ When a test fails, look for the test group name (`[services]` in the example bel
 
 If you set a value for `artifacts_directory` in your `$CONFIG` file, then you will be able to capture `cf` trace output from failed test runs, this output may be useful in cases where the normal test output is not enough to debug an issue.  The `cf` trace output for the tests in these specs will be found in `CF-TRACE-Applications-*.txt` in the `artifacts_directory`.
 
+**NOTE:**
+If the default identity provider for your deployment is not `uaa`, it is
+recommended that you set the `origin` configuration property to `uaa`, and ensure
+the user credentials that you provide are registered with UAA.
+
 ## Test Execution
 To execute tests according to your configuration, run the [bin/test](./bin/test)
 script with `$CONFIG` set to your
