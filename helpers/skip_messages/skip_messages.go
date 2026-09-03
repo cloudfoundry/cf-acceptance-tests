@@ -55,6 +55,8 @@ const SkipIsolationSegmentsMessage = `Skipping this test because config.IncludeI
 const SkipRoutingIsolationSegmentsMessage = `Skipping this test because Config.IncludeRoutingIsolationSegments is set to 'false'.`
 const SkipZipkinMessage = `Skipping this test because config.IncludeZipkin is set to 'false'`
 const SkipServiceDiscoveryMessage = `Skipping this test because config.IncludeServiceDiscovery is set to 'false'.`
+const SkipIdentityAwareRoutingMessage = `Skipping this test because config.IncludeIdentityAwareRouting is set to 'false'.
+NOTE: Ensure that identity-aware routing is enabled and the identity-aware domain is configured before running this test.`
 const SkipServiceInstanceSharingMessage = `Skipping this test because config.IncludeServiceInstanceSharing is set to 'false'.`
 const SkipServiceCredentialBindingRotationMessage = `Skipping this test because config.IncludeServiceCredentialBindingRotation is set to 'false'.`
 const SkipCapiExperimentalMessage = `Skipping this test because config.IncludeCapiExperimental is set to 'false'.`

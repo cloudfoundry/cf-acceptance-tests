@@ -24,6 +24,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/proxy/", proxyHandler)
 	mux.HandleFunc("/https_proxy/", httpsProxyHandler)
+	mux.HandleFunc("/mtls_proxy/", mtlsProxyHandler)
+	mux.HandleFunc("/headers", headersHandler)
 	mux.HandleFunc("/", infoHandler(systemPort))
 
 	server := &http.Server{
@@ -89,6 +91,93 @@ func handleRequest(destination string, resp http.ResponseWriter, req *http.Reque
 	}
 
 	_, _ = resp.Write(readBytes)
+}
+
+func headersHandler(resp http.ResponseWriter, req *http.Request) {
+	headers := make(map[string]string)
+	for name, values := range req.Header {
+		headers[name] = strings.Join(values, ", ")
+	}
+	resp.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(resp).Encode(headers)
+}
+
+func mtlsProxyHandler(resp http.ResponseWriter, req *http.Request) {
+	destination := strings.TrimPrefix(req.URL.Path, "/mtls_proxy/")
+	destination = fmt.Sprintf("https://%s", destination)
+
+	certFile := os.Getenv("CF_INSTANCE_CERT")
+	keyFile := os.Getenv("CF_INSTANCE_KEY")
+	if certFile == "" || keyFile == "" {
+		resp.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(resp).Encode(map[string]interface{}{
+			"status":      "error",
+			"status_code": 500,
+			"error":       "CF_INSTANCE_CERT or CF_INSTANCE_KEY not set",
+		})
+		return
+	}
+
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		resp.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(resp).Encode(map[string]interface{}{
+			"status":      "error",
+			"status_code": 500,
+			"error":       fmt.Sprintf("failed to load client cert: %s", err),
+		})
+		return
+	}
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			DisableKeepAlives: true,
+			Dial: (&net.Dialer{
+				Timeout:   10 * time.Second,
+				KeepAlive: 0,
+			}).Dial,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+				Certificates:       []tls.Certificate{cert},
+			},
+		},
+	}
+
+	getResp, err := client.Get(destination)
+	if err != nil {
+		resp.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(resp).Encode(map[string]interface{}{
+			"status":      "error",
+			"status_code": 0,
+			"error":       fmt.Sprintf("request failed: %s", err),
+		})
+		return
+	}
+	defer getResp.Body.Close()
+
+	body, err := io.ReadAll(getResp.Body)
+	if err != nil {
+		resp.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(resp).Encode(map[string]interface{}{
+			"status":      "error",
+			"status_code": 0,
+			"error":       fmt.Sprintf("read body failed: %s", err),
+		})
+		return
+	}
+
+	respHeaders := make(map[string]string)
+	for name, values := range getResp.Header {
+		respHeaders[name] = strings.Join(values, ", ")
+	}
+
+	resp.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(resp).Encode(map[string]interface{}{
+		"status":      "success",
+		"status_code": getResp.StatusCode,
+		"body":        string(body),
+		"headers":     respHeaders,
+	})
 }
 
 var httpClient = &http.Client{
