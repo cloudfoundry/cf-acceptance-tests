@@ -270,6 +270,8 @@ func getDefaults() config {
 
 	defaults.Stacks = &[]string{"cflinuxfs4"}
 
+	defaults.Origin = ptrToString("")
+
 	return defaults
 }
 
