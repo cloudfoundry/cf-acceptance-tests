@@ -250,6 +250,17 @@ func CommaDelimitedSecurityGroupsDescribe(description string, callback func()) b
 	})
 }
 
+func IdentityAwareRoutingDescribe(description string, callback func()) bool {
+	return Describe("[identity aware routing]", func() {
+		BeforeEach(func() {
+			if !Config.GetIncludeIdentityAwareRouting() {
+				Skip(skip_messages.SkipIdentityAwareRoutingMessage)
+			}
+		})
+		Describe(description, callback)
+	})
+}
+
 func ServiceDiscoveryDescribe(description string, callback func()) bool {
 	return Describe("[service discovery]", func() {
 		BeforeEach(func() {

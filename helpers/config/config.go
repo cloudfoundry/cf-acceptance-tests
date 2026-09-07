@@ -24,6 +24,8 @@ type CatsConfig interface {
 	GetIncludeSecurityGroups() bool
 	GetIncludeServices() bool
 	GetIncludeUserProvidedServices() bool
+	GetIncludeIdentityAwareRouting() bool
+	GetIdentityAwareDomain() string
 	GetIncludeServiceDiscovery() bool
 	GetIncludeServiceCredentialBindingRotation() bool
 	GetIncludeSsh() bool
