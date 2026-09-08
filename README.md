@@ -133,6 +133,7 @@ include_app_syslog_tcp
 * `include_security_groups`: Flag to include tests for security groups. [See below](#container-networking-and-application-security-groups)
 * `dynamic_asgs_enabled`: Defaults to `true`. Set to false if dynamic ASGs are disabled in the test environment.
 * `comma_delim_asgs_enabled`: Defaults to `false`. Set to true if comma delimited ASG destinations are enabled in the test environment.
+* `include_async_recursive_delete`: Flag to include tests that verify async recursive delete behavior (async unbind on `cf delete-service` and `cf delete <app> -f`). Requires `include_services`, an async-capable service broker, and CAPI >= 1.242.0 with `temporary_enable_async_recursive_delete` enabled.
 * `include_services`: Flag to include test for the services API.
 * `include_service_instance_sharing`: Flag to include tests for service instance sharing between spaces. `include_services` must be set for these tests to run. The `service_instance_sharing` feature flag must also be enabled for these tests to pass.
 * `include_service_credential_binding_rotation`: Execute tests for multiple service bindings. See [RFC-0040](https://github.com/cloudfoundry/community/blob/main/toc/rfc/rfc-0040-service-binding-rotation.md) for details. This test requires CF CLI v8.18.0 or later. The backend must support at least 2 service bindings per app and service instance.
