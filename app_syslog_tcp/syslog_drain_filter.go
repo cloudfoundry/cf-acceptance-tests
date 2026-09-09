@@ -36,9 +36,8 @@ var _ = AppSyslogTcpDescribe("Syslog Drain source type filter over TCP", func() 
 		serviceName      string
 	)
 
-	Describe("Syslog drain source type filter", func() {
-		BeforeEach(func() {
-			interrupt = make(chan struct{}, 1)
+	Describe("Syslog drain source type filter", Ordered, func() {
+		BeforeAll(func() {
 			domainName = Config.GetTCPDomain()
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 				routerGroupOutput := string(cf.Cf("router-groups").Wait().Out.Contents())
@@ -52,7 +51,6 @@ var _ = AppSyslogTcpDescribe("Syslog Drain source type filter over TCP", func() 
 					"--router-group", tcp_routing.DefaultRouterGroupName,
 				).Wait()).To(Exit())
 			})
-			serviceName = random_name.CATSRandomName("SVIN")
 			listenerAppName = random_name.CATSRandomName("APP-SYSLOG-LISTENER")
 			logWriterAppName = random_name.CATSRandomName("APP-LOG-WRITER")
 
@@ -77,19 +75,29 @@ var _ = AppSyslogTcpDescribe("Syslog Drain source type filter over TCP", func() 
 			), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to push log writer app")
 		})
 
+		BeforeEach(func() {
+			interrupt = make(chan struct{}, 1)
+			serviceName = random_name.CATSRandomName("SVIN")
+		})
+
 		AfterEach(func() {
 			if logs != nil {
 				logs.Kill()
+				logs = nil
 			}
-			close(interrupt)
+			if interrupt != nil {
+				close(interrupt)
+			}
 
+			Eventually(cf.Cf("delete-service", serviceName, "-f")).Should(Exit(0), "Failed to delete service")
+		})
+
+		AfterAll(func() {
 			app_helpers.AppReport(logWriterAppName)
 			app_helpers.AppReport(listenerAppName)
 
 			Eventually(cf.Cf("delete", logWriterAppName, "-f", "-r")).Should(Exit(0), "Failed to delete log writer app")
 			Eventually(cf.Cf("delete", listenerAppName, "-f", "-r")).Should(Exit(0), "Failed to delete listener app")
-			Eventually(cf.Cf("delete-service", serviceName, "-f")).Should(Exit(0), "Failed to delete service")
-
 			Eventually(cf.Cf("delete-orphaned-routes", "-f"), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to delete orphaned routes")
 		})
 
@@ -114,9 +122,7 @@ var _ = AppSyslogTcpDescribe("Syslog Drain source type filter over TCP", func() 
 			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName)).Should(Exit(0), "Failed to bind service")
 
 			appMarker := random_name.CATSRandomName("APP-MARKER")
-
 			logs = logshelper.Follow(listenerAppName)
-
 			go driveAppUntilInterrupted(interrupt, logWriterAppName, appMarker)
 
 			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(appMarker), "APP log line was not forwarded by the exclude-RTR drain")
@@ -129,9 +135,7 @@ var _ = AppSyslogTcpDescribe("Syslog Drain source type filter over TCP", func() 
 			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName)).Should(Exit(0), "Failed to bind service")
 
 			appMarker := random_name.CATSRandomName("APP-MARKER")
-
 			logs = logshelper.Follow(listenerAppName)
-
 			go driveAppUntilInterrupted(interrupt, logWriterAppName, appMarker)
 
 			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(appMarker), "APP log line was not forwarded by the drain-data=all include-APP drain")
@@ -144,9 +148,7 @@ var _ = AppSyslogTcpDescribe("Syslog Drain source type filter over TCP", func() 
 			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName)).Should(Exit(0), "Failed to bind service")
 
 			appMarker := random_name.CATSRandomName("APP-MARKER")
-
 			logs = logshelper.Follow(listenerAppName)
-
 			go driveAppUntilInterrupted(interrupt, logWriterAppName, appMarker)
 
 			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(appMarker), "APP log line was not forwarded by the include-STG,APP drain")
@@ -159,9 +161,7 @@ var _ = AppSyslogTcpDescribe("Syslog Drain source type filter over TCP", func() 
 			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName)).Should(Exit(0), "Failed to bind service")
 
 			appMarker := random_name.CATSRandomName("APP-MARKER")
-
 			logs = logshelper.Follow(listenerAppName)
-
 			go driveAppUntilInterrupted(interrupt, logWriterAppName, appMarker)
 
 			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(appMarker), "APP log line was not forwarded by the unfiltered drain")
