@@ -98,6 +98,10 @@ var _ = AppSyslogTcpDescribe("Syslog Drain source type filter over TCP", func() 
 
 			Eventually(cf.Cf("delete", logWriterAppName, "-f", "-r")).Should(Exit(0), "Failed to delete log writer app")
 			Eventually(cf.Cf("delete", listenerAppName, "-f", "-r")).Should(Exit(0), "Failed to delete listener app")
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				Expect(cf.Cf("target", "-o", TestSetup.GetOrganizationName()).Wait()).To(Exit(0))
+				Eventually(cf.Cf("delete-shared-domain", domainName, "-f")).Should(Exit(0), "Failed to delete TCP shared domain")
+			})
 			Eventually(cf.Cf("delete-orphaned-routes", "-f"), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to delete orphaned routes")
 		})
 
