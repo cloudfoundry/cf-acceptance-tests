@@ -32,7 +32,7 @@ var _ = AppSyslogTcpDescribe("Syslog Drain over TCP", func() {
 	var interrupt chan struct{}
 	var serviceName string
 
-	Describe("Syslog drains", func() {
+	Describe("Syslog drains", Ordered, func() {
 		BeforeEach(func() {
 			interrupt = make(chan struct{}, 1)
 			domainName = Config.GetTCPDomain()
