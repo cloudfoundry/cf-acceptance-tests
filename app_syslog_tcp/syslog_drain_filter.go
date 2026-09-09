@@ -105,8 +105,7 @@ var _ = AppSyslogTcpDescribe("Syslog Drain source type filter over TCP", func() 
 			Eventually(cf.Cf("delete-orphaned-routes", "-f"), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to delete orphaned routes")
 		})
 
-		It("include-log-types=APP forwards APP logs and drops RTR logs", func() {
-			drainURL := fmt.Sprintf("syslog://%s:%s/?include-log-types=APP", domainName, externalPort)
+		assertDrainBehavior := func(drainURL, scenario string, expectRTR bool) {
 			Eventually(cf.Cf("cups", serviceName, "-l", drainURL)).Should(Exit(0), "Failed to create syslog drain service")
 			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName)).Should(Exit(0), "Failed to bind service")
 
@@ -116,60 +115,32 @@ var _ = AppSyslogTcpDescribe("Syslog Drain source type filter over TCP", func() 
 
 			go driveAppUntilInterrupted(interrupt, logWriterAppName, appMarker)
 
-			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(appMarker), "APP log line was not forwarded by the include-APP drain")
-			Consistently(logs, 30).ShouldNot(Say(rtrSourceTypeMarker), "RTR log line leaked through the include-APP drain")
+			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(appMarker), "APP log line was not forwarded by the "+scenario+" drain")
+			if expectRTR {
+				Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(rtrSourceTypeMarker), "RTR log line was not forwarded by the "+scenario+" drain")
+			} else {
+				Consistently(logs, 30).ShouldNot(Say(rtrSourceTypeMarker), "RTR log line leaked through the "+scenario+" drain")
+			}
+		}
+
+		It("include-log-types=APP forwards APP logs and drops RTR logs", func() {
+			assertDrainBehavior(fmt.Sprintf("syslog://%s:%s/?include-log-types=APP", domainName, externalPort), "include-APP", false)
 		})
 
 		It("exclude-log-types=RTR forwards APP logs and drops RTR logs", func() {
-			drainURL := fmt.Sprintf("syslog://%s:%s/?exclude-log-types=RTR", domainName, externalPort)
-			Eventually(cf.Cf("cups", serviceName, "-l", drainURL)).Should(Exit(0), "Failed to create syslog drain service")
-			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName)).Should(Exit(0), "Failed to bind service")
-
-			appMarker := random_name.CATSRandomName("APP-MARKER")
-			logs = logshelper.Follow(listenerAppName)
-			go driveAppUntilInterrupted(interrupt, logWriterAppName, appMarker)
-
-			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(appMarker), "APP log line was not forwarded by the exclude-RTR drain")
-			Consistently(logs, 30).ShouldNot(Say(rtrSourceTypeMarker), "RTR log line leaked through the exclude-RTR drain")
+			assertDrainBehavior(fmt.Sprintf("syslog://%s:%s/?exclude-log-types=RTR", domainName, externalPort), "exclude-RTR", false)
 		})
 
 		It("drain-data=all with include-log-types=APP forwards APP logs and drops RTR logs", func() {
-			drainURL := fmt.Sprintf("syslog://%s:%s/?drain-data=all&include-log-types=APP", domainName, externalPort)
-			Eventually(cf.Cf("cups", serviceName, "-l", drainURL)).Should(Exit(0), "Failed to create syslog drain service")
-			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName)).Should(Exit(0), "Failed to bind service")
-
-			appMarker := random_name.CATSRandomName("APP-MARKER")
-			logs = logshelper.Follow(listenerAppName)
-			go driveAppUntilInterrupted(interrupt, logWriterAppName, appMarker)
-
-			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(appMarker), "APP log line was not forwarded by the drain-data=all include-APP drain")
-			Consistently(logs, 30).ShouldNot(Say(rtrSourceTypeMarker), "RTR log line leaked through the drain-data=all include-APP drain")
+			assertDrainBehavior(fmt.Sprintf("syslog://%s:%s/?drain-data=all&include-log-types=APP", domainName, externalPort), "drain-data=all include-APP", false)
 		})
 
 		It("include-log-types=STG,APP with two types forwards APP logs and drops RTR logs", func() {
-			drainURL := fmt.Sprintf("syslog://%s:%s/?include-log-types=STG,APP", domainName, externalPort)
-			Eventually(cf.Cf("cups", serviceName, "-l", drainURL)).Should(Exit(0), "Failed to create syslog drain service")
-			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName)).Should(Exit(0), "Failed to bind service")
-
-			appMarker := random_name.CATSRandomName("APP-MARKER")
-			logs = logshelper.Follow(listenerAppName)
-			go driveAppUntilInterrupted(interrupt, logWriterAppName, appMarker)
-
-			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(appMarker), "APP log line was not forwarded by the include-STG,APP drain")
-			Consistently(logs, 30).ShouldNot(Say(rtrSourceTypeMarker), "RTR log line leaked through the include-STG,APP drain")
+			assertDrainBehavior(fmt.Sprintf("syslog://%s:%s/?include-log-types=STG,APP", domainName, externalPort), "include-STG,APP", false)
 		})
 
 		It("with no source type filter forwards both APP and RTR logs", func() {
-			drainURL := fmt.Sprintf("syslog://%s:%s/", domainName, externalPort)
-			Eventually(cf.Cf("cups", serviceName, "-l", drainURL)).Should(Exit(0), "Failed to create syslog drain service")
-			Eventually(cf.Cf("bind-service", logWriterAppName, serviceName)).Should(Exit(0), "Failed to bind service")
-
-			appMarker := random_name.CATSRandomName("APP-MARKER")
-			logs = logshelper.Follow(listenerAppName)
-			go driveAppUntilInterrupted(interrupt, logWriterAppName, appMarker)
-
-			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(appMarker), "APP log line was not forwarded by the unfiltered drain")
-			Eventually(logs, Config.DefaultTimeoutDuration()+2*time.Minute).Should(Say(rtrSourceTypeMarker), "RTR log line was not forwarded by the unfiltered drain")
+			assertDrainBehavior(fmt.Sprintf("syslog://%s:%s/", domainName, externalPort), "unfiltered", true)
 		})
 	})
 })
