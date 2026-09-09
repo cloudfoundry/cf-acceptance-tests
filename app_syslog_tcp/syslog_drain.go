@@ -32,7 +32,7 @@ var _ = AppSyslogTcpDescribe("Syslog Drain over TCP", func() {
 	var interrupt chan struct{}
 	var serviceName string
 
-	Describe("Syslog drains", func() {
+	Describe("Syslog drains", Ordered, func() {
 		BeforeEach(func() {
 			interrupt = make(chan struct{}, 1)
 			domainName = Config.GetTCPDomain()
@@ -83,7 +83,9 @@ var _ = AppSyslogTcpDescribe("Syslog Drain over TCP", func() {
 		})
 
 		AfterEach(func() {
-			logs.Kill()
+			if logs != nil {
+				logs.Kill()
+			}
 			close(interrupt)
 
 			app_helpers.AppReport(logWriterAppName1)
@@ -94,6 +96,10 @@ var _ = AppSyslogTcpDescribe("Syslog Drain over TCP", func() {
 			Eventually(cf.Cf("delete", logWriterAppName2, "-f", "-r")).Should(Exit(0), "Failed to delete app")
 			Eventually(cf.Cf("delete", listenerAppName, "-f", "-r")).Should(Exit(0), "Failed to delete app")
 			Eventually(cf.Cf("delete-service", serviceName, "-f")).Should(Exit(0), "Failed to delete service")
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				Expect(cf.Cf("target", "-o", TestSetup.GetOrganizationName()).Wait()).To(Exit(0))
+				Eventually(cf.Cf("delete-shared-domain", domainName, "-f")).Should(Exit(0), "Failed to delete TCP shared domain")
+			})
 
 			Eventually(cf.Cf("delete-orphaned-routes", "-f"), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to delete orphaned routes")
 		})
