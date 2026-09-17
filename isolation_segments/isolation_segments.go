@@ -248,17 +248,6 @@ var _ = IsolationSegmentsDescribe("IsolationSegments", func() {
 				bytes := session.Wait().Out.Contents()
 				spaceGuid = v3_helpers.GetGuidFromResponse(bytes)
 				v3_helpers.AssignIsolationSegmentToSpace(spaceGuid, isoSegGuid)
-
-				routerGroupOutput := string(cf.Cf("router-groups").Wait().Out.Contents())
-				Expect(routerGroupOutput).To(
-					MatchRegexp(fmt.Sprintf("%s\\s+tcp", IsolationSegRouterGroupName)),
-					fmt.Sprintf("Router group %s of type tcp doesn't exist", IsolationSegRouterGroupName),
-				)
-
-				Expect(cf.Cf("create-shared-domain",
-					domainName,
-					"--router-group", IsolationSegRouterGroupName,
-				).Wait()).To(Exit())
 			})
 		})
 

@@ -6,7 +6,6 @@ import (
 	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/tcp_routing"
 
 	"code.cloudfoundry.org/tlsconfig/certtest"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
@@ -15,7 +14,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
-	"github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -36,18 +34,6 @@ var _ = AppSyslogTcpDescribe("Syslog Drain over TCP", func() {
 		BeforeEach(func() {
 			interrupt = make(chan struct{}, 1)
 			domainName = Config.GetTCPDomain()
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				routerGroupOutput := string(cf.Cf("router-groups").Wait().Out.Contents())
-				Expect(routerGroupOutput).To(
-					MatchRegexp(fmt.Sprintf("%s\\s+tcp", tcp_routing.DefaultRouterGroupName)),
-					fmt.Sprintf("Router group %s of type tcp doesn't exist", tcp_routing.DefaultRouterGroupName),
-				)
-
-				Expect(cf.Cf("create-shared-domain",
-					domainName,
-					"--router-group", tcp_routing.DefaultRouterGroupName,
-				).Wait()).To(Exit())
-			})
 			serviceName = random_name.CATSRandomName("SVIN")
 			listenerAppName = random_name.CATSRandomName("APP-SYSLOG-LISTENER")
 			logWriterAppName1 = random_name.CATSRandomName("APP-FIRST-LOG-WRITER")
@@ -96,10 +82,6 @@ var _ = AppSyslogTcpDescribe("Syslog Drain over TCP", func() {
 			Eventually(cf.Cf("delete", logWriterAppName2, "-f", "-r")).Should(Exit(0), "Failed to delete app")
 			Eventually(cf.Cf("delete", listenerAppName, "-f", "-r")).Should(Exit(0), "Failed to delete app")
 			Eventually(cf.Cf("delete-service", serviceName, "-f")).Should(Exit(0), "Failed to delete service")
-			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-				Expect(cf.Cf("target", "-o", TestSetup.GetOrganizationName()).Wait()).To(Exit(0))
-				Eventually(cf.Cf("delete-shared-domain", domainName, "-f")).Should(Exit(0), "Failed to delete TCP shared domain")
-			})
 
 			Eventually(cf.Cf("delete-orphaned-routes", "-f"), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to delete orphaned routes")
 		})

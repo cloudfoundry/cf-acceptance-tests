@@ -45,16 +45,6 @@ var _ = VolumeServicesDescribe("Volume Services", func() {
 			Expect(session).To(Exit(0), "cannot update tcp router group to allow nfs traffic")
 
 			tcpDomain = Config.GetTCPDomain()
-
-			session = cf.Cf("create-shared-domain", tcpDomain, "--router-group", "default-tcp").Wait()
-			Eventually(session).Should(Exit())
-			contents := string(session.Out.Contents()) + string(session.Err.Contents())
-			Expect(contents).Should(
-				SatisfyAny(
-					ContainSubstring(fmt.Sprintf("The domain name %q is already in use", tcpDomain)),
-					ContainSubstring("OK"),
-				), "can not create shared tcp domain >>>"+contents)
-
 		})
 
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), TestSetup.ShortTimeout(), func() {

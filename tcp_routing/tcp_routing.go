@@ -9,7 +9,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
-	"github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gexec"
@@ -22,18 +21,6 @@ var _ = TCPRoutingDescribe("TCP Routing", func() {
 
 	BeforeEach(func() {
 		domainName = Config.GetTCPDomain()
-		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-			routerGroupOutput := string(cf.Cf("router-groups").Wait().Out.Contents())
-			Expect(routerGroupOutput).To(
-				MatchRegexp(fmt.Sprintf("%s\\s+tcp", DefaultRouterGroupName)),
-				fmt.Sprintf("Router group %s of type tcp doesn't exist", DefaultRouterGroupName),
-			)
-
-			Expect(cf.Cf("create-shared-domain",
-				domainName,
-				"--router-group", DefaultRouterGroupName,
-			).Wait()).To(Exit())
-		})
 	})
 
 	Context("external ports", func() {

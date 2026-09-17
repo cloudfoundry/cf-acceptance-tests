@@ -103,6 +103,21 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	err = buildCmd.Run()
 	Expect(err).NotTo(HaveOccurred())
 
+	// Create the foundation-global shared TCP domains exactly once, before any
+	// parallel process starts running specs. These domains are not org/space
+	// scoped, so they must not be created/deleted per-spec: doing so lets one
+	// parallel process delete a domain another process is still using. The
+	// matching once-only deletion lives in SynchronizedAfterSuite.
+	setup := workflowhelpers.NewTestSuiteSetup(Config)
+	workflowhelpers.AsUser(setup.AdminUserContext(), Config.GetScaledTimeout(1*time.Minute), func() {
+		if Config.GetIncludeAppSyslogTcp() || Config.GetIncludeTCPRouting() || Config.GetIncludeVolumeServices() {
+			ensureSharedTCPDomain(Config.GetTCPDomain(), defaultTCPRouterGroupName)
+		}
+		if Config.GetIncludeTCPIsolationSegments() {
+			ensureSharedTCPDomain(Config.GetIsolationSegmentTCPDomain(), defaultTCPRouterGroupName)
+		}
+	})
+
 	if Config.GetIncludeWindows() {
 		windowsBuildCmd := exec.Command("go", "build", "-o", "bin/catnip.exe")
 		windowsBuildCmd.Dir = "assets/catnip"
@@ -158,5 +173,44 @@ var _ = SynchronizedAfterSuite(func() {
 		TestSetup.Teardown()
 	}
 }, func() {
+	// Delete the foundation-global shared TCP domains exactly once, after every
+	// parallel process has finished. TestSetup.Teardown() (the per-process
+	// function above) only destroys the test user/space, so the admin context
+	// built here is still valid.
+	setup := workflowhelpers.NewTestSuiteSetup(Config)
+	workflowhelpers.AsUser(setup.AdminUserContext(), Config.GetScaledTimeout(1*time.Minute), func() {
+		if Config.GetIncludeAppSyslogTcp() || Config.GetIncludeTCPRouting() || Config.GetIncludeVolumeServices() {
+			cf.Cf("delete-shared-domain", Config.GetTCPDomain(), "-f").Wait()
+		}
+		if Config.GetIncludeTCPIsolationSegments() {
+			cf.Cf("delete-shared-domain", Config.GetIsolationSegmentTCPDomain(), "-f").Wait()
+		}
+	})
+
 	os.Remove(assets.NewAssets().DoraZip)
 })
+
+// defaultTCPRouterGroupName is the tcp-typed router group backing the shared TCP
+// domains. It matches the per-suite constants (tcp_routing.DefaultRouterGroupName,
+// windows.DefaultRouterGroupName, isolation_segments.IsolationSegRouterGroupName).
+const defaultTCPRouterGroupName = "default-tcp"
+
+// ensureSharedTCPDomain creates the given shared TCP domain on the given router
+// group, tolerating a domain left over from a prior aborted run. It must be
+// called inside an admin AsUser block.
+func ensureSharedTCPDomain(domainName, routerGroupName string) {
+	routerGroupOutput := string(cf.Cf("router-groups").Wait().Out.Contents())
+	Expect(routerGroupOutput).To(
+		MatchRegexp(fmt.Sprintf("%s\\s+tcp", routerGroupName)),
+		fmt.Sprintf("Router group %s of type tcp doesn't exist", routerGroupName),
+	)
+
+	session := cf.Cf("create-shared-domain", domainName, "--router-group", routerGroupName).Wait()
+	Eventually(session).Should(Exit())
+	contents := string(session.Out.Contents()) + string(session.Err.Contents())
+	Expect(contents).To(
+		SatisfyAny(
+			ContainSubstring(fmt.Sprintf("The domain name %q is already in use", domainName)),
+			ContainSubstring("OK"),
+		), "cannot create shared tcp domain >>>"+contents)
+}
