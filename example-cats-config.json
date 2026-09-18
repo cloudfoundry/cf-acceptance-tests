@@ -31,6 +31,7 @@ IN DEVELOPMENT
   "include_service_discovery": false,
   "include_services": true,
   "include_service_instance_sharing": true,
+  "include_async_recursive_delete": false,
   "include_ssh": true,
   "include_sso": true,
   "include_tasks": true,

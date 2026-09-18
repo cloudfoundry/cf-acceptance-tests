@@ -68,3 +68,4 @@ NOTE: Set 'dotnet_core_asset_paths' to map the stack to a directory holding a pu
 const SkipVolumeServicesMessage = `Skipping this test because config.IncludeVolumeServices is set to 'false'.
 NOTE: Ensure that volume services are enabled on your platform and volume service broker is registered before running this test.`
 const SkipVolumeServicesDockerEnabledMessage = `Skipping this test because config.IncludeDocker is set to 'true'`
+const SkipAsyncRecursiveDeleteMessage = `Skipping this test because config.IncludeAsyncRecursiveDelete is set to 'false'.`

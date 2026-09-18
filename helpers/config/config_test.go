@@ -92,6 +92,7 @@ type testConfig struct {
 	IncludeZipkin                   *bool `json:"include_zipkin,omitempty"`
 	IncludeWindows                  *bool `json:"include_windows,omitempty"`
 	IncludeIPv6                     *bool `json:"include_ipv6,omitempty"`
+	IncludeAsyncRecursiveDelete     *bool `json:"include_async_recursive_delete,omitempty"`
 
 	BinaryBuildpackName     *string `json:"binary_buildpack_name,omitempty"`
 	GoBuildpackName         *string `json:"go_buildpack_name,omitempty"`
@@ -181,6 +182,7 @@ type nullConfig struct {
 	IncludeVolumeServices           *bool `json:"include_volume_services"`
 	IncludeTCPIsolationSegments     *bool `json:"include_tcp_isolation_segments"`
 	IncludeAppSyslogTcp             *bool `json:"include_app_syslog_tcp"`
+	IncludeAsyncRecursiveDelete     *bool `json:"include_async_recursive_delete"`
 
 	CredhubMode         *string `json:"credhub_mode"`
 	CredhubLocation     *string `json:"credhub_location"`
@@ -289,6 +291,7 @@ var _ = Describe("Config", func() {
 		Expect(config.GetIncludeDocker()).To(BeFalse())
 		Expect(config.GetIncludeFileBasedServiceBindings()).To(BeFalse())
 		Expect(config.GetIncludeIPv6()).To(BeFalse())
+		Expect(config.GetIncludeAsyncRecursiveDelete()).To(BeFalse())
 		Expect(config.GetIncludeInternetDependent()).To(BeFalse())
 		Expect(config.GetIncludeRouteServices()).To(BeFalse())
 		Expect(config.GetIncludeContainerNetworking()).To(BeFalse())
@@ -444,6 +447,7 @@ var _ = Describe("Config", func() {
 			Expect(err.Error()).To(ContainSubstring("'include_windows' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_service_discovery' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'include_app_syslog_tcp' must not be null"))
+			Expect(err.Error()).To(ContainSubstring("'include_async_recursive_delete' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'public_docker_app_image' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_image' must not be null"))
 			Expect(err.Error()).To(ContainSubstring("'private_docker_registry_username' must not be null"))
@@ -483,6 +487,7 @@ var _ = Describe("Config", func() {
 			testCfg.IncludeDocker = ptrToBool(true)
 			testCfg.IncludeFileBasedServiceBindings = ptrToBool(true)
 			testCfg.IncludeIPv6 = ptrToBool(true)
+			testCfg.IncludeAsyncRecursiveDelete = ptrToBool(true)
 			testCfg.IncludeInternetDependent = ptrToBool(true)
 			testCfg.IncludeIsolationSegments = ptrToBool(true)
 			testCfg.IncludePrivateDockerRegistry = ptrToBool(true)
@@ -548,6 +553,7 @@ var _ = Describe("Config", func() {
 			Expect(config.GetIncludeDocker()).To(BeTrue())
 			Expect(config.GetIncludeFileBasedServiceBindings()).To(BeTrue())
 			Expect(config.GetIncludeIPv6()).To(BeTrue())
+			Expect(config.GetIncludeAsyncRecursiveDelete()).To(BeTrue())
 			Expect(config.GetIncludeInternetDependent()).To(BeTrue())
 			Expect(config.GetIncludeIsolationSegments()).To(BeTrue())
 			Expect(config.GetIncludePrivateDockerRegistry()).To(BeTrue())

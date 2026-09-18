@@ -15,6 +15,7 @@ type CatsConfig interface {
 	GetIncludeCNB() bool
 	GetIncludeFileBasedServiceBindings() bool
 	GetIncludeIPv6() bool
+	GetIncludeAsyncRecursiveDelete() bool
 	GetIncludeInternetDependent() bool
 	GetIncludePrivateDockerRegistry() bool
 	GetIncludeRouteServices() bool
