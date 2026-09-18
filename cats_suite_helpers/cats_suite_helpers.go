@@ -286,9 +286,6 @@ func ServicesDescribe(description string, callback func()) bool {
 func AsyncRecursiveDeleteDescribe(description string, callback func()) bool {
 	return Describe("[async_recursive_delete]", func() {
 		BeforeEach(func() {
-			if !Config.GetIncludeServices() {
-				Skip(skip_messages.SkipServicesMessage)
-			}
 			if !Config.GetIncludeAsyncRecursiveDelete() {
 				Skip(skip_messages.SkipAsyncRecursiveDeleteMessage)
 			}
