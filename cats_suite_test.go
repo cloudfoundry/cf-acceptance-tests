@@ -10,6 +10,7 @@ import (
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/cfcmdtrace"
 	"github.com/mholt/archiver/v3"
 
 	_ "github.com/cloudfoundry/cf-acceptance-tests/app_syslog_tcp"
@@ -65,6 +66,10 @@ func TestCATS(t *testing.T) {
 	if Config.GetArtifactsDirectory() != "" {
 		helpers.EnableCFTrace(Config, "CATS")
 		rc.JUnitReport = filepath.Join(Config.GetArtifactsDirectory(), fmt.Sprintf("junit-%s-%d.xml", "CATS", GinkgoParallelProcess()))
+	}
+
+	if cfcmdtrace.Enabled() {
+		cfcmdtrace.Enable(Config.GetNamePrefix())
 	}
 
 	RegisterFailHandler(Fail)
@@ -156,6 +161,9 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 var _ = SynchronizedAfterSuite(func() {
 	if TestSetup != nil {
 		TestSetup.Teardown()
+	}
+	if cfcmdtrace.Enabled() {
+		AddReportEntry("cfcmdtrace-suite", cfcmdtrace.DrainSuiteSetup())
 	}
 }, func() {
 	os.Remove(assets.NewAssets().DoraZip)
