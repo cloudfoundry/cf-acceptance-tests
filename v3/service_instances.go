@@ -6,8 +6,6 @@ import (
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
@@ -33,15 +31,12 @@ var _ = V3Describe("service instances", func() {
 	}
 
 	BeforeEach(func() {
-		broker = services.NewServiceBroker(
-			random_name.CATSRandomName("BRKR"),
-			assets.NewAssets().ServiceBroker,
-			TestSetup,
+		broker = services.SharedServiceBrokerHandle(
+			SharedServiceBroker.BrokerName,
+			SharedServiceBroker.OfferingName,
+			SharedServiceBroker.SyncPlans,
+			SharedServiceBroker.AsyncPlans,
 		)
-		broker.Push(Config)
-		broker.Configure()
-		broker.Create()
-		broker.PublicizePlans()
 
 		serviceInstance1Name = random_name.CATSRandomName("SVIN")
 		serviceInstance2Name = random_name.CATSRandomName("SVIN")
@@ -56,12 +51,8 @@ var _ = V3Describe("service instances", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(broker.Name)
-
 		Expect(cf.Cf("delete-service", serviceInstance1Name, "-f").Wait()).To(Exit(0))
 		Expect(cf.Cf("delete-service", serviceInstance2Name, "-f").Wait()).To(Exit(0))
-
-		broker.Destroy()
 	})
 
 	It("Lists the service instances", func() {

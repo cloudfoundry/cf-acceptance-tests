@@ -12,7 +12,6 @@ import (
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
@@ -45,21 +44,12 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 
 	Describe("Synchronous operations", Ordered, func() {
 		BeforeAll(func() {
-			broker = services.NewServiceBroker(
-				random_name.CATSRandomName("BRKR"),
-				assets.NewAssets().ServiceBroker,
-				TestSetup,
+			broker = SharedServiceBrokerHandle(
+				SharedServiceBroker.BrokerName,
+				SharedServiceBroker.OfferingName,
+				SharedServiceBroker.SyncPlans,
+				SharedServiceBroker.AsyncPlans,
 			)
-			broker.Push(Config)
-			broker.Configure()
-			broker.Create()
-			broker.PublicizePlans()
-		})
-
-		AfterAll(func() {
-			app_helpers.AppReport(broker.Name)
-
-			broker.Destroy()
 		})
 
 		Describe("just service instances", func() {
@@ -311,26 +301,17 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 		var instanceName string
 
 		BeforeAll(func() {
-			broker = services.NewServiceBroker(
-				random_name.CATSRandomName("BRKR"),
-				assets.NewAssets().ServiceBroker,
-				TestSetup,
+			broker = SharedServiceBrokerHandle(
+				SharedServiceBroker.BrokerName,
+				SharedServiceBroker.OfferingName,
+				SharedServiceBroker.SyncPlans,
+				SharedServiceBroker.AsyncPlans,
 			)
-			broker.Push(Config)
-			broker.Configure()
-			broker.Create()
-			broker.PublicizePlans()
 		})
 
 		AfterEach(func() {
 			Expect(cf.Cf("delete-service", instanceName, "-f").Wait()).To(Exit())
 			waitForAsyncDeletionToComplete(broker, instanceName)
-		})
-
-		AfterAll(func() {
-			app_helpers.AppReport(broker.Name)
-
-			broker.Destroy()
 		})
 
 		Describe("for a service instance", func() {

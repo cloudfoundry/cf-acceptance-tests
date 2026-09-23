@@ -9,7 +9,6 @@ import (
 	"github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 
@@ -30,16 +29,12 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 		)
 
 		BeforeAll(func() {
-			broker = services.NewServiceBroker(
-				random_name.CATSRandomName("BRKR"),
-				assets.NewAssets().ServiceBroker,
-				TestSetup,
+			broker = services.SharedServiceBrokerHandle(
+				SharedServiceBroker.BrokerName,
+				SharedServiceBroker.OfferingName,
+				SharedServiceBroker.SyncPlans,
+				SharedServiceBroker.AsyncPlans,
 			)
-
-			broker.Push(Config)
-			broker.Configure()
-			broker.Create()
-			broker.PublicizePlans()
 		})
 
 		BeforeEach(func() {
@@ -82,10 +77,6 @@ var _ = ServiceInstanceSharingDescribe("Service Instance Sharing", func() {
 			if serviceInstanceName != "" {
 				Expect(cf.Cf("delete-service", serviceInstanceName, "-f").Wait()).To(Exit(0))
 			}
-		})
-
-		AfterAll(func() {
-			broker.Destroy()
 		})
 
 		It("allows User B to view the shared service", func() {

@@ -1,16 +1,20 @@
 package cats_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/cfcmdtrace"
+	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
+	svchelpers "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 	"github.com/mholt/archiver/v3"
 
 	_ "github.com/cloudfoundry/cf-acceptance-tests/app_syslog_tcp"
@@ -133,10 +137,12 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	err = zip.Archive(doraFileNames, assets.NewAssets().DoraZip)
 	Expect(err).NotTo(HaveOccurred())
 
-	return []byte{}
-}, func([]byte) {
+	return bootstrapSharedServiceBroker()
+}, func(data []byte) {
 	SetDefaultEventuallyTimeout(Config.DefaultTimeoutDuration())
 	SetDefaultEventuallyPollingInterval(1 * time.Second)
+
+	Expect(json.Unmarshal(data, &SharedServiceBroker)).To(Succeed(), "failed to decode shared service broker info broadcast from node 1")
 
 	TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
 
@@ -164,5 +170,80 @@ var _ = SynchronizedAfterSuite(func() {
 		AddReportEntry("cfcmdtrace-suite", cfcmdtrace.DrainSuiteSetup())
 	}
 }, func() {
+	teardownSharedServiceBroker()
 	os.Remove(assets.NewAssets().DoraZip)
 })
+
+// bootstrapSharedServiceBroker runs ONCE, on node 1 only (the node-1 fn of
+// SynchronizedBeforeSuite), before any spec runs. It creates a dedicated
+// org+space that outlives every per-node TestSetup teardown, pushes the Go test
+// broker app there, registers it globally as admin, and publicizes its plans so
+// per-node regular users can create-service against it. The returned bytes are
+// broadcast to every parallel node and decoded into the SharedServiceBroker
+// global. Any failure here fails SynchronizedBeforeSuite, so all nodes fail and
+// no specs run (all-or-nothing).
+func bootstrapSharedServiceBroker() []byte {
+	adminSetup := workflowhelpers.NewTestSuiteSetup(Config)
+
+	suffix := random_name.CATSRandomName("")
+	info := SharedBrokerInfo{
+		BrokerName: fmt.Sprintf("%s-SHARED-BRKR-%s", Config.GetNamePrefix(), suffix),
+		OrgName:    fmt.Sprintf("%s-SHARED-BRKR-ORG-%s", Config.GetNamePrefix(), suffix),
+		SpaceName:  fmt.Sprintf("%s-SHARED-BRKR-SPACE-%s", Config.GetNamePrefix(), suffix),
+	}
+
+	broker := svchelpers.NewServiceBroker(info.BrokerName, assets.NewAssets().ServiceBroker, adminSetup)
+	info.OfferingName = broker.Service.Name
+	for _, p := range broker.SyncPlans {
+		info.SyncPlans = append(info.SyncPlans, p.Name)
+	}
+	for _, p := range broker.AsyncPlans {
+		info.AsyncPlans = append(info.AsyncPlans, p.Name)
+	}
+
+	workflowhelpers.AsUser(adminSetup.AdminUserContext(), Config.GetScaledTimeout(1*time.Minute), func() {
+		Expect(cf.Cf("create-org", info.OrgName).Wait()).To(Exit(0), "failed to create shared broker org")
+		Expect(cf.Cf("create-space", info.SpaceName, "-o", info.OrgName).Wait()).To(Exit(0), "failed to create shared broker space")
+		Expect(cf.Cf("target", "-o", info.OrgName, "-s", info.SpaceName).Wait()).To(Exit(0), "failed to target shared broker space")
+
+		broker.Push(Config)
+		broker.Configure()
+	})
+
+	// Create (register) and PublicizePlans wrap their own AsUser(admin) blocks.
+	broker.Create()
+	broker.PublicizePlans()
+
+	payload, err := json.Marshal(info)
+	Expect(err).NotTo(HaveOccurred(), "failed to marshal shared service broker info")
+	return payload
+}
+
+// teardownSharedServiceBroker runs ONCE, on node 1 only (the node-1 fn of
+// SynchronizedAfterSuite), after every node's TestSetup.Teardown() has
+// completed. It purges the shared offering, deletes the broker + its app, and
+// removes the dedicated org/space. Every step is best-effort (logged, never
+// fatal) so one failure cannot strand the remaining resources.
+func teardownSharedServiceBroker() {
+	info := SharedServiceBroker
+	if info.BrokerName == "" {
+		return
+	}
+
+	adminSetup := workflowhelpers.NewTestSuiteSetup(Config)
+	workflowhelpers.AsUser(adminSetup.AdminUserContext(), Config.GetScaledTimeout(1*time.Minute), func() {
+		bestEffort := func(args ...string) {
+			session := cf.Cf(args...).Wait()
+			if session.ExitCode() != 0 {
+				fmt.Fprintf(GinkgoWriter, "shared broker teardown: `cf %s` exited %d (continuing)\n", strings.Join(args, " "), session.ExitCode())
+			}
+		}
+
+		cf.Cf("target", "-o", info.OrgName, "-s", info.SpaceName).Wait()
+		bestEffort("purge-service-offering", info.OfferingName, "-f")
+		bestEffort("delete-service-broker", info.BrokerName, "-f")
+		bestEffort("delete", info.BrokerName, "-f", "-r")
+		bestEffort("delete-space", info.SpaceName, "-o", info.OrgName, "-f")
+		bestEffort("delete-org", info.OrgName, "-f")
+	})
+}

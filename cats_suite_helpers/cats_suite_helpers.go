@@ -30,7 +30,28 @@ var (
 	TestSetup *workflowhelpers.ReproducibleTestSuiteSetup
 	ScpPath   string
 	SftpPath  string
+
+	// SharedServiceBroker carries the names of the single service broker that
+	// is pushed and registered once for the whole suite (in the node-1
+	// SynchronizedBeforeSuite fn) and shared across the broker-using specs that
+	// do not need their own private broker. Only names are needed: create-service
+	// / update-service address the offering and plans by name. It is populated on
+	// every parallel node from the []byte the node-1 fn broadcasts.
+	SharedServiceBroker SharedBrokerInfo
 )
+
+// SharedBrokerInfo is the JSON payload broadcast from the node-1
+// SynchronizedBeforeSuite fn to every parallel node describing the suite-shared
+// service broker. It holds only names (no GUIDs): the broker's catalog owns the
+// service/plan IDs internally, and CLI calls reference offering/plans by name.
+type SharedBrokerInfo struct {
+	BrokerName   string   `json:"broker_name"`
+	OfferingName string   `json:"offering_name"`
+	SyncPlans    []string `json:"sync_plans"`
+	AsyncPlans   []string `json:"async_plans"`
+	OrgName      string   `json:"org_name"`
+	SpaceName    string   `json:"space_name"`
+}
 
 func AppSyslogTcpDescribe(description string, callback func()) bool {
 	return Describe("[app_syslog_tcp]", func() {

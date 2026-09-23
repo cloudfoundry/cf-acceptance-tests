@@ -6,7 +6,6 @@ import (
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers"
 
@@ -21,15 +20,12 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 	var quotaName, spaceName, appName, instanceName string
 
 	BeforeEach(func() {
-		broker = NewServiceBroker(
-			random_name.CATSRandomName("BRKR"),
-			assets.NewAssets().ServiceBroker,
-			TestSetup,
+		broker = SharedServiceBrokerHandle(
+			SharedServiceBroker.BrokerName,
+			SharedServiceBroker.OfferingName,
+			SharedServiceBroker.SyncPlans,
+			SharedServiceBroker.AsyncPlans,
 		)
-		broker.Push(Config)
-		broker.Configure()
-		broker.Create()
-		broker.PublicizePlans()
 
 		orgName = random_name.CATSRandomName("ORG")
 		quotaName = random_name.CATSRandomName("QUOTA")
@@ -65,9 +61,6 @@ var _ = ServicesDescribe("Recursive Delete", func() {
 	})
 
 	AfterEach(func() {
-		app_helpers.AppReport(broker.Name)
-
-		broker.Destroy()
 		workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
 			targetOrg := cf.Cf("target", "-o", orgName).Wait()
 			if targetOrg.ExitCode() == 0 {

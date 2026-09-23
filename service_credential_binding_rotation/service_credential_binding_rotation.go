@@ -8,7 +8,6 @@ import (
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	svchelper "github.com/cloudfoundry/cf-acceptance-tests/helpers/services"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
@@ -80,15 +79,12 @@ var _ = ServiceCredentialBindingRotationDescribe("Service Credential Binding Rot
 		}
 
 		BeforeAll(func() {
-			broker = svchelper.NewServiceBroker(
-				random_name.CATSRandomName("BRKR"),
-				assets.NewAssets().ServiceBroker,
-				TestSetup,
+			broker = svchelper.SharedServiceBrokerHandle(
+				SharedServiceBroker.BrokerName,
+				SharedServiceBroker.OfferingName,
+				SharedServiceBroker.SyncPlans,
+				SharedServiceBroker.AsyncPlans,
 			)
-			broker.Push(Config)
-			broker.Configure()
-			broker.Create()
-			broker.PublicizePlans()
 		})
 
 		BeforeEach(func() {
@@ -116,12 +112,6 @@ var _ = ServiceCredentialBindingRotationDescribe("Service Credential Binding Rot
 
 			Expect(cf.Cf("delete-service", serviceName, "-f").Wait()).To(Exit(0))
 			Expect(cf.Cf("delete", appName, "-f", "-r").Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
-		})
-
-		AfterAll(func() {
-			app_helpers.AppReport(broker.Name)
-
-			broker.Destroy()
 		})
 
 		Context("one binding exists for the test application and test service instance", func() {

@@ -103,6 +103,26 @@ func NewServiceBroker(name string, path string, TestSetup *workflowhelpers.Repro
 	return b
 }
 
+// SharedServiceBrokerHandle builds a ServiceBroker populated with ONLY the names
+// of the already-pushed, already-registered suite-shared broker. It carries no
+// TestSetup, path, or IDs and must NOT be used to Push/Create/Destroy — it is a
+// read-only handle so specs can reference the shared offering and plan names
+// (b.Service.Name, b.SyncPlans[i].Name, b.AsyncPlans[i].Name) when calling
+// create-service/update-service, without pushing and registering their own
+// broker. The suite owns the shared broker's lifecycle in
+// SynchronizedBeforeSuite/AfterSuite.
+func SharedServiceBrokerHandle(name, offeringName string, syncPlanNames, asyncPlanNames []string) ServiceBroker {
+	b := ServiceBroker{Name: name}
+	b.Service.Name = offeringName
+	for _, planName := range syncPlanNames {
+		b.SyncPlans = append(b.SyncPlans, Plan{Name: planName})
+	}
+	for _, planName := range asyncPlanNames {
+		b.AsyncPlans = append(b.AsyncPlans, Plan{Name: planName})
+	}
+	return b
+}
+
 func (b ServiceBroker) Push(config cats_config.CatsConfig) {
 	Expect(cf.Cf(
 		"push", b.Name,
