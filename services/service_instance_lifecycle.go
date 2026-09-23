@@ -24,13 +24,7 @@ import (
 )
 
 var _ = ServicesDescribe("Service Instance Lifecycle", func() {
-	// The test broker completes async operations instantly (sleep_seconds:0,
-	// max_fetch:1), so the terminal state is available almost immediately; the
-	// poll interval is just how long we idle before noticing it. A 5s interval
-	// added ~118s of pure idle per async spec (21 polls). 1s keeps the same
-	// 120s Eventually timeout (no correctness change) but surfaces completion
-	// ~4s sooner per poll, cutting the suite's biggest reducible wait.
-	const asyncOperationPollInterval = 1 * time.Second
+	const asyncOperationPollInterval = 5 * time.Second
 	var broker services.ServiceBroker
 
 	waitForAsyncDeletionToComplete := func(broker services.ServiceBroker, instanceName string) {
