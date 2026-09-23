@@ -42,8 +42,8 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 		}, Config.AsyncServiceOperationTimeoutDuration(), asyncOperationPollInterval).Should(Say(expectedText))
 	}
 
-	Describe("Synchronous operations", Ordered, func() {
-		BeforeAll(func() {
+	Describe("Synchronous operations", func() {
+		BeforeEach(func() {
 			broker = SharedServiceBrokerHandle(
 				SharedServiceBroker.BrokerName,
 				SharedServiceBroker.OfferingName,
@@ -297,10 +297,10 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 		})
 	})
 
-	Describe("Asynchronous operations", Ordered, func() {
+	Describe("Asynchronous operations", func() {
 		var instanceName string
 
-		BeforeAll(func() {
+		BeforeEach(func() {
 			broker = SharedServiceBrokerHandle(
 				SharedServiceBroker.BrokerName,
 				SharedServiceBroker.OfferingName,
