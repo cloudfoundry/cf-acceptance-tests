@@ -79,9 +79,9 @@ var _ = AppsDescribe("Crashing", func() {
 			By("Pushing the app with three instances")
 			Expect(cf.Cf(
 				"push", appName,
-				"-b", Config.GetPythonBuildpackName(),
+				"-b", Config.GetGoBuildpackName(),
 				"-m", DEFAULT_MEMORY_LIMIT,
-				"-p", assets.NewAssets().PythonCrashApp,
+				"-p", assets.NewAssets().GoCrashApp,
 				"-i", "3", // Setting three instances
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
@@ -95,7 +95,7 @@ var _ = AppsDescribe("Crashing", func() {
 			// Poll until at least one instance has crashed
 			Eventually(func() bool {
 				return hasOneInstanceInState(processStatsPath, "CRASHED")
-			}, 90*time.Second, 15*time.Second).Should(BeTrue(), "At least one instance should be in the CRASHED state")
+			}, 120*time.Second, 10*time.Second).Should(BeTrue(), "At least one instance should be in the CRASHED state")
 
 			By("Verifying at least one instance is still running")
 			foundRunning := hasOneInstanceInState(processStatsPath, "RUNNING")

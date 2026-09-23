@@ -11,6 +11,7 @@ type Assets struct {
 	DoraZip                    string
 	DotnetCore                 map[string]string
 	GoCallsRubyZip             string
+	GoCrashApp                 string
 	Golang                     string
 	GRPC                       string
 	HelloWorld                 string
@@ -22,7 +23,6 @@ type Assets struct {
 	LoggregatorLoadGenerator   string
 	LoggregatorLoadGeneratorGo string
 	Python                     string
-	PythonCrashApp             string
 	Nginx                      string
 	NginxIPv6                  string
 	Node                       string
@@ -63,6 +63,7 @@ func NewAssets() Assets {
 			"cflinuxfs5": "assets/dotnet-core/cflinuxfs5",
 		},
 		GoCallsRubyZip:             "assets/go_calls_ruby.zip",
+		GoCrashApp:                 "assets/go-crash-app",
 		Golang:                     "assets/golang",
 		GRPC:                       "assets/grpc",
 		HelloRouting:               "assets/hello-routing",
@@ -83,7 +84,6 @@ func NewAssets() Assets {
 		Php:                        "assets/php",
 		Proxy:                      "assets/proxy",
 		Python:                     "assets/python",
-		PythonCrashApp:             "assets/python-crash-app",
 		R:                          "assets/r",
 		RubySimple:                 "assets/ruby_simple",
 		SecurityGroupBuildpack:     "assets/security_group_buildpack.zip",
