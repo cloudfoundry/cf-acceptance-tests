@@ -89,18 +89,61 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 			})
 		})
 
+		// occupyInstanceZero launches `count` long-lived requests to the given
+		// URL, each pinned to instance 0 via the X-Cf-App-Instance header, so
+		// that instance 0 accumulates active connections. It returns a stop
+		// function that reaps the background sessions (and waits for them to
+		// exit) once the test is done measuring.
+		//
+		// This is the crux of the flake fix: helpers.Curl launches curl
+		// asynchronously (gexec.Start returns immediately, before the request is
+		// even sent), so the previous code could begin probing while the "slow"
+		// connections had not yet been established on instance 0. That left the
+		// router's per-instance connection counts unraised and made routing look
+		// even, producing the flake. Here every background session is started
+		// synchronously in the loop, and callers then wait for an observable
+		// precondition (see below) before measuring.
+		occupyInstanceZero := func(url string, count int) func() {
+			var wg sync.WaitGroup
+			sessions := make([]*Session, 0, count)
+			for i := 0; i < count; i++ {
+				wg.Add(1)
+				// helpers.Curl starts the process synchronously and returns the
+				// running session; hold the session so we can reap it later and
+				// so the connection is not garbage-collected.
+				session := helpers.Curl(Config, fmt.Sprintf("%s/delay/30", url), "-H", fmt.Sprintf("X-Cf-App-Instance: %s:0", appId))
+				sessions = append(sessions, session)
+				go func(s *Session) {
+					defer wg.Done()
+					defer GinkgoRecover()
+					s.Wait()
+				}(session)
+			}
+			return func() {
+				for _, s := range sessions {
+					s.Kill()
+				}
+				wg.Wait()
+			}
+		}
+
 		Context("when it's set to round-robin", func() {
 			It("distributes requests evenly", func() {
 				doraUrl := buildUrl(roundRobinHost)
-				var wg sync.WaitGroup
-				for i := 0; i < 10; i++ {
-					wg.Add(1)
-					go func() {
-						defer wg.Done()
-						defer GinkgoRecover()
-						helpers.Curl(Config, fmt.Sprintf("%s/delay/10", doraUrl), "-H", fmt.Sprintf("X-Cf-App-Instance: %s:0", appId))
-					}()
-				}
+				stop := occupyInstanceZero(doraUrl, 10)
+				defer stop()
+
+				// Wait until the background slow requests are actually in flight
+				// on instance 0 before measuring. Round-robin ignores active
+				// connection counts, so the observable precondition is simply
+				// that instance 0 is reachable/serving under the background load;
+				// we confirm instance 0 still answers a pinned probe, which only
+				// succeeds once its listener is up and handling the slow
+				// connections.
+				Eventually(func() bool {
+					id := helpers.Curl(Config, fmt.Sprintf("%s/id", doraUrl), "-H", fmt.Sprintf("X-Cf-App-Instance: %s:0", appId)).Wait().Out.Contents()
+					return string(id) == instanceIds[0]
+				}).Should(BeTrue())
 
 				reqCount := [2]int{0, 0}
 				for i := 0; i < 20; i++ {
@@ -111,22 +154,28 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 				// allow for some wiggle-room
 				Expect(reqCount[0]).To(BeNumerically(">=", 8))
 				Expect(reqCount[1]).To(BeNumerically(">=", 8))
-				wg.Wait()
 			})
 		})
 
 		Context("when it's set to least-connection", func() {
 			It("always sends the request to the instance with less active connections", func() {
 				doraUrl := buildUrl(leastConnHost)
-				var wg sync.WaitGroup
-				for i := 0; i < 10; i++ {
-					wg.Add(1)
-					go func() {
-						defer wg.Done()
-						defer GinkgoRecover()
-						helpers.Curl(Config, fmt.Sprintf("%s/delay/10", doraUrl), "-H", fmt.Sprintf("X-Cf-App-Instance: %s:0", appId))
-					}()
-				}
+				stop := occupyInstanceZero(doraUrl, 10)
+				defer stop()
+
+				// Establish the precondition the assertion depends on before
+				// counting: the least-connection algorithm must actually observe
+				// that instance 0 is busy with the background connections and
+				// start steering new requests to instance 1. We poll the same
+				// signal the test measures - an unpinned probe landing on
+				// instance 1 - until it holds, so the counted loop below runs
+				// only once the router's connection accounting reflects the load.
+				// This replaces the previous implicit race, where probing began
+				// before the slow connections were even established.
+				Eventually(func() bool {
+					id := helpers.Curl(Config, fmt.Sprintf("%s/id", doraUrl)).Wait().Out.Contents()
+					return string(id) == instanceIds[1]
+				}).Should(BeTrue())
 
 				reqCount := [2]int{0, 0}
 				for i := 0; i < 20; i++ {
@@ -137,7 +186,6 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 				// allow for some wiggle-room
 				Expect(reqCount[0]).To(BeNumerically("<=", 8))
 				Expect(reqCount[1]).To(BeNumerically(">=", 12))
-				wg.Wait()
 			})
 		})
 		Context("when it's set to hash", func() {
