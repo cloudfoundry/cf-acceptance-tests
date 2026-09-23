@@ -117,51 +117,60 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					tags := "['tag1', 'tag2']"
 					params := "{\"param1\": \"value\"}"
 
-					It("can rename a service", func() {
-						newname := random_name.CATSRandomName("SVC-RENAME")
-						updateService := cf.Cf("rename-service", instanceName, newname).Wait()
-						Expect(updateService).To(Exit(0))
-
-						serviceInfo := cf.Cf("service", newname).Wait()
-						Expect(serviceInfo).To(Say(newname))
-
-						serviceInfo = cf.Cf("service", instanceName).Wait()
-						Expect(serviceInfo).To(Exit(1))
-					})
-
-					It("can update a service plan", func() {
+					// These update operations were previously five separate It
+					// specs. Each paid its own create-service/delete-service cycle
+					// (~35s of scaffolding) to assert a single ~1s update. They are
+					// consolidated into one spec that creates the instance once
+					// (via the enclosing BeforeEach) and exercises every update in
+					// sequence; By() markers preserve per-step failure diagnostics.
+					// Coverage is unchanged - every original assertion is retained.
+					// Rename runs last so the earlier steps operate on the original
+					// instanceName the BeforeEach/AfterEach manage.
+					It("can update plan, tags, arbitrary params, all-at-once, and rename", func() {
+						By("updating a service plan")
 						updateService := cf.Cf("update-service", instanceName, "-p", broker.SyncPlans[1].Name).Wait()
 						Expect(updateService).To(Exit(0))
 
 						serviceInfo := cf.Cf("service", instanceName).Wait()
 						Expect(serviceInfo).To(Say("[P|p]lan:\\s+%s", broker.SyncPlans[1].Name))
-					})
 
-					It("can update service tags", func() {
-						updateService := cf.Cf("update-service", instanceName, "-t", tags).Wait()
+						By("updating service tags")
+						updateService = cf.Cf("update-service", instanceName, "-t", tags).Wait()
 						Expect(updateService).To(Exit(0))
 
-						serviceInfo := cf.Cf("-v", "service", instanceName).Wait()
+						serviceInfo = cf.Cf("-v", "service", instanceName).Wait()
 						Expect(serviceInfo.Out.Contents()).To(MatchRegexp(`"tags":\s*\[\n.*tag1.*\n.*tag2.*\n.*\]`))
-					})
 
-					It("can update arbitrary parameters", func() {
-						updateService := cf.Cf("update-service", instanceName, "-c", params).Wait()
+						By("updating arbitrary parameters")
+						updateService = cf.Cf("update-service", instanceName, "-c", params).Wait()
 						Expect(updateService).To(Exit(0), "Failed updating service")
 						//Note: We don't necessarily get these back through a service instance lookup
-					})
 
-					It("can update all available parameters at once", func() {
-						updateService := cf.Cf(
+						By("updating all available parameters at once")
+						updateService = cf.Cf(
 							"update-service", instanceName,
 							"-p", broker.SyncPlans[1].Name,
 							"-t", tags,
 							"-c", params).Wait()
 						Expect(updateService).To(Exit(0))
 
-						serviceInfo := cf.Cf("-v", "service", instanceName).Wait()
+						serviceInfo = cf.Cf("-v", "service", instanceName).Wait()
 						Expect(serviceInfo).To(Say("[P|p]lan:\\s+%s", broker.SyncPlans[1].Name))
 						Expect(serviceInfo.Out.Contents()).To(MatchRegexp(`"tags":\s*\[\n.*tag1.*\n.*tag2.*\n.*\]`))
+
+						By("renaming the service")
+						newname := random_name.CATSRandomName("SVC-RENAME")
+						updateService = cf.Cf("rename-service", instanceName, newname).Wait()
+						Expect(updateService).To(Exit(0))
+
+						serviceInfo = cf.Cf("service", newname).Wait()
+						Expect(serviceInfo).To(Say(newname))
+
+						serviceInfo = cf.Cf("service", instanceName).Wait()
+						Expect(serviceInfo).To(Exit(1))
+
+						// Restore instanceName so the enclosing AfterEach can clean up.
+						instanceName = newname
 					})
 				})
 
