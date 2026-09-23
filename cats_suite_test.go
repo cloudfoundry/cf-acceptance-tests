@@ -183,6 +183,13 @@ var _ = SynchronizedAfterSuite(func() {
 // global. Any failure here fails SynchronizedBeforeSuite, so all nodes fail and
 // no specs run (all-or-nothing).
 func bootstrapSharedServiceBroker() []byte {
+	// The node-1 SynchronizedBeforeSuite fn runs BEFORE the all-nodes fn that
+	// sets the Gomega defaults (:141-142), so without this the bare .Wait()
+	// calls inside Configure/Create/PublicizePlans fall back to Gomega's 1s
+	// built-in default and time out on slow ops like create-service-broker.
+	SetDefaultEventuallyTimeout(Config.DefaultTimeoutDuration())
+	SetDefaultEventuallyPollingInterval(1 * time.Second)
+
 	adminSetup := workflowhelpers.NewTestSuiteSetup(Config)
 
 	suffix := random_name.CATSRandomName("")
