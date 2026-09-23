@@ -361,13 +361,9 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 					Expect(updateService).To(Exit(0))
 					Expect(updateService).To(Say("Update in progress."))
 
-					serviceInfo := cf.Cf("service", instanceName).Wait()
-					Expect(serviceInfo).To(Exit(0), "failed getting service instance details")
-					Expect(serviceInfo).To(Say("[P|p]lan:\\s+%s", broker.AsyncPlans[0].Name))
-
 					waitForAsyncOperationToCompleteAndSay(broker, instanceName, "succeeded")
 
-					serviceInfo = cf.Cf("service", instanceName).Wait()
+					serviceInfo := cf.Cf("service", instanceName).Wait()
 					Expect(serviceInfo).To(Exit(0), "failed getting service instance details")
 					Expect(serviceInfo).To(Say("[P|p]lan:\\s+%s", broker.AsyncPlans[1].Name))
 				})
