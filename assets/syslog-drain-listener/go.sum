@@ -1,5 +1,5 @@
-code.cloudfoundry.org/tlsconfig v0.66.0 h1:/r6OaSt7Br6+DZux5QH2G7GxCVzyxgAIKQQcpfROFuU=
-code.cloudfoundry.org/tlsconfig v0.66.0/go.mod h1:fCnjCg1EIb5JKHRfmM2luoVzyFioAiknnPaiTOLqEhw=
+code.cloudfoundry.org/tlsconfig v0.67.0 h1:NNlWRHeBrSlTMj8PpcEbU6VaVvtV0F/8KtyIayu1qAQ=
+code.cloudfoundry.org/tlsconfig v0.67.0/go.mod h1:CDv3lTVNMitrFu1zEEENVtmX/mCR4I3oI2Hxb/uhwyE=
 filippo.io/edwards25519 v1.2.0 h1:crnVqOiS4jqYleHd9vaKZ+HKtHfllngJIiOpNpoJsjo=
 filippo.io/edwards25519 v1.2.0/go.mod h1:xzAOLCNug/yB62zG1bQ8uziwrIqIuxhctzJT18Q77mc=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
@@ -8,7 +8,7 @@ github.com/square/certstrap v1.3.0 h1:N9P0ZRA+DjT8pq5fGDj0z3FjafRKnBDypP0QHpMlaA
 github.com/square/certstrap v1.3.0/go.mod h1:wGZo9eE1B7WX2GKBn0htJ+B3OuRl2UsdCFySNooy9hU=
 go.step.sm/crypto v0.90.0 h1:ZEWK0Ly0RyEC2S2OP1+N/SRbTRU+sW7go0tttHgyXkw=
 go.step.sm/crypto v0.90.0/go.mod h1:dgT4uZ4cClpjCi6HZZAmLomgn5tOfpHTqb34lTFN2PQ=
-golang.org/x/crypto v0.56.0 h1:GUh5Ii4J5jtcseSMiRqr1jXCNHoxjeV9Fmekc2oLy6Y=
-golang.org/x/crypto v0.56.0/go.mod h1:OMW5y6CY9l38uPLmxU6l6pwcXp1obtLo3e6gT7gQR2I=
-golang.org/x/sys v0.47.0 h1:o7XGOvZQCADBQQ4Y7VNq2dRWQR7JmOUW8Kxx4ZsNgWs=
-golang.org/x/sys v0.47.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=
+golang.org/x/crypto v0.57.0 h1:3ZVCjf8Ggz7zneR/EHRVx68Ctf+2pmIMP2UFhh9cC6M=
+golang.org/x/crypto v0.57.0/go.mod h1:Fdz0i5U6CoizGwLda9DttjSk6qlZo25zYNtR+ycvuZA=
+golang.org/x/sys v0.48.0 h1:bbX/i/6MgT9BVLM9RT1thmxL04yeTAhbEz4SyadbXoo=
+golang.org/x/sys v0.48.0/go.mod h1:hNLxWAXmnKAxqDtdwIYC4bM9oQPEecfsnNMuSxOs3og=
