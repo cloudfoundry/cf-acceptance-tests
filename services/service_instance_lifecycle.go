@@ -298,16 +298,10 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 		})
 	})
 
-	// NOTE: intentionally NOT Ordered/shared-broker. An Ordered block runs
-	// serially on a single Ginkgo node; these async specs are the heaviest in
-	// the suite (create/update/delete + polling) and, when serialized, made
-	// one node the critical path for the whole CATS run. A per-spec broker
-	// (cheap now that it's a prebuilt Go binary) lets Ginkgo parallelize them
-	// across nodes, which wins more wall-clock than sharing the broker saved.
-	Describe("Asynchronous operations", func() {
+	Describe("Asynchronous operations", Ordered, func() {
 		var instanceName string
 
-		BeforeEach(func() {
+		BeforeAll(func() {
 			broker = services.NewServiceBroker(
 				random_name.CATSRandomName("BRKR"),
 				assets.NewAssets().ServiceBroker,
@@ -322,8 +316,11 @@ var _ = ServicesDescribe("Service Instance Lifecycle", func() {
 		AfterEach(func() {
 			Expect(cf.Cf("delete-service", instanceName, "-f").Wait()).To(Exit())
 			waitForAsyncDeletionToComplete(broker, instanceName)
+		})
 
+		AfterAll(func() {
 			app_helpers.AppReport(broker.Name)
+
 			broker.Destroy()
 		})
 
