@@ -36,6 +36,7 @@ type Assets struct {
 	RubySimple                 string
 	SecurityGroupBuildpack     string
 	ServiceBroker              string
+	ServiceBrokerGo            string
 	Staticfile                 string
 	SyslogDrainListener        string
 	Binary                     string
@@ -88,6 +89,7 @@ func NewAssets() Assets {
 		RubySimple:                 "assets/ruby_simple",
 		SecurityGroupBuildpack:     "assets/security_group_buildpack.zip",
 		ServiceBroker:              "assets/service_broker",
+		ServiceBrokerGo:            "assets/service_broker_go",
 		Staticfile:                 "assets/staticfile",
 		SyslogDrainListener:        "assets/syslog-drain-listener",
 		Binary:                     "assets/binary",

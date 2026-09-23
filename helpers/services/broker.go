@@ -106,9 +106,9 @@ func NewServiceBroker(name string, path string, TestSetup *workflowhelpers.Repro
 func (b ServiceBroker) Push(config cats_config.CatsConfig) {
 	Expect(cf.Cf(
 		"push", b.Name,
-		"-b", config.GetRubyBuildpackName(),
+		"-b", config.GetBinaryBuildpackName(),
 		"-m", DEFAULT_MEMORY_LIMIT,
-		"-p", b.Path,
+		"-p", assets.NewAssets().ServiceBrokerGo,
 		"--health-check-type", "http",
 		"--endpoint", "/v2/catalog",
 	).Wait(Config.BrokerStartTimeoutDuration())).To(Exit(0))
