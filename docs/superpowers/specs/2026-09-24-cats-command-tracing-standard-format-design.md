@@ -20,9 +20,12 @@ The four questions the tables answer are settled and remain the goal:
 4. **Repeated commands** — commands run many times, grouped by a normalized
    signature (GUIDs, generated names, hex, numeric suffixes collapsed).
 
-What is *not* settled is the output mechanism. The PoC hand-formats four
-20-row text tables (~170 lines in `report.go`). The preference is to use a
-**standard solution** for the data, keeping only a short human-readable summary.
+What is being added is a **standard machine artifact** for these answers. The
+PoC hand-formats four text tables in-process (~170 lines in `report.go`) and
+prints them at suite end. That human summary is kept as-is — enabling tracing
+must always yield a readable result. Alongside it, the suite will also emit
+Ginkgo's standard JSON report so an AI or `jq`/pandas can analyze the raw
+records and compare across runs without anyone reading raw JSON by hand.
 
 ## Constraints discovered during investigation
 
@@ -70,21 +73,25 @@ if cfcmdtrace.Enabled() {
 The feature stays fully opt-in: the JSON is produced only when `CATS_TRACE=1`.
 No CI command changes are required.
 
-### Change 2 — shrink `report.go` to a compact human summary
+### Change 2 — keep the in-process human summary (unchanged)
 
-Replace the four full tables with a compact summary: each of the four questions
-as a few headline rows (top 5), still framed by the greppable
-`===CATS-TRACE===` … `===END-CATS-TRACE===` markers, ending with a pointer to
-the JSON file for full detail.
+**Guiding principle: enabling `CATS_TRACE=1` must produce a human-readable
+summary at the end of the run, automatically.** Humans are never expected to read
+the JSON — that is the machine artifact. So the existing `ReportAfterSuite`
+summary in `report.go` stays: the four tables, framed by the greppable
+`===CATS-TRACE===` … `===END-CATS-TRACE===` markers, printed to stdout at suite
+end whenever tracing is on.
 
-Removed:
-- `CATS_TRACE_TOP` env var and `topN` (summary is fixed-small; full detail lives
-  in the JSON).
-- The display column-width constants and most of the `trunc` machinery.
+- **`CATS_TRACE_TOP` is retained** — it sizes the summary tables (default 20).
+  It is *not* removed.
+- The table formatting, `flatCmd` flattening, and `aggregate` grouping stay as-is
+  (post the earlier line-level cleanups: `rePrefix` hoisted, `decodePayload`
+  inlined, `sanitize` redaction fixed).
+- Optional, low-risk touch: append a one-line pointer to the JSON artifact path
+  after the summary so a reader knows where the full data is. This is additive.
 
-Kept:
-- The `flatCmd` flattening and the `aggregate` grouping helper (the summary still
-  needs verb and signature rollups) — they simply print fewer rows.
+No standalone rendering tool is built. The summary is produced by one in-process
+code path; the JSON serves AI/`jq`/pandas separately.
 
 ### Data flow
 
@@ -92,7 +99,7 @@ Kept:
 cf.Cf wrapper → collector (per-command records)
              → AddReportEntry per spec / suite-setup
              ├─(a)→ Ginkgo merged cfcmdtrace-*.json   (full data; AI / jq / pandas)
-             └─(b)→ ReportAfterSuite compact summary → stdout   (humans, in the log)
+             └─(b)→ ReportAfterSuite summary → stdout  (humans, in the log; sized by CATS_TRACE_TOP)
 ```
 
 ### What the JSON consumer sees
@@ -111,26 +118,26 @@ one-liner for each.
 
 ### Testing
 
-- Keep the capture and normalize unit tests unchanged.
-- Adjust the report tests to the trimmed summary: the section-presence,
-  repeated-command-collapse, and cf-vs-other-gap assertions stay; the `topN`
-  test is removed with the feature.
+- Keep the capture, normalize, and report unit tests as they are — including the
+  `topN`/`CATS_TRACE_TOP` behavior test, since that env var is retained.
 - Add one test asserting a `specTrace` round-trips through `json.Marshal` into
-  the shape the JSON consumer depends on (guards the wire contract).
+  the shape the JSON consumer depends on (guards the wire contract that the
+  standard artifact exposes).
 
 ### README
 
-Replace the four-table description with: how to enable, where the
-`cfcmdtrace-*.json` artifact lands, the four `jq` one-liners answering the
-questions, and a note that a compact summary is also printed to the log. The
-existing admin-password redaction warning stays.
+Keep the existing description of the summary and `CATS_TRACE_TOP`. Add: that
+enabling tracing now also writes a standard `cfcmdtrace-*.json` under the
+artifacts directory, and the four `jq` one-liners that answer the questions from
+it (for AI/script analysis). The existing admin-password redaction warning stays.
 
 ## Scope and trade-offs
 
-- Removing `CATS_TRACE_TOP` is a minor breaking change to an unreleased PoC —
-  acceptable.
+- `CATS_TRACE_TOP` and the full in-process summary are **retained** — enabling
+  tracing always yields a human-readable result with no extra step.
+- The JSON report is purely additive: a standard machine artifact for AI/`jq`
+  analysis and cross-run comparison, produced only when `CATS_TRACE=1`.
 - Feature remains opt-in via `CATS_TRACE=1`; no behavior change for suites that
   don't set it.
-- Analysis burden moves from Go code to a standard artifact, which is the
-  explicit goal. The one cost is that the deepest views require a `jq`/AI step
-  rather than being pre-rendered — mitigated by the compact in-log summary.
+- No standalone rendering tool — one in-process path produces the summary,
+  avoiding a second binary to build and keep in sync with the record shape.
