@@ -141,6 +141,12 @@ var _ = RoutingDescribe("Per-Route Options", func() {
 			})
 		})
 		Context("when it's set to hash", func() {
+			It("is reachable", func() {
+				doraUrl := buildUrl(hashBasedRoutingHost)
+				curl := helpers.Curl(Config, fmt.Sprintf("%s/id", doraUrl), "-H", "X-Hash-Header: 1").Wait()
+				Expect(curl).To(Exit(0))
+				Expect(string(curl.Out.Contents())).To(MatchRegexp(appInstanceRegex.String()))
+			})
 			Context("when the requests contain the same hash header", func() {
 				It("routes requests to the same instance", func() {
 					doraUrl := buildUrl(hashBasedRoutingHost)
