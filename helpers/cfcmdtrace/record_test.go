@@ -28,6 +28,41 @@ func TestArgsPreviewTruncates(t *testing.T) {
 	}
 }
 
+func TestCmdFieldsStripsLeadingCf(t *testing.T) {
+	cases := []struct {
+		in   string
+		want []string
+	}{
+		{"cf push myapp", []string{"push", "myapp"}},
+		{"cf auth admin [REDACTED]", []string{"auth", "admin", "[REDACTED]"}},
+		{"push myapp", []string{"push", "myapp"}}, // no cf prefix: unchanged
+		{"", nil},
+	}
+	for _, c := range cases {
+		got := cmdFields(c.in)
+		if len(got) != len(c.want) {
+			t.Fatalf("cmdFields(%q)=%v want %v", c.in, got, c.want)
+		}
+		for i := range got {
+			if got[i] != c.want[i] {
+				t.Fatalf("cmdFields(%q)=%v want %v", c.in, got, c.want)
+			}
+		}
+	}
+}
+
+func TestStartedDerivesVerbWithoutCfPrefix(t *testing.T) {
+	c := newCollector()
+	c.CommandStarted("cf push myapp", time.Now())
+	recs := c.drain()
+	if len(recs) != 1 || recs[0].Verb != "push" {
+		t.Fatalf("want verb push, got %+v", recs)
+	}
+	if recs[0].ArgsPreview != "push myapp" {
+		t.Fatalf("want preview without cf prefix, got %q", recs[0].ArgsPreview)
+	}
+}
+
 func TestCollectorRecordsCompletion(t *testing.T) {
 	c := newCollector()
 	start := time.Now()

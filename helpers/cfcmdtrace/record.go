@@ -41,9 +41,10 @@ func (c *collector) CommandCompleted(redactedArgs string, elapsed time.Duration,
 // secret it knows about (e.g. the CfRedact secret) before we ever see it, so no
 // downstream sanitize step is needed.
 func (c *collector) started(redactedArgs string, startTime time.Time) {
+	args := cmdFields(redactedArgs)
 	rec := &cmdRecord{
-		Verb:        verbOf(strings.Fields(redactedArgs)),
-		ArgsPreview: argsPreview(strings.Fields(redactedArgs), 160),
+		Verb:        verbOf(args),
+		ArgsPreview: argsPreview(args, 160),
 		StartNs:     startTime.UnixNano(),
 	}
 	c.mu.Lock()
@@ -58,7 +59,7 @@ func (c *collector) started(redactedArgs string, startTime time.Time) {
 // which is correct for the aggregate questions we answer (per-command durations,
 // verb/signature rollups) even if an individual pairing is swapped.
 func (c *collector) completed(redactedArgs string, elapsed time.Duration, exitCode int) {
-	preview := argsPreview(strings.Fields(redactedArgs), 160)
+	preview := argsPreview(cmdFields(redactedArgs), 160)
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	for _, rec := range c.records {
@@ -81,6 +82,19 @@ func (c *collector) drain() []cmdRecord {
 	}
 	c.records = nil
 	return out
+}
+
+// cmdFields splits the observer's joined command identity into fields, dropping
+// a leading "cf" program token. cf-test-helpers reports the full invocation
+// ("cf push ..."), but verb extraction and signature normalization expect the
+// arguments only ("push ..."), so the verb table groups by the real verb rather
+// than by "cf".
+func cmdFields(redactedArgs string) []string {
+	fields := strings.Fields(redactedArgs)
+	if len(fields) > 0 && fields[0] == "cf" {
+		return fields[1:]
+	}
+	return fields
 }
 
 func verbOf(args []string) string {

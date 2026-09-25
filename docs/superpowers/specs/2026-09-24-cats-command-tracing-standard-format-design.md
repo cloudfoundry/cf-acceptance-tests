@@ -2,7 +2,16 @@
 
 **Date:** 2026-09-24
 **Branch:** cats-command-tracing
-**Status:** approved, pending implementation
+**Status:** superseded in part — see note below
+
+> **Update (2026-09-25):** The capture mechanism described here (monkey-patching
+> `cf.Cf`) has been replaced. Tracing now uses the opt-in command observer added
+> to `cf-test-helpers` (`cf.RegisterObserver`), which covers every cf command the
+> library runs — including `CfRedact`, `CfSilent`, `CfWithStdin`, and
+> workflowhelpers auth/targeting — with redaction applied inside the library.
+> References to the "`cf.Cf` wrapper" below are historical; the collector, record
+> shape, normalization, and in-process summary are unchanged. See
+> `helpers/cfcmdtrace/` on branch `cats-command-tracing-observer`.
 
 ## Background
 
