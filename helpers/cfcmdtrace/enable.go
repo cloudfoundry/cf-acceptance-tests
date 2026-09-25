@@ -9,7 +9,6 @@ import (
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/ginkgo/v2/types"
-	"github.com/onsi/gomega/gexec"
 )
 
 const defaultTopN = 20
@@ -37,17 +36,12 @@ func topN() int {
 	return defaultTopN
 }
 
-func decodePayload(asJSON string) (specTrace, error) {
-	var p specTrace
-	err := json.Unmarshal([]byte(asJSON), &p)
-	return p, err
-}
-
 // recoverPayload extracts a specTrace from a report entry. Parallel non-node-1
 // entries are JSON-rehydrated (decode AsJSON); in-process ones carry the raw struct.
 func recoverPayload(entry types.ReportEntry) (specTrace, bool) {
 	if entry.Value.AsJSON != "" {
-		if p, err := decodePayload(entry.Value.AsJSON); err == nil {
+		var p specTrace
+		if err := json.Unmarshal([]byte(entry.Value.AsJSON), &p); err == nil {
 			return p, true
 		}
 	}
@@ -57,18 +51,14 @@ func recoverPayload(entry types.ReportEntry) (specTrace, bool) {
 	return specTrace{}, false
 }
 
-// Enable patches cf.Cf and registers Ginkgo report hooks. Call during tree
-// construction, guarded by Enabled(). workflowhelpers auth/targeting is not traced.
+// Enable registers a cf-test-helpers observer and Ginkgo report hooks. Call
+// during tree construction, guarded by Enabled(). The observer covers every cf
+// command the library runs, including CfRedact/CfSilent/CfWithStdin and the
+// workflowhelpers auth/targeting calls.
 func Enable(namePrefix string) {
 	coll = newCollector()
 
-	orig := cf.Cf
-	cf.Cf = func(args ...string) *gexec.Session {
-		hook := coll.record(args)
-		sess := orig(args...)
-		hook(sess)
-		return sess
-	}
+	cf.RegisterObserver(coll)
 
 	ginkgo.ReportAfterEach(func(report ginkgo.SpecReport) {
 		ginkgo.AddReportEntry("cfcmdtrace", specTrace{

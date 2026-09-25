@@ -97,9 +97,10 @@ func formatReport(specs []specTrace, namePrefix string, topN int) string {
 	}
 
 	all := []flatCmd{}
+	rePrefix := compilePrefix(namePrefix)
 	for _, s := range specs {
 		for _, c := range s.Cmds {
-			all = append(all, flatCmd{c, s.Name, signature(strings.Fields(c.ArgsPreview), namePrefix)})
+			all = append(all, flatCmd{c, s.Name, signatureWith(strings.Fields(c.ArgsPreview), rePrefix)})
 		}
 	}
 

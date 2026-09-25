@@ -1,15 +1,9 @@
 package cfcmdtrace
 
 import (
-	"os/exec"
 	"testing"
 	"time"
-
-	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/gexec"
 )
-
-func execTrue() *exec.Cmd { return exec.Command("true") }
 
 func TestVerbOf(t *testing.T) {
 	cases := []struct {
@@ -35,22 +29,42 @@ func TestArgsPreviewTruncates(t *testing.T) {
 }
 
 func TestCollectorRecordsCompletion(t *testing.T) {
-	RegisterTestingT(t)
 	c := newCollector()
-	sess, err := gexec.Start(execTrue(), nil, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	hook := c.record([]string{"push", "myapp"})
-	hook(sess)
-	sess.Wait(5 * time.Second)
-	// allow the Exited goroutine to run
-	time.Sleep(50 * time.Millisecond)
+	start := time.Now()
+	c.CommandStarted("push myapp", start)
+	c.CommandCompleted("push myapp", 250*time.Millisecond, 0)
 	recs := c.drain()
 	if len(recs) != 1 {
 		t.Fatalf("want 1 record, got %d", len(recs))
 	}
 	if !recs[0].Completed || recs[0].Verb != "push" || recs[0].EndNs <= recs[0].StartNs {
 		t.Fatalf("bad record: %+v", recs[0])
+	}
+	if recs[0].ExitCode != 0 {
+		t.Fatalf("want exit 0, got %d", recs[0].ExitCode)
+	}
+}
+
+func TestCollectorMatchesCompletionByArgs(t *testing.T) {
+	c := newCollector()
+	now := time.Now()
+	c.CommandStarted("push a", now)
+	c.CommandStarted("delete b", now)
+	c.CommandCompleted("delete b", 10*time.Millisecond, 1)
+	recs := c.drain()
+	var pushRec, deleteRec cmdRecord
+	for _, r := range recs {
+		switch r.Verb {
+		case "push":
+			pushRec = r
+		case "delete":
+			deleteRec = r
+		}
+	}
+	if pushRec.Completed {
+		t.Fatalf("push should still be open: %+v", pushRec)
+	}
+	if !deleteRec.Completed || deleteRec.ExitCode != 1 {
+		t.Fatalf("delete completion mismatched: %+v", deleteRec)
 	}
 }

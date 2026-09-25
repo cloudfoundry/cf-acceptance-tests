@@ -4,8 +4,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/onsi/gomega/gexec"
 )
 
 type cmdRecord struct {
@@ -26,39 +24,51 @@ func newCollector() *collector {
 	return &collector{}
 }
 
-// sanitize redacts the CF admin password from create-service-broker args.
-func sanitize(args []string) []string {
-	if verbOf(args) == "create-service-broker" && len(args) >= 4 {
-		out := make([]string, len(args))
-		copy(out, args)
-		out[3] = "<REDACTED>"
-		return out
-	}
-	return args
+// CommandStarted / CommandCompleted make *collector satisfy cf.Observer, the
+// opt-in observation seam cf-test-helpers exposes. Every cf command the library
+// runs — including CfRedact/CfSilent/CfWithStdin and workflowhelpers
+// auth/targeting — is reported through this pair.
+func (c *collector) CommandStarted(redactedArgs string, startTime time.Time) {
+	c.started(redactedArgs, startTime)
 }
 
-func (c *collector) record(args []string) func(*gexec.Session) {
+func (c *collector) CommandCompleted(redactedArgs string, elapsed time.Duration, exitCode int) {
+	c.completed(redactedArgs, elapsed, exitCode)
+}
+
+// started records a command's start. redactedArgs is the joined, already-redacted
+// identity handed to us by cf-test-helpers' observer — the library removed any
+// secret it knows about (e.g. the CfRedact secret) before we ever see it, so no
+// downstream sanitize step is needed.
+func (c *collector) started(redactedArgs string, startTime time.Time) {
 	rec := &cmdRecord{
-		Verb:        verbOf(args),
-		ArgsPreview: argsPreview(sanitize(args), 160),
-		StartNs:     time.Now().UnixNano(),
+		Verb:        verbOf(strings.Fields(redactedArgs)),
+		ArgsPreview: argsPreview(strings.Fields(redactedArgs), 160),
+		StartNs:     startTime.UnixNano(),
 	}
 	c.mu.Lock()
 	c.records = append(c.records, rec)
 	c.mu.Unlock()
+}
 
-	return func(sess *gexec.Session) {
-		if sess == nil {
-			return
+// completed fills in timing/exit for a started command. The observer fires start
+// and completion as two separate calls with no handle to correlate them, so we
+// match completion to the oldest not-yet-completed record with the same redacted
+// identity. Concurrent commands with identical args complete in start order,
+// which is correct for the aggregate questions we answer (per-command durations,
+// verb/signature rollups) even if an individual pairing is swapped.
+func (c *collector) completed(redactedArgs string, elapsed time.Duration, exitCode int) {
+	preview := argsPreview(strings.Fields(redactedArgs), 160)
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	for _, rec := range c.records {
+		if rec.Completed || rec.ArgsPreview != preview {
+			continue
 		}
-		go func() {
-			<-sess.Exited
-			c.mu.Lock()
-			rec.EndNs = time.Now().UnixNano()
-			rec.ExitCode = sess.ExitCode()
-			rec.Completed = true
-			c.mu.Unlock()
-		}()
+		rec.EndNs = rec.StartNs + elapsed.Nanoseconds()
+		rec.ExitCode = exitCode
+		rec.Completed = true
+		return
 	}
 }
 
