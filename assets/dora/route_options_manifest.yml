@@ -12,6 +12,7 @@ applications:
     options:
       loadbalancing: hash
       hash_header: X-Hash-Header
+      hash_balance: 1.1
   processes:
   - type: web
     instances: 2
