@@ -348,6 +348,26 @@ To see verbose output from `ginkgo`, use the `-v` flag.
 
 You can of course combine the `-v` flag with the `--procs=N` flag.
 
+##### Command tracing
+
+Set `CATS_TRACE=1` (or `CATS_TRACE=true`) to print a timing summary at the end
+of the run. It reports the slowest specs (with the non-`cf` "other" time gap),
+time grouped by `cf` command verb, the slowest individual commands, and repeated
+commands (the same command run many times, e.g. a test app pushed repeatedly).
+The block is framed by `===CATS-TRACE===` markers so it is easy to grep out of
+a build log and compare across environments.
+
+Optional: `CATS_TRACE_TOP=N` caps how many rows each detail table prints
+(default 20). Aggregate figures are always computed over all commands.
+
+**Warning:** the trace records `cf` command arguments. The CF admin password
+passed to `cf create-service-broker` is redacted; all other argument values are
+stored as-is. Only enable tracing in environments where that is acceptable.
+
+Note: `cf` calls made by the workflowhelpers library for auth and org/space
+targeting use an internal code path that bypasses tracing, so they show up as
+part of each spec's "other" time gap.
+
 ##### Overall Test Timeout Setting
 From Ginkgo 2.0, the default timeout for the entire test has been changed to 1 hour (refer to: [Ginkgo 2.0 Migration Guide - Timeout Behavior](https://onsi.github.io/ginkgo/MIGRATING_TO_V2#timeout-behavior)).
 
