@@ -142,6 +142,9 @@ EOF
 					"-m", DEFAULT_MEMORY_LIMIT,
 					"-p", appPath,
 					"-s", stackName,
+					// The nc server answers one connection per loop iteration, so a
+					// port health check can consume the response meant for the curl.
+					"-u", "process",
 				).Wait(Config.CfPushTimeoutDuration())
 				Expect(push).To(Exit(0))
 				Expect(push).To(Say(expectedLSBRelease))
