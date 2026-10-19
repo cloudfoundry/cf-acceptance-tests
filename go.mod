@@ -6,7 +6,7 @@ require (
 	code.cloudfoundry.org/archiver v0.91.0
 	code.cloudfoundry.org/go-log-cache/v3 v3.1.2
 	code.cloudfoundry.org/go-loggregator/v10 v10.3.1
-	code.cloudfoundry.org/tlsconfig v0.68.0
+	code.cloudfoundry.org/tlsconfig v0.69.0
 	github.com/cloudfoundry/cf-test-helpers/v2 v2.15.0
 	github.com/cloudfoundry/noaa/v2 v2.6.0
 	github.com/cloudfoundry/sonde-go v0.0.0-20251217143644-d1670a435f2a
@@ -36,7 +36,7 @@ require (
 	github.com/nwaples/rardecode v1.1.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/square/certstrap v1.3.0 // indirect
+	github.com/square/certstrap v1.4.0 // indirect
 	github.com/ulikunitz/xz v0.5.14 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	go.step.sm/crypto v0.91.0 // indirect

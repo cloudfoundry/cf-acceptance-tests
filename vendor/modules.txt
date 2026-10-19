@@ -11,7 +11,7 @@ code.cloudfoundry.org/go-log-cache/v3/rpc/logcache_v1
 ## explicit; go 1.25.0
 code.cloudfoundry.org/go-loggregator/v10
 code.cloudfoundry.org/go-loggregator/v10/rpc/loggregator_v2
-# code.cloudfoundry.org/tlsconfig v0.68.0
+# code.cloudfoundry.org/tlsconfig v0.69.0
 ## explicit; go 1.26.0
 code.cloudfoundry.org/tlsconfig
 code.cloudfoundry.org/tlsconfig/certtest
@@ -150,8 +150,8 @@ github.com/pierrec/lz4/v4/internal/xxh32
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
-# github.com/square/certstrap v1.3.0
-## explicit; go 1.18
+# github.com/square/certstrap v1.4.0
+## explicit; go 1.24
 github.com/square/certstrap/pkix
 # github.com/ulikunitz/xz v0.5.14
 ## explicit; go 1.12
