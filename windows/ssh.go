@@ -271,6 +271,7 @@ func createManifestSshDisabled(appName string) string {
 	manifestContent := fmt.Sprintf(`---
 applications:
 - name: %s
+  stack: windows
   features:
     ssh: false
 `, appName)
