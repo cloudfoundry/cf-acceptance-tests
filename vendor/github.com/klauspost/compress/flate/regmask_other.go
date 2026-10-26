@@ -1,4 +1,4 @@
-//+build !amd64
+//go:build !amd64
 
 package flate
 
