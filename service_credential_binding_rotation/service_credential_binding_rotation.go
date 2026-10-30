@@ -94,6 +94,7 @@ var _ = ServiceCredentialBindingRotationDescribe("Service Credential Binding Rot
 
 		Expect(cf.Cf(app_helpers.CatnipWithArgs(
 			appName,
+			"--no-start",
 			"-m", DEFAULT_MEMORY_LIMIT)...,
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed pushing app")
 
@@ -105,7 +106,7 @@ var _ = ServiceCredentialBindingRotationDescribe("Service Credential Binding Rot
 			fmt.Sprintf("failed binding app %s to service %s with binding name %s", appName, serviceName, bindingName),
 		)
 
-		Expect(cf.Cf("restage", appName, "--strategy", "rolling").Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed rolling restage")
+		Expect(cf.Cf("start", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0), "failed starting app with its initial binding")
 	})
 
 	AfterEach(func() {
