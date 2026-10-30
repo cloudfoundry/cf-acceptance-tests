@@ -30,21 +30,24 @@ var _ = RoutingDescribe("Context Paths", func() {
 		app1 = random_name.CATSRandomName("APP")
 		Expect(cf.Cf("push",
 			app1,
-			"-b", Config.GetRubyBuildpackName(),
+			"-b", Config.GetBinaryBuildpackName(),
+			"-c", "./hello-routing",
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", helloRoutingAsset,
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		app2 = random_name.CATSRandomName("APP")
 		Expect(cf.Cf("push",
 			app2,
-			"-b", Config.GetRubyBuildpackName(),
+			"-b", Config.GetBinaryBuildpackName(),
+			"-c", "./hello-routing",
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", helloRoutingAsset,
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 		app3 = random_name.CATSRandomName("APP")
 		Expect(cf.Cf("push",
 			app3,
-			"-b", Config.GetRubyBuildpackName(),
+			"-b", Config.GetBinaryBuildpackName(),
+			"-c", "./hello-routing",
 			"-m", DEFAULT_MEMORY_LIMIT,
 			"-p", helloRoutingAsset,
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))

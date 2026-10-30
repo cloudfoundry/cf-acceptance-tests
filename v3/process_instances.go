@@ -7,7 +7,6 @@ import (
 
 	. "github.com/cloudfoundry/cf-acceptance-tests/cats_suite_helpers"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/v3_helpers"
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
@@ -45,7 +44,7 @@ var _ = V3Describe("process instances", func() {
 		appName = random_name.CATSRandomName("APP")
 
 		By("pushing the app with three instances")
-		Expect(cf.Cf("push", appName, "-i", "3", "-b", Config.GetRubyBuildpackName(), "-p", assets.NewAssets().DoraZip).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		Expect(cf.Cf(app_helpers.CatnipWithArgs(appName, "-i", "3")...).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
 		By("waiting until all instances are running")
 		Eventually(func(g Gomega) {

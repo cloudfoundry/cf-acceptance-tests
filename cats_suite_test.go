@@ -123,6 +123,17 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 		Expect(err).NotTo(HaveOccurred())
 	}
 
+	routingBuildCmd := exec.Command("go", "build", "-o", "bin/hello-routing")
+	routingBuildCmd.Dir = "assets/hello-routing"
+	routingBuildCmd.Env = append(os.Environ(),
+		"CGO_ENABLED=0",
+		"GOOS=linux",
+		"GOARCH=amd64",
+	)
+	routingBuildCmd.Stdout = GinkgoWriter
+	routingBuildCmd.Stderr = GinkgoWriter
+	Expect(routingBuildCmd.Run()).To(Succeed())
+
 	doraFiles, err := os.ReadDir(assets.NewAssets().Dora)
 	Expect(err).NotTo(HaveOccurred())
 

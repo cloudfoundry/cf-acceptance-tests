@@ -139,7 +139,8 @@ var _ = AppSyslogTcpDescribe("Syslog Drain over TCP", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Eventually(cf.Cf("set-env", listenerAppName, "MTLS", string(credentialsBlock))).Should(Exit(0), "Failed to set mtls variable on listener app")
-			Eventually(cf.Cf("restage", listenerAppName), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to restage listener app")
+			// The listener reads MTLS at startup, so reuse the existing droplet.
+			Eventually(cf.Cf("restart", listenerAppName), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to restart listener app")
 			Eventually(cf.Cf("cups", serviceName, "-l", fmt.Sprintf("syslog-tls://%s:%s", domainName, externalPort), "-p", string(credentialsBlock))).Should(Exit(0), "Failed to create syslog drain service")
 			Eventually(cf.Cf("bind-service", logWriterAppName1, serviceName)).Should(Exit(0), "Failed to bind service")
 

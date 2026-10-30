@@ -31,7 +31,8 @@ var _ = RoutingDescribe("Session Affinity", func() {
 			appName = random_name.CATSRandomName("APP")
 			Expect(cf.Cf("push",
 				appName,
-				"-b", Config.GetRubyBuildpackName(),
+				"-b", Config.GetBinaryBuildpackName(),
+				"-c", "./hello-routing",
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
 			).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
@@ -84,7 +85,8 @@ var _ = RoutingDescribe("Session Affinity", func() {
 			appName = random_name.CATSRandomName("APP")
 			Expect(cf.Cf("push",
 				appName,
-				"-b", Config.GetRubyBuildpackName(),
+				"-b", Config.GetBinaryBuildpackName(),
+				"-c", "./hello-routing",
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", helloWorldAsset,
 			).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
@@ -137,14 +139,16 @@ var _ = RoutingDescribe("Session Affinity", func() {
 			app1 = random_name.CATSRandomName("APP")
 			Expect(cf.Cf("push",
 				app1,
-				"-b", Config.GetRubyBuildpackName(),
+				"-b", Config.GetBinaryBuildpackName(),
+				"-c", "./hello-routing",
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
 			).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
 			app2 = random_name.CATSRandomName("APP")
 			Expect(cf.Cf("push",
 				app2,
-				"-b", Config.GetRubyBuildpackName(),
+				"-b", Config.GetBinaryBuildpackName(),
+				"-c", "./hello-routing",
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
 			).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
@@ -218,14 +222,16 @@ var _ = RoutingDescribe("Session Affinity", func() {
 			app1 = random_name.CATSRandomName("APP")
 			Expect(cf.Cf("push",
 				app1,
-				"-b", Config.GetRubyBuildpackName(),
+				"-b", Config.GetBinaryBuildpackName(),
+				"-c", "./hello-routing",
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
 			).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
 			app2 = random_name.CATSRandomName("APP")
 			Expect(cf.Cf("push",
 				app2,
-				"-b", Config.GetRubyBuildpackName(),
+				"-b", Config.GetBinaryBuildpackName(),
+				"-c", "./hello-routing",
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", stickyAsset,
 			).Wait(Config.CfPushTimeoutDuration())).To(gexec.Exit(0))
