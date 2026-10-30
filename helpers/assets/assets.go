@@ -66,7 +66,7 @@ func NewAssets() Assets {
 		GoCrashApp:                 "assets/go-crash-app",
 		Golang:                     "assets/golang",
 		GRPC:                       "assets/grpc",
-		HelloRouting:               "assets/hello-routing",
+		HelloRouting:               "assets/hello-routing/bin",
 		HelloWorld:                 "assets/hello-world",
 		HTTP2:                      "assets/http2",
 		Java:                       "assets/java",

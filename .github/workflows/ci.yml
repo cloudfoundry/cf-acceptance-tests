@@ -16,7 +16,7 @@ jobs:
       with:
         go-version-file: "go.mod"
     - name: Run ginkgo tests
-      run: go run github.com/onsi/ginkgo/v2/ginkgo -r --procs=3 --compilers=3 --randomize-all --randomize-suites --fail-on-pending --keep-going --race --trace helpers
+      run: go run github.com/onsi/ginkgo/v2/ginkgo -r --procs=3 --compilers=3 --randomize-all --randomize-suites --fail-on-pending --keep-going --race --trace helpers assets/hello-routing
 
   check-pr-target-branch:
     if: github.event_name == 'pull_request'
