@@ -48,7 +48,7 @@ var _ = WindowsDescribe("Getting instance information", func() {
 			setTotalMemoryLimit("10G")
 		})
 
-		PIt("fails when scaled beyond available resources", func() {
+		It("fails when scaled beyond available resources", func() {
 			scale := cf.Cf("scale", appName, "-m", EXCEED_CELL_MEMORY, "-f")
 			Eventually(scale, Config.CfPushTimeoutDuration()).Should(Or(Say("insufficient resources"), Say("down")))
 			scale.Kill()
@@ -61,29 +61,31 @@ var _ = WindowsDescribe("Getting instance information", func() {
 })
 
 func setTotalMemoryLimit(memoryLimit string) {
-	type quotaDefinitionUrl struct {
+	var org struct {
 		Resources []struct {
-			Entity struct {
-				QuotaDefinitionUrl string `json:"quota_definition_url"`
-			} `json:"entity"`
+			Relationships struct {
+				Quota struct {
+					Data struct {
+						GUID string `json:"guid"`
+					} `json:"data"`
+				} `json:"quota"`
+			} `json:"relationships"`
 		} `json:"resources"`
 	}
-	orgEndpoint := fmt.Sprintf("/v2/organizations?q=name%%3A%s", TestSetup.GetOrganizationName())
-	var org quotaDefinitionUrl
+	orgEndpoint := fmt.Sprintf("/v3/organizations?names=%s", TestSetup.GetOrganizationName())
 	ApiRequest("GET", orgEndpoint, &org, Config.DefaultTimeoutDuration())
 	Expect(org.Resources).ToNot(BeEmpty())
+	quotaGUID := org.Resources[0].Relationships.Quota.Data.GUID
+	Expect(quotaGUID).ToNot(BeEmpty())
 
-	type quotaDefinition struct {
-		Entity struct {
-			Name string `json:"name"`
-		} `json:"entity"`
+	var quota struct {
+		Name string `json:"name"`
 	}
-	var quota quotaDefinition
-	ApiRequest("GET", org.Resources[0].Entity.QuotaDefinitionUrl, &quota, Config.DefaultTimeoutDuration())
-	Expect(quota.Entity.Name).ToNot(BeEmpty())
+	ApiRequest("GET", fmt.Sprintf("/v3/organization_quotas/%s", quotaGUID), &quota, Config.DefaultTimeoutDuration())
+	Expect(quota.Name).ToNot(BeEmpty())
 
 	AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		Expect(cf.Cf("update-quota", quota.Entity.Name,
+		Expect(cf.Cf("update-quota", quota.Name,
 			"-m", memoryLimit).Wait()).To(Exit(0))
 	})
 }
