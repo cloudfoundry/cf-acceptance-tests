@@ -114,6 +114,7 @@ type CatsConfig interface {
 	BrokerStartTimeoutDuration() time.Duration
 	CfPushTimeoutDuration() time.Duration
 	DefaultTimeoutDuration() time.Duration
+	EventuallyPollingIntervalDuration() time.Duration
 	DetectTimeoutDuration() time.Duration
 	GetScaledTimeout(time.Duration) time.Duration
 	LongCurlTimeoutDuration() time.Duration

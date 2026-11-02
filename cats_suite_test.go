@@ -84,6 +84,7 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	PauseOutputInterception()
 	fmt.Fprintf(GinkgoWriter, "Running CATs with CF CLI version %s\n", installedVersion)
 	ResumeOutputInterception()
+	fmt.Fprintf(os.Stdout, "Using Eventually polling interval %s\n", Config.EventuallyPollingIntervalDuration())
 
 	Expect(ParseRawCliVersionString(installedVersion).AtLeast(ParseRawCliVersionString(minCliVersion))).To(BeTrue(), "CLI version "+minCliVersion+" is required")
 
@@ -138,7 +139,7 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	return []byte{}
 }, func([]byte) {
 	SetDefaultEventuallyTimeout(Config.DefaultTimeoutDuration())
-	SetDefaultEventuallyPollingInterval(1 * time.Second)
+	SetDefaultEventuallyPollingInterval(Config.EventuallyPollingIntervalDuration())
 
 	TestSetup = workflowhelpers.NewTestSuiteSetup(Config)
 

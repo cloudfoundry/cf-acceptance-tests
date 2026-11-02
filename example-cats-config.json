@@ -10,6 +10,7 @@ IN DEVELOPMENT
   "artifacts_directory": "logs",
   "skip_ssl_validation": true,
   "timeout_scale": 1,
+  "eventually_polling_interval_ms": 250,
   "use_http": true,
   "include_app_syslog_tcp": true,
   "include_apps": true,
