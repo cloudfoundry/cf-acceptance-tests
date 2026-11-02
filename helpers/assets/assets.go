@@ -89,7 +89,7 @@ func NewAssets() Assets {
 		SecurityGroupBuildpack:     "assets/security_group_buildpack.zip",
 		ServiceBroker:              "assets/service_broker",
 		Staticfile:                 "assets/staticfile",
-		SyslogDrainListener:        "assets/syslog-drain-listener",
+		SyslogDrainListener:        "assets/syslog-drain-listener/bin",
 		Binary:                     "assets/binary",
 		LoggingRouteService:        "assets/logging-route-service",
 		TCPListener:                "assets/tcp-listener",

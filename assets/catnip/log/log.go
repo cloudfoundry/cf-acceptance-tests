@@ -32,7 +32,8 @@ func MakeSleepHandler(w io.Writer, clock clock.Clock) func(http.ResponseWriter, 
 	return func(res http.ResponseWriter, req *http.Request) {
 		logSpeed, _ := strconv.Atoi(chi.URLParam(req, "logspeed"))
 
-		fmt.Fprintf(w, "Muahaha... let's go. Waiting %f seconds between loglines. Logging 'Muahaha...' every time.\n", float64(logSpeed)/1000000.0)
+		message := fmt.Sprintf("Muahaha... let's go. Waiting %f seconds between loglines. Logging 'Muahaha...' every time.\n", float64(logSpeed)/1000000.0)
+		fmt.Fprint(w, message)
 
 		sequence := 1
 		ticker := clock.NewTicker(time.Duration(logSpeed) * time.Microsecond)
@@ -43,5 +44,6 @@ func MakeSleepHandler(w io.Writer, clock clock.Clock) func(http.ResponseWriter, 
 				sequence++
 			}
 		}()
+		io.WriteString(res, message)
 	}
 }

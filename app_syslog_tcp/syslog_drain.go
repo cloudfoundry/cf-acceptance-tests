@@ -57,10 +57,10 @@ var _ = AppSyslogTcpDescribe("Syslog Drain over TCP", func() {
 				"push",
 				listenerAppName,
 				"--health-check-type", "port",
-				"-b", Config.GetGoBuildpackName(),
+				"-b", Config.GetBinaryBuildpackName(),
+				"-c", "./syslog-drain-listener",
 				"-m", DEFAULT_MEMORY_LIMIT,
 				"-p", assets.NewAssets().SyslogDrainListener,
-				"-f", assets.NewAssets().SyslogDrainListener+"/manifest.yml",
 			), Config.CfPushTimeoutDuration()).Should(Exit(0), "Failed to push app")
 
 			externalPort = MapTCPRoute(listenerAppName, domainName)

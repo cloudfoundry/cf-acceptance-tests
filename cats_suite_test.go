@@ -134,6 +134,19 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	routingBuildCmd.Stderr = GinkgoWriter
 	Expect(routingBuildCmd.Run()).To(Succeed())
 
+	if Config.GetIncludeAppSyslogTcp() {
+		listenerBuildCmd := exec.Command("go", "build", "-o", "bin/syslog-drain-listener")
+		listenerBuildCmd.Dir = "assets/syslog-drain-listener"
+		listenerBuildCmd.Env = append(os.Environ(),
+			"CGO_ENABLED=0",
+			"GOOS=linux",
+			"GOARCH=amd64",
+		)
+		listenerBuildCmd.Stdout = GinkgoWriter
+		listenerBuildCmd.Stderr = GinkgoWriter
+		Expect(listenerBuildCmd.Run()).To(Succeed())
+	}
+
 	doraFiles, err := os.ReadDir(assets.NewAssets().Dora)
 	Expect(err).NotTo(HaveOccurred())
 
