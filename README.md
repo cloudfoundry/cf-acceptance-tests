@@ -154,6 +154,7 @@ include_app_syslog_tcp
 * `existing_user_password`: Password for the existing user to use.
 * `artifacts_directory`: If set, `cf` CLI trace output from test runs will be captured in files and placed in this directory. [See below](#capturing-test-output) for more.
 * `default_timeout`: Default time (in seconds) to wait for polling assertions that wait for asynchronous results.
+* `eventually_polling_interval_ms`: Polling interval, in milliseconds, for Gomega `Eventually` assertions without an explicit interval, including waits for every `cf` CLI command. Defaults to `250`. Shorter intervals increase polling, including `cf curl` requests. Set to `1000` to restore the previous default if CATS runs cause API pressure, throttling, or elevated latency on your foundation. This value is not scaled by `timeout_scale`.
 * `cf_push_timeout`: Default time (in seconds) to wait for `cf push` commands to succeed.
 * `long_curl_timeout`: Default time (in seconds) to wait for assertions that `curl` slow endpoints of test applications.
 * `broker_start_timeout` (only relevant for `services` test group): Time (in seconds) to wait for service broker test app to start.
