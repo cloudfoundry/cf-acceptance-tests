@@ -8,7 +8,6 @@ import (
 
 	"github.com/cloudfoundry/cf-test-helpers/v2/cf"
 	"github.com/cloudfoundry/cf-test-helpers/v2/helpers"
-	"github.com/cloudfoundry/cf-test-helpers/v2/workflowhelpers"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
@@ -85,27 +84,6 @@ func ScaleApp(appGuid string, instances int) {
 	Expect(cf.Cf("curl", scalePath, "-X", "POST", "-d", scaleBody).Wait()).To(Exit(0))
 }
 
-func GetRunningInstancesStats(processGuid string) int {
-	processPath := fmt.Sprintf("/v3/processes/%s/stats", processGuid)
-	session := cf.Cf("curl", processPath).Wait()
-	instancesJson := struct {
-		Resources []struct {
-			Type  string `json:"type"`
-			State string `json:"state"`
-		} `json:"resources"`
-	}{}
-
-	bytes := session.Wait().Out.Contents()
-	json.Unmarshal(bytes, &instancesJson)
-	numRunning := 0
-
-	for _, instance := range instancesJson.Resources {
-		if instance.State == "RUNNING" {
-			numRunning += 1
-		}
-	}
-	return numRunning
-}
 
 func GetProcessGuidForType(appGuid string, processType string) string {
 	return GetProcessGuidsForType(appGuid, processType)[0]
@@ -507,36 +485,3 @@ func WaitForPackageToBeReady(packageGuid string) {
 	Expect(string(session.Out.Contents())).To(ContainSubstring("READY"))
 }
 
-type ProcessAppUsageEvent struct {
-	Guid    string `json:"guid"`
-	Process struct {
-		Type string `json:"type"`
-	} `json:"process"`
-	State struct {
-		Current string `json:"current"`
-	} `json:"state"`
-}
-
-type ProcessAppUsageEvents struct {
-	Resources []ProcessAppUsageEvent `struct:"resources"`
-}
-
-func GetLastAppUseEventForProcess(processType string, state string, afterGUID string) (bool, ProcessAppUsageEvent) {
-	var response ProcessAppUsageEvents
-	workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
-		afterGuidParam := ""
-		if afterGUID != "" {
-			afterGuidParam = fmt.Sprintf("&after_guid=%s", afterGUID)
-		}
-		usageEventsUrl := fmt.Sprintf("/v3/app_usage_events?order_by=-created_at&page=1&per_page=150%s", afterGuidParam)
-		workflowhelpers.ApiRequest("GET", usageEventsUrl, &response, Config.DefaultTimeoutDuration())
-	})
-
-	for _, event := range response.Resources {
-		if event.Process.Type == processType && event.State.Current == state {
-			return true, event
-		}
-	}
-
-	return false, ProcessAppUsageEvent{}
-}
