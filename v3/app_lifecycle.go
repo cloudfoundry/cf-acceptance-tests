@@ -101,7 +101,7 @@ var _ = V3Describe("v3 buildpack app lifecycle", func() {
 
 			output := helpers.CurlApp(Config, webProcess.Name, "/env")
 			Expect(output).To(ContainSubstring(fmt.Sprintf("application_name\\\":\\\"%s", appName)))
-			Expect(output).To(ContainSubstring(`"foo"=>"bar"`))
+			Expect(output).To(MatchRegexp(`"foo"\s*=>\s*"bar"`))
 
 			Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", webProcess.Name)))
 			Expect(string(cf.Cf("apps").Wait().Out.Contents())).To(MatchRegexp(fmt.Sprintf("(v3-)?(%s)*(-web)?(\\s)+(started)", workerProcess.Name)))
