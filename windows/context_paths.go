@@ -16,7 +16,7 @@ import (
 	. "github.com/onsi/gomega/gexec"
 )
 
-var _ = PDescribe("Context Paths", func() {
+var _ = WindowsDescribe("Context Paths", func() {
 	var (
 		appName1 string
 
