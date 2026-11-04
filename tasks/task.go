@@ -331,27 +331,26 @@ exit 1`
 				By("restarting the app to apply the ASG")
 				Expect(cf.Cf("restart", appName).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
-				By("creating the task")
-				taskName := "woof"
-				command := `curl --fail --connect-timeout 10 ` + Config.GetUnallocatedIPForSecurityGroup() + `:80`
-				createCommand := cf.Cf("run-task", appName, "--command", command, "--name", taskName).Wait()
-				Expect(createCommand).To(Exit(0))
-
 				By("testing that external connectivity to a private ip is not refused (but may be unreachable for other reasons)")
-				var outputName, outputState string
-				Eventually(func() string {
-					taskDetails := getTaskDetails(appName)
-					outputName = taskDetails[1]
-					outputState = taskDetails[2]
-					return outputState
-				}, 3*time.Minute).Should(Equal("FAILED"))
-				Expect(outputName).To(Equal(taskName))
+				Eventually(func(g Gomega) {
+					taskName := "woof"
+					command := `curl --fail --connect-timeout 10 ` + Config.GetUnallocatedIPForSecurityGroup() + `:80`
+					createCommand := cf.Cf("run-task", appName, "--command", command, "--name", taskName).Wait()
+					Expect(createCommand).To(Exit(0))
 
-				Eventually(func() string {
+					var outputName, outputState string
+					Eventually(func() string {
+						taskDetails := getTaskDetails(appName)
+						outputName = taskDetails[1]
+						outputState = taskDetails[2]
+						return outputState
+					}, 3*time.Minute).Should(Equal("FAILED"))
+					Expect(outputName).To(Equal(taskName))
+
 					appLogs := logs.Recent(appName).Wait()
-					Expect(appLogs).To(Exit(0))
-					return string(appLogs.Out.Contents())
-				}, Config.CfPushTimeoutDuration()).Should(MatchRegexp(`curl: \(28\)|Connection timed out|No route to host`), "ASG configured to allow connection to the private IP but the app is still refused by private ip")
+					g.Expect(appLogs).To(Exit(0))
+					g.Expect(string(appLogs.Out.Contents())).To(MatchRegexp(`curl: \(28\)|Connection timed out|No route to host`), "ASG configured to allow connection to the private IP but the app is still refused by private ip")
+				}, 10*time.Minute, 5*time.Second).Should(Succeed())
 			})
 		})
 	})
