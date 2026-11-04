@@ -16,7 +16,6 @@ import (
 	. "github.com/onsi/gomega/gexec"
 
 	"github.com/cloudfoundry/cf-acceptance-tests/helpers/app_helpers"
-	"github.com/cloudfoundry/cf-acceptance-tests/helpers/assets"
 	logshelper "github.com/cloudfoundry/cf-acceptance-tests/helpers/logs"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/matchers"
 	. "github.com/cloudfoundry/cf-acceptance-tests/helpers/random_name"
@@ -41,13 +40,11 @@ var _ = AppsDescribe("loggregator", func() {
 	BeforeEach(func() {
 		appName = CATSRandomName("APP")
 
-		Expect(cf.Cf("push",
+		Expect(cf.Cf(app_helpers.CatnipWithArgs(
 			appName,
-			"-b", Config.GetRubyBuildpackName(),
 			"-m", DEFAULT_MEMORY_LIMIT,
-			"-p", assets.NewAssets().LoggregatorLoadGenerator,
 			"-i", "2",
-		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
+		)...).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 
 	AfterEach(func() {

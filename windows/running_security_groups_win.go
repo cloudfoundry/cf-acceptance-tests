@@ -184,7 +184,6 @@ var _ = WindowsDescribe("WINDOWS: App Instance Networking", func() {
 
 			By("unbinding the wide-open security group")
 			unbindSecurityGroup(securityGroupName, orgName, spaceName)
-			restartClientApp(clientAppName)
 
 			By("restarting the app")
 			restartClientApp(clientAppName)

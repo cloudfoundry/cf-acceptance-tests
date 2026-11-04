@@ -3,6 +3,7 @@ package log_test
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"time"
@@ -56,6 +57,17 @@ var _ = Describe("Log", func() {
 	})
 
 	Describe("SleepHandler", func() {
+		It("returns a confirmation when logging starts", func() {
+			res, err := http.Get(fmt.Sprintf("%s/log/sleep/4", server.URL))
+			Expect(err).NotTo(HaveOccurred())
+			defer res.Body.Close()
+
+			Expect(res.StatusCode).To(Equal(http.StatusOK))
+			body, err := io.ReadAll(res.Body)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(string(body)).To(Equal("Muahaha... let's go. Waiting 0.000004 seconds between loglines. Logging 'Muahaha...' every time.\n"))
+		})
+
 		It("writes log output periodically", func() {
 			res, err := http.Get(fmt.Sprintf("%s/log/sleep/4", server.URL))
 			Expect(err).NotTo(HaveOccurred())
