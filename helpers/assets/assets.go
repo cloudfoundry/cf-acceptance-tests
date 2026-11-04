@@ -20,7 +20,6 @@ type Assets struct {
 	Java                       string
 	JavaSpringZip              string
 	JavaUnwriteableZip         string
-	LoggregatorLoadGenerator   string
 	LoggregatorLoadGeneratorGo string
 	Python                     string
 	Nginx                      string
@@ -72,7 +71,6 @@ func NewAssets() Assets {
 		Java:                       "assets/java",
 		JavaSpringZip:              "assets/java-spring/target/spring-boot-trivial-app-0.0.1.jar",
 		JavaUnwriteableZip:         "assets/java-unwriteable-dir/java-unwriteable-dir.jar",
-		LoggregatorLoadGenerator:   "assets/loggregator-load-generator",
 		LoggregatorLoadGeneratorGo: "assets/loggregator-load-generator-go",
 		Nginx:                      "assets/nginx",
 		NginxIPv6:                  "assets/nginx-ipv6",
