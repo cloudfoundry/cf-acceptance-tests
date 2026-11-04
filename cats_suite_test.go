@@ -122,6 +122,19 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 
 		err = windowsBuildCmd.Run()
 		Expect(err).NotTo(HaveOccurred())
+
+		loadGenBuildCmd := exec.Command("go", "build", "-o", "bin/loggregator-load-generator.exe")
+		loadGenBuildCmd.Dir = "assets/loggregator-load-generator-go"
+		loadGenBuildCmd.Env = append(os.Environ(),
+			"CGO_ENABLED=0",
+			"GOOS=windows",
+			"GOARCH=amd64",
+		)
+		loadGenBuildCmd.Stdout = GinkgoWriter
+		loadGenBuildCmd.Stderr = GinkgoWriter
+
+		err = loadGenBuildCmd.Run()
+		Expect(err).NotTo(HaveOccurred())
 	}
 
 	routingBuildCmd := exec.Command("go", "build", "-o", "bin/hello-routing")
