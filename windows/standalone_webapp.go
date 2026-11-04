@@ -31,7 +31,7 @@ var _ = WindowsDescribe("A standalone webapp", func() {
 			appName,
 			"-s", Config.GetWindowsStack(),
 			"-b", Config.GetBinaryBuildpackName(),
-			"-c", ".\\webapp.exe",
+			"-c", ".\\bin\\webapp.exe",
 			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-p", assets.NewAssets().WindowsWebapp,
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))

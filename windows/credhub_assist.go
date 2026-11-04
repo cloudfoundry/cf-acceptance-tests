@@ -168,7 +168,7 @@ cmd /C set
 						Body: `@echo off
 echo ---
 echo default_process_types:
-echo   web: webapp.exe
+echo   web: bin\webapp.exe
 `,
 					},
 				})

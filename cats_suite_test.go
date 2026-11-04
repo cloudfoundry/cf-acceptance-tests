@@ -135,6 +135,19 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 
 		err = loadGenBuildCmd.Run()
 		Expect(err).NotTo(HaveOccurred())
+
+		webappBuildCmd := exec.Command("go", "build", "-o", "bin/webapp.exe")
+		webappBuildCmd.Dir = "assets/webapp"
+		webappBuildCmd.Env = append(os.Environ(),
+			"CGO_ENABLED=0",
+			"GOOS=windows",
+			"GOARCH=amd64",
+		)
+		webappBuildCmd.Stdout = GinkgoWriter
+		webappBuildCmd.Stderr = GinkgoWriter
+
+		err = webappBuildCmd.Run()
+		Expect(err).NotTo(HaveOccurred())
 	}
 
 	routingBuildCmd := exec.Command("go", "build", "-o", "bin/hello-routing")

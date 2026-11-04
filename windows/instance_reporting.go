@@ -30,7 +30,7 @@ var _ = WindowsDescribe("Getting instance information", func() {
 			"-b", Config.GetBinaryBuildpackName(),
 			"-m", DEFAULT_WINDOWS_MEMORY_LIMIT,
 			"-p", assets.NewAssets().WindowsWebapp,
-			"-c", ".\\webapp.exe",
+			"-c", ".\\bin\\webapp.exe",
 		).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 	})
 

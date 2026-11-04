@@ -121,7 +121,7 @@ var _ = WindowsDescribe("Application Lifecycle", func() {
 			Expect(cf.Cf(
 				"push", appName,
 				"-p", assets.NewAssets().WindowsWebapp,
-				"-c", ".\\webapp.exe",
+				"-c", ".\\bin\\webapp.exe",
 				"-b", Config.GetBinaryBuildpackName(),
 			).Wait(Config.CfPushTimeoutDuration())).To(Exit(0))
 
