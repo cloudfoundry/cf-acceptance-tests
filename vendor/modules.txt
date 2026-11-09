@@ -1,4 +1,4 @@
-# code.cloudfoundry.org/archiver v0.94.0
+# code.cloudfoundry.org/archiver v0.95.0
 ## explicit; go 1.26.0
 code.cloudfoundry.org/archiver/extractor/test_helper
 # code.cloudfoundry.org/go-diodes v0.0.0-20260209061029-a81ffbc46978
@@ -71,7 +71,7 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/pprof v0.0.0-20261026192309-dbd0ed30aa88
+# github.com/google/pprof v0.0.0-20261102214848-0031fcd306b0
 ## explicit; go 1.26.0
 github.com/google/pprof/profile
 # github.com/gorilla/websocket v1.5.3
@@ -179,7 +179,7 @@ go.step.sm/crypto/mldsa
 go.step.sm/crypto/pemutil
 go.step.sm/crypto/randutil
 go.step.sm/crypto/x25519
-# go.yaml.in/yaml/v3 v3.0.5
+# go.yaml.in/yaml/v3 v3.0.6
 ## explicit; go 1.16
 go.yaml.in/yaml/v3
 # golang.org/x/crypto v0.58.0
@@ -200,7 +200,7 @@ golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 # golang.org/x/mod v0.42.0
 ## explicit; go 1.26.0
 golang.org/x/mod/semver
-# golang.org/x/net v0.61.0
+# golang.org/x/net v0.62.0
 ## explicit; go 1.26.0
 golang.org/x/net/html
 golang.org/x/net/html/atom
