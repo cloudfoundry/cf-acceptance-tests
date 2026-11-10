@@ -51,7 +51,7 @@ var _ = AppsDescribe("Readiness Healthcheck", func() {
 				return helpers.CurlApp(Config, appName, "/ready")
 			}, Config.DefaultTimeoutDuration()).Should(ContainSubstring("200 - ready"))
 
-			Expect(logs.Recent(appName).Wait()).To(Say("Container passed the readiness health check"))
+			Eventually(func() BufferProvider { return logs.Recent(appName).Wait() }, readinessHealthCheckTimeout).Should(Say("Container passed the readiness health check"))
 
 			Eventually(cf.Cf("events", appName)).Should(Say("app.process.ready"))
 
