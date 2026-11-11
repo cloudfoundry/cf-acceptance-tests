@@ -17,6 +17,7 @@ const (
 )
 
 type config struct {
+	WIF WIFConfig `json:"wif"`
 	ApiEndpoint *string `json:"api"`
 	AppsDomain  *string `json:"apps_domain"`
 	TCPDomain   *string `json:"tcp_domain"`
@@ -145,6 +146,19 @@ type config struct {
 
 	ReporterConfig *reporterConfig `json:"reporter_config"`
 }
+
+type WIFConfig struct {
+	Enabled bool `json:"enabled"`
+	Issuer string `json:"issuer"`
+	JWKSURI string `json:"jwks_uri"`
+	Audience string `json:"audience"`
+	CACert string `json:"ca_cert"`
+	RunningSecurityGroup string `json:"running_security_group"`
+}
+
+func (c config) GetWIFConfig() WIFConfig { return c.WIF }
+
+func ValidateWIF(c WIFConfig) error { return nil }
 
 type reporterConfig struct {
 	HoneyCombWriteKey string                 `json:"honeycomb_write_key"`
@@ -291,6 +305,7 @@ func NewConfig(path string) (*config, error) {
 
 func validateConfig(config *config) error {
 	var errs error
+	errs = errors.Join(errs, ValidateWIF(config.WIF))
 
 	err := validateAdminUser(config)
 	if err != nil {
