@@ -12,6 +12,14 @@ IN DEVELOPMENT
   "timeout_scale": 1,
   "eventually_polling_interval_ms": 250,
   "use_http": true,
+  "wif": {
+    "enabled": false,
+    "issuer": "https://uaa.DOMAIN.com/oauth/token",
+    "jwks_uri": "https://uaa.DOMAIN.com/token_keys",
+    "audience": "urn:cats:federation",
+    "ca_cert": "",
+    "running_security_group": ""
+  },
   "include_app_syslog_tcp": true,
   "include_apps": true,
   "comma_delim_asgs_enabled": false,

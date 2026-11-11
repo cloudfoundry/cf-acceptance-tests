@@ -51,7 +51,18 @@ func (w workload) run(mode string) map[string]any {
 			return 0
 		}
 		defer r.Body.Close()
-		io.Copy(io.Discard, io.LimitReader(r.Body, 64<<10))
+		var resource struct {
+			Authorized bool   `json:"authorized"`
+			Issuer     string `json:"issuer"`
+			Audience   string `json:"audience"`
+			Subject    string `json:"subject"`
+		}
+		if json.NewDecoder(io.LimitReader(r.Body, 64<<10)).Decode(&resource) == nil && r.StatusCode == 200 {
+			result["authorized"] = resource.Authorized
+			result["resource_issuer"] = resource.Issuer
+			result["resource_audience"] = resource.Audience
+			result["resource_subject"] = resource.Subject
+		}
 		return r.StatusCode
 	}
 	result["direct_resource_status"] = resourceStatus(token.AccessToken)

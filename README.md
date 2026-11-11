@@ -413,6 +413,55 @@ Test Group Name| Description
 
 ## Contributing
 
+### Cross-org synthetic workload identity federation
+
+The opt-in `[service_accounts]` WIF scenario creates two disposable organizations.
+Only the workload organization receives a service-account prefix. The other org
+hosts a synthetic STS and protected resource without a prefix or assigned account.
+Its push environment contains `TRUSTED_SERVICE_ACCOUNT_SUBJECT`, using the exact
+CAPI-returned `cf:service-account:<prefix>:<name>` identity. Trust also pins UAA's
+issuer, HTTPS JWKS endpoint and allowed federation audience.
+
+Two apps sharing the account obtain real UAA assertions, exchange them for an
+independent in-memory STS credential, and use that credential at the protected
+resource. A different account, default CAPI audience and unlisted resource are
+denied. UAA assertions cannot access the resource directly; STS credentials cannot
+access CAPI. Disable blocks fresh assertions and enable restores the full flow.
+JWTs and private keys remain inside the apps and are never returned in CATs results.
+
+Configure the optional `wif` object (disabled by default):
+
+* `enabled`: run this scenario; requires native service-account CLI commands,
+  prefix-at-create support, qualified Diego identities and CAPI-managed UAA clients.
+* `issuer`: expected UAA token issuer, from trusted deployment configuration.
+* `jwks_uri`: HTTPS UAA key endpoint reachable from STS containers.
+* `audience`: absolute URI already permitted by the operator's named UAA resource
+  policy selected by CAPI. The fixture never contacts this URI; it is an audience.
+* `ca_cert`: optional public PEM roots trusted for UAA, CAPI and application routes.
+  All in-app connections verify TLS regardless of CLI `skip_ssl_validation`.
+* `running_security_group`: optional comma-separated names of existing ASGs to bind
+  to the two disposable spaces before starting apps (UAA/CAPI/router connectivity).
+
+Run from the repository root with Go >=1.27.3, the custom CLI as `cf` on PATH and
+private `$CONFIG`. The repository CLI Makefile build supplies version metadata;
+a plain unversioned `go build` reports version0 and fails CATs' existing version check.
+
+```sh
+go run github.com/onsi/ginkgo/v2/ginkgo --focus='cross-org synthetic WIF' \
+  --fail-on-empty --no-color --silence-skips --json-report=/private/wif-report.json .
+```
+
+Check the JSON report for an actually passed scenario: an all-skipped run is not
+coverage. Do not enable HTTP traces for token-carrying app traffic. Generated push
+manifests contain public identity/trust configuration, not workload private keys.
+Normal cleanup deletes live apps/routes/accounts through org deletion; prefix and
+name reservations deliberately remain. Each run allocates one retained prefix.
+The scenario currently uses an admin for provisioning/lifecycle; it does not claim
+permission-matrix coverage. JWKS is loaded on STS startup; key rotation and retained
+credential behavior during disable require separate tests. The synthetic profile
+uses RS256 and treats azp as informational; it does not establish AWS/GCP/Azure
+compatibility or full RFC8693 support. STS keys exist only in process memory.
+
 This repository uses [go mod](https://golang.org/cmd/go/#hdr-Modules__module_versions__and_more)
 to manage `go` dependencies.
 

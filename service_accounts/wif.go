@@ -30,7 +30,7 @@ var _ = Describe("[service_accounts] cross-org synthetic WIF", Label("service-ac
 			Skip("wif.enabled is false")
 		}
 	})
-	It("exchanges only the trusted org-qualified identity for cross-org resource access", func() {
+	DescribeTable("exchanges only trusted assertions for cross-org resource access", func(boundary string) {
 		settings := Config.GetWIFConfig()
 		b := make([]byte, 8)
 		_, err := rand.Read(b)
@@ -114,6 +114,8 @@ var _ = Describe("[service_accounts] cross-org synthetic WIF", Label("service-ac
 			By("pushing the STS in the unprefixed org with the qualified account subject in its environment")
 			push(stsOrg, stsApp, map[string]string{"WIF_MODE": "sts", "TRUSTED_SERVICE_ACCOUNT_SUBJECT": subject, "TRUSTED_ISSUER": settings.Issuer, "TRUSTED_JWKS_URI": settings.JWKSURI, "TRUSTED_FEDERATION_AUDIENCE": settings.Audience, "TRUSTED_CA_CERT": settings.CACert})
 			command("start", stsApp)
+			stsGUID := strings.TrimSpace(string(command("app", stsApp, "--guid").Out.Contents()))
+			Expect(api("/v3/apps/" + stsGUID + "/relationships/service_account")["data"]).To(BeNil())
 			for _, item := range []struct{ name, account string }{{app, account}, {secondApp, account}, {wrongApp, wrongAccount}} {
 				push(workOrg, item.name, map[string]string{"WIF_MODE": "workload", "STS_URL": stsURL, "CAPI_URL": "https://" + Config.GetApiEndpoint(), "TRUSTED_FEDERATION_AUDIENCE": settings.Audience, "TRUSTED_CA_CERT": settings.CACert})
 				command("bind-service-account", item.name, item.account)
@@ -146,19 +148,30 @@ var _ = Describe("[service_accounts] cross-org synthetic WIF", Label("service-ac
 				Expect(r["token_status"]).To(BeEquivalentTo(200))
 				Expect(r["exchange_status"]).To(BeEquivalentTo(200))
 				Expect(r["resource_status"]).To(BeEquivalentTo(200))
+				Expect(r["authorized"]).To(BeTrue())
+				Expect(r["resource_subject"]).To(Equal(subject))
+				Expect(r["resource_issuer"]).To(Equal("urn:cats:sts"))
+				Expect(r["resource_issuer"]).NotTo(Equal(settings.Issuer))
+				Expect(r["resource_audience"]).To(Equal("urn:cats:resource"))
+				Expect(r["resource_audience"]).NotTo(Equal(settings.Audience))
 				Expect(r["direct_resource_status"]).To(BeEquivalentTo(401))
 				Expect(r["exchanged_capi_status"]).To(BeEquivalentTo(401))
 				Expect(r["client_id"]).To(Equal(subject))
 			}
-			By("denying a valid token from another account in the same org")
-			r := probe(wrongApp, "exchange")
-			Expect(r["token_status"]).To(BeEquivalentTo(200))
-			Expect(r["exchange_status"]).To(BeEquivalentTo(401))
-			Expect(r["resource_status"]).To(BeNil())
-			By("denying the default CAPI audience and unlisted resource")
-			r = probe(app, "default-audience")
-			Expect(r["token_status"]).To(BeEquivalentTo(200))
-			Expect(r["exchange_status"]).To(BeEquivalentTo(401))
+			var r map[string]any
+			if boundary == "subject" {
+				By("denying a valid token from another account in the same org")
+				r = probe(wrongApp, "exchange")
+				Expect(r["token_status"]).To(BeEquivalentTo(200))
+				Expect(r["exchange_status"]).To(BeEquivalentTo(401))
+				Expect(r["resource_status"]).To(BeNil())
+			} else {
+				By("denying the default CAPI audience")
+				r = probe(app, "default-audience")
+				Expect(r["token_status"]).To(BeEquivalentTo(200))
+				Expect(r["exchange_status"]).To(BeEquivalentTo(401))
+			}
+			By("denying unlisted resources at UAA")
 			r = probe(app, "unlisted")
 			Expect(r["token_status"]).To(BeEquivalentTo(400))
 			Expect(r["token_error"]).To(Equal("invalid_target"))
@@ -171,5 +184,5 @@ var _ = Describe("[service_accounts] cross-org synthetic WIF", Label("service-ac
 			Expect(r["resource_status"]).To(BeEquivalentTo(200))
 			Expect(api("/v3/organizations?names=" + stsOrg)["resources"].([]any)[0].(map[string]any)["service_account_prefix"]).To(BeNil())
 		})
-	})
+	}, Entry("subject trust boundary", "subject"), Entry("audience trust boundary", "audience"))
 })

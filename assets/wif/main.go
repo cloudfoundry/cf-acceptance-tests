@@ -33,7 +33,7 @@ func httpClient(certificates []tls.Certificate) *http.Client {
 func loadKeys(client *http.Client, endpoint string) (map[string]*rsa.PublicKey, error) {
 	r, err := client.Get(endpoint)
 	if err != nil {
-		return nil, errors.New("JWKS fetch failed")
+		return nil, fmt.Errorf("JWKS fetch failed: %w", err)
 	}
 	defer r.Body.Close()
 	if r.StatusCode != 200 {

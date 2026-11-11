@@ -8,4 +8,5 @@ export CATS_ROOT
 pushd "${CATS_ROOT}" > /dev/null
   echo "Using $(go run github.com/onsi/ginkgo/v2/ginkgo version)"
   go run github.com/onsi/ginkgo/v2/ginkgo -r -p --randomize-all --randomize-suites --fail-on-pending --keep-going --race helpers assets/hello-routing assets/catnip
+  (cd assets/wif && go test -race ./...)
 popd > /dev/null
