@@ -79,7 +79,19 @@ func loadKeys(client *http.Client, endpoint string) (map[string]*rsa.PublicKey, 
 
 func main() {
 	var handler http.Handler
-	if os.Getenv("WIF_MODE") == "sts" {
+	if os.Getenv("WIF_MODE") == "route" {
+		handler = routeProbe{Targets: map[string]string{"account": os.Getenv("ACCOUNT_ROUTE_URL"), "space": os.Getenv("SPACE_ROUTE_URL")}, SpoofedSAN: os.Getenv("SPOOFED_ACCOUNT_SAN"), Client: func(sent bool) *http.Client {
+			var certs []tls.Certificate
+			if sent {
+				cert, err := tls.LoadX509KeyPair(os.Getenv("CF_INSTANCE_CERT"), os.Getenv("CF_INSTANCE_KEY"))
+				if err != nil {
+					panic("credentials unavailable")
+				}
+				certs = []tls.Certificate{cert}
+			}
+			return httpClient(certs)
+		}}.handler()
+	} else if os.Getenv("WIF_MODE") == "sts" {
 		keys, err := loadKeys(httpClient(nil), os.Getenv("TRUSTED_JWKS_URI"))
 		if err != nil {
 			panic(err)
