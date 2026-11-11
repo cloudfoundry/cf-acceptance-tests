@@ -78,6 +78,12 @@ func loadKeys(client *http.Client, endpoint string) (map[string]*rsa.PublicKey, 
 }
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "identity" {
+		leaf := currentLeaf()
+		b, _ := json.Marshal(identitySummary(os.Getenv("VCAP_SERVICE_ACCOUNT"), leaf))
+		fmt.Println("CATS_IDENTITY " + string(b))
+		return
+	}
 	var handler http.Handler
 	if os.Getenv("WIF_MODE") == "route" {
 		handler = routeProbe{Targets: map[string]string{"account": os.Getenv("ACCOUNT_ROUTE_URL"), "space": os.Getenv("SPACE_ROUTE_URL")}, SpoofedSAN: os.Getenv("SPOOFED_ACCOUNT_SAN"), Client: func(sent bool) *http.Client {
@@ -103,6 +109,9 @@ func main() {
 		handler = newSTS(trust{Issuer: os.Getenv("TRUSTED_ISSUER"), Audience: os.Getenv("TRUSTED_FEDERATION_AUDIENCE"), Subject: os.Getenv("TRUSTED_SERVICE_ACCOUNT_SUBJECT"), ResourceAudience: "urn:cats:resource", STSIssuer: "urn:cats:sts", Keys: keys}, key)
 	} else {
 		mux := http.NewServeMux()
+		mux.HandleFunc("GET /identity", func(w http.ResponseWriter, r *http.Request) {
+			respond(w, identitySummary(os.Getenv("VCAP_SERVICE_ACCOUNT"), currentLeaf()))
+		})
 		mux.HandleFunc("GET /run", func(w http.ResponseWriter, r *http.Request) {
 			// Reload credentials and platform discovery on every request.
 			var identity struct {
@@ -138,6 +147,15 @@ func main() {
 	if err := server.ListenAndServe(); err != nil {
 		panic("HTTP server stopped")
 	}
+}
+
+func currentLeaf() *x509.Certificate {
+	cert, err := tls.LoadX509KeyPair(os.Getenv("CF_INSTANCE_CERT"), os.Getenv("CF_INSTANCE_KEY"))
+	if err != nil || len(cert.Certificate) == 0 {
+		return nil
+	}
+	leaf, _ := x509.ParseCertificate(cert.Certificate[0])
+	return leaf
 }
 
 type endpointTransport struct {
