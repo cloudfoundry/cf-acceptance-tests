@@ -442,6 +442,34 @@ Configure the optional `wif` object (disabled by default):
 * `running_security_group`: optional comma-separated names of existing ASGs to bind
   to the two disposable spaces before starting apps (UAA/CAPI/router connectivity).
 
+#### Service-account identity-aware routing
+
+Set `wif.route_tests: true` and `include_identity_aware_routing: true` to extend
+the existing identity-aware routing group with account-source coverage. This is
+independent of `wif.enabled`: token-exchange configuration is not required for
+certificate-only route tests. The `wif.ca_cert` and `wif.running_security_group`
+settings provide public TLS trust and optional existing ASG bindings for the probe.
+
+`identity_aware_domain` must already be configured for GoRouter mTLS enforcement,
+have `route_policies_scope: any`, and support verified TLS/DNS for test hosts and
+single-level private subdomains. Each independent scenario creates its own org,
+prefix, two entitled spaces, four caller apps, routes and private space-scoped
+domain. Existing domains and policies are never modified.
+
+```sh
+go run github.com/onsi/ginkgo/v2/ginkgo --procs=2 --randomize-all \
+  --focus='Service-account route authorization' --fail-on-empty --no-color \
+  --silence-skips --json-report=/private/account-routing-report.json .
+```
+
+The account-only route allows both shared-account apps; wrong-account and unbound
+apps receive403 even with forged XFCC. Missing certificates fail the TLS handshake.
+Account disable does not remove certificate-only access. Policy removal restores
+default denial. A private space-scoped domain denies a same-account caller in the
+other entitled space. Probe destinations are fixed at push time, server TLS is
+verified, redirects refused, and no bearer token is attached. Apps/routes/domain
+and org/account resources are removed, retaining only intentional reservations.
+
 Run from the repository root with Go >=1.27.3, the custom CLI as `cf` on PATH and
 private `$CONFIG`. The repository CLI Makefile build supplies version metadata;
 a plain unversioned `go build` reports version0 and fails CATs' existing version check.

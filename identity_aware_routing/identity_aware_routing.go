@@ -36,6 +36,16 @@ var _ = IdentityAwareRoutingDescribe("Identity-Aware Routing", func() {
 
 	BeforeEach(func() {
 		identityAwareDomain = Config.GetIdentityAwareDomain()
+		// Existing proxy callers also need router egress on restricted test foundations.
+		if groups := Config.GetWIFConfig().RunningSecurityGroup; groups != "" {
+			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.DefaultTimeoutDuration(), func() {
+				for _, group := range strings.Split(groups, ",") {
+					if group != "" {
+						Expect(cf.Cf("bind-security-group", group, TestSetup.RegularUserContext().Org, "--space", TestSetup.RegularUserContext().Space, "--lifecycle", "running").Wait(Config.DefaultTimeoutDuration())).To(Exit(0))
+					}
+				}
+			})
+		}
 
 		backendHostName = random_name.CATSRandomName("HOST")
 		appNameFrontend = random_name.CATSRandomName("APP-FRONT")

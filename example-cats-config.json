@@ -14,6 +14,7 @@ IN DEVELOPMENT
   "use_http": true,
   "wif": {
     "enabled": false,
+    "route_tests": false,
     "issuer": "https://uaa.DOMAIN.com/oauth/token",
     "jwks_uri": "https://uaa.DOMAIN.com/token_keys",
     "audience": "urn:cats:federation",
