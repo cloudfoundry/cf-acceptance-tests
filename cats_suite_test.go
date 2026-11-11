@@ -88,7 +88,7 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	fmt.Fprintf(os.Stdout, "Using Eventually polling interval %s\n", Config.EventuallyPollingIntervalDuration())
 
 	Expect(ParseRawCliVersionString(installedVersion).AtLeast(ParseRawCliVersionString(minCliVersion))).To(BeTrue(), "CLI version "+minCliVersion+" is required")
-	if Config.GetWIFConfig().Enabled || Config.GetWIFConfig().RouteTests {
+	if Config.GetWIFConfig().Enabled || Config.GetWIFConfig().RouteTests || Config.GetWIFConfig().RuntimeTests {
 		for _, name := range []string{"create-service-account", "bind-service-account", "disable-service-account", "create-org"} {
 			Expect(cf.Cf("help", name).Wait()).To(Exit(0), "WIF requires a CLI with native service account commands")
 		}

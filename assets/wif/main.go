@@ -14,6 +14,7 @@ import (
 	"math/big"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -109,6 +110,19 @@ func main() {
 		handler = newSTS(trust{Issuer: os.Getenv("TRUSTED_ISSUER"), Audience: os.Getenv("TRUSTED_FEDERATION_AUDIENCE"), Subject: os.Getenv("TRUSTED_SERVICE_ACCOUNT_SUBJECT"), ResourceAudience: "urn:cats:resource", STSIssuer: "urn:cats:sts", Keys: keys}, key)
 	} else {
 		mux := http.NewServeMux()
+		mux.HandleFunc("GET /staging", func(w http.ResponseWriter, r *http.Request) {
+			data, err := os.ReadFile("staging-identity.txt")
+			if err != nil {
+				deny(w, 500, "staging_evidence_missing")
+				return
+			}
+			var result map[string]any
+			if json.Unmarshal([]byte(strings.TrimPrefix(strings.TrimSpace(string(data)), "CATS_IDENTITY ")), &result) != nil {
+				deny(w, 500, "staging_evidence_invalid")
+				return
+			}
+			respond(w, result)
+		})
 		mux.HandleFunc("GET /identity", func(w http.ResponseWriter, r *http.Request) {
 			respond(w, identitySummary(os.Getenv("VCAP_SERVICE_ACCOUNT"), currentLeaf()))
 		})

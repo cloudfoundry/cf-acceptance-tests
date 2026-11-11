@@ -148,6 +148,7 @@ type config struct {
 }
 
 type WIFConfig struct {
+	RuntimeTests         bool   `json:"runtime_tests"`
 	RouteTests           bool   `json:"route_tests"`
 	Enabled              bool   `json:"enabled"`
 	Issuer               string `json:"issuer"`
