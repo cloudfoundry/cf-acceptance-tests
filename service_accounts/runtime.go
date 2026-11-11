@@ -144,7 +144,8 @@ var _ = Describe("[service_accounts] bearer and runtime identity", Label("servic
 				By("proving default bearer profile and roleless isolation for both apps")
 				for _, app := range []string{one, two} {
 					identity := probe(app, "/identity")
-					r := probe(app, "/run?mode=bearer")
+					var r map[string]any
+					Eventually(func() any { r = probe(app, "/run?mode=bearer"); return r["token_status"] }, Config.DefaultTimeoutDuration(), time.Second).Should(BeEquivalentTo(200), "UAA issuance must become available")
 					Expect(r["token_status"]).To(BeEquivalentTo(200))
 					Expect(r["capi_status"]).To(BeEquivalentTo(200))
 					Expect(r["visible_apps"]).To(BeEmpty())
@@ -205,6 +206,21 @@ var _ = Describe("[service_accounts] bearer and runtime identity", Label("servic
 					return "missing"
 				}, Config.CfPushTimeoutDuration(), time.Second).Should(Equal("SUCCEEDED"))
 				Eventually(func() string { return string(command("logs", one, "--recent").Out.Contents()) }, Config.DefaultTimeoutDuration(), time.Second).Should(ContainSubstring(`"client_id":"cf:service-account:` + id + `:replacement"`))
+				logs := string(command("logs", one, "--recent").Out.Contents())
+				var taskIdentity map[string]any
+				for _, line := range strings.Split(logs, "\n") {
+					if index := strings.Index(line, "CATS_IDENTITY "); index >= 0 {
+						var candidate map[string]any
+						if json.Unmarshal([]byte(strings.TrimSpace(line[index+len("CATS_IDENTITY "):])), &candidate) == nil && candidate["client_id"] == "cf:service-account:"+id+":replacement" {
+							taskIdentity = candidate
+						}
+					}
+				}
+				Expect(taskIdentity).NotTo(BeNil())
+				Expect(taskIdentity["dns_sans"]).To(ContainElement("replacement." + id + ".svc.identity"))
+				Expect(taskIdentity["app_guid"]).To(Equal(guids[one]))
+				Expect(taskIdentity["org_guid"]).To(Equal(orgGUID))
+				AddReportEntry("task desired identity", taskIdentity)
 				command("restart", one)
 				Expect(probe(one, "/identity")["client_id"]).To(Equal("cf:service-account:" + id + ":replacement"))
 				Expect(probe(one, "/identity")["dns_sans"]).To(ContainElement("replacement." + id + ".svc.identity"))

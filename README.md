@@ -442,6 +442,31 @@ Configure the optional `wif` object (disabled by default):
 * `running_security_group`: optional comma-separated names of existing ASGs to bind
   to the two disposable spaces before starting apps (UAA/CAPI/router connectivity).
 
+#### Service-account bearer and runtime identity
+
+Set `wif.runtime_tests: true` to run `[service_accounts] bearer and runtime identity`.
+This selection is independent of synthetic WIF and identity-aware routing. Supply
+the trusted `wif.issuer`, public `wif.ca_cert` roots and any required existing ASGs
+through `wif.running_security_group`. HTTPS CAPI and UAA must be reachable from
+apps. Task creation and administrator custom buildpack upload must be supported.
+
+Two independent scenarios exercise:
+
+* Default bearer tokens without cnf, matching instance/app/space/org attribution,
+  issuer, five-minute/leaf-expiry bounds and HTTPS CAPI access without a client
+  certificate. Roleless accounts see no apps; CLI SpaceAuditor grants expose only
+  intended spaces equally to both callers sharing the account.
+* Actual staging observation using a disposable custom buildpack (no account
+  discovery or account SAN), running launch snapshots through unbind/rebind, new
+  task identity from desired assignment, restart picking up replacement identity,
+  and unbind/restart removing account discovery/SAN. Only public identity evidence
+  is retained in the droplet or task logs; certificates/keys/tokens are not copied.
+
+Run with `--focus='bearer and runtime identity'` and a private JSON report, or
+select all account journeys with their appropriate config toggles. Each scenario
+deletes its apps, org/accounts and custom buildpack; intentional reservations stay.
+Normal certificate lifetime checks do not prove the near-expiry leaf-cap edge case.
+
 #### Service-account identity-aware routing
 
 Set `wif.route_tests: true` and `include_identity_aware_routing: true` to extend
