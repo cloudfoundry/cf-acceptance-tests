@@ -159,6 +159,7 @@ var _ = IdentityAwareRoutingDescribe("Service-account route authorization", func
 				noCert := probe(unbound, "account", "no-cert")
 				Expect(noCert["tls_error"]).To(BeTrue())
 				AddReportEntry("no-certificate", noCert)
+			} else if boundary == "disable" {
 				By("preserving certificate-only route access after disabling token issuance")
 				command("disable-service-account", "worker")
 				status(one, "account", "normal", 200)
@@ -177,5 +178,5 @@ var _ = IdentityAwareRoutingDescribe("Service-account route authorization", func
 			status(one, "account", "normal", 403)
 			status(two, "account", "normal", 403)
 		})
-	}, Entry("account identity and disable semantics", "account"), Entry("same-account space domain restriction", "space"))
+	}, Entry("account-only policy authorizes matching certificates", "account"), Entry("disabling tokens preserves certificate route access", "disable"), Entry("same-account space domain restriction", "space"))
 })

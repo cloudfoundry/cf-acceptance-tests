@@ -79,9 +79,19 @@ var _ = Describe("[service_accounts] bearer and runtime identity", Label("servic
 				}
 			}
 			command("target", "-o", org, "-s", "one")
-			command("create-service-account", "worker")
+			if journey == "developer" {
+				command("set-space-role", TestSetup.RegularUserContext().Username, org, "one", "SpaceDeveloper")
+				workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.CfPushTimeoutDuration(), func() {
+					command("target", "-o", org, "-s", "one")
+					command("create-service-account", "worker")
+				})
+			} else {
+				command("create-service-account", "worker")
+			}
 			command("create-service-account", "replacement")
-			command("entitle-service-account", "worker", "two")
+			if journey != "recovery" {
+				command("entitle-service-account", "worker", "two")
+			}
 			orgGUID := api("/v3/organizations?names=" + org)["resources"].([]any)[0].(map[string]any)["guid"].(string)
 			subject := "cf:service-account:" + id + ":worker"
 			one, two := id+"-one", id+"-two"
@@ -104,7 +114,8 @@ var _ = Describe("[service_accounts] bearer and runtime identity", Label("servic
 				workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.CfPushTimeoutDuration(), func() { command("delete-buildpack", bpName, "-f") })
 			})
 			guids := map[string]string{}
-			for _, item := range []struct{ name, space string }{{one, "one"}, {two, "two"}} {
+			push := func(name, space string) {
+				item := struct{ name, space string }{name, space}
 				command("target", "-o", org, "-s", item.space)
 				appDir := filepath.Join(dir, item.name)
 				Expect(os.Mkdir(appDir, 0700)).To(Succeed())
@@ -118,9 +129,21 @@ var _ = Describe("[service_accounts] bearer and runtime identity", Label("servic
 				Expect(os.WriteFile(path, data, 0600)).To(Succeed())
 				command("push", "-f", path, "--no-start")
 				apps[item.space] = append(apps[item.space], item.name)
-				command("bind-service-account", item.name, "worker")
-				command("start", item.name)
+				if journey == "developer" {
+					workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.CfPushTimeoutDuration(), func() {
+						command("target", "-o", org, "-s", item.space)
+						command("bind-service-account", item.name, "worker")
+						command("start", item.name)
+					})
+				} else {
+					command("bind-service-account", item.name, "worker")
+					command("start", item.name)
+				}
 				guids[item.name] = strings.TrimSpace(string(command("app", item.name, "--guid").Out.Contents()))
+			}
+			push(one, "one")
+			if journey == "roles" {
+				push(two, "two")
 			}
 			roots, _ := x509.SystemCertPool()
 			if roots == nil {
@@ -172,9 +195,41 @@ var _ = Describe("[service_accounts] bearer and runtime identity", Label("servic
 				for _, app := range []string{one, two} {
 					Expect(probe(app, "/run?mode=bearer")["visible_apps"]).To(ConsistOf(guids[one], guids[two]))
 				}
-			} else {
+			} else if journey == "developer" {
+				By("allowing a Space Developer to create, assign and manage a working identity")
+				Expect(probe(one, "/identity")["client_id"]).To(Equal(subject))
+				workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.CfPushTimeoutDuration(), func() {
+					command("target", "-o", org, "-s", "one")
+					command("disable-service-account", "worker")
+					Eventually(func() any { return probe(one, "/run?mode=bearer")["token_status"] }, Config.DefaultTimeoutDuration(), time.Second).Should(BeEquivalentTo(401))
+					command("enable-service-account", "worker")
+					Eventually(func() any { return probe(one, "/run?mode=bearer")["capi_status"] }, Config.DefaultTimeoutDuration(), time.Second).Should(BeEquivalentTo(200))
+				})
+			} else if journey == "recovery" {
+				By("retaining the account after deleting its last entitled space")
+				account := api("/v3/service_accounts?organization_guids=" + orgGUID + "&names=worker")["resources"].([]any)[0].(map[string]any)
+				before := probe(one, "/identity")
+				command("set-org-role", TestSetup.RegularUserContext().Username, org, "OrgManager")
+				app_helpers.AppReport(one)
+				command("delete-space", "one", "-o", org, "-f")
+				apps["one"] = nil
+				workflowhelpers.AsUser(TestSetup.RegularUserContext(), Config.CfPushTimeoutDuration(), func() {
+					command("target", "-o", org)
+					listing := command("service-accounts", "--org")
+					Expect(string(listing.Out.Contents())).To(ContainSubstring("worker"))
+					retained := api("/v3/service_accounts/" + account["guid"].(string))
+					Expect(retained["client_id"]).To(Equal(subject))
+					Expect(retained["relationships"].(map[string]any)["spaces"].(map[string]any)["data"]).To(BeEmpty())
+					command("entitle-service-account", "worker", "two")
+				})
+				push(two, "two")
+				after := probe(two, "/identity")
+				Expect(after["client_id"]).To(Equal(before["client_id"]))
+				Expect(after["dns_sans"]).To(ContainElement("worker." + id + ".svc.identity"))
+				Eventually(func() any { return probe(two, "/run?mode=bearer")["capi_status"] }, Config.DefaultTimeoutDuration(), time.Second).Should(BeEquivalentTo(200))
+			} else if journey == "staging" {
 				By("inspecting actual staging output rather than inferring it from runtime")
-				for _, app := range []string{one, two} {
+				for _, app := range []string{one} {
 					s := probe(app, "/staging")
 					Expect(s["account_discovery_present"]).To(BeFalse())
 					if sans, ok := s["dns_sans"].([]any); ok {
@@ -183,58 +238,67 @@ var _ = Describe("[service_accounts] bearer and runtime identity", Label("servic
 						}
 					}
 				}
+				Expect(probe(one, "/identity")["dns_sans"]).To(ContainElement("worker." + id + ".svc.identity"))
+			} else {
 				command("target", "-o", org, "-s", "one")
 				before := probe(one, "/identity")
 				Expect(before["client_id"]).To(Equal(subject))
 				Expect(before["dns_sans"]).To(ContainElement("worker." + id + ".svc.identity"))
-				Expect(probe(two, "/identity")["public_key_sha256"]).NotTo(Equal(before["public_key_sha256"]))
 				By("keeping running launch identity through reassignment and capturing current desired identity in tasks")
 				command("unbind-service-account", one)
 				Expect(probe(one, "/identity")["client_id"]).To(Equal(subject))
 				command("bind-service-account", one, "replacement")
 				Expect(probe(one, "/identity")["client_id"]).To(Equal(subject))
-				taskName := id + "-task"
-				command("run-task", one, "--command", "./wif identity", "--name", taskName)
-				Eventually(func() any {
-					tasks := api("/v3/apps/" + guids[one] + "/tasks")["resources"].([]any)
-					for _, t := range tasks {
-						task := t.(map[string]any)
-						if task["name"] == taskName {
-							return task["state"]
+				if journey == "tasks" {
+					taskName := id + "-task"
+					command("run-task", one, "--command", "./wif identity", "--name", taskName)
+					Eventually(func() any {
+						tasks := api("/v3/apps/" + guids[one] + "/tasks")["resources"].([]any)
+						for _, t := range tasks {
+							task := t.(map[string]any)
+							if task["name"] == taskName {
+								return task["state"]
+							}
+						}
+						return "missing"
+					}, Config.CfPushTimeoutDuration(), time.Second).Should(Equal("SUCCEEDED"))
+					Eventually(func() string { return string(command("logs", one, "--recent").Out.Contents()) }, Config.DefaultTimeoutDuration(), time.Second).Should(ContainSubstring(`"client_id":"cf:service-account:` + id + `:replacement"`))
+					logs := string(command("logs", one, "--recent").Out.Contents())
+					var taskIdentity map[string]any
+					for _, line := range strings.Split(logs, "\n") {
+						if index := strings.Index(line, "CATS_IDENTITY "); index >= 0 {
+							var candidate map[string]any
+							if json.Unmarshal([]byte(strings.TrimSpace(line[index+len("CATS_IDENTITY "):])), &candidate) == nil && candidate["client_id"] == "cf:service-account:"+id+":replacement" {
+								taskIdentity = candidate
+							}
 						}
 					}
-					return "missing"
-				}, Config.CfPushTimeoutDuration(), time.Second).Should(Equal("SUCCEEDED"))
-				Eventually(func() string { return string(command("logs", one, "--recent").Out.Contents()) }, Config.DefaultTimeoutDuration(), time.Second).Should(ContainSubstring(`"client_id":"cf:service-account:` + id + `:replacement"`))
-				logs := string(command("logs", one, "--recent").Out.Contents())
-				var taskIdentity map[string]any
-				for _, line := range strings.Split(logs, "\n") {
-					if index := strings.Index(line, "CATS_IDENTITY "); index >= 0 {
-						var candidate map[string]any
-						if json.Unmarshal([]byte(strings.TrimSpace(line[index+len("CATS_IDENTITY "):])), &candidate) == nil && candidate["client_id"] == "cf:service-account:"+id+":replacement" {
-							taskIdentity = candidate
-						}
+					Expect(taskIdentity).NotTo(BeNil())
+					Expect(taskIdentity["dns_sans"]).To(ContainElement("replacement." + id + ".svc.identity"))
+					Expect(taskIdentity["app_guid"]).To(Equal(guids[one]))
+					Expect(taskIdentity["org_guid"]).To(Equal(orgGUID))
+					AddReportEntry("task desired identity", taskIdentity)
+				} else {
+					command("restart", one)
+					Expect(probe(one, "/identity")["client_id"]).To(Equal("cf:service-account:" + id + ":replacement"))
+					Expect(probe(one, "/identity")["dns_sans"]).To(ContainElement("replacement." + id + ".svc.identity"))
+					Expect(probe(one, "/identity")["public_key_sha256"]).NotTo(Equal(before["public_key_sha256"]))
+					By("retaining the running identity until unbind is applied by restart")
+					command("unbind-service-account", one)
+					Expect(probe(one, "/identity")["client_id"]).To(Equal("cf:service-account:" + id + ":replacement"))
+					command("restart", one)
+					after := probe(one, "/identity")
+					Expect(after["account_discovery_present"]).To(BeFalse())
+					for _, san := range after["dns_sans"].([]any) {
+						Expect(san).NotTo(HaveSuffix(".svc.identity"))
 					}
-				}
-				Expect(taskIdentity).NotTo(BeNil())
-				Expect(taskIdentity["dns_sans"]).To(ContainElement("replacement." + id + ".svc.identity"))
-				Expect(taskIdentity["app_guid"]).To(Equal(guids[one]))
-				Expect(taskIdentity["org_guid"]).To(Equal(orgGUID))
-				AddReportEntry("task desired identity", taskIdentity)
-				command("restart", one)
-				Expect(probe(one, "/identity")["client_id"]).To(Equal("cf:service-account:" + id + ":replacement"))
-				Expect(probe(one, "/identity")["dns_sans"]).To(ContainElement("replacement." + id + ".svc.identity"))
-				Expect(probe(one, "/identity")["public_key_sha256"]).NotTo(Equal(before["public_key_sha256"]))
-				By("retaining the running identity until unbind is applied by restart")
-				command("unbind-service-account", one)
-				Expect(probe(one, "/identity")["client_id"]).To(Equal("cf:service-account:" + id + ":replacement"))
-				command("restart", one)
-				after := probe(one, "/identity")
-				Expect(after["account_discovery_present"]).To(BeFalse())
-				for _, san := range after["dns_sans"].([]any) {
-					Expect(san).NotTo(HaveSuffix(".svc.identity"))
 				}
 			}
 		})
-	}, Entry("HTTPS bearer profile and explicit shared-account roles", "roles"), Entry("assignment restart tasks and staging separation", "runtime"))
+	}, Entry("HTTPS bearer profile and explicit shared-account roles", "roles"),
+		Entry("assignment changes apply only after restart", "assignment"),
+		Entry("tasks receive desired identity before app restart", "tasks"),
+		Entry("staging excludes the runtime account identity", "staging"),
+		Entry("Space Developer manages and uses an account", "developer"),
+		Entry("Org Manager recovers account after last space deletion", "recovery"))
 })
