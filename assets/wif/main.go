@@ -128,7 +128,7 @@ func main() {
 				return
 			}
 			mode := r.URL.Query().Get("mode")
-			if mode != "exchange" && mode != "default-audience" && mode != "unlisted" {
+			if mode != "exchange" && mode != "default-audience" && mode != "unlisted" && mode != "bearer" {
 				deny(w, 400, "unsupported_mode")
 				return
 			}

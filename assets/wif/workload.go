@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 type workload struct {
@@ -14,12 +16,12 @@ type workload struct {
 
 func (w workload) run(mode string) map[string]any {
 	result := map[string]any{}
-	if mode != "exchange" && mode != "default-audience" && mode != "unlisted" {
+	if mode != "exchange" && mode != "default-audience" && mode != "unlisted" && mode != "bearer" {
 		result["error"] = "unsupported_mode"
 		return result
 	}
 	form := url.Values{"grant_type": {"client_credentials"}, "client_id": {w.ClientID}, "token_format": {"jwt"}}
-	if mode != "default-audience" {
+	if mode != "default-audience" && mode != "bearer" {
 		resource := w.Resource
 		if mode == "unlisted" {
 			resource = "urn:cats:unlisted"
@@ -43,6 +45,49 @@ func (w workload) run(mode string) map[string]any {
 		return result
 	}
 	// The UAA token stays inside this process; never return it or its raw body.
+	if mode == "bearer" {
+		parts := strings.Split(token.AccessToken, ".")
+		if len(parts) != 3 {
+			result["error"] = "invalid_jwt"
+			return result
+		}
+		payload, err := base64.RawURLEncoding.DecodeString(parts[1])
+		if err != nil {
+			result["error"] = "invalid_jwt"
+			return result
+		}
+		var claims map[string]any
+		if json.Unmarshal(payload, &claims) != nil {
+			result["error"] = "invalid_jwt"
+			return result
+		}
+		for _, key := range []string{"sub", "iss", "aud", "iat", "exp", "app_guid", "space_guid", "org_guid", "cf_instance_guid"} {
+			result[key] = claims[key]
+		}
+		_, result["cnf_present"] = claims["cnf"]
+		req, _ := http.NewRequest("GET", w.CAPITarget+"/v3/apps?per_page=500", nil)
+		req.Header.Set("Authorization", "Bearer "+token.AccessToken)
+		api, err := w.Client.Do(req)
+		if err != nil {
+			result["error"] = "capi_transport"
+			return result
+		}
+		defer api.Body.Close()
+		result["capi_status"] = api.StatusCode
+		var apps struct {
+			Resources []struct {
+				GUID string `json:"guid"`
+			} `json:"resources"`
+		}
+		if json.NewDecoder(io.LimitReader(api.Body, 1<<20)).Decode(&apps) == nil {
+			guids := []string{}
+			for _, app := range apps.Resources {
+				guids = append(guids, app.GUID)
+			}
+			result["visible_apps"] = guids
+		}
+		return result
+	}
 	resourceStatus := func(bearer string) int {
 		req, _ := http.NewRequest("GET", w.STSURL+"/resource", nil)
 		req.Header.Set("Authorization", "Bearer "+bearer)
