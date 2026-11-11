@@ -17,11 +17,11 @@ const (
 )
 
 type config struct {
-	WIF WIFConfig `json:"wif"`
-	ApiEndpoint *string `json:"api"`
-	AppsDomain  *string `json:"apps_domain"`
-	TCPDomain   *string `json:"tcp_domain"`
-	UseHttp     *bool   `json:"use_http"`
+	WIF         WIFConfig `json:"wif"`
+	ApiEndpoint *string   `json:"api"`
+	AppsDomain  *string   `json:"apps_domain"`
+	TCPDomain   *string   `json:"tcp_domain"`
+	UseHttp     *bool     `json:"use_http"`
 
 	AdminPassword *string `json:"admin_password"`
 	AdminUser     *string `json:"admin_user"`
@@ -148,17 +148,32 @@ type config struct {
 }
 
 type WIFConfig struct {
-	Enabled bool `json:"enabled"`
-	Issuer string `json:"issuer"`
-	JWKSURI string `json:"jwks_uri"`
-	Audience string `json:"audience"`
-	CACert string `json:"ca_cert"`
+	Enabled              bool   `json:"enabled"`
+	Issuer               string `json:"issuer"`
+	JWKSURI              string `json:"jwks_uri"`
+	Audience             string `json:"audience"`
+	CACert               string `json:"ca_cert"`
 	RunningSecurityGroup string `json:"running_security_group"`
 }
 
 func (c config) GetWIFConfig() WIFConfig { return c.WIF }
 
-func ValidateWIF(c WIFConfig) error { return nil }
+func ValidateWIF(c WIFConfig) error {
+	if !c.Enabled {
+		return nil
+	}
+	for name, value := range map[string]string{"issuer": c.Issuer, "jwks_uri": c.JWKSURI} {
+		u, err := url.Parse(value)
+		if err != nil || u.Scheme != "https" || u.Host == "" || u.User != nil || u.Fragment != "" {
+			return fmt.Errorf("wif.%s must be an HTTPS URL", name)
+		}
+	}
+	u, err := url.Parse(c.Audience)
+	if err != nil || !u.IsAbs() || u.Fragment != "" {
+		return fmt.Errorf("wif.audience must be an absolute resource URI without a fragment")
+	}
+	return nil
+}
 
 type reporterConfig struct {
 	HoneyCombWriteKey string                 `json:"honeycomb_write_key"`
