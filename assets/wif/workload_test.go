@@ -1,12 +1,24 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 )
+
+func TestBearerModeUsesFreshCAPITransportAndReturnsSelectedClaims(t *testing.T){
+	payload:=base64.RawURLEncoding.EncodeToString([]byte(`{"sub":"account","iss":"https://uaa.example","aud":["cloud_controller"],"iat":100,"exp":300,"app_guid":"app","secret":"never-return"}`))
+	token:="header."+payload+".signature"
+	mux:=http.NewServeMux();mux.HandleFunc("/token",func(w http.ResponseWriter,r *http.Request){r.ParseForm();if r.Form.Has("resource"){t.Error("bearer request sets resource")};json.NewEncoder(w).Encode(map[string]string{"access_token":token})})
+	mux.HandleFunc("/v3/apps",func(w http.ResponseWriter,r *http.Request){if r.Header.Get("Authorization")!="Bearer "+token{t.Error("missing bearer")};json.NewEncoder(w).Encode(map[string]any{"resources":[]map[string]string{{"guid":"visible-app"}}})})
+	s:=httptest.NewServer(mux);defer s.Close()
+	result:=workload{Client:s.Client(),TokenEndpoint:s.URL+"/token",CAPITarget:s.URL}.run("bearer")
+	if result["capi_status"]!=200||result["sub"]!="account"||result["cnf_present"]!=false{t.Fatal("bearer evidence missing")}
+	encoded,_:=json.Marshal(result);if strings.Contains(string(encoded),token)||strings.Contains(string(encoded),"never-return"){t.Fatal("raw claims leaked")}
+}
 
 func TestWorkloadUsesExchangedCredentialAndRedactsBothTokens(t *testing.T) {
 	const assertion = "uaa-secret-assertion"
