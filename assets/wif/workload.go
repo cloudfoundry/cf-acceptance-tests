@@ -14,6 +14,10 @@ type workload struct {
 
 func (w workload) run(mode string) map[string]any {
 	result := map[string]any{}
+	if mode != "exchange" && mode != "default-audience" && mode != "unlisted" {
+		result["error"] = "unsupported_mode"
+		return result
+	}
 	form := url.Values{"grant_type": {"client_credentials"}, "client_id": {w.ClientID}, "token_format": {"jwt"}}
 	if mode != "default-audience" {
 		resource := w.Resource

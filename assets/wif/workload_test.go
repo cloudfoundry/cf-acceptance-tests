@@ -63,8 +63,11 @@ func TestWorkloadStopsAtDeniedIssuance(t *testing.T) {
 }
 
 func TestWorkloadRejectsUnknownModeWithoutNetwork(t *testing.T) {
-	called:=false
-	s:=httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter,r *http.Request){called=true}));defer s.Close()
-	result:=workload{Client:s.Client(),TokenEndpoint:s.URL}.run("anything")
-	if called || result["error"]!="unsupported_mode" {t.Fatal("unsupported mode contacted a credential endpoint")}
+	called := false
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { called = true }))
+	defer s.Close()
+	result := workload{Client: s.Client(), TokenEndpoint: s.URL}.run("anything")
+	if called || result["error"] != "unsupported_mode" {
+		t.Fatal("unsupported mode contacted a credential endpoint")
+	}
 }
