@@ -58,7 +58,7 @@ var _ = Describe("[service_accounts] cross-org synthetic WIF", Label("service-ac
 			workflowhelpers.AsUser(TestSetup.AdminUserContext(), Config.CfPushTimeoutDuration(), func() {
 				for i := len(orgs) - 1; i >= 0; i-- {
 					org := orgs[i]
-					command("target", "-o", org, "-s", "test")
+					if len(apps[org]) > 0 { command("target", "-o", org, "-s", "test") }
 					for _, name := range apps[org] {
 						app_helpers.AppReport(name)
 						command("delete", name, "-f", "-r")
