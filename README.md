@@ -413,6 +413,118 @@ Test Group Name| Description
 
 ## Contributing
 
+### Cross-org synthetic workload identity federation
+
+The opt-in `[service_accounts]` WIF scenario creates two disposable organizations.
+Only the workload organization receives a service-account prefix. The other org
+hosts a synthetic STS and protected resource without a prefix or assigned account.
+Its push environment contains `TRUSTED_SERVICE_ACCOUNT_SUBJECT`, using the exact
+CAPI-returned `cf:service-account:<prefix>:<name>` identity. Trust also pins UAA's
+issuer, HTTPS JWKS endpoint and allowed federation audience.
+
+Two apps sharing the account obtain real UAA assertions, exchange them for an
+independent in-memory STS credential, and use that credential at the protected
+resource. A different account, default CAPI audience and unlisted resource are
+denied. UAA assertions cannot access the resource directly; STS credentials cannot
+access CAPI. Disable blocks fresh assertions and enable restores the full flow.
+JWTs and private keys remain inside the apps and are never returned in CATs results.
+
+Configure the optional `wif` object (disabled by default):
+
+* `enabled`: run this scenario; requires native service-account CLI commands,
+  prefix-at-create support, qualified Diego identities and CAPI-managed UAA clients.
+* `issuer`: expected UAA token issuer, from trusted deployment configuration.
+* `jwks_uri`: HTTPS UAA key endpoint reachable from STS containers.
+* `audience`: absolute URI already permitted by the operator's named UAA resource
+  policy selected by CAPI. The fixture never contacts this URI; it is an audience.
+* `ca_cert`: optional public PEM roots trusted for UAA, CAPI and application routes.
+  All in-app connections verify TLS regardless of CLI `skip_ssl_validation`.
+* `running_security_group`: optional comma-separated names of existing ASGs to bind
+  to the two disposable spaces before starting apps (UAA/CAPI/router connectivity).
+
+#### Service-account bearer and runtime identity
+
+Set `wif.runtime_tests: true` to run `[service_accounts] bearer and runtime identity`.
+This selection is independent of synthetic WIF and identity-aware routing. Supply
+the trusted `wif.issuer`, public `wif.ca_cert` roots and any required existing ASGs
+through `wif.running_security_group`. HTTPS CAPI and UAA must be reachable from
+apps. Task creation and administrator custom buildpack upload must be supported.
+
+Six independent scenarios exercise one outcome each:
+
+* Default bearer tokens without cnf, matching instance/app/space/org attribution,
+  issuer, five-minute/leaf-expiry bounds and HTTPS CAPI access without a client
+  certificate. Roleless accounts see no apps; CLI SpaceAuditor grants expose only
+  intended spaces equally to both callers sharing the account.
+* Assignment changes applied only after restart, including unbind removing the
+  account discovery/SAN after restart.
+* A new task receiving desired identity before the running app restarts.
+* Actual staging observation using a disposable custom buildpack: no account
+  discovery or account SAN, while runtime has the account SAN.
+* A regular Space Developer creating, assigning, disabling and enabling a working
+  account. Admin only prepares org/prefix, app bits, roles and buildpack fixtures.
+* An Org Manager discovering an account with zero entitlements after its last
+  space is deleted, then entitling a replacement space. A new app authenticates
+  with the retained account identity. No new UUID or identity is allocated.
+
+Only public identity evidence is retained in the droplet or task logs;
+certificates/keys/tokens are not copied. These are representative user journeys,
+not an exhaustive management permission or lifecycle API matrix.
+
+Run with `--focus='bearer and runtime identity'` and a private JSON report, or
+select all account journeys with their appropriate config toggles. Each scenario
+deletes its apps, org/accounts and custom buildpack; intentional reservations stay.
+Normal certificate lifetime checks do not prove the near-expiry leaf-cap edge case.
+
+#### Service-account identity-aware routing
+
+Set `wif.route_tests: true` and `include_identity_aware_routing: true` to extend
+the existing identity-aware routing group with account-source coverage. This is
+independent of `wif.enabled`: token-exchange configuration is not required for
+certificate-only route tests. The `wif.ca_cert` and `wif.running_security_group`
+settings provide public TLS trust and optional existing ASG bindings for the probe.
+
+`identity_aware_domain` must already be configured for GoRouter mTLS enforcement,
+have `route_policies_scope: any`, and support verified TLS/DNS for test hosts and
+single-level private subdomains. Each independent scenario creates its own org,
+prefix, two entitled spaces, four caller apps, routes and private space-scoped
+domain. Existing domains and policies are never modified.
+
+```sh
+go run github.com/onsi/ginkgo/v2/ginkgo --procs=2 --randomize-all \
+  --focus='Service-account route authorization' --fail-on-empty --no-color \
+  --silence-skips --json-report=/private/account-routing-report.json .
+```
+
+Three account cases separately cover authorization, disable semantics and domain
+space restrictions. The account-only route allows both shared-account apps; wrong-account and unbound
+apps receive403 even with forged XFCC. Missing certificates fail the TLS handshake.
+Account disable does not remove certificate-only access. Policy removal restores
+default denial. A private space-scoped domain denies a same-account caller in the
+other entitled space. Probe destinations are fixed at push time, server TLS is
+verified, redirects refused, and no bearer token is attached. Apps/routes/domain
+and org/account resources are removed, retaining only intentional reservations.
+
+Run from the repository root with Go >=1.27.3, the custom CLI as `cf` on PATH and
+private `$CONFIG`. The repository CLI Makefile build supplies version metadata;
+a plain unversioned `go build` reports version0 and fails CATs' existing version check.
+
+```sh
+go run github.com/onsi/ginkgo/v2/ginkgo --focus='cross-org synthetic WIF' \
+  --fail-on-empty --no-color --silence-skips --json-report=/private/wif-report.json .
+```
+
+Check the JSON report for an actually passed scenario: an all-skipped run is not
+coverage. Do not enable HTTP traces for token-carrying app traffic. Generated push
+manifests contain public identity/trust configuration, not workload private keys.
+Normal cleanup deletes live apps/routes/accounts through org deletion; prefix and
+name reservations deliberately remain. Each run allocates one retained prefix.
+The scenario currently uses an admin for provisioning/lifecycle; it does not claim
+permission-matrix coverage. JWKS is loaded on STS startup; key rotation and retained
+credential behavior during disable require separate tests. The synthetic profile
+uses RS256 and treats azp as informational; it does not establish AWS/GCP/Azure
+compatibility or full RFC8693 support. STS keys exist only in process memory.
+
 This repository uses [go mod](https://golang.org/cmd/go/#hdr-Modules__module_versions__and_more)
 to manage `go` dependencies.
 

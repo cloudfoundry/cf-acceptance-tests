@@ -29,6 +29,7 @@ import (
 	_ "github.com/cloudfoundry/cf-acceptance-tests/routing"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/routing_isolation_segments"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/security_groups"
+	_ "github.com/cloudfoundry/cf-acceptance-tests/service_accounts"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/service_credential_binding_rotation"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/service_discovery"
 	_ "github.com/cloudfoundry/cf-acceptance-tests/services"
@@ -87,6 +88,16 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	fmt.Fprintf(os.Stdout, "Using Eventually polling interval %s\n", Config.EventuallyPollingIntervalDuration())
 
 	Expect(ParseRawCliVersionString(installedVersion).AtLeast(ParseRawCliVersionString(minCliVersion))).To(BeTrue(), "CLI version "+minCliVersion+" is required")
+	if Config.GetWIFConfig().Enabled || Config.GetWIFConfig().RouteTests || Config.GetWIFConfig().RuntimeTests {
+		for _, name := range []string{"create-service-account", "bind-service-account", "disable-service-account", "create-org"} {
+			Expect(cf.Cf("help", name).Wait()).To(Exit(0), "WIF requires a CLI with native service account commands")
+		}
+		cmd := exec.Command("go", "build", "-o", "bin/wif", ".")
+		cmd.Dir = "assets/wif"
+		cmd.Env = append(os.Environ(), "CGO_ENABLED=0", "GOOS=linux", "GOARCH=amd64")
+		cmd.Stdout, cmd.Stderr = GinkgoWriter, GinkgoWriter
+		Expect(cmd.Run()).To(Succeed())
+	}
 
 	if Config.GetIncludeSsh() {
 		ScpPath, err = exec.LookPath("scp")
