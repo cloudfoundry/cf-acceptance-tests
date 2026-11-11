@@ -450,17 +450,26 @@ the trusted `wif.issuer`, public `wif.ca_cert` roots and any required existing A
 through `wif.running_security_group`. HTTPS CAPI and UAA must be reachable from
 apps. Task creation and administrator custom buildpack upload must be supported.
 
-Two independent scenarios exercise:
+Six independent scenarios exercise one outcome each:
 
 * Default bearer tokens without cnf, matching instance/app/space/org attribution,
   issuer, five-minute/leaf-expiry bounds and HTTPS CAPI access without a client
   certificate. Roleless accounts see no apps; CLI SpaceAuditor grants expose only
   intended spaces equally to both callers sharing the account.
-* Actual staging observation using a disposable custom buildpack (no account
-  discovery or account SAN), running launch snapshots through unbind/rebind, new
-  task identity from desired assignment, restart picking up replacement identity,
-  and unbind/restart removing account discovery/SAN. Only public identity evidence
-  is retained in the droplet or task logs; certificates/keys/tokens are not copied.
+* Assignment changes applied only after restart, including unbind removing the
+  account discovery/SAN after restart.
+* A new task receiving desired identity before the running app restarts.
+* Actual staging observation using a disposable custom buildpack: no account
+  discovery or account SAN, while runtime has the account SAN.
+* A regular Space Developer creating, assigning, disabling and enabling a working
+  account. Admin only prepares org/prefix, app bits, roles and buildpack fixtures.
+* An Org Manager discovering an account with zero entitlements after its last
+  space is deleted, then entitling a replacement space. A new app authenticates
+  with the retained account identity. No new UUID or identity is allocated.
+
+Only public identity evidence is retained in the droplet or task logs;
+certificates/keys/tokens are not copied. These are representative user journeys,
+not an exhaustive management permission or lifecycle API matrix.
 
 Run with `--focus='bearer and runtime identity'` and a private JSON report, or
 select all account journeys with their appropriate config toggles. Each scenario
@@ -487,7 +496,8 @@ go run github.com/onsi/ginkgo/v2/ginkgo --procs=2 --randomize-all \
   --silence-skips --json-report=/private/account-routing-report.json .
 ```
 
-The account-only route allows both shared-account apps; wrong-account and unbound
+Three account cases separately cover authorization, disable semantics and domain
+space restrictions. The account-only route allows both shared-account apps; wrong-account and unbound
 apps receive403 even with forged XFCC. Missing certificates fail the TLS handshake.
 Account disable does not remove certificate-only access. Policy removal restores
 default denial. A private space-scoped domain denies a same-account caller in the
