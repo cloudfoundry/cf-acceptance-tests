@@ -10,6 +10,7 @@ assets/*/.bundle
 assets/catnip/bin
 assets/webapp/bin
 assets/hello-routing/bin
+assets/wif/bin
 assets/syslog-drain-listener/bin
 assets/loggregator-load-generator-go/bin
 assets/dora.zip
