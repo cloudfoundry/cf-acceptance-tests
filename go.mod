@@ -6,7 +6,7 @@ require (
 	code.cloudfoundry.org/archiver v0.95.0
 	code.cloudfoundry.org/go-log-cache/v3 v3.1.2
 	code.cloudfoundry.org/go-loggregator/v10 v10.3.1
-	code.cloudfoundry.org/tlsconfig v0.71.0
+	code.cloudfoundry.org/tlsconfig v0.72.0
 	github.com/cloudfoundry/cf-test-helpers/v2 v2.15.0
 	github.com/cloudfoundry/noaa/v2 v2.6.0
 	github.com/cloudfoundry/sonde-go v0.0.0-20251217143644-d1670a435f2a
@@ -39,15 +39,15 @@ require (
 	github.com/square/certstrap v1.4.1 // indirect
 	github.com/ulikunitz/xz v0.5.14 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
-	go.step.sm/crypto v0.91.1 // indirect
+	go.step.sm/crypto v0.92.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.6 // indirect
 	golang.org/x/mod v0.42.0 // indirect
 	golang.org/x/net v0.62.0 // indirect
 	golang.org/x/sync v0.24.0 // indirect
-	golang.org/x/sys v0.49.0 // indirect
+	golang.org/x/sys v0.50.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
 	golang.org/x/tools v0.52.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260817212433-ac3dfec99bb1 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20261012220534-4341edf3f941 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20261019180522-ce908d29299b // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
