@@ -30,6 +30,27 @@ describe ServiceBroker do
     end
   end
 
+  describe 'GET /v2/service_instances/:id' do
+    context 'service instance exists' do
+      before do
+        put '/v2/service_instances/fake-guid', {service_id: 'fake-service', plan_id: 'fake-plan'}.to_json
+      end
+
+      it 'returns 200 with the provisioning data in the body  ' do
+        get '/v2/service_instances/fake-guid'
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to eq({service_id: 'fake-service', plan_id: 'fake-plan'}.to_json)
+      end
+    end
+    context 'service instance does not exist' do
+      it 'returns 404' do
+        get '/v2/service_instances/non-existent'
+        expect(last_response.status).to eq(404)
+        expect(last_response.body).to eq("Broker could not find service instance by the given id non-existent")
+      end
+    end
+  end
+
   describe 'PUT /v2/service_instances/:id' do
     it 'returns 200 with an empty JSON body' do
       put '/v2/service_instances/fakeIDThough', {}.to_json
@@ -201,6 +222,227 @@ describe ServiceBroker do
     end
   end
 
+  describe 'GET /v2/service_instances/:id/service_bindings/:id' do
+    context 'service binding exists' do
+      before do
+        put '/v2/service_instances/fake-guid', {service_id: 'fake-service', plan_id: 'fake-plan'}.to_json
+        put '/v2/service_instances/fake-guid/service_bindings/binding-guid', {plan_id: 'fake-plan'}.to_json
+      end
+
+      it 'returns 200 with the provisioning data in the body  ' do
+        get '/v2/service_instances/fake-guid/service_bindings/binding-guid'
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to eq({plan_id: 'fake-plan'}.to_json)
+      end
+
+      context 'service binding is not associated with given service instance' do
+        it 'returns 404' do
+          get '/v2/service_instances/non-existent/service_bindings/binding-guid'
+          expect(last_response.status).to eq(404)
+          expect(last_response.body).to eq("Broker could not find the service binding `binding-guid` for service instance `non-existent`")
+        end
+      end
+    end
+    context 'service binding does not exist' do
+      it 'returns 404' do
+        get '/v2/service_instances/non-existent/service_bindings/non-existent-binding'
+        expect(last_response.status).to eq(404)
+        expect(last_response.body).to eq("Broker could not find the service binding `non-existent-binding` for service instance `non-existent`")
+      end
+    end
+  end
+
+  describe 'PUT /v2/service_instances/:id/service_bindings/:id' do
+    before do
+      config = {
+        max_fetch_service_binding_requests: 1,
+        behaviors: {
+          bind: {
+            'fake-plan-guid' => {
+              sleep_seconds: 0,
+              status: 201,
+              body: {}
+            },
+            default: {
+              sleep_seconds: 0,
+              status: 202,
+              body: {}
+            }
+          }
+        }
+      }.to_json
+
+      post '/config', config
+
+      put '/v2/service_instances/fake-guid', {service_id: 'fake-service', plan_id: 'fake-plan-guid'}.to_json
+    end
+
+    it 'returns 201 with an empty JSON body' do
+      put '/v2/service_instances/fake-guid/service_bindings/binding-guid', {plan_id: 'fake-plan-guid'}.to_json
+      expect(last_response.status).to eq(201)
+      expect(JSON.parse(last_response.body)).to be_empty
+    end
+
+    context 'service instance does not exist' do
+      it 'returns 400' do
+        put '/v2/service_instances/non-existent/service_bindings/binding-guid', {plan_id: 'fake-plan-guid'}.to_json
+        expect(last_response.status).to eq(400)
+        expect(last_response.body).to eq('Broker could not find service instance by the given id non-existent')
+      end
+    end
+
+    context 'when the plan is configured as async_only' do
+      before do
+        config = {
+          max_fetch_service_binding_requests: 1,
+          behaviors: {
+            bind: {
+              'fake-async-plan-guid' => {
+                sleep_seconds: 0,
+                async_only: true,
+                status: 202,
+                body: {}
+              },
+              default: {
+                sleep_seconds: 0,
+                status: 202,
+                body: {}
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+
+        put '/v2/service_instances/fake-guid?accepts_incomplete=true', {service_id: 'fake-service', plan_id: 'fake-async-plan-guid'}.to_json
+      end
+
+
+      context 'request is for an async plan' do
+        it 'returns as usual if it does include accepts_incomplete' do
+          put '/v2/service_instances/fake-guid/service_bindings/binding-guid?accepts_incomplete=true', {plan_id: 'fake-async-plan-guid'}.to_json
+
+          expect(last_response.status).to eq(202)
+        end
+
+        it 'rejects request if it does not include accepts_incomplete' do
+          put '/v2/service_instances/fake-guid/service_bindings/binding-guid', {plan_id: 'fake-async-plan-guid'}.to_json
+
+          expect(last_response.status).to eq(422)
+          expect(last_response.body).to eq(
+                                          {
+                                            'error' => 'AsyncRequired',
+                                            'description' => 'This service plan requires client support for asynchronous service operations.'
+                                          }.to_json
+                                        )
+        end
+      end
+
+    end
+  end
+
+  describe 'DELETE /v2/service_instances/:id/service_bindings/:id' do
+    before do
+      put '/v2/service_instances/fake-guid?accepts_incomplete=true', {plan_id: 'fake-async-plan-guid'}.to_json
+      put '/v2/service_instances/fake-guid/service_bindings/binding-guid?accepts_incomplete=true', {plan_id: 'fake-async-plan-guid'}.to_json
+    end
+
+    context 'when the plan is configured as async_only' do
+      before do
+        config = {
+          max_fetch_service_binding_requests: 1,
+          behaviors: {
+            unbind: {
+              'fake-async-plan-guid' => {
+                sleep_seconds: 0,
+                async_only: true,
+                status: 202,
+                body: {}
+              },
+              default: {
+                sleep_seconds: 0,
+                status: 202,
+                body: {}
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+      end
+
+
+      context 'request is for an async plan' do
+        it 'returns as usual if it does include accepts_incomplete' do
+          delete '/v2/service_instances/fake-guid/service_bindings/binding-guid?accepts_incomplete=true'
+
+          expect(last_response.status).to eq(202)
+        end
+
+        it 'rejects request if it does not include accepts_incomplete' do
+          delete '/v2/service_instances/fake-guid/service_bindings/binding-guid'
+
+          expect(last_response.status).to eq(422)
+          expect(last_response.body).to eq(
+                                          {
+                                            'error' => 'AsyncRequired',
+                                            'description' => 'This service plan requires client support for asynchronous service operations.'
+                                          }.to_json
+                                        )
+        end
+      end
+    end
+  end
+
+  describe 'GET /v2/service_instances/:id/last_operation' do
+    before do
+      put '/v2/service_instances/fake-guid', {plan_id: 'fake-plan-guid'}.to_json
+    end
+
+    it 'should return 200 and the current status in the body' do
+      get '/v2/service_instances/fake-guid/last_operation'
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to eq({state: "in progress"}.to_json)
+    end
+
+    context 'service instance does not exist' do
+      it 'should return 410 - gone' do
+        get '/v2/service_instances/non-existent/last_operation'
+        expect(last_response.status).to eq(410)
+        expect(last_response.body).to eq("Broker could not find service instance by the given id non-existent")
+      end
+    end
+  end
+
+  describe 'GET /v2/service_instances/:id/service_bindings/:id/last_operation' do
+    before do
+      put '/v2/service_instances/fake-guid', {plan_id: 'fake-plan-guid'}.to_json
+      put '/v2/service_instances/fake-guid/service_bindings/binding-guid', {plan_id: 'fake-plan-guid'}.to_json
+    end
+
+    it 'should return 200 and the current status in the body' do
+      get '/v2/service_instances/fake-guid/service_bindings/binding-guid/last_operation'
+      expect(last_response.status).to eq(200)
+      expect(last_response.body).to eq({state: "in progress"}.to_json)
+    end
+
+    context 'service binding does not exist' do
+      it 'should return 410 - gone' do
+        get '/v2/service_instances/fake-guid/service_bindings/non-existent/last_operation'
+        expect(last_response.status).to eq(410)
+        expect(last_response.body).to eq("Broker could not find the service binding `non-existent` for service instance `fake-guid`")
+      end
+    end
+
+    context 'service binding is not associated with given service instance' do
+      it 'should return 410 - gone' do
+        get '/v2/service_instances/non-existent/service_bindings/binding-guid/last_operation'
+        expect(last_response.status).to eq(410)
+        expect(last_response.body).to eq("Broker could not find the service binding `binding-guid` for service instance `non-existent`")
+      end
+    end
+  end
+
   describe 'cf api info location' do
     api_not_known_error = JSON.pretty_generate({
       "error" => true,
@@ -350,7 +592,7 @@ describe ServiceBroker do
       end
     end
 
-    context 'for a fetch operation' do
+    context 'for a fetch service instance last operation' do
       before do
         put '/v2/service_instances/fake-guid', {plan_id: 'fake-plan-guid'}.to_json
       end
@@ -359,7 +601,7 @@ describe ServiceBroker do
         config = {
           max_fetch_service_instance_requests: 1,
           behaviors: {
-            fetch: {
+            fetch_service_instance_last_operation: {
               default: {
                 in_progress: {
                   status: 200,
@@ -391,7 +633,7 @@ describe ServiceBroker do
         config = {
           max_fetch_service_instance_requests: 1,
           behaviors: {
-            fetch: {
+            fetch_service_instance_last_operation: {
               default: {
                 in_progress: {
                   status: 200,
@@ -423,7 +665,7 @@ describe ServiceBroker do
         config = {
           max_fetch_service_instance_requests: 1,
           behaviors: {
-            fetch: {
+            fetch_service_instance_last_operation: {
               default: {
                 in_progress: {
                   status: 200,
@@ -459,7 +701,7 @@ describe ServiceBroker do
         config = {
           max_fetch_service_instance_requests: 2,
           behaviors: {
-            fetch: {
+            fetch_service_instance_last_operation: {
               default: {
                 in_progress: {
                   status: 200,
@@ -495,7 +737,7 @@ describe ServiceBroker do
         config = {
           max_fetch_service_instance_requests: 1,
           behaviors: {
-            fetch: {
+            fetch_service_instance_last_operation: {
               'fake-plan-guid' => {
                 in_progress: {
                   status: 200,
@@ -533,6 +775,467 @@ describe ServiceBroker do
         get '/v2/service_instances/fake-guid/last_operation'
         expect(last_response.status).to eq(201)
         expect(last_response.body).to eq({ foo: 'baz' }.to_json)
+      end
+    end
+
+    context 'for a fetch service binding last operation' do
+      before do
+        put '/v2/service_instances/fake-guid', {plan_id: 'fake-plan-guid'}.to_json
+        put '/v2/service_instances/fake-guid/service_bindings/binding-guid', {plan_id: 'fake-plan-guid'}.to_json
+      end
+
+      it 'should change the response using a json body' do
+        config = {
+          max_fetch_service_binding_requests: 1,
+          behaviors: {
+            fetch_service_binding_last_operation: {
+              default: {
+                in_progress: {
+                  status: 200,
+                  sleep_seconds: 0,
+                  body: {}
+                },
+                finished: {
+                  status: 400,
+                  sleep_seconds: 0,
+                  body: { foo: :bar }
+                }
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+
+        get '/v2/service_instances/fake-guid/service_bindings/binding-guid/last_operation'
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to eq('{}')
+
+        get '/v2/service_instances/fake-guid/service_bindings/binding-guid/last_operation'
+        expect(last_response.status).to eq(400)
+        expect(last_response.body).to eq({ foo: :bar }.to_json)
+      end
+
+      it 'should change the response using an invalid json body' do
+        config = {
+          max_fetch_service_binding_requests: 1,
+          behaviors: {
+            fetch_service_binding_last_operation: {
+              default: {
+                in_progress: {
+                  status: 200,
+                  sleep_seconds: 0,
+                  raw_body: 'cheese'
+                },
+                finished: {
+                  status: 400,
+                  sleep_seconds: 0,
+                  raw_body: 'cake'
+                }
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+
+        get '/v2/service_instances/fake-guid/service_bindings/binding-guid/last_operation'
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to eq 'cheese'
+
+        get '/v2/service_instances/fake-guid/service_bindings/binding-guid/last_operation'
+        expect(last_response.status).to eq(400)
+        expect(last_response.body).to eq 'cake'
+      end
+
+      it 'should cause the action to sleep' do
+        config = {
+          max_fetch_service_binding_requests: 1,
+          behaviors: {
+            fetch_service_binding_last_operation: {
+              default: {
+                in_progress: {
+                  status: 200,
+                  sleep_seconds: 1.1,
+                  body: {}
+                },
+                finished: {
+                  status: 200,
+                  sleep_seconds: 0.6,
+                  body: { }
+                }
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+
+        expect do
+          Timeout::timeout(1) do
+            get '/v2/service_instances/fake-guid/service_bindings/binding-guid/last_operation'
+          end
+        end.to raise_error(TimeoutError)
+
+        expect do
+          Timeout::timeout(0.5) do
+            get '/v2/service_instances/fake-guid/service_bindings/binding-guid/last_operation'
+          end
+        end.to raise_error(TimeoutError)
+      end
+
+      it 'honors max_fetch_service_bindings_request' do
+        config = {
+          max_fetch_service_binding_requests: 2,
+          behaviors: {
+            fetch_service_binding_last_operation: {
+              default: {
+                in_progress: {
+                  status: 200,
+                  sleep_seconds: 0,
+                  body: {}
+                },
+                finished: {
+                  status: 400,
+                  sleep_seconds: 0,
+                  body: { foo: :bar }
+                }
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+
+        get '/v2/service_instances/fake-guid/service_bindings/binding-guid/last_operation'
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to eq('{}')
+
+        get '/v2/service_instances/fake-guid/service_bindings/binding-guid/last_operation'
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to eq('{}')
+
+        get '/v2/service_instances/fake-guid/service_bindings/binding-guid/last_operation'
+        expect(last_response.status).to eq(400)
+        expect(last_response.body).to eq({ foo: :bar }.to_json)
+      end
+
+      it 'can be customized on a per-plan basis' do
+        config = {
+          max_fetch_service_binding_requests: 1,
+          behaviors: {
+            fetch_service_binding_last_operation: {
+              'fake-plan-guid' => {
+                in_progress: {
+                  status: 200,
+                  sleep_seconds: 0,
+                  body: { foo: 'bar' }
+                },
+                finished: {
+                  status: 201,
+                  sleep_seconds: 0,
+                  body: { foo: 'baz' }
+                }
+              },
+              default: {
+                in_progress: {
+                  status: 200,
+                  sleep_seconds: 0,
+                  body: {}
+                },
+                finished: {
+                  status: 400,
+                  sleep_seconds: 0,
+                  body: { foo: :bar }
+                }
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+
+        get '/v2/service_instances/fake-guid/service_bindings/binding-guid/last_operation'
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to eq({ foo: 'bar' }.to_json)
+
+        get '/v2/service_instances/fake-guid/service_bindings/binding-guid/last_operation'
+        expect(last_response.status).to eq(201)
+        expect(last_response.body).to eq({ foo: 'baz' }.to_json)
+      end
+    end
+
+    context 'for a fetch service instance' do
+      before do
+        put '/v2/service_instances/fake-guid', {plan_id: 'fake-plan-guid', context: {organization_guid: 'some-org-guid'}}.to_json
+      end
+
+      it 'should return the provision data and merge in the body from config' do
+        config = {
+          behaviors: {
+            fetch_service_instance: {
+              default: {
+                status: 200,
+                sleep_seconds: 0,
+                body: {}
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+
+        get '/v2/service_instances/fake-guid'
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to eq({plan_id: 'fake-plan-guid', context: {organization_guid: 'some-org-guid'}}.to_json)
+      end
+
+      it 'should return an empty response if no body provided in the config' do
+        config = {
+          behaviors: {
+            fetch_service_instance: {
+              default: {
+                status: 200,
+                sleep_seconds: 0
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+
+        get '/v2/service_instances/fake-guid'
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to be_empty
+      end
+
+      it 'should overwrite provision data with configured behaviour' do
+        config = {
+          behaviors: {
+            fetch_service_instance: {
+              default: {
+                status: 200,
+                sleep_seconds: 0,
+                body: {
+                  context: {
+                    organization_guid: "some-new-org-guid"
+                  }
+                }
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+
+        get '/v2/service_instances/fake-guid'
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to eq({plan_id: 'fake-plan-guid', context: {organization_guid: 'some-new-org-guid'}}.to_json)
+      end
+
+      it 'should change the response using an invalid json body' do
+        config = {
+          behaviors: {
+            fetch_service_instance: {
+              default: {
+                status: 200,
+                sleep_seconds: 0,
+                raw_body: 'cheese'
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+
+        get '/v2/service_instances/fake-guid'
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to eq 'cheese'
+      end
+
+      it 'should cause the action to sleep' do
+        config = {
+          behaviors: {
+            fetch_service_instance: {
+              default: {
+                status: 200,
+                sleep_seconds: 1.1,
+                body: {}
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+
+        expect do
+          Timeout::timeout(1) do
+            get '/v2/service_instances/fake-guid'
+          end
+        end.to raise_error(TimeoutError)
+      end
+
+      it 'can be customized on a per-plan basis' do
+        config = {
+          behaviors: {
+            fetch_service_instance: {
+              'fake-plan-guid' => {
+                status: 200,
+                sleep_seconds: 0,
+                body: { foo: 'bar' }
+              },
+              default: {
+                status: 200,
+                sleep_seconds: 0,
+                body: {}
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+
+        get '/v2/service_instances/fake-guid'
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to eq({plan_id: 'fake-plan-guid', context: {organization_guid: 'some-org-guid'}, foo: 'bar'}.to_json)
+      end
+    end
+
+    context 'for a fetch service binding' do
+      before do
+        put '/v2/service_instances/fake-guid', {plan_id: 'fake-plan-guid'}.to_json
+        put '/v2/service_instances/fake-guid/service_bindings/binding-guid', {plan_id: 'fake-plan-guid', context: {organization_guid: 'some-org-guid'}}.to_json
+
+      end
+
+      it 'should return the provision data and merge in the body from config' do
+        config = {
+          behaviors: {
+            fetch_service_binding: {
+              default: {
+                status: 200,
+                sleep_seconds: 0,
+                body: {}
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+
+        get '/v2/service_instances/fake-guid/service_bindings/binding-guid'
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to eq({plan_id: 'fake-plan-guid', context: {organization_guid: 'some-org-guid'}}.to_json)
+      end
+
+      it 'should return an empty response if no body provided in the config' do
+        config = {
+          behaviors: {
+            fetch_service_binding: {
+              default: {
+                status: 200,
+                sleep_seconds: 0
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+
+        get '/v2/service_instances/fake-guid/service_bindings/binding-guid'
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to be_empty
+      end
+
+      it 'should overwrite provision data with configured behaviour' do
+        config = {
+          behaviors: {
+            fetch_service_binding: {
+              default: {
+                status: 200,
+                sleep_seconds: 0,
+                body: {
+                  context: {
+                    organization_guid: "some-new-org-guid"
+                  }
+                }
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+
+        get '/v2/service_instances/fake-guid/service_bindings/binding-guid'
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to eq({plan_id: 'fake-plan-guid', context: {organization_guid: 'some-new-org-guid'}}.to_json)
+      end
+
+      it 'should change the response using an invalid json body' do
+        config = {
+          behaviors: {
+            fetch_service_binding: {
+              default: {
+                status: 200,
+                sleep_seconds: 0,
+                raw_body: 'cheese'
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+
+        get '/v2/service_instances/fake-guid/service_bindings/binding-guid'
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to eq 'cheese'
+      end
+
+      it 'should cause the action to sleep' do
+        config = {
+          behaviors: {
+            fetch_service_binding: {
+              default: {
+                status: 200,
+                sleep_seconds: 1.1,
+                body: {}
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+
+        expect do
+          Timeout::timeout(1) do
+            get '/v2/service_instances/fake-guid/service_bindings/binding-guid'
+          end
+        end.to raise_error(TimeoutError)
+      end
+
+      it 'can be customized on a per-plan basis' do
+        config = {
+          behaviors: {
+            fetch_service_binding: {
+              'fake-plan-guid' => {
+                status: 200,
+                sleep_seconds: 0,
+                body: { foo: 'bar' }
+              },
+              default: {
+                status: 200,
+                sleep_seconds: 0,
+                body: {}
+              }
+            }
+          }
+        }.to_json
+
+        post '/config', config
+
+        get '/v2/service_instances/fake-guid/service_bindings/binding-guid'
+        expect(last_response.status).to eq(200)
+        expect(last_response.body).to eq({plan_id: 'fake-plan-guid', context: {organization_guid: 'some-org-guid'}, foo: 'bar'}.to_json)
       end
     end
 
