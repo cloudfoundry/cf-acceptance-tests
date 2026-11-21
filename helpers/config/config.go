@@ -5,6 +5,7 @@ import (
 )
 
 type CatsConfig interface {
+	GetWIFConfig() WIFConfig
 	GetIncludeAppSyslogTcp() bool
 	GetIncludeApps() bool
 	GetIncludeContainerNetworking() bool
